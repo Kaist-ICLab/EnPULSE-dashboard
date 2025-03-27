@@ -13,6 +13,11 @@ const Plot = dynamic(
     },
 );
 
+/**
+ * aaaaaa
+ * @param param0 
+ * @returns 
+ */
 const SampleTimeline: React.FC<{
     title: string,
     data: { name: string, x: number[], y: number[] },
