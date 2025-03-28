@@ -1,11 +1,16 @@
 'use client'
 import { useRef, useEffect, useMemo, useState } from "react"
+// ChartJS Related
 import { Chart, Chart as ChartJS, registerables, TooltipItem } from "chart.js";
 import { Scatter } from 'react-chartjs-2'
-import { schemeCategory10 } from 'd3-scale-chromatic'
 import annotationPlugin from 'chartjs-plugin-annotation'
-import { Dropdown, DropdownItem } from 'flowbite-react'
 import 'chartjs-adapter-moment'
+// Color Scheme from d3
+import { schemeCategory10 as colors } from 'd3-scale-chromatic'
+// Flowbite
+import { Dropdown, DropdownItem, Checkbox } from 'flowbite-react'
+
+type CategoryType = { [key: string]: { index: number, isChecked: boolean } }
 
 ChartJS.register(...registerables, annotationPlugin);
 
@@ -21,15 +26,15 @@ export default function CategoricalChart(props: {
   data: { name: string, x: number[], y: string[] }
   height: number
 }) {
-  const colors = schemeCategory10
-
   const { title, data, height } = props
-  const chartRef = useRef<Chart<"scatter", { x: number; y: number; }[], string> | null>(null)
 
-  const categoryToIndex = useMemo(() => {
+  const chartRef = useRef<Chart<"scatter", { x: number; y: number; }[], string> | null>(null)
+  const [category, setCategory] = useState<CategoryType>(() => {
+    console.log("Not again :(")
     const uniqueElements = Array.from(new Set(data.y))
-    return uniqueElements.reduce((acc, curr, idx) => (acc[curr] = idx, acc), {} as { [key: string]: number })
-  }, [data])
+    return uniqueElements.reduce((acc, curr, idx) => (acc[curr] = { index: idx, isChecked: (idx < 10) }, acc), {} as CategoryType)
+  })
+
   const [timestampMin, timestampMax] = useMemo(() => {
     const minTime = data.x[0]
     const maxTime = data.x.at(-1) || minTime
@@ -41,17 +46,17 @@ export default function CategoricalChart(props: {
   // Chart data configuration. Hide the points.
   const chartData = {
     labels: data.y,
-    datasets: Object.keys(categoryToIndex).map((category) => {
+    datasets: Object.keys(category).map((c) => {
       return {
-        label: category,
-        data: data.x.filter((x, i) => data.y[i] == category).map((x, i) => { return { x, y: 1 } }),
+        label: c,
+        data: data.x.filter((x, i) => data.y[i] == c).map((x, i) => ({ x, y: 1 })),
         pointRadius: 0,
         pointHoverRadius: 0,
         showLine: false,
         fill: false,
         borderColor: undefined,
         tension: 0.1,
-        pointBackgroundColor: colors[categoryToIndex[category]]
+        pointBackgroundColor: colors[category[c].index]
       }
     })
   };
@@ -88,7 +93,7 @@ export default function CategoricalChart(props: {
     yMin: 0,
     yMax: 1,
     value: value,
-    borderColor: colors[categoryToIndex[data.y[index]]],
+    borderColor: colors[category[data.y[index]].index],
     borderWidth: 2,
   }));
 
@@ -143,7 +148,8 @@ export default function CategoricalChart(props: {
   return (
     <div className="w-full h-full relative">
       <CateogorySelectDropdown
-        category={Object.keys(categoryToIndex)}
+        category={category}
+        onCheckboxChanged={v => { console.log(v, category[v]); const newc = { ...category }; newc[v].isChecked = !category[v].isChecked; console.log(newc); setCategory(newc) }}
       />
       <Scatter
         ref={chartRef}
@@ -156,10 +162,10 @@ export default function CategoricalChart(props: {
 }
 
 function CateogorySelectDropdown(props: {
-  category: string[]
+  category: CategoryType,
+  onCheckboxChanged: (categoryName: string) => void
 }) {
-  const { category } = props
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const { category, onCheckboxChanged } = props
 
   return (
     <Dropdown
@@ -168,9 +174,9 @@ function CateogorySelectDropdown(props: {
       size="sm"
     >
       {
-        category.map((value) =>
-          <DropdownItem>
-            <input checked id="checkbox-item-2" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500" />
+        Object.keys(category).map((value, index) =>
+          <DropdownItem key={index} onClickCapture={(e) => { e.stopPropagation(); onCheckboxChanged(value) }}>
+            <Checkbox defaultChecked={category[value].isChecked} />
             <label htmlFor="checkbox-item-2" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{value}</label>
           </DropdownItem>
         )
