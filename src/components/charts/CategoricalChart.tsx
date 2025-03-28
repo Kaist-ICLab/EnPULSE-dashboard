@@ -1,9 +1,11 @@
 'use client'
-import { useRef, useEffect, useMemo } from "react"
-import { Chart as ChartJS, elements, registerables, TooltipItem, TooltipModel } from "chart.js";
+import { useRef, useEffect, useMemo, useState } from "react"
+import { Chart, Chart as ChartJS, registerables, TooltipItem } from "chart.js";
 import { Scatter } from 'react-chartjs-2'
 import { schemeCategory10 } from 'd3-scale-chromatic'
 import annotationPlugin from 'chartjs-plugin-annotation'
+import { Dropdown, DropdownItem } from 'flowbite-react'
+import 'chartjs-adapter-moment'
 
 ChartJS.register(...registerables, annotationPlugin);
 
@@ -22,21 +24,29 @@ export default function CategoricalChart(props: {
   const colors = schemeCategory10
 
   const { title, data, height } = props
-  const ref = useRef<HTMLDivElement>(null)
+  const chartRef = useRef<Chart<"scatter", { x: number; y: number; }[], string> | null>(null)
 
   const categoryToIndex = useMemo(() => {
     const uniqueElements = Array.from(new Set(data.y))
     return uniqueElements.reduce((acc, curr, idx) => (acc[curr] = idx, acc), {} as { [key: string]: number })
   }, [data])
+  const [timestampMin, timestampMax] = useMemo(() => {
+    const minTime = data.x[0]
+    const maxTime = data.x.at(-1) || minTime
+    const timeGap = (maxTime - minTime)
 
+    return [minTime - timeGap * 0.05, maxTime + timeGap * 0.05]
+  }, [data])
+
+  // Chart data configuration. Hide the points.
   const chartData = {
-
     labels: data.y,
     datasets: Object.keys(categoryToIndex).map((category) => {
       return {
         label: category,
         data: data.x.filter((x, i) => data.y[i] == category).map((x, i) => { return { x, y: 1 } }),
         pointRadius: 0,
+        pointHoverRadius: 0,
         showLine: false,
         fill: false,
         borderColor: undefined,
@@ -46,21 +56,27 @@ export default function CategoricalChart(props: {
     })
   };
 
+  // Zoom plugin configuration.
   const zoomOptions = {
     pan: {
-      enabled: true,
+      enabled: false,
       modifierKey: "ctrl" as const,
     },
     zoom: {
+      mode: "x" as const,
       drag: {
         enabled: true,
         maintainAspectRatio: false,
       },
       wheel: {
         enabled: true,
-        maintainAspectRatio: false,
       },
-      mode: "x" as const,
+      limits: {
+        x: {
+          min: timestampMin,
+          max: timestampMax,
+        }
+      }
     },
   };
 
@@ -81,8 +97,15 @@ export default function CategoricalChart(props: {
     maintainAspectRatio: false,
 
     scales: {
+      x: {
+        type: 'time' as const,
+        min: timestampMin,
+        max: timestampMax,
+      },
       y: {
         display: false,
+        min: 0,
+        max: 1.2
       }
     },
     interaction: {
@@ -100,23 +123,58 @@ export default function CategoricalChart(props: {
       },
       tooltip: {
         callbacks: {
-          // title: function (context: TooltipItem<"scatter">) { return data.x[context.dataIndex] },
-          label: function (context: TooltipItem<"scatter">) { return data.y[context.dataIndex] }
+          title: function (context: TooltipItem<"scatter">[]) { return context[0].dataset.label },
+          label: function (context: TooltipItem<"scatter">) { return context.formattedValue.split(/,|\(/).splice(1, 3).join() }
         }
       }
     }
   };
 
   useEffect(() => {
-    if (window !== undefined) {
+    if (chartRef.current) {
       import("chartjs-plugin-zoom").then((plugin) => {
+        console.log("Register!")
         ChartJS.register(plugin.default);
+        chartRef.current?.render()
       });
     }
-
   }, []);
 
   return (
-    <Scatter data={chartData} options={options} />
+    <div className="w-full h-full relative">
+      <CateogorySelectDropdown
+        category={Object.keys(categoryToIndex)}
+      />
+      <Scatter
+        ref={chartRef}
+        data={chartData}
+        options={options}
+        onDoubleClick={() => chartRef.current?.resetZoom()}
+      />
+    </div>
   );
+}
+
+function CateogorySelectDropdown(props: {
+  category: string[]
+}) {
+  const { category } = props
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+
+  return (
+    <Dropdown
+      label="Select Categories"
+      className="absolute right-0 border-gray-100 border-2 bg-white text-black"
+      size="sm"
+    >
+      {
+        category.map((value) =>
+          <DropdownItem>
+            <input checked id="checkbox-item-2" type="checkbox" value="" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500" />
+            <label htmlFor="checkbox-item-2" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{value}</label>
+          </DropdownItem>
+        )
+      }
+    </Dropdown>
+  )
 }

@@ -18,7 +18,8 @@ const fakeFruits = [
   "Crimsapple",
   "Frostberry",
   "Jellypear",
-  "Sparklemon"
+  "Sparklemon",
+  "Lemon"
 ];
 
 export default function useSampleCategoricalData(): {
@@ -40,10 +41,10 @@ export default function useSampleCategoricalData(): {
         const times: number[] = [];
         const sensor: string[] = [];
 
-        for (let i = 0; i < 500; i++) {
+        for (let i = 0; i < 1000; i++) {
           const t = new Date(now.getTime() + i * 60000); // 1분 간격
           times.push(t.getTime());
-          sensor.push(`${fakeFruits[Math.round(Math.random() * 10)]}`);
+          sensor.push(`${fakeFruits[Math.floor(Math.random() * fakeFruits.length)]}`);
         }
 
         setData({ name: 'Sensor', x: times, y: sensor, color: '#1f77b4' });
