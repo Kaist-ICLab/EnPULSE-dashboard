@@ -1,5 +1,5 @@
 'use client'
-import { useRef, useEffect, useState } from "react"
+import { useRef, useEffect } from "react"
 // ChartJS Related
 import { Chart, Chart as ChartJS, registerables, TooltipItem } from "chart.js";
 import { Scatter } from 'react-chartjs-2'
@@ -11,8 +11,9 @@ import { schemeCategory10 as colors } from 'd3-scale-chromatic'
 
 // Flowbite
 import { Dropdown, DropdownItem, Checkbox } from 'flowbite-react'
+import useCategoryToIndex from "@/hooks/useCategoryToIndex";
 
-type CategoryType = { [key: string]: number }
+
 
 ChartJS.register(...registerables, annotationPlugin);
 
@@ -29,7 +30,6 @@ export default function CategoricalChart(props: {
   height: number
 }) {
   const { data } = props
-  const MAX_SELECTED_CATEGORY = 10
 
   const uniqueElements = Array.from(new Set(data.y))
   const [timestampMin, timestampMax] = (() => {
@@ -40,25 +40,7 @@ export default function CategoricalChart(props: {
   })()
 
   const chartRef = useRef<Chart<"scatter", { x: number; y: number; }[], string> | null>(null)
-  const [categoryToIndex, setCategoryToIndex] = useState(
-    uniqueElements.filter((_, i) => i < MAX_SELECTED_CATEGORY).reduce((acc, curr, idx) => (acc[curr] = idx, acc), {} as CategoryType)
-  )
-  const modifySelectedCategory = (c: string) => {
-    const newCategoryToIndex = { ...categoryToIndex }
-    if (c in categoryToIndex) {
-      delete newCategoryToIndex[c]
-    } else {
-      const indices = Object.values(categoryToIndex)
-      let nextFreeIndex = 0;
-      for (; nextFreeIndex < MAX_SELECTED_CATEGORY; nextFreeIndex++) {
-        if (!indices.includes(nextFreeIndex)) break
-      }
-
-      if (nextFreeIndex < MAX_SELECTED_CATEGORY) newCategoryToIndex[c] = nextFreeIndex
-    }
-
-    setCategoryToIndex(newCategoryToIndex)
-  }
+  const [categoryToIndex, modifySelectedCategory] = useCategoryToIndex(uniqueElements)
 
   // Chart data configuration. Hide the points.
   const chartData = {
