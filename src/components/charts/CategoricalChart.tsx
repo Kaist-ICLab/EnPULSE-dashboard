@@ -1,5 +1,7 @@
 'use client'
 import { useRef, useEffect } from "react"
+import useCategoryToIndex from "@/hooks/useCategoryToIndex";
+
 // ChartJS Related
 import { Chart, Chart as ChartJS, registerables, TooltipItem } from "chart.js";
 import { Scatter } from 'react-chartjs-2'
@@ -8,14 +10,14 @@ import 'chartjs-adapter-moment'
 
 // Color Scheme from d3
 import { schemeCategory10 as colors } from 'd3-scale-chromatic'
-
-// Flowbite
-import { Dropdown, DropdownItem, Checkbox } from 'flowbite-react'
-import useCategoryToIndex from "@/hooks/useCategoryToIndex";
+import CateogorySelectionDropdown from "./CategorySelectionDropdown";
 
 
 
 ChartJS.register(...registerables, annotationPlugin);
+
+
+const MAX_SELECTED_CATEGORY = 10
 
 /**
  * Component for chart that visualizes categorical data.
@@ -40,7 +42,7 @@ export default function CategoricalChart(props: {
   })()
 
   const chartRef = useRef<Chart<"scatter", { x: number; y: number; }[], string> | null>(null)
-  const [categoryToIndex, modifySelectedCategory] = useCategoryToIndex(uniqueElements)
+  const [categoryToIndex, modifySelectedCategory] = useCategoryToIndex(uniqueElements, MAX_SELECTED_CATEGORY)
 
   // Chart data configuration. Hide the points.
   const chartData = {
@@ -150,8 +152,8 @@ export default function CategoricalChart(props: {
 
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="w-full flex mr-4 mb-2 px-4">
-        <div className="min-h-0 my-auto flex-1 text-sm break-normal text-wrap">
+      <div className="w-full flex mb-2 px-4">
+        <div className="min-h-0 mr-4 my-auto flex-1 text-sm break-normal text-wrap">
           {
             Object.keys(categoryToIndex).map((c, i) =>
               <div key={i} className="inline-block ml-4 break-keep">
@@ -161,9 +163,10 @@ export default function CategoricalChart(props: {
             )
           }
         </div>
-        <CateogorySelectDropdown
+        <CateogorySelectionDropdown
           uniqueElements={uniqueElements}
           categoryToIndex={categoryToIndex}
+          maxSelectedCategory={MAX_SELECTED_CATEGORY}
           onCheckboxChanged={modifySelectedCategory}
         />
       </div>
@@ -177,31 +180,4 @@ export default function CategoricalChart(props: {
       </div>
     </div>
   );
-}
-
-function CateogorySelectDropdown(props: {
-  uniqueElements: string[],
-  categoryToIndex: { [key: string]: number },
-  onCheckboxChanged: (categoryName: string) => void
-}) {
-  const { uniqueElements, categoryToIndex, onCheckboxChanged } = props
-
-  return (
-    <Dropdown
-      label="Select Categories"
-      className="m-auto min-w-40 border-gray-100 border-2 bg-white hover:bg-gray-50 text-black"
-      size="sm"
-    >
-      <div className="max-h-80 overflow-y-auto">
-        {
-          uniqueElements.map((value, index) =>
-            <DropdownItem key={index} onClickCapture={(e) => { e.stopPropagation(); onCheckboxChanged(value) }}>
-              <Checkbox checked={value in categoryToIndex} readOnly />
-              <label htmlFor="checkbox-item-2" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{value}</label>
-            </DropdownItem>
-          )
-        }
-      </div>
-    </Dropdown>
-  )
 }

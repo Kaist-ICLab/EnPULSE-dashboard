@@ -1,13 +1,13 @@
 import { useState } from "react"
 
 type CategoryType = { [key: string]: number }
-const MAX_SELECTED_CATEGORY = 10
 
 export default function useCategoryToIndex(
   uniqueElements: string[],
+  max_selected_category: number,
 ): [CategoryType, (c: string) => void] {
   const [categoryToIndex, setCategoryToIndex] = useState(
-    uniqueElements.filter((_, i) => i < MAX_SELECTED_CATEGORY).reduce((acc, curr, idx) => (acc[curr] = idx, acc), {} as CategoryType)
+    uniqueElements.filter((_, i) => i < max_selected_category).reduce((acc, curr, idx) => (acc[curr] = idx, acc), {} as CategoryType)
   )
 
   const modifySelectedCategory = (c: string) => {
@@ -17,11 +17,11 @@ export default function useCategoryToIndex(
     } else {
       const indices = Object.values(categoryToIndex)
       let nextFreeIndex = 0;
-      for (; nextFreeIndex < MAX_SELECTED_CATEGORY; nextFreeIndex++) {
+      for (; nextFreeIndex < max_selected_category; nextFreeIndex++) {
         if (!indices.includes(nextFreeIndex)) break
       }
 
-      if (nextFreeIndex < MAX_SELECTED_CATEGORY) newCategoryToIndex[c] = nextFreeIndex
+      if (nextFreeIndex < max_selected_category) newCategoryToIndex[c] = nextFreeIndex
     }
 
     setCategoryToIndex(newCategoryToIndex)
