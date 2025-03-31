@@ -8,11 +8,12 @@ export default function CateogorySelectionDropdown(props: {
 }) {
   const { uniqueElements, categoryToIndex, maxSelectedCategory, onCheckboxChanged } = props
   const selectedCateogryCount = Object.keys(categoryToIndex).length
+  console.log(categoryToIndex)
 
   return (
     <Dropdown
       label="Select Categories"
-      className="m-auto min-w-40 border-gray-100 border-2 bg-white hover:bg-gray-50 text-black"
+      className="m-auto min-w-40 border-gray-200 border-2 bg-white hover:bg-gray-50 text-black"
       size="sm"
     >
       <div>
@@ -25,21 +26,21 @@ export default function CateogorySelectionDropdown(props: {
               <CheckboxDropdownItem
                 key={index}
                 checked={true}
-                id={`selected-cateogry-${index}`}
+                id={`selected-category-${index}`}
                 value={value}
                 onCheckboxChanged={onCheckboxChanged}
               />
             )
           }
         </div>
-        <div className="px-4 py-2 border-gray-100 border-t-2">Others</div>
+        <div className="px-4 py-2 border-gray-200 border-t-2">Others</div>
         <div className="max-h-50 overflow-y-auto">
           {
             uniqueElements.filter(v => !(v in categoryToIndex)).map((value, index) =>
               <CheckboxDropdownItem
                 key={index}
                 checked={false}
-                id={`unselected-cateogry-${index}`}
+                id={`unselected-category-${index}`}
                 value={value}
                 onCheckboxChanged={onCheckboxChanged}
               />
@@ -63,7 +64,7 @@ function CheckboxDropdownItem(props: {
   return (
     <DropdownItem onClickCapture={(e) => { e.stopPropagation(); onCheckboxChanged(value) }}>
       <Checkbox checked={checked} id={id} readOnly />
-      <label htmlFor={id} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{value}</label>
+      <label id={id} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{value}</label>
     </DropdownItem>
   )
 }

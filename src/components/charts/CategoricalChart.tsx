@@ -66,7 +66,7 @@ export default function CategoricalChart(props: {
   // Zoom plugin configuration.
   const zoomOptions = {
     pan: {
-      enabled: false,
+      enabled: true,
       modifierKey: "ctrl" as const,
     },
     zoom: {
@@ -74,6 +74,7 @@ export default function CategoricalChart(props: {
       drag: {
         enabled: true,
         maintainAspectRatio: false,
+        backgroundColor: 'rgba(200, 200, 200, 0.5)'
       },
       wheel: {
         enabled: true,
@@ -145,7 +146,7 @@ export default function CategoricalChart(props: {
     if (chartRef.current) {
       import("chartjs-plugin-zoom").then((plugin) => {
         ChartJS.register(plugin.default);
-        chartRef.current?.render()
+        chartRef.current?.update() // Force update to make interaction available as the first action.
       });
     }
   }, []);

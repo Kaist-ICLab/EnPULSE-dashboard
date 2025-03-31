@@ -34,7 +34,6 @@ export default function Home() {
           <div className="mb-4"></div>
         </main>
       </div>
-
     </div>
   );
 }
