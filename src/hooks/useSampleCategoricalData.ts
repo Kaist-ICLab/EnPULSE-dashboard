@@ -19,7 +19,8 @@ const fakeFruits = [
   "Frostberry",
   "Jellypear",
   "Sparklemon",
-  "Lemon"
+  "Lemon",
+  "SuperLongRandomFruitName"
 ];
 
 export default function useSampleCategoricalData(): {
@@ -48,7 +49,7 @@ export default function useSampleCategoricalData(): {
         }
 
         setData({ name: 'Sensor', x: times, y: sensor, color: '#1f77b4' });
-      } catch (err) {
+      } catch {
         setError('데이터를 불러오는 중 오류 발생');
       } finally {
         setLoading(false);
