@@ -2,13 +2,13 @@ import { Checkbox, Dropdown, DropdownItem } from "flowbite-react";
 
 export default function CateogorySelectionDropdown(props: {
   uniqueElements: string[],
+  colors: readonly string[],
   categoryToIndex: { [key: string]: number },
   maxSelectedCategory: number,
   onCheckboxChanged: (categoryName: string) => void
 }) {
-  const { uniqueElements, categoryToIndex, maxSelectedCategory, onCheckboxChanged } = props
+  const { uniqueElements, colors, categoryToIndex, maxSelectedCategory, onCheckboxChanged } = props
   const selectedCateogryCount = Object.keys(categoryToIndex).length
-  console.log(categoryToIndex)
 
   return (
     <Dropdown
@@ -25,6 +25,7 @@ export default function CateogorySelectionDropdown(props: {
             uniqueElements.filter(v => v in categoryToIndex).map((value, index) =>
               <CheckboxDropdownItem
                 key={index}
+                color={colors[categoryToIndex[value]]}
                 checked={true}
                 id={`selected-category-${index}`}
                 value={value}
@@ -39,6 +40,7 @@ export default function CateogorySelectionDropdown(props: {
             uniqueElements.filter(v => !(v in categoryToIndex)).map((value, index) =>
               <CheckboxDropdownItem
                 key={index}
+                color={''}
                 checked={false}
                 id={`unselected-category-${index}`}
                 value={value}
@@ -54,16 +56,18 @@ export default function CateogorySelectionDropdown(props: {
 }
 
 function CheckboxDropdownItem(props: {
+  color: string,
   checked: boolean,
   id: string,
   value: string,
   onCheckboxChanged: (value: string) => void
 }) {
-  const { checked, id, value, onCheckboxChanged } = props
+  const { color, checked, id, value, onCheckboxChanged } = props
 
   return (
     <DropdownItem onClickCapture={(e) => { e.stopPropagation(); onCheckboxChanged(value) }}>
       <Checkbox checked={checked} id={id} readOnly />
+      {checked && <span className="w-4 h-4 ml-2 inline-block align-text-bottom" style={{ backgroundColor: color }} />}
       <label id={id} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{value}</label>
     </DropdownItem>
   )

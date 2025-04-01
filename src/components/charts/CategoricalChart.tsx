@@ -1,22 +1,21 @@
 'use client'
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 import useCategoryToIndex from "@/hooks/useCategoryToIndex";
 
 // ChartJS Related
-import { Chart, Chart as ChartJS, registerables, TooltipItem } from "chart.js";
+import { Chart, Chart as ChartJS, ChartOptions, registerables, TooltipItem } from "chart.js";
 import { Scatter } from 'react-chartjs-2'
-import annotationPlugin from 'chartjs-plugin-annotation'
+import annotationPlugin, { AnnotationPluginOptions } from 'chartjs-plugin-annotation'
 import 'chartjs-adapter-moment'
 
 // Color Scheme from d3
 import { schemeCategory10 as colors } from 'd3-scale-chromatic'
 import CateogorySelectionDropdown from "./CategorySelectionDropdown";
+import { ZoomPluginOptions } from "chartjs-plugin-zoom/types/options";
 
 
 
 ChartJS.register(...registerables, annotationPlugin);
-
-
 const MAX_SELECTED_CATEGORY = 10
 
 /**
@@ -29,8 +28,9 @@ const MAX_SELECTED_CATEGORY = 10
 export default function CategoricalChart(props: {
   title: string,
   data: { name: string, x: number[], y: string[] }
-  height: number
+  height: number,
 }) {
+  console.log("RENDER")
   const { data } = props
 
   const uniqueElements = Array.from(new Set(data.y))
@@ -43,6 +43,20 @@ export default function CategoricalChart(props: {
 
   const chartRef = useRef<Chart<"scatter", { x: number; y: number; }[], string> | null>(null)
   const [categoryToIndex, modifySelectedCategory] = useCategoryToIndex(uniqueElements, MAX_SELECTED_CATEGORY)
+  const [isZoomLoaded, setIsZoomLoaded] = useState(false)
+  const zoom = useRef<number>(1)
+
+
+  useEffect(() => {
+    console.log("TRIGGER")
+    if (chartRef.current && isZoomLoaded) {
+      const requiredZoom = zoom.current / chartRef.current.getZoomLevel()
+      chartRef.current.zoom({ x: 0.5 })
+      chartRef.current.update()
+      console.log("required", requiredZoom)
+      console.log("result", chartRef.current.getZoomLevel())
+    }
+  })
 
   // Chart data configuration. Hide the points.
   const chartData = {
@@ -64,12 +78,13 @@ export default function CategoricalChart(props: {
   };
 
   // Zoom plugin configuration.
-  const zoomOptions = {
+  const zoomOptions: ZoomPluginOptions = {
     pan: {
       enabled: true,
       modifierKey: "ctrl" as const,
     },
     zoom: {
+      onZoomComplete: function ({ chart }) { console.log(chart.getZoomLevel()); zoom.current = chart.getZoomLevel() },
       mode: "x" as const,
       drag: {
         enabled: true,
@@ -79,29 +94,35 @@ export default function CategoricalChart(props: {
       wheel: {
         enabled: true,
       },
-      limits: {
-        x: {
-          min: timestampMin,
-          max: timestampMax,
-        }
-      }
     },
+    limits: {
+      x: {
+        min: timestampMin,
+        max: timestampMax,
+      },
+      y: {
+        min: 0,
+        max: 1.2,
+      }
+    }
   };
 
   // Generate event line
-  const annotationOptions = data.y.map((value, index) => ({
-    type: 'line' as const,
-    xMin: data.x[index],
-    xMax: data.x[index],
-    yMin: 0,
-    yMax: value in categoryToIndex ? 1 : 0,
-    value: value,
-    borderColor: colors[categoryToIndex[data.y[index]]],
-    borderWidth: 2,
-  }));
+  const annotationOptions: AnnotationPluginOptions = {
+    annotations: data.y.map((value, index) => ({
+      type: 'line' as const,
+      xMin: data.x[index],
+      xMax: data.x[index],
+      yMin: 0,
+      yMax: value in categoryToIndex ? 1 : 0,
+      value: value,
+      borderColor: colors[categoryToIndex[data.y[index]]],
+      borderWidth: 2,
+    }))
+  }
 
 
-  const options = {
+  const options: ChartOptions<'scatter'> = {
     responsive: true,
     maintainAspectRatio: false,
 
@@ -110,6 +131,25 @@ export default function CategoricalChart(props: {
         type: 'time' as const,
         min: timestampMin,
         max: timestampMax,
+        // ticks: {
+
+        //   callback: function (timestamp, index, ticks) {
+        //     if (!this.ticks || index == 0) return this.getLabelForValue(Number(timestamp))
+        //     const [monthDay, year, time] = this.getLabelForValue(Number(timestamp)).split(',')
+        //     const [prevMonthDay, prevYear, prevTime] = this.getLabelForValue(Number(ticks[index - 1].value)).split(',')
+
+        //     // console.log(this)
+        //     // console.log(index, monthDay, time, prevMonthDay, prevTime)
+
+        //     let tick = time
+        //     if (monthDay != prevMonthDay) {
+        //       if (year != prevYear) tick = year + ',' + tick
+        //       tick = monthDay + ',' + tick
+        //     }
+
+        //     return tick
+        //   }
+        // }
       },
       y: {
         display: false,
@@ -124,9 +164,7 @@ export default function CategoricalChart(props: {
     },
     plugins: {
       zoom: zoomOptions,
-      annotation: {
-        annotations: annotationOptions
-      },
+      annotation: annotationOptions,
       legend: {
         display: false,
         labels: {
@@ -147,6 +185,7 @@ export default function CategoricalChart(props: {
       import("chartjs-plugin-zoom").then((plugin) => {
         ChartJS.register(plugin.default);
         chartRef.current?.update() // Force update to make interaction available as the first action.
+        setIsZoomLoaded(true)
       });
     }
   }, []);
@@ -166,6 +205,7 @@ export default function CategoricalChart(props: {
         </div>
         <CateogorySelectionDropdown
           uniqueElements={uniqueElements}
+          colors={colors}
           categoryToIndex={categoryToIndex}
           maxSelectedCategory={MAX_SELECTED_CATEGORY}
           onCheckboxChanged={modifySelectedCategory}
@@ -176,7 +216,17 @@ export default function CategoricalChart(props: {
           ref={chartRef}
           data={chartData}
           options={options}
-          onDoubleClick={() => chartRef.current?.resetZoom()}
+          onDoubleClick={() => { chartRef.current?.resetZoom() }}
+          onLoad={() => {
+            if (chartRef.current && isZoomLoaded) {
+              const requiredZoom = zoom.current / chartRef.current.getZoomLevel()
+              // chartRef.current.zoom({ x: 100, y: 1, focalPoint: { x: 500, y: 200 } })
+              chartRef.current.zoom(100)
+              chartRef.current.update()
+              console.log("required", requiredZoom)
+              console.log("result", chartRef.current.getZoomLevel())
+            }
+          }}
         />
       </div>
     </div>
