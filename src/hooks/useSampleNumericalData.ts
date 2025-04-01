@@ -3,27 +3,11 @@ import { useEffect, useState } from 'react';
 type SampleData = {
   name: string;
   x: number[];
-  y: string[];
+  y: number[];
   color?: string;
 };
 
-// Not fruits but whatever...
-const fakeFruits = [
-  "Bluerange",
-  "Sunberry",
-  "Tangomelon",
-  "Zapplum",
-  "Glowpine",
-  "Nectarburst",
-  "Crimsapple",
-  "Frostberry",
-  "Jellypear",
-  "Sparklemon",
-  "Lemon",
-  "SuperLongRandomFruitName"
-];
-
-export default function useSampleCategoricalData(): {
+export default function useSampleNumericalData(): {
   data: SampleData | null;
   loading: boolean;
   error: string | null;
@@ -35,17 +19,16 @@ export default function useSampleCategoricalData(): {
   useEffect(() => {
     const load = async () => {
       try {
-        // 가짜 로딩 시뮬레이션
         await new Promise((res) => setTimeout(res, 3000));
 
         const now = new Date();
         const times: number[] = [];
-        const sensor: string[] = [];
+        const sensor: number[] = [];
 
         for (let i = 0; i < 1000; i++) {
           const t = new Date(now.getTime() + i * 60000); // 1분 간격
           times.push(t.getTime());
-          sensor.push(`${fakeFruits[Math.floor(Math.random() * fakeFruits.length)]}`);
+          sensor.push(Math.random()); // 0~1 랜덤값으로 설정
         }
 
         setData({ name: 'Sensor', x: times, y: sensor, color: '#1f77b4' });

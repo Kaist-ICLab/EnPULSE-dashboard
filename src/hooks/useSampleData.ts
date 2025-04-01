@@ -19,9 +19,7 @@ export default function useSampleData(): {
   useEffect(() => {
     const load = async () => {
       try {
-        // 가짜 로딩 시뮬레이션
         await new Promise((res) => setTimeout(res, 3000));
-
         const now = new Date();
         const times: number[] = [];
         const sensor: number[] = [];
@@ -42,6 +40,8 @@ export default function useSampleData(): {
 
     load();
   }, []);
+  
+
 
   return { data, loading, error };
 }
