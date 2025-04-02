@@ -42,11 +42,14 @@ export default function CategoricalChart(props: {
 
   const chartRef = useRef<Chart<"scatter", { x: number; y: number; }[], string> | null>(null)
   const [categoryToIndex, modifySelectedCategory] = useCategoryToIndex(uniqueElements, MAX_SELECTED_CATEGORY)
+
+  // Detect whether the zoom/pan is happening due to user interaction
+  // use reference to bypass any possible re-renders.
   const isZooming = useRef(false)
   const isPanning = useRef(false)
   const scaleMinMax = useRef({ min: -1, max: -1 })
 
-  // Chart data configuration. Hide the points.
+  // Chart data configuration.
   const chartData = {
     labels: data.y,
     datasets: uniqueElements.filter(c => c in categoryToIndex).map((c) => {
@@ -114,19 +117,24 @@ export default function CategoricalChart(props: {
     }
   }, [timestampMin, timestampMax])
 
-  // Generate event line
+  // Generate event line.
   const annotationOptions: AnnotationPluginOptions = useMemo(() => {
     return {
-      annotations: data.y.map((value, index) => ({
-        type: 'line' as const,
-        xMin: data.x[index],
-        xMax: data.x[index],
-        yMin: 0,
-        yMax: value in categoryToIndex ? 1 : 0,
-        value: value,
-        borderColor: colors[categoryToIndex[data.y[index]]],
-        borderWidth: 2,
-      }))
+      annotations: data.y.map((value, index) => {
+        const idx = categoryToIndex[data.y[index]]
+        const color = idx === undefined ? '#cccccc' : colors[idx]
+
+        return {
+          type: 'line' as const,
+          xMin: data.x[index],
+          xMax: data.x[index],
+          yMin: 0,
+          yMax: 1,
+          value: value,
+          borderColor: color,
+          borderWidth: 2,
+        }
+      })
     }
   }, [data, categoryToIndex])
 
