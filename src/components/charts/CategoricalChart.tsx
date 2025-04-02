@@ -1,5 +1,5 @@
 'use client'
-import { useRef, useEffect, useState } from "react"
+import { useRef, useEffect, useMemo } from "react"
 import useCategoryToIndex from "@/hooks/useCategoryToIndex";
 
 // ChartJS Related
@@ -30,7 +30,6 @@ export default function CategoricalChart(props: {
   data: { name: string, x: number[], y: string[] }
   height: number,
 }) {
-  console.log("RENDER")
   const { data } = props
 
   const uniqueElements = Array.from(new Set(data.y))
@@ -43,20 +42,9 @@ export default function CategoricalChart(props: {
 
   const chartRef = useRef<Chart<"scatter", { x: number; y: number; }[], string> | null>(null)
   const [categoryToIndex, modifySelectedCategory] = useCategoryToIndex(uniqueElements, MAX_SELECTED_CATEGORY)
-  const [isZoomLoaded, setIsZoomLoaded] = useState(false)
-  const zoom = useRef<number>(1)
-
-
-  useEffect(() => {
-    console.log("TRIGGER")
-    if (chartRef.current && isZoomLoaded) {
-      const requiredZoom = zoom.current / chartRef.current.getZoomLevel()
-      chartRef.current.zoom({ x: 0.5 })
-      chartRef.current.update()
-      console.log("required", requiredZoom)
-      console.log("result", chartRef.current.getZoomLevel())
-    }
-  })
+  const isZooming = useRef(false)
+  const isPanning = useRef(false)
+  const scaleMinMax = useRef({ min: -1, max: -1 })
 
   // Chart data configuration. Hide the points.
   const chartData = {
@@ -75,117 +63,136 @@ export default function CategoricalChart(props: {
         pointBackgroundColor: colors[categoryToIndex[c]]
       }
     })
-  };
-
-  // Zoom plugin configuration.
-  const zoomOptions: ZoomPluginOptions = {
-    pan: {
-      enabled: true,
-      modifierKey: "ctrl" as const,
-    },
-    zoom: {
-      onZoomComplete: function ({ chart }) { console.log(chart.getZoomLevel()); zoom.current = chart.getZoomLevel() },
-      mode: "x" as const,
-      drag: {
-        enabled: true,
-        maintainAspectRatio: false,
-        backgroundColor: 'rgba(200, 200, 200, 0.5)'
-      },
-      wheel: {
-        enabled: true,
-      },
-    },
-    limits: {
-      x: {
-        min: timestampMin,
-        max: timestampMax,
-      },
-      y: {
-        min: 0,
-        max: 1.2,
-      }
-    }
-  };
-
-  // Generate event line
-  const annotationOptions: AnnotationPluginOptions = {
-    annotations: data.y.map((value, index) => ({
-      type: 'line' as const,
-      xMin: data.x[index],
-      xMax: data.x[index],
-      yMin: 0,
-      yMax: value in categoryToIndex ? 1 : 0,
-      value: value,
-      borderColor: colors[categoryToIndex[data.y[index]]],
-      borderWidth: 2,
-    }))
   }
 
-
-  const options: ChartOptions<'scatter'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-
-    scales: {
-      x: {
-        type: 'time' as const,
-        min: timestampMin,
-        max: timestampMax,
-        // ticks: {
-
-        //   callback: function (timestamp, index, ticks) {
-        //     if (!this.ticks || index == 0) return this.getLabelForValue(Number(timestamp))
-        //     const [monthDay, year, time] = this.getLabelForValue(Number(timestamp)).split(',')
-        //     const [prevMonthDay, prevYear, prevTime] = this.getLabelForValue(Number(ticks[index - 1].value)).split(',')
-
-        //     // console.log(this)
-        //     // console.log(index, monthDay, time, prevMonthDay, prevTime)
-
-        //     let tick = time
-        //     if (monthDay != prevMonthDay) {
-        //       if (year != prevYear) tick = year + ',' + tick
-        //       tick = monthDay + ',' + tick
-        //     }
-
-        //     return tick
-        //   }
-        // }
+  // Zoom plugin configuration.
+  const zoomOptions: ZoomPluginOptions = useMemo(() => {
+    return {
+      pan: {
+        onPan: function () {
+          isPanning.current = true
+        },
+        onPanComplete: function ({ chart }) {
+          const scale = chart.scales.x
+          scaleMinMax.current.min = scale.min
+          scaleMinMax.current.max = scale.max
+          isPanning.current = false
+        },
+        enabled: true,
+        modifierKey: "ctrl" as const,
       },
-      y: {
-        display: false,
-        min: 0,
-        max: 1.2
-      }
-    },
-    interaction: {
-      mode: 'nearest' as const,
-      axis: 'x' as const,
-      intersect: false,
-    },
-    plugins: {
-      zoom: zoomOptions,
-      annotation: annotationOptions,
-      legend: {
-        display: false,
-        labels: {
-          boxWidth: 20
-        }
+      zoom: {
+        onZoom: function () {
+          isZooming.current = true
+        },
+        onZoomComplete: function ({ chart }) {
+          const scale = chart.scales.x
+          scaleMinMax.current.min = scale.min
+          scaleMinMax.current.max = scale.max
+          isZooming.current = false
+        },
+        mode: "x" as const,
+        drag: {
+          enabled: true,
+          maintainAspectRatio: false,
+          backgroundColor: 'rgba(200, 200, 200, 0.5)'
+        },
+        wheel: {
+          enabled: true,
+        },
       },
-      tooltip: {
-        callbacks: {
-          title: function (context: TooltipItem<"scatter">[]) { return context[0].dataset.label },
-          label: function (context: TooltipItem<"scatter">) { return context.formattedValue.split(/,|\(/).splice(1, 3).join() }
+      limits: {
+        x: {
+          min: timestampMin,
+          max: timestampMax,
+        },
+        y: {
+          min: 0,
+          max: 1.2,
         }
       }
     }
-  };
+  }, [timestampMin, timestampMax])
+
+  // Generate event line
+  const annotationOptions: AnnotationPluginOptions = useMemo(() => {
+    return {
+      annotations: data.y.map((value, index) => ({
+        type: 'line' as const,
+        xMin: data.x[index],
+        xMax: data.x[index],
+        yMin: 0,
+        yMax: value in categoryToIndex ? 1 : 0,
+        value: value,
+        borderColor: colors[categoryToIndex[data.y[index]]],
+        borderWidth: 2,
+      }))
+    }
+  }, [data, categoryToIndex])
+
+
+  const options: ChartOptions<'scatter'> = useMemo(() => {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+
+      scales: {
+        x: {
+          type: 'time' as const,
+          min: timestampMin,
+          max: timestampMax,
+          // ticks: {
+
+          //   callback: function (timestamp, index, ticks) {
+          //     if (!this.ticks || index == 0) return this.getLabelForValue(Number(timestamp))
+          //     const [monthDay, year, time] = this.getLabelForValue(Number(timestamp)).split(',')
+          //     const [prevMonthDay, prevYear, prevTime] = this.getLabelForValue(Number(ticks[index - 1].value)).split(',')
+
+          //     let tick = time
+          //     if (monthDay != prevMonthDay) {
+          //       if (year != prevYear) tick = year + ',' + tick
+          //       tick = monthDay + ',' + tick
+          //     }
+
+          //     return tick
+          //   }
+          // }
+        },
+        y: {
+          display: false,
+          min: 0,
+          max: 1.2
+        }
+      },
+      interaction: {
+        mode: 'nearest' as const,
+        axis: 'x' as const,
+        intersect: false,
+      },
+      plugins: {
+        zoom: zoomOptions,
+        annotation: annotationOptions,
+        legend: {
+          display: false,
+          labels: {
+            boxWidth: 20
+          }
+        },
+        tooltip: {
+          callbacks: {
+            title: function (context: TooltipItem<"scatter">[]) { return context[0].dataset.label },
+            label: function (context: TooltipItem<"scatter">) { return context.formattedValue.split(/,|\(/).splice(1, 3).join() }
+          }
+        }
+      },
+    }
+  }, [timestampMax, timestampMin, zoomOptions, annotationOptions])
 
   useEffect(() => {
     if (chartRef.current) {
       import("chartjs-plugin-zoom").then((plugin) => {
         ChartJS.register(plugin.default);
         chartRef.current?.update() // Force update to make interaction available as the first action.
-        setIsZoomLoaded(true)
       });
     }
   }, []);
@@ -216,17 +223,19 @@ export default function CategoricalChart(props: {
           ref={chartRef}
           data={chartData}
           options={options}
-          onDoubleClick={() => { chartRef.current?.resetZoom() }}
-          onLoad={() => {
-            if (chartRef.current && isZoomLoaded) {
-              const requiredZoom = zoom.current / chartRef.current.getZoomLevel()
-              // chartRef.current.zoom({ x: 100, y: 1, focalPoint: { x: 500, y: 200 } })
-              chartRef.current.zoom(100)
-              chartRef.current.update()
-              console.log("required", requiredZoom)
-              console.log("result", chartRef.current.getZoomLevel())
+          onDoubleClick={() => { isZooming.current = true; chartRef.current?.resetZoom() }}
+          plugins={[{
+            id: 'test',
+            afterDataLimits: function (chart, { scale }) {
+              if (scale.axis != 'x') return
+              if (!(Object.keys(chart).includes('zoom'))) return
+              if (scaleMinMax.current.min == -1) return
+              if (isPanning.current || isZooming.current || chart.isZoomingOrPanning()) return
+
+              scale.min = scaleMinMax.current.min
+              scale.max = scaleMinMax.current.max
             }
-          }}
+          }]}
         />
       </div>
     </div>

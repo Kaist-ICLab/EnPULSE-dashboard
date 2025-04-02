@@ -33,16 +33,19 @@ export default function useSampleCategoricalData(): {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let i = 0
+    const now = new Date();
+
     const load = async () => {
+      const times: number[] = [];
+      const sensor: string[] = [];
+
       try {
         // 가짜 로딩 시뮬레이션
         await new Promise((res) => setTimeout(res, 3000));
 
-        const now = new Date();
-        const times: number[] = [];
-        const sensor: string[] = [];
 
-        for (let i = 0; i < 1000; i++) {
+        for (; i < 1000; i++) {
           const t = new Date(now.getTime() + i * 60000); // 1분 간격
           times.push(t.getTime());
           sensor.push(`${fakeFruits[Math.floor(Math.random() * fakeFruits.length)]}`);
@@ -54,7 +57,20 @@ export default function useSampleCategoricalData(): {
       } finally {
         setLoading(false);
       }
-    };
+
+      // Imitate data stream
+      setInterval(() => {
+        setData(data => {
+          if (!data) return data
+
+          const newData = { ...data }
+          newData.x.push(newData.x[newData.x.length - 1] + 600000)
+          newData.y.push(`${fakeFruits[Math.floor(Math.random() * fakeFruits.length)]}`)
+          console.log('Add data: ', newData)
+          return newData
+        })
+      }, 2000);
+    }
 
     load();
   }, []);
