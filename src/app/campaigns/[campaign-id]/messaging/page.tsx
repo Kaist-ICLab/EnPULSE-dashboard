@@ -1,21 +1,21 @@
 import Card from "@/components/Card";
-import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
-import React from "react";
+import CampaignLayout from "@/app/campaigns/layout";
+import type { NextPageWithLayout } from '@/app/_app'
 
-const Messaging: React.FC = () => {
-  return (
-    <div className="w-full min-h-full bg-gray-50 flex flex-row ">
-      <Sidebar />
-      <div className="flex flex-col w-full">
-        <Header />
-        <main className="flex flex-col w-full items-stretch p-4 grow">
-          <Card>
-            <p>This is the messaging page.</p>
-          </Card>
-        </main>
-      </div>
-    </div>
-  );
+const Messaging: NextPageWithLayout = () => {
+    return (
+      <Card>
+        <p>This is the messaging page.</p>
+      </Card>
+    );
 }
+
+Messaging.getLayout = function getLayout(page: React.ReactElement) {
+    return (
+        <CampaignLayout>
+            {page}
+        </CampaignLayout>
+    );
+}
+
 export default Messaging;

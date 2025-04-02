@@ -1,21 +1,22 @@
 import Card from "@/components/Card";
-import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
+import CampaignLayout from "@/app/campaigns/layout";
+import type { NextPageWithLayout } from '@/app/_app'
 
 // Overview of Campaign
-const Campaigns: React.FC = () => {
+const Campaigns: NextPageWithLayout = () => {
     return (
-        <div className="w-full min-h-full bg-gray-50 flex flex-row ">
-            <Sidebar />
-            <div className="flex flex-col w-full">
-            <Header />
-            <main className="flex flex-col w-full items-stretch p-4 grow">
-                <Card>
-                <p>This is the overview page of the current Campaign.</p>
-                </Card>
-            </main>
-            </div>
-        </div>
+        <Card>
+            <p>This is the overview page of the current Campaign.</p>
+        </Card>
     );
 }
+
+Campaigns.getLayout = function getLayout(page: React.ReactElement) {
+    return (
+        <CampaignLayout>
+            {page}
+        </CampaignLayout>
+    );
+}
+
 export default Campaigns;

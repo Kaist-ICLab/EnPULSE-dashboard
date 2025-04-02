@@ -1,20 +1,21 @@
-import Sidebar from "@/components/Sidebar";
-import Header from "@/components/Header";
 import Card from "@/components/Card";
+import CampaignLayout from "@/app/campaigns/layout";
+import type { NextPageWithLayout } from '@/app/_app'
 
-const Settings: React.FC = () => {
+const Settings: NextPageWithLayout = () => {
     return (
-        <div className="w-full min-h-full bg-gray-50 flex flex-row ">
-        <Sidebar />
-        <div className="flex flex-col w-full">
-          <Header />
-          <main className="flex flex-col w-full items-stretch p-4 grow">
-            <Card>
-              <p>This is the settings page.</p>
-            </Card>
-          </main>
-        </div>
-      </div>
+      <Card>
+        <p>This is the settings page.</p>
+      </Card>
     );
 }
+
+Settings.getLayout = function getLayout(page: React.ReactElement) {
+    return (
+        <CampaignLayout>
+            {page}
+        </CampaignLayout>
+    );
+}
+
 export default Settings;
