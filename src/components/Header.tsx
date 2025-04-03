@@ -9,7 +9,7 @@ const Header: React.FC = () => {
     const [isDropdownOpen, setDropdownOpenStatus] = useState<Boolean>(false);
 
     return (
-        <div className="w-full h-16 flex justify-between items-center border-b border-gray-200 mx-4">
+        <div className="w-full h-16 flex justify-between items-center border-b border-gray-200 px-4">
             <div className="flex justify-start items-center gap-2" onClick={() => setDropdownOpenStatus(!isDropdownOpen)}>
                 <div className="py-2 rounded-xl flex justify-center items-center gap-2 text-gray-700 hover:text-gray-500">
                     <div>{currentCampaign.name}</div>

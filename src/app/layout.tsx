@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${roboto.className} antialiased "relative min-h-screen w-full m-auto `}
+        className={`${roboto.className} antialiased relative min-h-screen w-full m-auto `}
         suppressHydrationWarning
       >
         {children}

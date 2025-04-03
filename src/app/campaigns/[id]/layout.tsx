@@ -7,7 +7,7 @@ export default function CampaignLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="w-full min-h-full bg-gray-50 flex flex-row ">
+    <div className="w-full min-h-screen bg-gray-50 flex flex-row ">
       <Sidebar />
       <div className="flex flex-col w-full">
         <Header />
