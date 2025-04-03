@@ -12,7 +12,7 @@ export default function useSampleData(): {
   loading: boolean;
   error: string | null;
 } {
-  const [data, setData] = useState<SampleData| null>(null);
+  const [data, setData] = useState<SampleData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,15 +25,15 @@ export default function useSampleData(): {
         const now = new Date();
         const times: number[] = [];
         const sensor: number[] = [];
-        
+
         for (let i = 0; i < 500; i++) {
           const t = new Date(now.getTime() + i * 60000); // 1분 간격
           times.push(t.getTime());
-          sensor.push(Math.sin(i / 50) + Math.random() * 0.2);          
+          sensor.push(Math.sin(i / 50) + Math.random() * 0.2);
         }
 
         setData({ name: 'Sensor', x: times, y: sensor, color: '#1f77b4' });
-      } catch (err) {
+      } catch {
         setError('데이터를 불러오는 중 오류 발생');
       } finally {
         setLoading(false);
