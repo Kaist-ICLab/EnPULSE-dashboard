@@ -1,9 +1,10 @@
 "use client";
+import useCampaigns from "@/hooks/useCampaigns";
 import { Icon } from "@iconify/react";
 import { usePathname } from "next/navigation";
 
 const Sidebar: React.FC = () => {
-    const campaignId: number = 0; // TODO: Implement campaignId retrieval logic (hook)
+    const {campaignId} = useCampaigns();
     const pathname = usePathname();
 
     const isActive = (href: string) => {
