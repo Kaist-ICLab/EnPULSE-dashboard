@@ -24,6 +24,7 @@ export default function useChartOptions(
   // use reference to bypass any possible re-renders.
   const isZooming = useRef(false)
   const isPanning = useRef(false)
+  const isMouseDown = useRef(false)
   const scaleMinMax = useRef({ min: -1, max: -1 })
 
   // Chart data configuration.
@@ -173,22 +174,43 @@ export default function useChartOptions(
     }
   }, [timestampMax, timestampMin, zoomOptions, annotationOptions])
 
-  const scaleHaltPlugin: Plugin<'scatter'> = useMemo(() => ({
+  const scaleHaltPlugin: Plugin<'scatter', { x: number, y: number }[]> = useMemo(() => ({
     id: 'scale-halt',
-    afterDataLimits: function (chart, { scale }) {
+    afterDataLimits: function (chart: Chart<'scatter', { x: number, y: number }[]>, { scale }) {
+      // We only care about x (time) axis
       if (scale.axis != 'x') return
+      // Check if zoom plugin is loaded, by checking for zoom()
       if (!(Object.keys(chart).includes('zoom'))) return
       if (scaleMinMax.current.min == -1) return
-      if (isPanning.current || isZooming.current || chart.isZoomingOrPanning()) return
 
+      // allow scales
+      // On panning
+      if (isPanning.current) return
+      // Zooming via wheel or double-click
+      if (isZooming.current) return
+      // Zoom via mouse drag, range selection finalized
+      if (chart.isZoomingOrPanning() && !isMouseDown.current) return
+
+      // if(chart > scaleMinMax.current.max) return
       scale.min = scaleMinMax.current.min
-      scale.max = scaleMinMax.current.max
+
+      const lastTimestamp = Math.max(...chart.data.datasets.map((dataset) => dataset.data[dataset.data.length - 1].x))
+      // latest data out of range || still selecting => fix max
+      if (scaleMinMax.current.max < lastTimestamp || isMouseDown.current) {
+        scale.max = scaleMinMax.current.max
+      } else {
+        scaleMinMax.current.max = scale.max
+      }
     }
   }), [])
 
   const initZoom = () => {
     isZooming.current = true
     chartRef.current?.resetZoom()
+  }
+
+  const setIsMouseDown = (mouseDown: boolean) => {
+    isMouseDown.current = mouseDown
   }
 
 
@@ -202,5 +224,5 @@ export default function useChartOptions(
     }
   }, [chartRef, scaleHaltPlugin]);
 
-  return { chartData, options, initZoom }
+  return { chartData, options, initZoom, setIsMouseDown }
 }

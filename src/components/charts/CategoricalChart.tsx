@@ -32,7 +32,7 @@ export default function CategoricalChart(props: {
   const chartRef = useRef<Chart<"scatter", { x: number; y: number; }[], string> | null>(null)
 
   const [categoryToIndex, modifySelectedCategory] = useCategoryToIndex(uniqueElements, MAX_SELECTED_CATEGORY)
-  const { chartData, options, initZoom } = useChartOptions(data, colors, uniqueElements, chartRef, categoryToIndex)
+  const { chartData, options, initZoom, setIsMouseDown } = useChartOptions(data, colors, uniqueElements, chartRef, categoryToIndex)
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -61,7 +61,8 @@ export default function CategoricalChart(props: {
           data={chartData}
           options={options}
           onDoubleClick={initZoom}
-          plugins={[]}
+          onMouseDown={() => setIsMouseDown(true)}
+          onMouseUp={() => setIsMouseDown(false)}
         />
       </div>
     </div>

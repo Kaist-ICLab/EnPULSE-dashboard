@@ -66,10 +66,9 @@ export default function useSampleCategoricalData(): {
           const newData = { ...data }
           newData.x.push(newData.x[newData.x.length - 1] + 600000)
           newData.y.push(`${fakeFruits[Math.floor(Math.random() * fakeFruits.length)]}`)
-          console.log('Add data: ', newData)
           return newData
         })
-      }, 2000);
+      }, 5000);
     }
 
     load();
