@@ -1,13 +1,8 @@
 'use client';
-import Card from "@/components/Card";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
-import Table from "@/components/Table";
-import useSampleData from "@/hooks/useSampleData";
 
 export default function Home() {
-  const { data, loading, error } = useSampleData();
-
   const table_data = [
     { uid: "p01@gmail.com",
       contact_history: 13,
@@ -55,7 +50,7 @@ export default function Home() {
               />
             )}
           </Card> */}
-          <Table headers={["APP_USAGE", "CALL_LOG", "LOCATION", "BATTERY"]} table_data={table_data} />
+          {/* <Table headers={["APP_USAGE", "CALL_LOG", "LOCATION", "BATTERY"]} table_data={table_data} /> */}
 
         </main>
       </div>

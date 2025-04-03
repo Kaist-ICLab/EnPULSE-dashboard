@@ -1,5 +1,5 @@
 import Card from "@/components/Card";
-import CampaignLayout from "@/app/campaigns/layout";
+import CampaignLayout from "@/app/campaigns/[id]/layout";
 import type { NextPageWithLayout } from '@/app/_app'
 
 const Settings: NextPageWithLayout = () => {
