@@ -1,10 +1,9 @@
 import Card from "@/components/Card";
+import UserDailyStatTable from "@/components/UserDailyTable";
 
 const Page = () => {
   return (
-    <Card>
-      <p>This is the dashboard page.</p>
-    </Card>
+    <UserDailyStatTable/>
   );
 }
 

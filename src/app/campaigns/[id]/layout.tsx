@@ -9,7 +9,7 @@ export default function CampaignLayout({
   return (
     <div className="w-full min-h-screen bg-gray-50 flex flex-row ">
       <Sidebar />
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col w-full overflow-hidden">
         <Header />
         <main className="flex flex-col w-full items-stretch p-4 grow">
           {children}
