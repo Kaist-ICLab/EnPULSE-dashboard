@@ -18,7 +18,7 @@ const Sidebar: React.FC = () => {
         { name: "Settings", icon: "uil:setting", href: `/campaigns/${campaignId}/settings` },
     ];
 
-    return <aside className="min-h-screen bg-gray-50 w-64 flex flex-col border-r border-gray-200">
+    return <aside className="min-h-screen w-64 flex flex-col border-r border-gray-200">
         <div className="px-6 h-16 flex items-center text-black text-2xl font-bold">DataSentry</div>
         <ul className="space-y-2 font-medium px-4 py-4">
             {menus.map((menu, idx) => (

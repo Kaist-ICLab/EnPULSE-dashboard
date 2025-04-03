@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@iconify/react": "^5.2.0",
+    "danfojs": "^1.1.2",
     "next": "15.2.3",
     "plotly.js": "^3.0.1",
     "react": "^19.0.0",
