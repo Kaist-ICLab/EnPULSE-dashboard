@@ -25,10 +25,12 @@ export default function useSampleNumericalData(): {
         const times: number[] = [];
         const sensor: number[] = [];
 
+        let currentTime = now.getTime();
         for (let i = 0; i < 1000; i++) {
-          const t = new Date(now.getTime() + i * 60000); // 1분 간격
-          times.push(t.getTime());
-          sensor.push(Math.random()); // 0~1 랜덤값으로 설정
+          const randomGap = Math.floor(Math.random() * (30 * 60 * 1000 - 60 * 1000)) + 60 * 1000; // 1분~30분 랜덤 간격
+          currentTime += randomGap;
+          times.push(currentTime);
+          sensor.push(Math.random()); // 0~1 랜덤값
         }
 
         setData({ name: 'Sensor', x: times, y: sensor, color: '#1f77b4' });

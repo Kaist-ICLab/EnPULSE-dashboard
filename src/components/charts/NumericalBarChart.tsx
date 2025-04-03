@@ -24,14 +24,14 @@ export default function NumericalBarChart(props: {
   const chartRef = useRef<ChartJS<"bar"> | null>(null);
 
   const chartData = {
-    labels: data.x,
+    labels: data.x.map((timestamp) => new Date(timestamp)),
     datasets: [
       {
         label: props.title,
         data: data.y,
         backgroundColor: "rgba(99, 132, 255, 0.8)",
-        barPercentage: 1.0,
-        categoryPercentage: 1.0,
+        barThickness: 1.5, 
+        maxBarThickness: 5,
       },
     ],
   };
@@ -45,9 +45,9 @@ export default function NumericalBarChart(props: {
         min: timestampMin,
         max: timestampMax,
         time: {
-          unit: 'hour',
+          unit: 'day',
           displayFormats: {
-            day: 'MMM D',
+            day: 'MM/DD HH:mm',
           },
         },
         offset: true,
@@ -74,6 +74,9 @@ export default function NumericalBarChart(props: {
             enabled: true,
           },
           mode: 'x',
+          onZoomComplete: ({ chart }) => {
+            chart.update();
+          },
         },
         limits: {
           x: { min: timestampMin, max: timestampMax },
