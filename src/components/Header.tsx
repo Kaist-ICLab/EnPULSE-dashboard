@@ -62,7 +62,7 @@ const Dropdown: React.FC<{
             <a href="/campaigns/create" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">Create a campaign</a>
         </div>
         <div>
-            <div className="block mt-1 px-4 py-2 text-sm text-gray-500">Your campaigns</div>
+            <div className="block mt-1 px-4 py-2 text-sm text-gray-500" onClick={(e) => {e.stopPropagation()}}>Your campaigns</div>
             {campaigns.map((campaign) => (
                 <a key={campaign.id} href={`/campaigns/${campaign.id}/`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">{campaign.name}</a>
             ))}
