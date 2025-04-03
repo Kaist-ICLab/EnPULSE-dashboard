@@ -5,13 +5,9 @@ import React, { useState, useRef, useEffect } from "react";
 
 
 const Header: React.FC = () => {
-    const { campaigns, campaignId, currentCampaign } = useCampaigns();
+    const { campaigns, currentCampaign } = useCampaigns();
     const [isDropdownOpen, setDropdownOpenStatus] = useState<Boolean>(false);
 
-    useEffect(() => {
-        console.log(currentCampaign);
-        console.log(campaignId);
-    }, [currentCampaign]);
     return (
         <div className="w-full h-16 flex justify-between items-center border-b border-gray-200 mx-4">
             <div className="flex justify-start items-center gap-2" onClick={() => setDropdownOpenStatus(!isDropdownOpen)}>
