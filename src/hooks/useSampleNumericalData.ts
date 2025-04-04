@@ -7,7 +7,7 @@ type SampleData = {
   color?: string;
 };
 
-export default function useSampleData(): {
+export default function useSampleNumericalData(): {
   data: SampleData | null;
   loading: boolean;
   error: string | null;
@@ -20,14 +20,17 @@ export default function useSampleData(): {
     const load = async () => {
       try {
         await new Promise((res) => setTimeout(res, 3000));
+
         const now = new Date();
         const times: number[] = [];
         const sensor: number[] = [];
 
-        for (let i = 0; i < 500; i++) {
-          const t = new Date(now.getTime() + i * 60000); // 1분 간격
-          times.push(t.getTime());
-          sensor.push(Math.sin(i / 50) + Math.random() * 0.2);
+        let currentTime = now.getTime();
+        for (let i = 0; i < 1000; i++) {
+          const randomGap = Math.floor(Math.random() * (30 * 60 * 1000 - 60 * 1000)) + 60 * 1000; // 1분~30분 랜덤 간격
+          currentTime += randomGap;
+          times.push(currentTime);
+          sensor.push(Math.random()); // 0~1 랜덤값
         }
 
         setData({ name: 'Sensor', x: times, y: sensor, color: '#1f77b4' });
@@ -40,8 +43,6 @@ export default function useSampleData(): {
 
     load();
   }, []);
-  
-
 
   return { data, loading, error };
 }
