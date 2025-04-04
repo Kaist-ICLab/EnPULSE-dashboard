@@ -2,18 +2,17 @@
 import { Chart as ChartJS, ChartOptions, registerables } from "chart.js";
 import 'chartjs-adapter-moment';
 import zoomPlugin from 'chartjs-plugin-zoom';
-import { useRef } from "react";
+import React, { useRef } from "react";
 import { Bar } from 'react-chartjs-2';
 
 ChartJS.register(...registerables, zoomPlugin);
 
-export default function NumericalBarChart(props: {
+
+const NumericalTimeline: React.FC<{
   title: string;
   data: { x: number[]; y: number[] };
   height: number;
-}) {
-  const { data } = props;
-
+}> = ({ title, data, height }) => {
   const [timestampMin, timestampMax] = (() => {
     const minTime = data.x[0];
     const maxTime = data.x.at(-1) || minTime;
@@ -27,7 +26,7 @@ export default function NumericalBarChart(props: {
     labels: data.x.map((timestamp) => new Date(timestamp)),
     datasets: [
       {
-        label: props.title,
+        label: title,
         data: data.y,
         backgroundColor: "rgba(99, 132, 255, 0.8)",
         barThickness: 1.5, 
@@ -107,3 +106,5 @@ export default function NumericalBarChart(props: {
     </div>
   );
 }
+
+export default NumericalTimeline;

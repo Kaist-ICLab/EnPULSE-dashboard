@@ -30,3 +30,9 @@
     - [ ] Maximum 값 (Timeline, Daily Count) 모두 전역 변수로 관리 - 추후 Setting에서 바꿀 수 있도록
     - [ ] Send 버튼 추후 연결 (Messaging Tab으로...)
     - [ ] Tooltip 추가
+- [ ] CategoricalTimeline 및 NumericalTimeline 다듬기
+- [ ] Flowbite-React로 일부 component 수정 및 업데이트
+    - [ ] Sidebar -> Sidebar
+    - [ ] Card -> Card
+    - [ ] Dropdown -> Inline Dropdown
+    - [ ] Loading -> Spinner

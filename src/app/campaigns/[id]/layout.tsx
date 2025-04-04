@@ -11,7 +11,7 @@ export default function CampaignLayout({
       <Sidebar />
       <div className="flex flex-col w-full overflow-hidden">
         <Header />
-        <main className="flex flex-col w-full items-stretch p-4 grow">
+        <main className="flex flex-col w-full items-stretch p-4 gap-4 grow">
           {children}
         </main>
       </div>

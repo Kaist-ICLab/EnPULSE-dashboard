@@ -1,6 +1,7 @@
+"use client";
 import Card from "@/components/Card";
-import CategoricalChart from "@/components/charts/CategoricalChart";
-import NumericalBarChart from "@/components/charts/NumericalBarChart";
+import CategoricalTimeline from "@/components/charts/CategoricalTimeline";
+import NumericalTimeline from "@/components/charts/NumericalTimeline";
 import Loading from "@/components/Loading";
 import UserDailyStatTable from "@/components/UserDailyTable";
 import useSampleCategoricalData from "@/hooks/useSampleCategoricalData";
@@ -13,33 +14,33 @@ const Page = () => {
     loading: categoricalLoading,
     error: categoricalError } = useSampleCategoricalData();
   return (<>
+    <UserDailyStatTable />
     <Card>
-      <UserDailyStatTable />
       {loading && <Loading />}
       {error && (
         <p className="text-red-500 font-medium">❌ 데이터 로딩 실패: {error}</p>
       )}
       {data && (
-        <NumericalBarChart
+        <NumericalTimeline
           title="Sample Timeline"
           data={data}
           height={400}
         />
       )}
     </Card>
-    <Card>
+    {/* <Card>
       {categoricalLoading && <Loading />}
       {categoricalError && (
         <p className="text-red-500 font-medium">❌ 데이터 로딩 실패: {categoricalError}</p>
       )}
       {categoricalData && (
-        <CategoricalChart
+        <CategoricalTimeline
           title="Sample Timeline"
           data={categoricalData}
           height={400}
         />
       )}
-    </Card>
+    </Card> */}
   </>
 
 
