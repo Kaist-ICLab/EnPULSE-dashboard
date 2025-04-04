@@ -1,9 +1,9 @@
 'use client'
-import { useRef, useEffect, useState } from "react";
-import { Chart as ChartJS, registerables, ChartOptions } from "chart.js";
-import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, ChartOptions, registerables } from "chart.js";
 import 'chartjs-adapter-moment';
 import zoomPlugin from 'chartjs-plugin-zoom';
+import { useRef } from "react";
+import { Bar } from 'react-chartjs-2';
 
 ChartJS.register(...registerables, zoomPlugin);
 
