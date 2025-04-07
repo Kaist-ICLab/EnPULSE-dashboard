@@ -1,7 +1,7 @@
 'use client'
 
-import { Button, Dropdown, DropdownItem, TextInput } from "flowbite-react"
-import React, { Fragment, useState } from "react"
+import { Button, Dropdown, DropdownItem } from "flowbite-react"
+import React, { Fragment, useEffect, useState } from "react"
 
 export type ColumnRole = 'timestamp' | 'ignore' | 'uid' | 'data'
 export type DataType = 'datetime' | 'categorical' | 'timedelta' | 'numerical'
@@ -9,26 +9,36 @@ export type DataType = 'datetime' | 'categorical' | 'timedelta' | 'numerical'
 type FormatConfigEntry = {
   columnRole: ColumnRole,
   dataType: DataType
-  threshold: number,
 }
 
-export type FormatConfig = { [key: string]: FormatConfigEntry }
+export type FormatConfig = { threshold: number, dataConfig: { [key: string]: FormatConfigEntry } }
 
 const columnRoleOptions: ColumnRole[] = ['timestamp', 'uid', 'data', 'ignore']
 const dataTypeOptions: DataType[] = ['datetime', 'categorical', 'timedelta', 'numerical']
 
 export default function FormatConfigTable(props: {
   config: { [key: string]: FormatConfig }
+  onConfigSave: (sensorName: string, config: FormatConfig) => void
 }) {
-  const { config } = props
+  const { config, onConfigSave } = props
 
   const [currentSensor, setCurrentSensor] = useState(Object.keys(config)[0])
+  // Deep clone: seperate actual config from config change ongoing
+  const [currentConfig, setCurrentConfig] = useState(structuredClone(config[currentSensor]))
+
+  useEffect(() => {
+    setCurrentConfig(structuredClone(config[currentSensor]))
+  }, [config, currentSensor])
 
   return (
     <div className="w-full">
-      <h2 className="mb-2 font-medium text-lg">Format Configuration</h2>
+      <h2 className="mb-2 font-medium text-xl">Format Configuration</h2>
       <div className="w-full py-1 mb-2 flex">
-        <Dropdown label={currentSensor}>
+        <Dropdown
+          label={currentSensor}
+          className="border-gray-200 border-2 bg-white hover:bg-gray-50 text-black"
+          size="lg"
+        >
           {
             Object.keys(config).map((v, i) =>
               <DropdownItem key={i} onClick={() => setCurrentSensor(v)}>{v}</DropdownItem>
@@ -36,23 +46,21 @@ export default function FormatConfigTable(props: {
           }
         </Dropdown>
         <div className="w-2"></div>
-        <Button>Save</Button>
+        <Button onClick={() => onConfigSave(currentSensor, currentConfig)} size="lg">Save</Button>
       </div>
       <div className="w-full">
-        <div className="max-w-3xl grid grid-cols-4 border-gray-200 border-1 divide-x  divide-y divide-gray-200">
+        <div className="max-w-3xl grid grid-cols-3 border-gray-200 border-1 divide-x  divide-y divide-gray-200">
           {/* Table Headers */}
           <TableHeader>Column Name</TableHeader>
           <TableHeader>Column Role</TableHeader>
           <TableHeader>Data Type</TableHeader>
-          <TableHeader>Threshold</TableHeader>
           {/* Rows */}
           {
-            Object.keys(config[currentSensor]).map((cols, i) =>
+            Object.keys(currentConfig.dataConfig).map((cols, i) =>
               <Fragment key={i}>
-                <div className="p-4">{cols}</div>
-                <ColumnRoleDropdown />
-                <DataTypeDropdown />
-                <DelayedInput />
+                <div className="p-4 bg-white">{cols}</div>
+                <ColumnRoleDropdown value={currentConfig.dataConfig[cols].columnRole} onSelect={(value) => { currentConfig.dataConfig[cols].columnRole = value; setCurrentConfig({ ...currentConfig }) }} />
+                <DataTypeDropdown value={currentConfig.dataConfig[cols].dataType} onSelect={(value) => { currentConfig.dataConfig[cols].dataType = value; setCurrentConfig({ ...currentConfig }) }} />
               </Fragment>
             )
           }
@@ -72,13 +80,15 @@ function TableHeader(props: {
   )
 }
 
-function TableDropdown(props: {
+function TableDropdown<T>(props: {
   options: string[],
+  value: string,
+  onSelect: (value: T) => void
 }) {
-  const { options } = props
+  const { options, value, onSelect } = props
   return (
-    <div className="p-2">
-      <select className="w-full p-2 shadow-none outline-none">
+    <div className="p-2 bg-white">
+      <select value={value} className="w-full p-2 shadow-none outline-none" onChange={(e) => onSelect(e.target.value as T)}>
         {
           options.map((v, i) =>
             <option key={i}>{v}</option>
@@ -86,28 +96,36 @@ function TableDropdown(props: {
         }
       </select>
     </div>
-
   )
 }
 
-function ColumnRoleDropdown(
-
-) {
-  return <TableDropdown options={columnRoleOptions} />
+function ColumnRoleDropdown(props: {
+  value: string,
+  onSelect: (value: ColumnRole) => void
+}) {
+  const { value, onSelect } = props
+  return <TableDropdown options={columnRoleOptions} value={value} onSelect={onSelect} />
 }
 
-function DataTypeDropdown(
-
-) {
-  return <TableDropdown options={dataTypeOptions} />
+function DataTypeDropdown(props: {
+  value: string,
+  onSelect: (value: DataType) => void
+}) {
+  const { value, onSelect } = props
+  return <TableDropdown options={dataTypeOptions} value={value} onSelect={onSelect} />
 }
 
-function DelayedInput() {
-  return (
-    <div>
-      <input className="w-full h-full p-4 outline-none">
-      </input>
-    </div>
-  )
-}
+// function DelayedInput(props: {
+//   value: number,
+// }) {
+//   const { value } = props
+//   const [lastValidValue, setLastValidValue] = useState(value)
+
+//   return (
+//     <div className="bg-white">
+//       <input value={value} className="w-full h-full p-4 outline-none">
+//       </input>
+//     </div>
+//   )
+// }
 

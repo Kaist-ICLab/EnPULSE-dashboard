@@ -7,47 +7,45 @@ import { useState } from "react";
 const Page = () => {
   const [sampleConfig, setSampleConfig] = useState<{ [key: string]: FormatConfig }>({
     sensorData: {
-      timestamp: {
-        columnRole: 'timestamp',
-        dataType: 'datetime',
-        threshold: 0
-      },
-      user_id: {
-        columnRole: 'uid',
-        dataType: 'categorical',
-        threshold: 0
-      },
-      temperature: {
-        columnRole: 'data',
-        dataType: 'numerical',
-        threshold: 0.1
-      },
-      status: {
-        columnRole: 'data',
-        dataType: 'categorical',
-        threshold: 0.05
+      threshold: 5,
+      dataConfig: {
+        timestamp: {
+          columnRole: 'timestamp',
+          dataType: 'datetime',
+        },
+        user_id: {
+          columnRole: 'uid',
+          dataType: 'categorical',
+        },
+        temperature: {
+          columnRole: 'data',
+          dataType: 'numerical',
+        },
+        status: {
+          columnRole: 'data',
+          dataType: 'categorical',
+        }
       }
     },
     activityLog: {
-      start_time: {
-        columnRole: 'timestamp',
-        dataType: 'datetime',
-        threshold: 0
-      },
-      duration: {
-        columnRole: 'data',
-        dataType: 'timedelta',
-        threshold: 0.01
-      },
-      user: {
-        columnRole: 'uid',
-        dataType: 'categorical',
-        threshold: 0
-      },
-      irrelevant_column: {
-        columnRole: 'ignore',
-        dataType: 'categorical',
-        threshold: 0
+      threshold: 10,
+      dataConfig: {
+        start_time: {
+          columnRole: 'timestamp',
+          dataType: 'datetime',
+        },
+        duration: {
+          columnRole: 'data',
+          dataType: 'timedelta',
+        },
+        user: {
+          columnRole: 'uid',
+          dataType: 'categorical',
+        },
+        irrelevant_column: {
+          columnRole: 'ignore',
+          dataType: 'categorical',
+        }
       }
     }
   });
@@ -56,6 +54,7 @@ const Page = () => {
     <Card>
       <FormatConfigTable
         config={sampleConfig}
+        onConfigSave={(sensor, config) => { sampleConfig[sensor] = config; setSampleConfig({ ...sampleConfig }) }}
       />
     </Card>
   );
