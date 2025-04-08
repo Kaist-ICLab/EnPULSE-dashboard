@@ -7,6 +7,7 @@ import { useState } from "react";
 const Page = () => {
   const [sampleConfig, setSampleConfig] = useState<{ [key: string]: FormatConfig }>({
     sensorData: {
+      thresholdMode: 'value',
       threshold: 5,
       dataConfig: {
         timestamp: {
@@ -28,6 +29,7 @@ const Page = () => {
       }
     },
     activityLog: {
+      thresholdMode: 'value',
       threshold: 10,
       dataConfig: {
         start_time: {
