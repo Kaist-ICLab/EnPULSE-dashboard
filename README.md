@@ -31,6 +31,9 @@
     - [ ] Send 버튼 추후 연결 (Messaging Tab으로...)
     - [ ] Tooltip 추가
 - [ ] CategoricalTimeline 및 NumericalTimeline 다듬기
+    - [ ] x축 범위 및 시간 단위 통일
+    - [ ] (두 종류의 차트가 동시에 존재할 때) ChartJS-zoom-plugin이 "window"보다 먼저 로딩되어 에러가 일어나는 문제 수정 
+    - [ ] ChartJS 객체 공유 문제: 한 차트를 줌 하면 다른 차트의 배율이 영향을 받는 문제 수정
 - [ ] Flowbite-React로 일부 component 수정 및 업데이트
     - [ ] Sidebar -> Sidebar
     - [ ] Card -> Card
