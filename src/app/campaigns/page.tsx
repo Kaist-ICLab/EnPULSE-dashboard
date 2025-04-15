@@ -1,5 +1,5 @@
 "use client";
-import Card from "@/components/Card";
+import {Card} from "flowbite-react";
 import useCampaigns from "@/hooks/useCampaigns";
 
 // Campaign selection page

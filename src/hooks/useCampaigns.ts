@@ -41,9 +41,9 @@ export const useCampaigns = () => {
     // ✅ 1. URL → state
     useEffect(() => {
         const idFromUrl = parseInt(params.id as string, 10);
-        console.log(`URL ID: ${idFromUrl}`);
+        // console.log(`URL ID: ${idFromUrl}`);
         if (!isNaN(idFromUrl)) {
-            console.log("Setting campaignId from URL");
+            // console.log("Setting campaignId from URL");
             setCampaignId(idFromUrl);
         }
     }, [params.id]);

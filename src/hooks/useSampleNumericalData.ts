@@ -19,7 +19,7 @@ export default function useSampleNumericalData(): {
   useEffect(() => {
     const load = async () => {
       try {
-        await new Promise((res) => setTimeout(res, 3000));
+        await new Promise((res) => setTimeout(res, 500));
 
         const now = new Date();
         const times: number[] = [];

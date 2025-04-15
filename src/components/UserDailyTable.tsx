@@ -2,7 +2,7 @@
 import useUserDailyStat, { UserDailyStat } from "@/hooks/useUserDailyStat";
 import { Icon } from "@iconify/react";
 import React, { useEffect } from "react";
-import Loading from "@/components/Loading";
+import { Spinner } from "flowbite-react";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -91,14 +91,10 @@ const UserDailyStatTable: React.FC = () => {
     const n_row = 5;
     const current_page = 1;
 
-    useEffect(() => {
-        console.log(columns);
-    }, [data, columns])
-
     return (
         <div className="bg-white rounded-xl shadow-md p-3 w-full overflow-hidden flex flex-col items-center justify-center">
             {loading ?
-                <Loading /> : <>
+                <Spinner /> : <>
                     <div className="flex items-center justify-between px-2 py-3 w-full">
                         <div className="flex items-center gap-4">
                             <h2 className="text-2xl font-semibold">Daily Overview</h2>

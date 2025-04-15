@@ -30,12 +30,27 @@
     - [ ] Maximum 값 (Timeline, Daily Count) 모두 전역 변수로 관리 - 추후 Setting에서 바꿀 수 있도록
     - [ ] Send 버튼 추후 연결 (Messaging Tab으로...)
     - [ ] Tooltip 추가
-- [ ] CategoricalTimeline 및 NumericalTimeline 다듬기
-    - [ ] x축 범위 및 시간 단위 통일
-    - [ ] (두 종류의 차트가 동시에 존재할 때) ChartJS-zoom-plugin이 "window"보다 먼저 로딩되어 에러가 일어나는 문제 수정 
-    - [ ] ChartJS 객체 공유 문제: 한 차트를 줌 하면 다른 차트의 배율이 영향을 받는 문제 수정
+- [x] CategoricalTimeline 및 NumericalTimeline 다듬기
+    - [x] DnD로 변경 중에 Plotly.js로 변경함
 - [ ] Flowbite-React로 일부 component 수정 및 업데이트
-    - [ ] Sidebar -> Sidebar
-    - [ ] Card -> Card
+    - [x] Card -> Card
     - [ ] Dropdown -> Inline Dropdown
-    - [ ] Loading -> Spinner
+    - [ ] Sidebar -> Sidebar
+    - [x] Loading -> Spinner
+
+- [x] Categorical Chart도 구현하기
+- [x] DnD 리스트로 구현
+    - [ ] Top에 기타 상태 표 표시 (Pin 및 넘어가기)
+    - [ ] Title / Legend / Pin 상태 표시
+- [ ] Relayouting으로 Plot interaction 걸기 (Throttling issue로 보임...)
+- [ ] Plotly.js issue - self is not defined error....
+
+1. Brush + Pan
+ - 유저가 특정 시간 구간을 드래그로 선택 (brush)
+ - 줌 상태에서 좌우 이동 가능 (pan)
+2. Dynamic Update by Time Range
+ - 전체 데이터를 한 번에 안 그리고
+ - 현재 보이는 시간 범위에 맞춰 서버에서 데이터 fetch
+3. Multi-Plot (Subplot) Layout
+ - 시간축을 공유하는 여러 시계열 subplot 시각화
+ - 각 subplot은 drag & drop으로 순서 변경, pinning (위 고정) 가능

@@ -9,7 +9,8 @@ type Props = {
 const Page: React.FC<Props> = async ({
   params
 }) => {
-  redirect(`/campaigns/${params.id}/dashboard`);
+  const { id } = await params
+  redirect(`/campaigns/${id}/dashboard`);
 }
 
 export default Page;
