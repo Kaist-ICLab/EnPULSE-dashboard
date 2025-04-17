@@ -1,6 +1,7 @@
 'use client'
 
-import Plotly, { Config, Data, Layout, PlotlyHTMLElement } from "plotly.js-dist-min";
+import { createPlot, loadPlotly } from "@/utils/plotlyLoader";
+import { Config, Data, Layout } from "plotly.js-dist-min";
 import { useEffect, useRef } from "react";
 
 const TimelineChart: React.FC<{
@@ -70,13 +71,14 @@ const TimelineChart: React.FC<{
         }
 
 
-        Plotly.newPlot(chartRef.current, plotData, layout, config)
-            .then((plot: PlotlyHTMLElement) => {
+        // Plotly.newPlot(chartRef.current, plotData, layout, config)
+        createPlot(chartRef.current, plotData, layout, config)
+            .then((plot) => {
                 const handleRelayout = (event: any) => {
                     if (event["xaxis.range[0]"] && event["xaxis.range[1]"]) {
                         const start = new Date(event["xaxis.range[0]"]).getTime();
                         const end = new Date(event["xaxis.range[1]"]).getTime();
-                        onComplete({start, end});
+                        onComplete({ start, end });
                     }
                 };
 
@@ -88,11 +90,12 @@ const TimelineChart: React.FC<{
 
         return () => {
             if (chartRef.current) {
-                Plotly.purge(chartRef.current);
+                loadPlotly().then(Plot => {
+                    Plot.purge(chartRef.current);
+                }).catch(console.error);
             }
         };
     }, [data, timeRange, id]);
-
 
     return (
         <div className='w-full flex flex-row justify-center items-center'>

@@ -1,7 +1,7 @@
 'use client'
 
-import Plotly, { Config, Data, Layout, PlotlyHTMLElement } from "plotly.js-dist-min";
 import { useEffect, useRef } from "react";
+import { loadPlotly } from "@/utils/plotlyLoader";
 
 const TimelineXAxis: React.FC<{
     id: string;
@@ -13,59 +13,72 @@ const TimelineXAxis: React.FC<{
     useEffect(() => {
         if (!chartRef.current) return;
 
-        const data: Data[] = [{
-            x: [timeRange.start, timeRange.end],
-            y: [0, 0],
-            type: 'scatter',
-            mode: 'lines',
-            line: { width: 0 },
-            hoverinfo: 'none',
-        }];
+        const initPlot = async () => {
+            try {
+                const Plot = await loadPlotly();
 
-        const layout: Partial<Layout> = {
-            height: 20,
-            margin: {
-                l: 0, r: 0, t: 0, b: 20
-            },
-            xaxis: {
-                range: [timeRange.start, timeRange.end],
-                type: 'date',
-                showticklabels: true,
-                zeroline: false,
-            },
-            yaxis: {
-                showgrid: false,
-                zeroline: false,
-                showticklabels: false,
-                showline: false,
-            },
-            dragmode: 'pan',
-            plot_bgcolor: 'transparent',
-            paper_bgcolor: 'transparent',
+                const data = [{
+                    x: [timeRange.start, timeRange.end],
+                    y: [0, 0],
+                    type: 'scatter',
+                    mode: 'lines',
+                    line: { width: 0 },
+                    hoverinfo: 'none',
+                }];
+
+                const layout = {
+                    height: 20,
+                    margin: {
+                        l: 0, r: 0, t: 0, b: 20
+                    },
+                    xaxis: {
+                        range: [timeRange.start, timeRange.end],
+                        type: 'date',
+                        showticklabels: true,
+                        zeroline: false,
+                    },
+                    yaxis: {
+                        showgrid: false,
+                        zeroline: false,
+                        showticklabels: false,
+                        showline: false,
+                    },
+                    dragmode: 'pan',
+                    plot_bgcolor: 'transparent',
+                    paper_bgcolor: 'transparent',
+                };
+
+                const config = {
+                    displayModeBar: false,
+                    responsive: true,
+                };
+
+                const plot = await Plot.newPlot(chartRef.current, data, layout, config);
+
+                // Handle panning events
+                plot.on('plotly_relayout', (eventData: any) => {
+                    if (eventData['xaxis.range[0]'] !== undefined && eventData['xaxis.range[1]'] !== undefined) {
+                        const start = eventData['xaxis.range[0]'];
+                        const end = eventData['xaxis.range[1]'];
+                        onComplete({ start, end });
+                    }
+                });
+            } catch (error) {
+                console.error('Failed to initialize plot:', error);
+            }
         };
 
-        const config: Partial<Config> = {
-            displayModeBar: false,
-            responsive: true,
-        };
-
-        Plotly.newPlot(chartRef.current, data, layout, config).then((plot: PlotlyHTMLElement) => {
-            // Handle panning events
-            plot.on('plotly_relayout', (eventData: any) => {
-                if (eventData['xaxis.range[0]'] !== undefined && eventData['xaxis.range[1]'] !== undefined) {
-                    const start = eventData['xaxis.range[0]'];
-                    const end = eventData['xaxis.range[1]'];
-                    onComplete({start, end});
-                }
-            });
-        });
+        initPlot();
 
         return () => {
             if (chartRef.current) {
-                Plotly.purge(chartRef.current);
+                // We need to load Plotly again to purge
+                loadPlotly().then(Plot => {
+                    Plot.purge(chartRef.current);
+                }).catch(console.error);
             }
         };
-    }, [id, timeRange]);
+    }, [id, timeRange, onComplete]);
 
     return (
         <div className='w-full flex flex-row justify-center items-center'>
