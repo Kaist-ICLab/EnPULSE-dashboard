@@ -37,6 +37,7 @@
     - [ ] Dropdown -> Inline Dropdown
     - [ ] Sidebar -> Sidebar
     - [x] Loading -> Spinner
+- [ ] URL/DB file validation logic Database에 맞게 추가
 
 - [x] Categorical Chart도 구현하기
 - [x] DnD 리스트로 구현
