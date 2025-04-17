@@ -38,19 +38,23 @@ const ChartContainer: React.FC<{
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-700">Compare:</span>
-                        <button
-                            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                            onClick={() => {/* TODO: Implement compare with other participant */ }}
-                        >
-                            Participants
-                        </button>
-                        <button
-                            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                            onClick={() => {/* TODO: Implement compare with different days */ }}
-                        >
-                            Days
-                        </button>
+                        {selectedChart && (
+                            <>
+                                <span className="font-medium text-gray-700">Compare with other:</span>
+                                <button 
+                                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                                    onClick={() => {/* TODO: Implement compare with other participant */ }}
+                                >
+                                    Participants
+                                </button>
+                                <button 
+                                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                                    onClick={() => {/* TODO: Implement compare with different days */ }}
+                                >
+                                    Days
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
