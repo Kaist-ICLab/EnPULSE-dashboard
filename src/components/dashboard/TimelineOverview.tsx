@@ -56,8 +56,9 @@ const TimelineOverview: React.FC = () => {
                         <p className="text-red-500 font-medium">❌ 데이터 로딩 실패: {error}</p>
                     )}
                     {data && (
-                        <ChartContainer data={[
+                        <ChartContainer timelines={[
                             {
+                                title: "Battery Charge Type",
                                 id: "battery-chargetype",
                                 table: "battery",
                                 column: "chargetype",
@@ -66,6 +67,7 @@ const TimelineOverview: React.FC = () => {
                                 value: data.chargetype
                             },
                             {
+                                title: "Battery Level",
                                 id: "battery-level",
                                 table: "battery",
                                 column: "level",
