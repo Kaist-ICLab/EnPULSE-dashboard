@@ -1,5 +1,5 @@
 "use client"
-import ChartContainer from "@/components/charts/ChartContainer";
+import ChartContainer from "@/components/dashboard/charts/ChartContainer";
 import useFakeBatteryData from "@/hooks/useFakeBatteryData";
 import { Card, Select, Spinner } from "flowbite-react";
 import { useState } from "react";

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import TimelineChart from '@/components/charts/TimelineChart';
-import TimelineXAxis from '@/components/charts/TimelineXAxis';
-import { DnDProvider, DnDItem, DragHandle } from '@/components/DnDList';
+import TimelineChart from '@/components/dashboard/charts/TimelineChart';
+import TimelineXAxis from '@/components/dashboard/charts/TimelineXAxis';
+import { DnDProvider, DnDItem, DragHandle } from '@/components/common/DnDList';
 
 interface TimelineData {
     id: string;
