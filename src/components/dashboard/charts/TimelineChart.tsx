@@ -1,120 +1,122 @@
 'use client'
 
+import { PlotlyRelayoutEvent } from "@/types/plotlyEvent";
 import { createPlot, loadPlotly } from "@/utils/plotlyLoader";
 import { Config, Data, Layout } from "plotly.js-dist-min";
 import { useEffect, useRef } from "react";
 
 const TimelineChart: React.FC<{
-  id: string;
-  chartType: 'categorical' | 'numerical';
-  timeRange: { start: number, end: number };
-  data: { timestamp: number[], value: (string | number)[] };
-  onComplete: (timeRange: { start: number, end: number }) => void;
+    id: string;
+    chartType: 'categorical' | 'numerical';
+    timeRange: { start: number, end: number };
+    data: { timestamp: number[], value: (string | number)[] };
+    onComplete: (timeRange: { start: number, end: number }) => void;
 }> = ({ id, data, chartType, timeRange, onComplete }) => {
-  const chartRef = useRef<HTMLDivElement>(null);
-  const initialTimeRangeRef = useRef<{ start: number, end: number } | null>(null);
+    const chartRef = useRef<HTMLDivElement>(null);
+    const initialTimeRangeRef = useRef<{ start: number, end: number } | null>(null);
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !chartRef.current) return;
-    const layout: Partial<Layout> = {
-      margin: { t: 0, b: 0, l: 0, r: 0 },
-      plot_bgcolor: 'white',
-      paper_bgcolor: 'white',
-      xaxis: {
-        type: 'date',
-        range: [timeRange.start, timeRange.end],
-        visible: false
-      },
-      bargap: 0.01,
-      dragmode: 'zoom',
-    };
-
-    const config: Partial<Config> = {
-      responsive: true,
-      displayModeBar: false,
-      displaylogo: false,
-      scrollZoom: false,
-    };
-    let plotData: Data[] = [];
-    if (chartType === 'numerical') {
-      plotData = [{
-        x: data.timestamp,
-        y: data.value,
-        type: 'bar',
-        marker: {
-          color: '#3b82f6'
-        }
-      }];
-    } else {
-      const colors = [
-        '#3b82f6',
-        '#10b981',
-        '#f59e0b',
-        '#ef4444',
-        '#8b5cf6',
-      ];
-
-      // Create a map of unique categories to colors
-      const uniqueCategories = [...new Set(data.value as string[])].sort();
-      const categoryColors: { [key: string]: string } = {};
-      uniqueCategories.forEach((category, index) => {
-        categoryColors[category] = colors[index % colors.length];
-      });
-
-      plotData = [{
-        x: data.timestamp,
-        y: Array(data.value.length).fill(1),
-        type: 'bar',
-        marker: {
-          color: (data.value as string[]).map(category => categoryColors[category])
-        }
-      }];
-    }
-
-
-    // Plotly.newPlot(chartRef.current, plotData, layout, config)
-    createPlot(chartRef.current, plotData, layout, config)
-      .then((plot) => {
-        // Store the initial time range
-        if (!initialTimeRangeRef.current) {
-          const xaxis = plot._fullLayout.xaxis;
-          initialTimeRangeRef.current = {
-            start: new Date(xaxis.range[0]).getTime(),
-            end: new Date(xaxis.range[1]).getTime()
-          };
-        }
-
-        const handleRelayout = (event: any) => {
-          console.log(event);
-          if (event["xaxis.range[0]"] && event["xaxis.range[1]"]) {
-            const start = new Date(event["xaxis.range[0]"]).getTime();
-            const end = new Date(event["xaxis.range[1]"]).getTime();
-            onComplete({ start, end });
-          } else if (event['xaxis.autorange'] && event['yaxis.autorange']) {
-            onComplete(initialTimeRangeRef.current ?? timeRange);
-          }
+    useEffect(() => {
+        if (typeof window === 'undefined' || !chartRef.current) return;
+        const chartElement = chartRef.current;
+        const layout: Partial<Layout> = {
+            margin: { t: 0, b: 0, l: 0, r: 0 },
+            plot_bgcolor: 'white',
+            paper_bgcolor: 'white',
+            xaxis: {
+                type: 'date',
+                range: [timeRange.start, timeRange.end],
+                visible: false
+            },
+            bargap: 0.01,
+            dragmode: 'zoom',
         };
 
-        plot.on("plotly_relayout", handleRelayout);
-      })
-      .catch((error: any) => {
-        console.error('Error creating plot:', error);
-      });
+        const config: Partial<Config> = {
+            responsive: true,
+            displayModeBar: false,
+            displaylogo: false,
+            scrollZoom: false,
+        };
+        let plotData: Data[] = [];
+        if (chartType === 'numerical') {
+            plotData = [{
+                x: data.timestamp,
+                y: data.value,
+                type: 'bar',
+                marker: {
+                    color: '#3b82f6'
+                }
+            }];
+        } else {
+            const colors = [
+                '#3b82f6',
+                '#10b981',
+                '#f59e0b',
+                '#ef4444',
+                '#8b5cf6',
+            ];
 
-    return () => {
-      if (chartRef.current) {
-        loadPlotly().then(Plot => {
-          Plot.purge(chartRef.current);
-        }).catch(console.error);
-      }
-    };
-  }, [data, timeRange, id]);
+            // Create a map of unique categories to colors
+            const uniqueCategories = [...new Set(data.value as string[])].sort();
+            const categoryColors: { [key: string]: string } = {};
+            uniqueCategories.forEach((category, index) => {
+                categoryColors[category] = colors[index % colors.length];
+            });
 
-  return (
-    <div className='w-full flex flex-row justify-center items-center'>
-      <div ref={chartRef} style={{ width: '100%', height: '100px' }} />
-    </div>
-  );
+            plotData = [{
+                x: data.timestamp,
+                y: Array(data.value.length).fill(1),
+                type: 'bar',
+                marker: {
+                    color: (data.value as string[]).map(category => categoryColors[category])
+                }
+            }];
+        }
+
+
+        // Plotly.newPlot(chartRef.current, plotData, layout, config)
+        createPlot(chartRef.current, plotData, layout, config)
+            .then((plot) => {
+                // Store the initial time range
+                if (!initialTimeRangeRef.current) {
+                    const xaxis = plot._fullLayout.xaxis;
+                    initialTimeRangeRef.current = {
+                        start: new Date(xaxis.range[0]).getTime(),
+                        end: new Date(xaxis.range[1]).getTime()
+                    };
+                }
+
+                const handleRelayout = (event: PlotlyRelayoutEvent) => {
+                    console.log(event);
+                    if (event["xaxis.range[0]"] && event["xaxis.range[1]"]) {
+                        const start = new Date(event["xaxis.range[0]"]).getTime();
+                        const end = new Date(event["xaxis.range[1]"]).getTime();
+                        onComplete({ start, end });
+                    } else if (event['xaxis.autorange'] && event['yaxis.autorange']) {
+                        onComplete(initialTimeRangeRef.current ?? timeRange);
+                    }
+                };
+
+                plot.on("plotly_relayout", handleRelayout);
+            })
+            .catch((error: Error) => {
+                console.error('Error creating plot:', error);
+            });
+
+        return () => {
+            if (chartElement) {
+                loadPlotly().then(Plot => {
+                    Plot.purge(chartElement);
+                }).catch(console.error);
+            }
+        };
+    }, [data, timeRange, id]);
+
+    return (
+        <div className='w-full flex flex-row justify-center items-center'>
+            <div ref={chartRef} style={{ width: '100%', height: '100px' }} />
+        </div>
+    );
 };
 
 export default TimelineChart;
