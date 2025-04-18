@@ -25,7 +25,7 @@ const Header: React.FC = () => {
             </div>
             <div className="w-14 flex justify-start items-center gap-4">
                 <div className="p-4 rounded-2xl flex justify-center items-center gap-2">
-                    <span className="w-6 h-6 icon-[mingcute--notification-line] text-gray-700"></span>
+                    <span className="w-6 h-6 icon-[mingcute--notification-line] text-gray-700" />
                 </div>
             </div>
         </div>

@@ -1,6 +1,6 @@
 "use client";
-import TimelineOverview from "@/components/TimelineOverview";
-import UserDailyStatTable from "@/components/UserDailyTable";
+import TimelineOverview from "@/components/dashboard/TimelineOverview";
+import UserDailyStatTable from "@/components/dashboard/UserDailyTable";
 import { useState } from "react";
 
 const Page = () => {

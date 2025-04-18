@@ -2,7 +2,6 @@ import { useState } from 'react';
 import TimelineChart from '@/components/dashboard/charts/TimelineChart';
 import TimelineXAxis from '@/components/dashboard/charts/TimelineXAxis';
 import { DnDProvider, DnDItem, DragHandle } from '@/components/common/DnDList';
-import { Icon } from '@iconify/react';
 
 interface TimelineData {
     id: string;
@@ -41,13 +40,13 @@ const ChartContainer: React.FC<{
                         {selectedChart && (
                             <>
                                 <span className="font-medium text-gray-700">Compare with other:</span>
-                                <button 
+                                <button
                                     className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
                                     onClick={() => {/* TODO: Implement compare with other participant */ }}
                                 >
                                     Participants
                                 </button>
-                                <button 
+                                <button
                                     className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
                                     onClick={() => {/* TODO: Implement compare with different days */ }}
                                 >
@@ -111,14 +110,14 @@ const ChartItem: React.FC<{
                 console.log("Clicked", timeline.id);
             }} >
                 <DragHandle>
-                    <Icon className='w-6 h-6 text-gray-300' icon="mdi:dots-vertical" />
+                    <span className='w-6 h-6 text-gray-300 icon-[mdi--dots-vertical]' />
                 </DragHandle>
                 <div className='flex flex-col w-12'>
                     <div className='text-sm overflow-ellipsis'>{timeline.title}</div>
                     <button className='text-gray-400 w-6 cursor-pointer' onClick={() => {
                         onPin(!pinned);
                     }}>
-                        {pinned ? <Icon className="w-6 h-6" icon="mdi:pin-off" /> : <Icon className="w-6 h-6" icon="mdi:pin" />}
+                        {pinned ? <span className="w-6 h-6 icon-[mdi--pin-off]" /> : <span className="w-6 h-6 icon-[mdi--pin]" />}
                     </button>
                 </div>
             </div>
