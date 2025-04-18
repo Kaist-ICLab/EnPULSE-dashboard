@@ -1,7 +1,8 @@
 "use client"
 import useUserDailyStat, { UserDailyStat } from "@/hooks/useUserDailyStat";
-import React, { useEffect } from "react";
-import { Spinner, Tooltip } from "flowbite-react";
+import React from "react";
+import { Button, Spinner, Tooltip } from "flowbite-react";
+import { useDailyStatTableCheckedState } from "@/hooks/useDailyStatTableCheckedState";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -22,13 +23,11 @@ const Timeline: React.FC<{ values: number[] }> = ({ values }) => {
     return (
         <div className="flex gap-0.5 justify-center items-center">
             {values.map((level, i) => (
-                <Tooltip content={`${level}`} trigger="hover">
+                <Tooltip key={i} content={`${level}`} trigger="hover">
                     <div
-                        key={i}
                         className={`w-3 h-[30px] ${getLevelColor(level)}`}
                     />
                 </Tooltip>
-
             ))}
         </div>
     );
@@ -68,12 +67,14 @@ const rowStyle = "border-b border-l border-gray-200"
 const UserRow: React.FC<{
     row: UserDailyStat;
     max: number;
+    isSelected: boolean;
+    toggleChecked: () => void;
     // columns: string[];
-}> = ({ row, max }) => {
+}> = ({ row, max, isSelected = false, toggleChecked }) => {
     return (
-        <tr className="border-b hover:bg-gray-50 border-gray-200 border-l text-sm">
+        <tr className="border-b hover:bg-gray-50 border-gray-200 border-l text-sm" onClick={toggleChecked}>
             <td className={cellStyle}>
-                <input type="checkbox" />
+                <input type="checkbox" className="w-4 h-4" checked={isSelected} onChange={toggleChecked} />
             </td>
             <td className={cellStyle}>{row.email}</td>
             <td className={cellStyle}>{row.contacts} Contacts</td>
@@ -91,8 +92,7 @@ const UserRow: React.FC<{
     );
 }
 
-const ChartTooltipContent: React.FC<{
-}> = () => {
+const ChartTooltipContent: React.FC = () => {
     return (
         <>
             <p>Daily count: # of data collected in a day. </p>
@@ -103,8 +103,11 @@ const ChartTooltipContent: React.FC<{
     )
 }
 
-const UserDailyStatTable: React.FC = () => {
+const UserDailyStatTable: React.FC<{
+    setUserId: (userId: string) => void;
+}> = ({ setUserId }) => {
     const { data, columns, loading } = useUserDailyStat();
+    const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } = useDailyStatTableCheckedState(data);
     const n_row = 5;
     const current_page = 1;
 
@@ -118,13 +121,25 @@ const UserDailyStatTable: React.FC = () => {
                             <input type="date" className="border border-gray-200 bg-gray-50 text-gray-500 rounded px-4 py-3 text-sm" />
                         </div>
                         <div className="flex items-center gap-3">
-                            <button className="bg-blue-700 hover:bg-blue-800 text-white rounded-lg px-3 py-2 flex flex-row gap-1 text-base font-medium">
-                                <span className="w-5 h-5 mt-0.5 icon-[material-symbols--send]"></span>
-                                <span>Send</span>
-                            </button>
+                            {
+                                checkCount == 1 && (
+                                    <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => setUserId(data[checkedState.findIndex((state) => state)].id)}>
+                                        {/* <span className="w-5 h-5 mt-0.5 icon-[material-symbols--send]"></span> */}
+                                        <span>Timeline Overview</span>
+                                    </Button>
+                                )
+                            }
+                            {
+                                checkCount >= 1 && (
+                                    <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3">
+                                        <span className="w-5 h-5 mt-0.5 icon-[material-symbols--send]"></span>
+                                        <span>Send</span>
+                                    </Button>
+                                )
+                            }
                             <Tooltip content={<ChartTooltipContent />} trigger="click">
                                 <button className="text-gray-500">
-                                    <span className="w-5 h-5 icon-[mingcute--question-fill]"></span>
+                                    <span className="mt-1 w-6 h-6 icon-[mingcute--question-fill]"></span>
                                 </button>
                             </Tooltip>
 
@@ -144,7 +159,7 @@ const UserDailyStatTable: React.FC = () => {
                             <thead className="uppercase text-gray-500 border-t border-gray-200 bg-gray-50 text-xs">
                                 <tr className={[rowStyle, 'h-[25px]'].join(' ')}>
                                     <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>
-                                        <input type="checkbox" disabled />
+                                        <input className="w-4 h-4" type="checkbox" checked={isAllChecked} onChange={toggleAllChecked} />
                                     </th>
                                     <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>Email / UID</th>
                                     <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>Contacts</th>
@@ -160,8 +175,8 @@ const UserDailyStatTable: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {data.map((row) => (
-                                    <UserRow key={`row-${row.id}`} row={row} max={1000} />
+                                {data.map((row, index) => (
+                                    <UserRow key={`row-${row.id}`} row={row} max={1000} isSelected={checkedState[index]} toggleChecked={() => toggleChecked(index)} />
                                 ))}
                             </tbody>
                         </table>

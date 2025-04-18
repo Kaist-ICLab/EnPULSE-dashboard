@@ -5,10 +5,12 @@ import { Card, Select, Spinner } from "flowbite-react";
 import { useState } from "react";
 
 
-const TimelineOverview: React.FC = () => {
+const TimelineOverview: React.FC<({
+    userId: string;
+    setUserId: (userId: string) => void;
+})> = ({ userId, setUserId }) => {
     const { data, loading, error } = useFakeBatteryData();
     const [date, setDate] = useState<Date>(new Date());
-    const [userId, setUserId] = useState<string>("User 1");
 
     // Mock user data - replace with actual user data from your backend
     const users = [
@@ -33,7 +35,7 @@ const TimelineOverview: React.FC = () => {
                             >
                                 <option value="">Select User</option>
                                 {users.map((user) => (
-                                    <option key={user.id} value={user.name}>
+                                    <option key={user.id} value={user.id}>
                                         {user.name}
                                     </option>
                                 ))}
@@ -49,7 +51,7 @@ const TimelineOverview: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                
+
                 <div className="w-full rounded-lg p-4 flex flex-col gap-4">
                     {loading && <Spinner />}
                     {error && (
