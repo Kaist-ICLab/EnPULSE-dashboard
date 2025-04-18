@@ -1,7 +1,7 @@
 "use client"
 import useUserDailyStat, { UserDailyStat } from "@/hooks/useUserDailyStat";
 import React, { useEffect } from "react";
-import { Spinner } from "flowbite-react";
+import { Spinner, Tooltip } from "flowbite-react";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -22,10 +22,13 @@ const Timeline: React.FC<{ values: number[] }> = ({ values }) => {
     return (
         <div className="flex gap-0.5 justify-center items-center">
             {values.map((level, i) => (
-                <div
-                    key={i}
-                    className={`w-3 h-[30px] ${getLevelColor(level)}`}
-                />
+                <Tooltip content={`${level}`} trigger="hover">
+                    <div
+                        key={i}
+                        className={`w-3 h-[30px] ${getLevelColor(level)}`}
+                    />
+                </Tooltip>
+
             ))}
         </div>
     );
@@ -64,8 +67,9 @@ const rowStyle = "border-b border-l border-gray-200"
 
 const UserRow: React.FC<{
     row: UserDailyStat;
+    max: number;
     // columns: string[];
-}> = ({ row }) => {
+}> = ({ row, max }) => {
     return (
         <tr className="border-b hover:bg-gray-50 border-gray-200 border-l text-sm">
             <td className={cellStyle}>
@@ -75,7 +79,9 @@ const UserRow: React.FC<{
             <td className={cellStyle}>{row.contacts} Contacts</td>
             {Object.entries(row.columns).map(([key, metric]) => (
                 [<td key={`${key}-dailycount`} className={cellStyle}>
-                    <DailyCount value={metric.dailyCount} max={1000} />
+                    <Tooltip content={`${metric.dailyCount} / ${max}`}>
+                        <DailyCount value={metric.dailyCount} max={max} />
+                    </Tooltip>
                 </td>,
                 <td key={`${key}-timeline`} className={cellStyle}>
                     <Timeline values={metric.timeline} />
@@ -83,6 +89,18 @@ const UserRow: React.FC<{
             ))}
         </tr>
     );
+}
+
+const ChartTooltipContent: React.FC<{
+}> = () => {
+    return (
+        <>
+            <p>Daily count: # of data collected in a day. </p>
+            <p className="mb-1">Timeline: # of data collected in a 3 hour window.</p>
+            <p>Hover over the components to see the details!</p>
+        </>
+
+    )
 }
 
 const UserDailyStatTable: React.FC = () => {
@@ -104,9 +122,12 @@ const UserDailyStatTable: React.FC = () => {
                                 <span className="w-5 h-5 mt-0.5 icon-[material-symbols--send]"></span>
                                 <span>Send</span>
                             </button>
-                            <button className="text-gray-500">
-                                <span className="w-5 h-5 icon-[mingcute--question-fill]"></span>
-                            </button>
+                            <Tooltip content={<ChartTooltipContent />} trigger="click">
+                                <button className="text-gray-500">
+                                    <span className="w-5 h-5 icon-[mingcute--question-fill]"></span>
+                                </button>
+                            </Tooltip>
+
                         </div>
                     </div>
                     <div className="overflow-x-auto w-full">
@@ -140,7 +161,7 @@ const UserDailyStatTable: React.FC = () => {
                             </thead>
                             <tbody>
                                 {data.map((row) => (
-                                    <UserRow key={`row-${row.id}`} row={row} />
+                                    <UserRow key={`row-${row.id}`} row={row} max={1000} />
                                 ))}
                             </tbody>
                         </table>
