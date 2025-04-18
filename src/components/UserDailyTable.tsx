@@ -1,6 +1,5 @@
 "use client"
 import useUserDailyStat, { UserDailyStat } from "@/hooks/useUserDailyStat";
-import { Icon } from "@iconify/react";
 import React, { useEffect } from "react";
 import { Spinner } from "flowbite-react";
 
@@ -49,7 +48,7 @@ const DailyCount: React.FC<{
         <div className="flex items-center gap-1">
             <div className="relative h-1 w-22 bg-blue-100 rounded-full ">
                 <div className={`absolute left-0 top-0 h-full bg-blue-500 rounded-full`}
-                    style={{ width: `${percentage}%` }}/>
+                    style={{ width: `${percentage}%` }} />
             </div>
             <span className="text-sm font-medium text-gray-900">
                 {displayValue}
@@ -102,11 +101,11 @@ const UserDailyStatTable: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-3">
                             <button className="bg-blue-700 hover:bg-blue-800 text-white rounded-lg px-3 py-2 flex flex-row gap-1 text-base font-medium">
-                                <Icon className="w-5 h-5" icon="material-symbols:send" />
+                                <span className="w-5 h-5 mt-0.5 icon-[material-symbols--send]"></span>
                                 <span>Send</span>
                             </button>
                             <button className="text-gray-500">
-                                <Icon className="w-9 h-9" icon="mingcute:question-fill" />
+                                <span className="w-5 h-5 icon-[mingcute--question-fill]"></span>
                             </button>
                         </div>
                     </div>
@@ -151,16 +150,16 @@ const UserDailyStatTable: React.FC = () => {
                             <span>Rows per page:</span>
                             <button className="flex items-center">
                                 {n_row}
-                                <Icon className="w-9 h-9" icon="material-symbols-light:arrow-drop-down" />
+                                <span className="w-5 h-5 icon-[material-symbols-light--arrow-drop-down]"></span>
                             </button>
                         </div>
                         <div className="flex items-center gap-3">
-                            <button className="text-gray-400">
-                                <Icon className="w-9 h-9" icon="si:chevron-left-fill" />
+                            <button className="text-gray-400 flex items-center">
+                                <span className="w-6 h-6 icon-[material-symbols-light--chevron-left-rounded]"></span>
                             </button>
                             <span className="text-base text-gray-900">Page {current_page} of many</span>
-                            <button className="text-gray-700">
-                                <Icon className="w-9 h-9" icon="material-symbols:chevron-right-rounded" />
+                            <button className="text-gray-700 flex items-center">
+                                <span className="w-6 h-6 icon-[material-symbols-light--chevron-right-rounded]"></span>
                             </button>
                         </div>
                     </div>
