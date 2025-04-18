@@ -35,13 +35,6 @@ const Page = () => {
       onConfigSave={(sensor, config) => { sampleConfig[sensor] = config; setSampleConfig({ ...sampleConfig }) }} />
   </Card>);
 }
-// const Page = () => {
-//   return (
-//     <Card>
-//       <p>This is the setting page.</p>
-//     </Card>
-//   );
-// }
 
 
 

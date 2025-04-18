@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import DnDList from '@/components/DnDList';
+import DnDList from '@/components/common/DnDList';
 
 
 const Item: React.FC<{
