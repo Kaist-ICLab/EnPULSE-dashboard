@@ -33,7 +33,7 @@ const Page = () => {
         </div>
 
         {/* Chat panel */}
-        <div className="flex flex-1">
+        <div className="flex flex-1 min-h-0">
           {/* 왼쪽 패널 */}
           <div className="w-full sm:w-1/3 lg:w-1/4 border-r border-gray-200 overflow-y-auto">
             <div className="space-y-2 px-4">
