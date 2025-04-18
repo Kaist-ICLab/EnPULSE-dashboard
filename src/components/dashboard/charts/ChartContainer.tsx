@@ -61,7 +61,7 @@ const ChartContainer: React.FC<{
                 <ChartItem key={timeline.id}
                     timeline={timeline}
                     pinned={true}
-                    onPin={(_) => setPinnedChart(null)}
+                    onPin={() => setPinnedChart(null)}
                     timeRange={timeRange}
                     setTimeRange={setTimeRange}
                     isSelected={selectedChart === timeline.id}
@@ -110,9 +110,9 @@ const ChartItem: React.FC<{
                 console.log("Clicked", timeline.id);
             }} >
                 <DragHandle>
-                    <span className='w-6 h-6 text-gray-300 icon-[mdi--dots-vertical]' />
+                    <span className='w-6 h-6 ml-4 mr-2 text-gray-300 icon-[mdi--hamburger-menu]' />
                 </DragHandle>
-                <div className='flex flex-col w-12'>
+                <div className='flex flex-col w-12 mr-8'>
                     <div className='text-sm overflow-ellipsis'>{timeline.title}</div>
                     <button className='text-gray-400 w-6 cursor-pointer' onClick={() => {
                         onPin(!pinned);

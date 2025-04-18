@@ -105,7 +105,8 @@ const ChartTooltipContent: React.FC = () => {
 
 const UserDailyStatTable: React.FC<{
     setUserId: (userId: string) => void;
-}> = ({ setUserId }) => {
+    openMessageModal: (sendTo: string) => void;
+}> = ({ setUserId, openMessageModal }) => {
     const { data, columns, loading } = useUserDailyStat();
     const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } = useDailyStatTableCheckedState(data);
     const n_row = 5;
@@ -131,7 +132,7 @@ const UserDailyStatTable: React.FC<{
                             }
                             {
                                 checkCount >= 1 && (
-                                    <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3">
+                                    <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => openMessageModal(data.filter((_, i) => checkedState[i]).map(v => v.email).join(', '))}>
                                         <span className="w-5 h-5 mt-0.5 icon-[material-symbols--send]"></span>
                                         <span>Send</span>
                                     </Button>
