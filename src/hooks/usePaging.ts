@@ -1,9 +1,10 @@
 import { useState } from "react";
 
 export function usePaging(
+    initialRowsPerPage: number
 ) {
     const [page, setPage] = useState(1)
-    const [rowsPerPage, _setRowsPerPage] = useState(10)
+    const [rowsPerPage, _setRowsPerPage] = useState(initialRowsPerPage)
     const [totalPage, setTotalPage] = useState(1)
 
     const changePageBy = (pageDelta: number) => {

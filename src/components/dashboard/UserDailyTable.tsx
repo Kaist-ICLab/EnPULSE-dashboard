@@ -1,9 +1,10 @@
 "use client"
 import useUserDailyStat, { UserDailyStat } from "@/hooks/useUserDailyStat";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Select, Spinner, Tooltip } from "flowbite-react";
 import { useDailyStatTableCheckedState } from "@/hooks/useDailyStatTableCheckedState";
 import { usePaging } from "@/hooks/usePaging";
+import useFormatConfig from "@/hooks/useFormatConfig";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -67,10 +68,9 @@ const rowStyle = "border-b border-l border-gray-200"
 
 const UserRow: React.FC<{
     row: UserDailyStat;
-    max: number;
+    max: { [key: string]: number };
     isSelected: boolean;
     toggleChecked: () => void;
-    // columns: string[];
 }> = ({ row, max, isSelected = false, toggleChecked }) => {
     return (
         <tr className="border-b hover:bg-gray-50 border-gray-200 border-l text-sm" onClick={toggleChecked}>
@@ -81,8 +81,8 @@ const UserRow: React.FC<{
             <td className={cellStyle}>{row.contacts} Contacts</td>
             {Object.entries(row.columns).map(([key, metric]) => (
                 [<td key={`${key}-dailycount`} className={cellStyle}>
-                    <Tooltip content={`${metric.dailyCount} / ${max}`}>
-                        <DailyCount value={metric.dailyCount} max={max} />
+                    <Tooltip content={`${metric.dailyCount} / ${max[key]}`}>
+                        <DailyCount value={metric.dailyCount} max={max[key]} />
                     </Tooltip>
                 </td>,
                 <td key={`${key}-timeline`} className={cellStyle}>
@@ -112,9 +112,19 @@ const UserDailyStatTable: React.FC<{
     const [date, setDate] = useState(new Date())
     const [tableHeight, setTableHeight] = useState(500)
 
-    const { page, rowsPerPage, totalPage, changePageBy, setRowsPerPage, setTotalPage } = usePaging()
-    const { data, columns, loading } = useUserDailyStat(date, page, rowsPerPage, setTotalPage);
+    const { page, rowsPerPage, totalPage, changePageBy, setRowsPerPage, setTotalPage } = usePaging(5)
+    const { loading: configLoading, formatConfig } = useFormatConfig();
+    const { data, columns, maxDailyCount, loading: statLoading } = useUserDailyStat(date, page, rowsPerPage, setTotalPage);
     const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } = useDailyStatTableCheckedState(data);
+
+    const loading = statLoading || configLoading;
+    const dailyCountThreshold = useMemo(() => {
+        const result: { [key: string]: number } = {};
+        Object.entries(formatConfig).forEach(([sensorName, config]) => (
+            result[sensorName] = config.thresholdMode == 'max' ? maxDailyCount[sensorName] : config.threshold
+        ))
+        return result;
+    }, [formatConfig, maxDailyCount])
 
     useEffect(() => {
         if (ref.current && !loading) {
@@ -193,7 +203,7 @@ const UserDailyStatTable: React.FC<{
                     </thead>
                     <tbody>
                         {data.map((row, index) => (
-                            <UserRow key={`row-${row.id}`} row={row} max={1000} isSelected={checkedState[index]} toggleChecked={() => toggleChecked(index)} />
+                            <UserRow key={`row-${row.id}`} row={row} max={dailyCountThreshold} isSelected={checkedState[index]} toggleChecked={() => toggleChecked(index)} />
                         ))}
                     </tbody>
                 </table>)}

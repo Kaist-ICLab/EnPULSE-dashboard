@@ -210,6 +210,17 @@ export const useUserDailyStat = (
         return data.length > 0 ? Object.keys(data[0].columns) : []
     }, [data])
 
+    // In practice, this should be calculated by the server as the client cannot see all the data
+    const maxDailyCount = useMemo(() => {
+        const result: { [key: string]: number } = {};
+        columns.forEach(column => {
+            result[column] = fakeData.reduce((max, user) => {
+                return Math.max(max, user.columns[column].dailyCount);
+            }, 0);
+        });
+        return result;
+    }, [columns]);
+
     // TODO: Replace with actual API call
     useEffect(() => {
         setLoading(true)
@@ -222,7 +233,7 @@ export const useUserDailyStat = (
         }, 500) // 시뮬레이션용 딜레이
     }, [date, page, rowsPerPage, setTotalPage])
 
-    return { data, columns, loading }
+    return { data, columns, maxDailyCount, loading }
 }
 
 export default useUserDailyStat
