@@ -26,43 +26,4 @@ const Header: React.FC = () => {
     );
 }
 
-
-// const Dropdown: React.FC<{
-//     campaigns: { id: number; name: string }[];
-//     currentCampaign: { id: number; name: string };
-//     setDropdownOpenStatus: (status: boolean) => void;
-// }> = ({
-//     campaigns,
-//     currentCampaign,
-//     setDropdownOpenStatus
-// }) => {
-//         const ref = useRef<HTMLInputElement>(null);
-//         const handleClickOutside = (event: MouseEvent) => {
-//             if (ref.current && !ref.current.contains(event.target as Node)) {
-//                 setDropdownOpenStatus(false);
-//             }
-//         };
-//         useEffect(() => {
-//             document.addEventListener("mousedown", handleClickOutside);
-//             return () => {
-//                 document.removeEventListener("mousedown", handleClickOutside);
-//             };
-//         }, []);
-
-//         return (<div ref={ref} className="absolute z-10 mt-2 py-2 w-75 origin-top-right divide-y divide-gray-200 rounded-lg bg-white ring-1 shadow-lg ring-black/5 focus:outline-hidden top-4">
-//             <div className="pb-1">
-//                 <a href={`/campaigns/${currentCampaign.id}`} className="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg">{currentCampaign.name}</a>
-//                 <Link href="/campaigns" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">See all campaigns</Link>
-//                 <Link href="/campaigns/create" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">Create a campaign</Link>
-//             </div>
-//             <div>
-//                 <div className="block mt-1 px-4 py-2 text-sm text-gray-500" onClick={(e) => { e.stopPropagation() }}>Your campaigns</div>
-//                 {campaigns.map((campaign) => (
-//                     <a key={campaign.id} href={`/campaigns/${campaign.id}/`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">{campaign.name}</a>
-//                 ))}
-//             </div>
-//         </div>)
-//     }
-
-
 export default Header;

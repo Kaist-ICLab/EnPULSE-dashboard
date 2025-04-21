@@ -53,7 +53,7 @@ const TimelineOverview: React.FC<({
                 </div>
 
                 <div className="w-full rounded-lg p-4 flex flex-col gap-4">
-                    {loading && <Spinner />}
+                    {loading && <Spinner className="w-full" />}
                     {error && (
                         <p className="text-red-500 font-medium">❌ 데이터 로딩 실패: {error}</p>
                     )}

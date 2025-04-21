@@ -1,8 +1,9 @@
 "use client"
 import useUserDailyStat, { UserDailyStat } from "@/hooks/useUserDailyStat";
-import React from "react";
-import { Button, Spinner, Tooltip } from "flowbite-react";
+import React, { useEffect, useRef, useState } from "react";
+import { Button, Select, Spinner, Tooltip } from "flowbite-react";
 import { useDailyStatTableCheckedState } from "@/hooks/useDailyStatTableCheckedState";
+import { usePaging } from "@/hooks/usePaging";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -107,101 +108,117 @@ const UserDailyStatTable: React.FC<{
     setUserId: (userId: string) => void;
     openMessageModal: (sendTo: string) => void;
 }> = ({ setUserId, openMessageModal }) => {
-    const { data, columns, loading } = useUserDailyStat();
+    const ref = useRef<HTMLDivElement>(null)
+    const [date, setDate] = useState(new Date())
+    const [tableHeight, setTableHeight] = useState(500)
+
+    const { page, rowsPerPage, totalPage, changePageBy, setRowsPerPage, setTotalPage } = usePaging()
+    const { data, columns, loading } = useUserDailyStat(date, page, rowsPerPage, setTotalPage);
     const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } = useDailyStatTableCheckedState(data);
-    const n_row = 5;
-    const current_page = 1;
+
+    useEffect(() => {
+        if (ref.current && !loading) {
+            setTableHeight(ref.current.clientHeight)
+        }
+    }, [ref, loading])
 
     return (
         <div className="bg-white rounded-xl shadow-md p-3 w-full overflow-hidden flex flex-col items-center justify-center">
-            {loading ?
-                <Spinner /> : <>
-                    <div className="flex items-center justify-between px-2 py-3 w-full">
-                        <div className="flex items-center gap-4">
-                            <h2 className="text-2xl font-semibold">Daily Overview</h2>
-                            <input type="date" className="border border-gray-200 bg-gray-50 text-gray-500 rounded px-4 py-3 text-sm" />
-                        </div>
-                        <div className="flex items-center gap-3">
-                            {
-                                checkCount == 1 && (
-                                    <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => setUserId(data[checkedState.findIndex((state) => state)].id)}>
-                                        {/* <span className="w-5 h-5 mt-0.5 icon-[material-symbols--send]"></span> */}
-                                        <span>Timeline Overview</span>
-                                    </Button>
-                                )
-                            }
-                            {
-                                checkCount >= 1 && (
-                                    <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => openMessageModal(data.filter((_, i) => checkedState[i]).map(v => v.email).join(', '))}>
-                                        <span className="w-5 h-5 mt-0.5 icon-[material-symbols--send]"></span>
-                                        <span>Send</span>
-                                    </Button>
-                                )
-                            }
-                            <Tooltip content={<ChartTooltipContent />} trigger="click">
-                                <button className="text-gray-500">
-                                    <span className="mt-1 w-6 h-6 icon-[mingcute--question-fill]"></span>
-                                </button>
-                            </Tooltip>
+            <div className="flex items-center justify-between px-2 py-3 w-full">
+                <div className="flex items-center gap-4">
+                    <h2 className="text-2xl font-semibold">Daily Overview</h2>
+                    <input
+                        type="date"
+                        className="border border-gray-200 bg-gray-50 text-gray-500 rounded px-4 py-3 text-sm"
+                        value={date.toISOString().split('T')[0]}
+                        onChange={(e) => { changePageBy(-page); setDate(new Date(e.target.value)) }}
+                    />
+                </div>
+                <div className="flex items-center gap-3">
+                    {
+                        checkCount == 1 && (
+                            <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => setUserId(data[checkedState.findIndex((state) => state)].id)}>
+                                <span>Timeline Overview</span>
+                            </Button>
+                        )
+                    }
+                    {
+                        checkCount >= 1 && (
+                            <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => openMessageModal(data.filter((_, i) => checkedState[i]).map(v => v.email).join(', '))}>
+                                <span className="w-5 h-5 mt-0.5 icon-[material-symbols--send]"></span>
+                                <span>Send</span>
+                            </Button>
+                        )
+                    }
+                    <Tooltip content={<ChartTooltipContent />} trigger="click">
+                        <button className="text-gray-500">
+                            <span className="mt-1 w-6 h-6 icon-[mingcute--question-fill]"></span>
+                        </button>
+                    </Tooltip>
 
-                        </div>
+                </div>
+            </div>
+            <div className="overflow-x-auto w-full" ref={ref}>
+                {loading ? (
+                    <div className="flex justify-center items-center" style={{ minHeight: `${tableHeight}px` }}  >
+                        <Spinner size="xl" />
                     </div>
-                    <div className="overflow-x-auto w-full">
-                        <table className="table-fixed w-fit">
-                            <colgroup>
-                                <col className="w-[60px]" />
-                                <col className="w-[200px]" />
-                                <col className="w-[200px]" />
-                                {columns.map((key) => ([
-                                    <col key={`${key}-col-dailycount`} className="w-[160px]" />,
-                                    <col key={`${key}-col-timeline`} className="w-[160px]" />
-                                ]))}
-                            </colgroup>
-                            <thead className="uppercase text-gray-500 border-t border-gray-200 bg-gray-50 text-xs">
-                                <tr className={[rowStyle, 'h-[25px]'].join(' ')}>
-                                    <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>
-                                        <input className="w-4 h-4" type="checkbox" checked={isAllChecked} onChange={toggleAllChecked} />
-                                    </th>
-                                    <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>Email / UID</th>
-                                    <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>Contacts</th>
-                                    {columns.map((key) => (
-                                        <th key={`${key}-th`} className={['py-0', cellStyle, 'text-center'].join(' ')} colSpan={2}>{key.replace(/_/g, " ")}</th>
-                                    ))}
-                                </tr>
-                                <tr className={[rowStyle, 'h-[25px]'].join(' ')}>
-                                    {columns.map((key) => ([
-                                        <th key={`${key}-th-dailycount`} className={['py-0', cellStyle, 'text-center'].join(' ')}>DAILY COUNT</th>,
-                                        <th key={`${key}-th-timeline`} className={['py-0', cellStyle, 'text-center'].join(' ')}>DAILY TIMELINE</th>
-                                    ]))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.map((row, index) => (
-                                    <UserRow key={`row-${row.id}`} row={row} max={1000} isSelected={checkedState[index]} toggleChecked={() => toggleChecked(index)} />
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div className="flex items-center justify-between px-2 py-3 w-full">
-                        <div className="flex items-center gap-4">
-                            <span>Rows per page:</span>
-                            <button className="flex items-center">
-                                {n_row}
-                                <span className="w-5 h-5 icon-[material-symbols-light--arrow-drop-down]"></span>
-                            </button>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <button className="text-gray-400 flex items-center">
-                                <span className="w-6 h-6 icon-[material-symbols-light--chevron-left-rounded]"></span>
-                            </button>
-                            <span className="text-base text-gray-900">Page {current_page} of many</span>
-                            <button className="text-gray-700 flex items-center">
-                                <span className="w-6 h-6 icon-[material-symbols-light--chevron-right-rounded]"></span>
-                            </button>
-                        </div>
-                    </div>
-                </>
-            }
+                ) : (<table className="table-fixed w-fit" >
+                    <colgroup>
+                        <col className="w-[60px]" />
+                        <col className="w-[200px]" />
+                        <col className="w-[200px]" />
+                        {columns.map((key) => ([
+                            <col key={`${key}-col-dailycount`} className="w-[160px]" />,
+                            <col key={`${key}-col-timeline`} className="w-[160px]" />
+                        ]))}
+                    </colgroup>
+                    <thead className="uppercase text-gray-500 border-t border-gray-200 bg-gray-50 text-xs">
+                        <tr className={[rowStyle, 'h-[25px]'].join(' ')}>
+                            <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>
+                                <input className="w-4 h-4" type="checkbox" checked={isAllChecked} onChange={toggleAllChecked} />
+                            </th>
+                            <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>Email / UID</th>
+                            <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>Contacts</th>
+                            {columns.map((key) => (
+                                <th key={`${key}-th`} className={['py-0', cellStyle, 'text-center'].join(' ')} colSpan={2}>{key.replace(/_/g, " ")}</th>
+                            ))}
+                        </tr>
+                        <tr className={[rowStyle, 'h-[25px]'].join(' ')}>
+                            {columns.map((key) => ([
+                                <th key={`${key}-th-dailycount`} className={['py-0', cellStyle, 'text-center'].join(' ')}>DAILY COUNT</th>,
+                                <th key={`${key}-th-timeline`} className={['py-0', cellStyle, 'text-center'].join(' ')}>DAILY TIMELINE</th>
+                            ]))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {data.map((row, index) => (
+                            <UserRow key={`row-${row.id}`} row={row} max={1000} isSelected={checkedState[index]} toggleChecked={() => toggleChecked(index)} />
+                        ))}
+                    </tbody>
+                </table>)}
+            </div>
+            <div className="flex items-center justify-between px-2 py-3 w-full">
+                <div className="flex items-center gap-4">
+                    <span>Rows per page:</span>
+                    <Select value={rowsPerPage.toString()} className="w-20" onChange={(e) => setRowsPerPage(parseInt(e.target.value))}>
+                        {
+                            [5, 10, 15].map((v, i) => (
+                                <option key={`rows-per-page-${i}`} value={v}>{v}</option>
+                            ))
+                        }
+                    </Select>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button className={`text-gray-700 disabled:text-gray-400 flex items-center enabled:cursor-pointer`} disabled={page == 1} onClick={() => changePageBy(-1)}>
+                        <span className="w-6 h-6 icon-[material-symbols-light--chevron-left-rounded]"></span>
+                    </button>
+                    <span className="text-base text-gray-900">Page {page} of {totalPage}</span>
+                    <button className="text-gray-700 disabled:text-gray-400 flex items-center enabled:cursor-pointer" disabled={page == totalPage} onClick={() => changePageBy(1)}>
+                        <span className="w-6 h-6 icon-[material-symbols-light--chevron-right-rounded]"></span>
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
