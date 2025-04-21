@@ -14,12 +14,14 @@ const TimelineChart: React.FC<{
 }> = ({ id, data, chartType, timeRange, onComplete }) => {
     const chartRef = useRef<HTMLDivElement>(null);
     const initialTimeRangeRef = useRef<{ start: number, end: number } | null>(null);
+    // Store original colors for each trace
+    const originalColorsRef = useRef<{ [key: number]: string }>({});
 
     useEffect(() => {
         if (typeof window === 'undefined' || !chartRef.current) return;
         const chartElement = chartRef.current;
         const layout: Partial<Layout> = {
-            margin: { t: 0, b: 0, l: 0, r: 0 },
+            margin: { t: 30, b: 0, l: 0, r: 0 },
             plot_bgcolor: 'white',
             paper_bgcolor: 'white',
             xaxis: {
@@ -29,6 +31,15 @@ const TimelineChart: React.FC<{
             },
             bargap: 0.01,
             dragmode: 'zoom',
+            showlegend: chartType === 'categorical',
+            legend: {
+                x: 0.5,
+                y: 1.1,
+                orientation: 'h',
+                xanchor: 'center',
+                yanchor: 'bottom',
+                bgcolor: 'rgba(255, 255, 255, 0.7)'
+            }
         };
 
         const config: Partial<Config> = {
@@ -63,16 +74,21 @@ const TimelineChart: React.FC<{
                 categoryColors[category] = colors[index % colors.length];
             });
 
-            plotData = [{
-                x: data.timestamp,
-                y: Array(data.value.length).fill(1),
-                type: 'bar',
-                marker: {
-                    color: (data.value as string[]).map(category => categoryColors[category])
-                }
-            }];
+            for (const category of uniqueCategories) {
+                const x = data.timestamp.filter((_, i) => data.value[i] === category)
+                plotData.push({
+                    x,
+                    y: Array(x.length).fill(1),
+                    type: 'bar',
+                    name: category,
+                    marker: {
+                        color: categoryColors[category]
+                    },
+                    legendgroup: category,
+                    showlegend: true
+                })
+            }
         }
-
 
         // Plotly.newPlot(chartRef.current, plotData, layout, config)
         createPlot(chartRef.current, plotData, layout, config)
@@ -98,6 +114,38 @@ const TimelineChart: React.FC<{
                 };
 
                 plot.on("plotly_relayout", handleRelayout);
+
+                // Add event handler for legend clicks
+                plot.on("plotly_legendclick", (event: { curveNumber: number }) => {
+                    // Get the clicked trace index
+                    const traceIndex = event.curveNumber;
+
+                    // Get the current visibility state
+                    const isVisible = plot.data[traceIndex].visible !== 'legendonly';
+
+                    // Store the original color if not already stored
+                    if (!originalColorsRef.current[traceIndex]) {
+                        originalColorsRef.current[traceIndex] = plot.data[traceIndex].marker?.color as string || '#3b82f6';
+                    }
+
+                    // Get the color to use (gray when hiding, original when showing)
+                    const colorToUse = isVisible ? '#d1d5db' : originalColorsRef.current[traceIndex];
+
+                    // Update the trace color based on visibility
+                    loadPlotly().then(Plotly => {
+                        // Use the chart element as the container
+                        const chartElement = chartRef.current;
+                        if (!chartElement) return;
+
+                        // Update the trace
+                        Plotly.restyle(chartElement, {
+                            visible: isVisible ? 'legendonly' : true,
+                            marker: { color: colorToUse }
+                        }, [traceIndex]);
+                    });
+
+                    return false;
+                });
             })
             .catch((error: Error) => {
                 console.error('Error creating plot:', error);

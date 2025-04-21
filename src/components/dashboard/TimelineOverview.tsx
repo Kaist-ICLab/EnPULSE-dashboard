@@ -1,5 +1,6 @@
 "use client"
 import ChartContainer from "@/components/dashboard/charts/ChartContainer";
+import useFakeAppUsageData from "@/hooks/useFakeAppUsageData";
 import useFakeBatteryData from "@/hooks/useFakeBatteryData";
 import { Card, Select, Spinner } from "flowbite-react";
 import { useState } from "react";
@@ -10,6 +11,7 @@ const TimelineOverview: React.FC<({
     setUserId: (userId: string) => void;
 })> = ({ userId, setUserId }) => {
     const { data, loading, error } = useFakeBatteryData();
+    const { data: appUsageData } = useFakeAppUsageData();
     const [date, setDate] = useState<Date>(new Date());
 
     // Mock user data - replace with actual user data from your backend
@@ -57,7 +59,7 @@ const TimelineOverview: React.FC<({
                     {error && (
                         <p className="text-red-500 font-medium">❌ 데이터 로딩 실패: {error}</p>
                     )}
-                    {data && (
+                    {data && appUsageData && (
                         <ChartContainer timelines={[
                             {
                                 title: "Battery Charge Type",
@@ -76,6 +78,15 @@ const TimelineOverview: React.FC<({
                                 chartType: "numerical",
                                 timestamp: data.timestamp,
                                 value: data.level
+                            },
+                            {
+                                title: "App Usage",
+                                id: "app-usage",
+                                table: "app_usage",
+                                column: "app_name",
+                                chartType: "categorical",
+                                timestamp: appUsageData.timestamp,
+                                value: appUsageData.appName
                             }
                         ]} defaultTimeRange={defaultTimeRange} />
                     )}
