@@ -1,22 +1,21 @@
 "use client";
-import useCampaigns from "@/hooks/useCampaigns";
 import { usePathname } from "next/navigation";
 import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems, SidebarLogo } from "flowbite-react";
+import Link from "next/link";
 
 const DashboardSidebar: React.FC = () => {
-    const { campaignId } = useCampaigns();
     const pathname = usePathname();
 
     const isActive = (href: string) => {
         const path = pathname.split("/");
-        const hrefPath = href.split("/");
-        return path[3] === hrefPath[3]; // Compare [here]: /campaigns/:campaignId/[here]
+        const hrefPath = href.slice(2)
+        return path[3] === hrefPath; // Compare [here]: /campaigns/:campaignId/[here]
     };
 
     const menus = [
-        { name: "Dashboard", icon: "icon-[fluent-mdl2--b-i-dashboard]", href: `/campaigns/${campaignId}/dashboard` },
-        { name: "Messaging", icon: "icon-[mi--message-alt]", href: `/campaigns/${campaignId}/messaging` },
-        { name: "Settings", icon: "icon-[uil--setting]", href: `/campaigns/${campaignId}/settings` },
+        { name: "Dashboard", icon: "icon-[fluent-mdl2--b-i-dashboard]", href: `./dashboard` },
+        { name: "Messaging", icon: "icon-[mi--message-alt]", href: `./messaging` },
+        { name: "Settings", icon: "icon-[uil--setting]", href: `./settings` },
     ];
 
     return (
@@ -31,7 +30,7 @@ const DashboardSidebar: React.FC = () => {
                 <SidebarItemGroup>
                     {
                         menus.map((menu, idx) => (
-                            <SidebarItem key={`menu-${idx}`} icon={SidebarIcon({ icon: menu.icon })} href={menu.href} className={isActive(menu.href) ? "bg-gray-200 hover:bg-gray-200" : "hover:bg-gray-100"}>
+                            <SidebarItem key={`menu-${idx}`} as={Link} href={menu.href} icon={SidebarIcon({ icon: menu.icon })} className={`my-2 ${isActive(menu.href) ? "bg-gray-200 hover:bg-gray-200" : "hover:bg-gray-100"}`}>
                                 <span className="mr-1 align-baseline">{menu.name}</span>
                             </SidebarItem>
                         ))

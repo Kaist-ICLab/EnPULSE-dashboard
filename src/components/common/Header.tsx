@@ -1,11 +1,15 @@
 "use client";
-import useCampaigns from "@/hooks/useCampaigns";
-import React from "react";
+import useCampaigns, { Campaign } from "@/hooks/useCampaigns";
+import React, { useEffect } from "react";
 import CampaignDropdown from "../dashboard/CampaignDropdown";
 
 
-const Header: React.FC = () => {
-    const { campaigns, currentCampaign } = useCampaigns();
+const Header: React.FC<{ campaigns: Campaign[], currentCampaign: Campaign }> = ({ campaigns, currentCampaign }) => {
+    console.log(currentCampaign.id)
+    const { setCampaignValues } = useCampaigns();
+    useEffect(() => {
+        setCampaignValues(currentCampaign.id, campaigns);
+    }, [currentCampaign, campaigns, setCampaignValues]);
 
     return (
         <div className="w-full h-16 flex justify-between items-center border-b border-gray-200 px-4">

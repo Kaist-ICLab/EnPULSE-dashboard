@@ -1,6 +1,7 @@
 "use client";
-import {Card} from "flowbite-react";
+import { Card } from "flowbite-react";
 import useCampaigns from "@/hooks/useCampaigns";
+import Link from "next/link";
 
 // Campaign selection page
 const CampaignsPage: React.FC = () => {
@@ -15,9 +16,9 @@ const CampaignsPage: React.FC = () => {
                 <div className="flex flex-row justify-between items-center p-4 gap-8">
                     {campaigns.map((campaign) => (
                         <Card key={`campaign-${campaign.id}`} >
-                            <a href={`/campaigns/${campaign.id}`} className="flex flex-col items-center">
+                            <Link href={`/campaigns/${campaign.id}`} className="flex flex-col items-center">
                                 <div>{`campagin-${campaign.id} / ${campaign.name}`}</div>
-                            </a>
+                            </Link>
                         </Card>
                     ))}
                 </div>
