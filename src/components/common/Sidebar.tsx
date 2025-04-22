@@ -1,6 +1,6 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems, SidebarLogo } from "flowbite-react";
+import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems } from "flowbite-react";
 import Link from "next/link";
 
 const DashboardSidebar: React.FC = () => {
@@ -19,13 +19,8 @@ const DashboardSidebar: React.FC = () => {
     ];
 
     return (
-        <Sidebar>
-            <SidebarLogo
-                img="/logo.png"
-                href="/"
-            >
-                Datasentry
-            </SidebarLogo>
+        <Sidebar className="h-screen border-r-1 border-gray-300">
+            <div className="px-2 mb-5 flex items-center text-black text-2xl font-bold">DataSentry</div>
             <SidebarItems>
                 <SidebarItemGroup>
                     {
