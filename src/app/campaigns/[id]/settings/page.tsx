@@ -3,12 +3,18 @@
 import { Card, TextInput, Button } from "flowbite-react";
 import ValidatorSelector from "@/components/ValidatorSelector";
 import Section from "@/components/Section";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCampaigns } from "@/hooks/useCampaigns";
 
 const Page = () => {
-  const { currentCampaign } = useCampaigns();
+  const { currentCampaign, renameCampaign } = useCampaigns();
   const [campaignName, setCampaignName] = useState(currentCampaign.name);
+  const [renameStatus, setRenameStatus] = useState<{ success: boolean; message: string } | null>(null);
+
+  // Synchronize campaignName with currentCampaign.name when it changes
+  useEffect(() => {
+    setCampaignName(currentCampaign.name);
+  }, [currentCampaign.name]);
 
   const handleValidUrl = (url: string) => {
     // Handle the valid URL here
@@ -21,8 +27,19 @@ const Page = () => {
   };
 
   const handleRename = () => {
-    // Handle campaign rename here
-    console.log('Renaming campaign to:', campaignName);
+    // Rename the campaign and check if it was successful
+    const isRenamed = renameCampaign(currentCampaign.id, campaignName);
+    
+    if (isRenamed) {
+      setRenameStatus({ success: true, message: "Campaign renamed successfully" });
+    } else {
+      setRenameStatus({ success: false, message: "No changes made or invalid name" });
+    }
+    
+    // Clear the status message after 3 seconds
+    setTimeout(() => {
+      setRenameStatus(null);
+    }, 3000);
   };
 
   return (
@@ -49,6 +66,11 @@ const Page = () => {
                   Rename
                 </Button>
               </div>
+              {renameStatus && (
+                <div className={`mt-2 text-sm ${renameStatus.success ? 'text-green-600' : 'text-amber-600'}`}>
+                  {renameStatus.message}
+                </div>
+              )}
             </div>
           </Section>
 
