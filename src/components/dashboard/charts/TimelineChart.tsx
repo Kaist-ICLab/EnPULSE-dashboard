@@ -15,9 +15,18 @@ const TimelineChart: React.FC<{
     const chartRef = useRef<HTMLDivElement>(null);
     const initialTimeRangeRef = useRef<{ start: number, end: number } | null>(null);
     // Store original colors for each trace
-    const originalColorsRef = useRef<{ [key: number]: string }>({});
+    const colorQueue = useRef<{ traceIndex: number, colorIndex: number }[] | null>(null)
 
     useEffect(() => {
+        const colors = [
+            '#3b82f6',
+            '#10b981',
+            '#f59e0b',
+            '#ef4444',
+            '#8b5cf6',
+        ];
+        const gray = '#d1d5db'
+
         if (typeof window === 'undefined' || !chartRef.current) return;
         const chartElement = chartRef.current;
         const layout: Partial<Layout> = {
@@ -59,38 +68,30 @@ const TimelineChart: React.FC<{
                 }
             }];
         } else {
-            const colors = [
-                '#3b82f6',
-                '#10b981',
-                '#f59e0b',
-                '#ef4444',
-                '#8b5cf6',
-            ];
-
             // Create a map of unique categories to colors
             const uniqueCategories = [...new Set(data.value as string[])].sort();
-            const categoryColors: { [key: string]: string } = {};
-            uniqueCategories.forEach((category, index) => {
-                categoryColors[category] = colors[index % colors.length];
-            });
+            if (colorQueue.current == null) {
+                colorQueue.current = uniqueCategories.filter((_, i) => i < colors.length).map((_, i) => ({ traceIndex: i, colorIndex: i }))
+            }
 
-            for (const category of uniqueCategories) {
+            uniqueCategories.forEach((category, i) => {
                 const x = data.timestamp.filter((_, i) => data.value[i] === category)
+                const colorIndexEntry = colorQueue.current?.filter(item => item.traceIndex === i)[0]
+                const colorIndex = colorIndexEntry?.colorIndex ?? -1
                 plotData.push({
                     x,
                     y: Array(x.length).fill(1),
                     type: 'bar',
                     name: category,
                     marker: {
-                        color: categoryColors[category]
+                        color: colorIndex !== -1 ? colors[colorIndex] : gray
                     },
                     legendgroup: category,
                     showlegend: true
                 })
-            }
+            })
         }
 
-        // Plotly.newPlot(chartRef.current, plotData, layout, config)
         createPlot(chartRef.current, plotData, layout, config)
             .then((plot) => {
                 // Store the initial time range
@@ -117,19 +118,39 @@ const TimelineChart: React.FC<{
 
                 // Add event handler for legend clicks
                 plot.on("plotly_legendclick", (event: { curveNumber: number }) => {
+                    console.log('click')
+                    if (colorQueue.current == null) return
                     // Get the clicked trace index
                     const traceIndex = event.curveNumber;
 
                     // Get the current visibility state
-                    const isVisible = plot.data[traceIndex].visible !== 'legendonly';
+                    let colorToUse = gray
+                    let popIndex = -1
+                    const isVisible = colorQueue.current.some(item => item.traceIndex === traceIndex)
 
-                    // Store the original color if not already stored
-                    if (!originalColorsRef.current[traceIndex]) {
-                        originalColorsRef.current[traceIndex] = plot.data[traceIndex].marker?.color as string || '#3b82f6';
+                    if (!isVisible) {
+                        if (colorQueue.current.length == colors.length) {
+                            const { traceIndex: removedTraceIndex, colorIndex } = colorQueue.current.splice(0, 1)[0]
+                            colorQueue.current.push({ traceIndex, colorIndex })
+                            colorToUse = colors[colorIndex]
+                            popIndex = removedTraceIndex
+                        } else {
+                            const existingIndex = colorQueue.current.map(item => item.colorIndex)
+                            for (let i = 0; i < colors.length; i++) {
+                                if (!existingIndex.includes(i)) {
+                                    colorQueue.current.push({ traceIndex, colorIndex: i })
+                                    colorToUse = colors[i]
+                                    break;
+                                }
+                            }
+                        }
+
+                    } else {
+                        const spliceIndex = colorQueue.current.findIndex(item => item.traceIndex === traceIndex)
+                        colorQueue.current.splice(spliceIndex, 1)
                     }
 
-                    // Get the color to use (gray when hiding, original when showing)
-                    const colorToUse = isVisible ? '#d1d5db' : originalColorsRef.current[traceIndex];
+                    console.log(traceIndex, colorQueue.current)
 
                     // Update the trace color based on visibility
                     loadPlotly().then(Plotly => {
@@ -139,9 +160,14 @@ const TimelineChart: React.FC<{
 
                         // Update the trace
                         Plotly.restyle(chartElement, {
-                            visible: isVisible ? 'legendonly' : true,
                             marker: { color: colorToUse }
                         }, [traceIndex]);
+
+                        if (popIndex !== -1) {
+                            Plotly.restyle(chartElement, {
+                                marker: { color: gray }
+                            }, [popIndex]);
+                        }
                     });
 
                     return false;
@@ -158,7 +184,7 @@ const TimelineChart: React.FC<{
                 }).catch(console.error);
             }
         };
-    }, [data, timeRange, id]);
+    }, [data, timeRange, id, chartType, onComplete]);
 
     return (
         <div className='w-full flex flex-row justify-center items-center'>
