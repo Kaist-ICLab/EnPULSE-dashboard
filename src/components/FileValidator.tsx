@@ -1,71 +1,26 @@
 'use client'
-import React, { useState } from 'react';
+import React from 'react';
 import { TextInput, Spinner, Button } from 'flowbite-react';
+import { useFileValidation } from '@/hooks/useFileValidation';
 
-interface FileValidatorProps {
-  onValidFile?: (file: File) => void;
-  onValidationResult?: (result: { isValid: boolean; message: string; isProgress?: boolean; } | null) => void;
-}
+const FileValidator: React.FC = () => {
+  const {
+    fileName,
+    selectFile,
+    isValidating,
+    selectedFile,
+    checkValid,
+    isValid,
+    message
+  } = useFileValidation();
 
-const FileValidator: React.FC<FileValidatorProps> = ({ onValidFile, onValidationResult }) => {
-  const [fileName, setFileName] = useState('');
-  const [isValidating, setIsValidating] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (!file.name.toLowerCase().endsWith('.db')) {
-        onValidationResult?.({
-          isValid: false,
-          message: 'DB has not intended format',
-        });
-        setFileName('');
-        setSelectedFile(null);
-        return;
-      }
-      setSelectedFile(file);
-      setFileName(file.name);
-      onValidationResult?.(null);
-    }
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    selectFile(event.target.files?.[0], event.target.files?.[0]?.name ?? '');
   };
 
-  const simulateFileCheck = async () => {
+  const handleValidate = async () => {
     if (!selectedFile) return;
-
-    setIsValidating(true);
-    onValidationResult?.({
-      isValid: false,
-      message: 'DB parsing in progress',
-      isProgress: true
-    });
-
-    try {
-      // Simulate file check delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Mock file check results
-      const mockResults = [
-        { isValid: true, message: 'DB parsed successfully' },
-        { isValid: false, message: 'DB has not intended format' }
-      ];
-
-      // Randomly select a result for demonstration
-      const result = mockResults[Math.floor(Math.random() * mockResults.length)];
-      
-      onValidationResult?.(result);
-
-      if (result.isValid && onValidFile) {
-        onValidFile(selectedFile);
-      }
-    } catch (error) {
-      onValidationResult?.({
-        isValid: false,
-        message: 'DB has not intended format',
-      });
-    } finally {
-      setIsValidating(false);
-    }
+    await checkValid(isValid, message);
   };
 
   return (
@@ -83,7 +38,7 @@ const FileValidator: React.FC<FileValidatorProps> = ({ onValidFile, onValidation
             type="file"
             id="fileInput"
             className="hidden"
-            onChange={handleFileChange}
+            onChange={handleFileSelect}
             accept=".db"
           />
           <div>
@@ -97,7 +52,7 @@ const FileValidator: React.FC<FileValidatorProps> = ({ onValidFile, onValidation
           </div>
         </div>
         <Button 
-          onClick={simulateFileCheck}
+          onClick={handleValidate}
           disabled={!selectedFile || isValidating}
           className="whitespace-nowrap"
         >
