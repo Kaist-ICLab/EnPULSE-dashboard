@@ -2,17 +2,26 @@ import { useState } from 'react';
 import TimelineChart from '@/components/dashboard/charts/TimelineChart';
 import TimelineXAxis from '@/components/dashboard/charts/TimelineXAxis';
 import { DnDProvider, DnDItem, DragHandle } from '@/components/common/DnDList';
+import { Button } from 'flowbite-react';
 import { TimelineData, ChartType } from '@/types/chart';
+import Link from 'next/link';
 
 const ChartContainer: React.FC<{
     timelines: TimelineData[];
     chartType: ChartType;
+    setChartParams: (chartType: ChartType) => void;
     defaultTimeRange: { start: number, end: number };
-}> = ({ timelines, chartType, defaultTimeRange }) => {
+}> = ({ timelines, chartType, setChartParams, defaultTimeRange }) => {
     const [timeRange, setTimeRange] = useState<{ start: number, end: number }>(defaultTimeRange);
     const [pinnedChart, setPinnedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
+
+    const comparisonName = {
+        [ChartType.InterPerson]: "Participants",
+        [ChartType.TimelineOverview]: "Sensors",
+        [ChartType.IntraPerson]: "Days"
+    }
 
     return (
         <div>
@@ -32,30 +41,18 @@ const ChartContainer: React.FC<{
                         {selectedChart && (
                             <>
                                 <span className="font-medium text-gray-700">Compare with other:</span>
-                                {chartType !== ChartType.InterPerson && (
-                                    <button
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                                        onClick={() => {/* TODO: Implement compare with other participant */ }}
-                                    >
-                                        Participants
-                                    </button>
-                                )}
-                                {chartType !== ChartType.TimelineOverview && (
-                                    <button
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                                        onClick={() => {/* TODO: Implement compare with different days */ }}
-                                    >
-                                        Sensors
-                                    </button>
-                                )}
-                                {chartType !== ChartType.IntraPerson && (
-                                    <button
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                                        onClick={() => {/* TODO: Implement compare with different days */ }}
-                                    >
-                                        Days
-                                    </button>
-                                )}
+                                {Object.entries(comparisonName).map(([type, value]) => (
+                                    chartType !== type && <Link key={type} href={`./dashboard/#${type}-comparison-chart`}>
+                                        <Button
+                                            size="md"
+                                            className="flex flex-row gap-1 text-base px-3"
+                                            onClick={() => setChartParams(type as ChartType)}
+                                        >
+                                            <span>{value}</span>
+                                        </Button>
+                                    </Link>
+
+                                ))}
                             </>
                         )}
                     </div>

@@ -1,188 +1,16 @@
 "use client"
 import ChartContainer from "@/components/dashboard/charts/ChartContainer";
-import useFakeAppUsageData from "@/hooks/useFakeAppUsageData";
-import useFakeBatteryData from "@/hooks/useFakeBatteryData";
-import { ChartType, TimelineData } from "@/types/chart";
+import useComparisonChartTimeline from "@/hooks/useComparisonChartData";
+import { ChartParams, ChartType } from "@/types/chart";
 import { Card, Select, Spinner } from "flowbite-react";
-import { useState } from "react";
 
-const defaultTimeRange = {
-    start: new Date().setHours(0, 0, 0, 0),
-    end: new Date().setHours(23, 59, 59, 999),
-}
-
-const TimelineOverview: React.FC<({
-    userId: string;
-    setUserId: (userId: string) => void;
-})> = ({ userId, setUserId }) => {
-    const { data, loading, error } = useFakeBatteryData();
-    const { data: appUsageData } = useFakeAppUsageData();
-
-    return <ComparisonChart
-        userId={userId}
-        setUserId={setUserId}
-        loading={loading}
-        error={error}
-        type={ChartType.TimelineOverview}
-        timelines={(data && appUsageData) ? (
-            [
-                {
-                    title: "Battery Charge Type",
-                    id: "battery-chargetype",
-                    table: "battery",
-                    column: "chargetype",
-                    chartType: "categorical",
-                    timestamp: data.timestamp,
-                    value: data.chargetype
-                },
-                {
-                    title: "Battery Level",
-                    id: "battery-level",
-                    table: "battery",
-                    column: "level",
-                    chartType: "numerical",
-                    timestamp: data.timestamp,
-                    value: data.level
-                },
-                {
-                    title: "App Usage",
-                    id: "app-usage",
-                    table: "app_usage",
-                    column: "app_name",
-                    chartType: "categorical",
-                    timestamp: appUsageData.timestamp,
-                    value: appUsageData.appName
-                }
-            ]) : []}
-    />
-}
-
-const IntraPersonComparison: React.FC<({
-    userId: string;
-    setUserId: (userId: string) => void;
-})> = ({ userId, setUserId }) => {
-    const { data, loading, error } = useFakeBatteryData();
-    const { data: appUsageData } = useFakeAppUsageData();
-
-    console.log(data, appUsageData);
-    return (
-        <ComparisonChart
-            userId={userId}
-            setUserId={setUserId}
-            loading={loading}
-            error={error}
-            type={ChartType.IntraPerson}
-            timelines={data && appUsageData ? (
-                [
-                    {
-                        title: "2025-04-23",
-                        id: "2025-04-23",
-                        table: "battery",
-                        column: "chargetype",
-                        chartType: "categorical",
-                        timestamp: data.timestamp,
-                        value: data.chargetype
-                    },
-                    {
-                        title: "2025-04-22",
-                        id: "2025-04-22",
-                        table: "battery",
-                        column: "chargetype",
-                        chartType: "categorical",
-                        timestamp: data.timestamp,
-                        value: data.chargetype
-                    },
-                    {
-                        title: "2025-04-21",
-                        id: "2025-04-21",
-                        table: "battery",
-                        column: "chargetype",
-                        chartType: "categorical",
-                        timestamp: data.timestamp,
-                        value: data.chargetype
-                    },
-                    {
-                        title: "2025-04-20",
-                        id: "2025-04-20",
-                        table: "battery",
-                        column: "chargetype",
-                        chartType: "categorical",
-                        timestamp: data.timestamp,
-                        value: data.chargetype
-                    },
-                ]) : []} />
-    )
-}
-
-const InterPersonComparison: React.FC<({
-    userId: string;
-    setUserId: (userId: string) => void;
-})> = ({ userId, setUserId }) => {
-    const { data, loading, error } = useFakeBatteryData();
-    const { data: appUsageData } = useFakeAppUsageData();
-
-    console.log(data, appUsageData);
-    return (
-        <ComparisonChart
-            userId={userId}
-            setUserId={setUserId}
-            loading={loading}
-            error={error}
-            type={ChartType.InterPerson}
-            timelines={data && appUsageData ? (
-                [
-                    {
-                        title: "p01@gmail.com",
-                        id: "1",
-                        table: "battery",
-                        column: "chargetype",
-                        chartType: "categorical",
-                        timestamp: data.timestamp,
-                        value: data.chargetype
-                    },
-                    {
-                        title: "p02@gmail.com",
-                        id: "2",
-                        table: "battery",
-                        column: "chargetype",
-                        chartType: "categorical",
-                        timestamp: data.timestamp,
-                        value: data.chargetype
-                    },
-                    {
-                        title: "p03@gmail.com",
-                        id: "3",
-                        table: "battery",
-                        column: "chargetype",
-                        chartType: "categorical",
-                        timestamp: data.timestamp,
-                        value: data.chargetype
-                    },
-                    {
-                        title: "p04@gmail.com",
-                        id: "4",
-                        table: "battery",
-                        column: "chargetype",
-                        chartType: "categorical",
-                        timestamp: data.timestamp,
-                        value: data.chargetype
-                    },
-                ]) : []} />
-    )
-}
 
 const ComparisonChart: React.FC<({
-    userId: string;
-    setUserId: (userId: string) => void;
-    loading: boolean;
-    error: string | null;
-    timelines: TimelineData[];
+    params: ChartParams;
+    setParams: (type: ChartType, params: ChartParams) => void;
     type: ChartType;
-})> = ({ userId, setUserId, loading, error, timelines, type }) => {
-
-    console.log(timelines)
-
-    const [date, setDate] = useState<Date>(new Date());
+})> = ({ params, setParams, type }) => {
+    const { timeline, loading, error } = useComparisonChartTimeline(params, type);
 
     const chartName = (() => {
         switch (type) {
@@ -194,6 +22,12 @@ const ComparisonChart: React.FC<({
                 return "Timeline Overview";
         }
     })();
+
+
+    const defaultTimeRange = {
+        start: new Date().setHours(0, 0, 0, 0),
+        end: new Date().setHours(23, 59, 59, 999),
+    }
 
     // Mock user data - replace with actual user data from your backend
     const users = [
@@ -219,8 +53,8 @@ const ComparisonChart: React.FC<({
                         {type !== ChartType.InterPerson && <div className="w-full sm:w-48">
                             <Select
                                 icon={() => <span className="icon-[material-symbols--person-rounded]"></span>}
-                                value={userId}
-                                onChange={(e) => setUserId(e.target.value)}
+                                value={params.uid}
+                                onChange={(e) => setParams(type, { ...params, uid: e.target.value })}
                             >
                                 <option value="">Select User</option>
                                 {users.map((user) => (
@@ -233,7 +67,8 @@ const ComparisonChart: React.FC<({
                         {type !== ChartType.TimelineOverview && <div className="w-full sm:w-48">
                             <Select
                                 icon={() => <span className="icon-[material-symbols--sensors-rounded]"></span>}
-                                defaultValue={sensors[0].id}
+                                value={params.sid}
+                                onChange={(e) => setParams(type, { ...params, sid: e.target.value })}
                             >
                                 <option value="">Select Sensor</option>
                                 {sensors.map((sensor) => (
@@ -247,8 +82,8 @@ const ComparisonChart: React.FC<({
                             <input
                                 type="date"
                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                                value={date.toISOString().split('T')[0]}
-                                onChange={(e) => setDate(new Date(e.target.value))}
+                                value={params.date.toISOString().split('T')[0]}
+                                onChange={(e) => setParams(type, { ...params, date: new Date(e.target.value) })}
                             />
                         </div>}
                     </div>
@@ -259,11 +94,16 @@ const ComparisonChart: React.FC<({
                     {error && (
                         <p className="text-red-500 font-medium">❌ 데이터 로딩 실패: {error}</p>
                     )}
-                    {timelines.length > 0 && <ChartContainer timelines={timelines} chartType={type} defaultTimeRange={defaultTimeRange} />}
+                    {timeline.length > 0 && <ChartContainer
+                        timelines={timeline}
+                        chartType={type}
+                        setChartParams={t => setParams(t, params)}
+                        defaultTimeRange={defaultTimeRange} />
+                    }
                 </div>
             </div>
         </Card>
     )
 }
 
-export { IntraPersonComparison, InterPersonComparison, TimelineOverview }
+export { ComparisonChart }

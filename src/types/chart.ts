@@ -15,3 +15,9 @@ export interface TimelineData {
     timestamp: number[];
     value: (string | number)[];
 }
+
+export type ChartParams = {
+    uid: string,
+    sid: string,
+    date: Date,
+}
