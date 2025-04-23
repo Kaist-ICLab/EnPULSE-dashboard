@@ -3,13 +3,14 @@ import TimelineChart from '@/components/dashboard/charts/TimelineChart';
 import TimelineXAxis from '@/components/dashboard/charts/TimelineXAxis';
 import { DnDProvider, DnDItem, DragHandle } from '@/components/common/DnDList';
 import { Button } from 'flowbite-react';
-import { TimelineData, ChartType } from '@/types/chart';
+import { TimelineData, ChartType, ChartParams } from '@/types/chart';
 import Link from 'next/link';
 
 const ChartContainer: React.FC<{
     timelines: TimelineData[];
     chartType: ChartType;
-    setChartParams: (chartType: ChartType) => void;
+    params: ChartParams;
+    setChartParams: (chartType: ChartType, params: ChartParams) => void;
     defaultTimeRange: { start: number, end: number };
 }> = ({ timelines, chartType, setChartParams, defaultTimeRange }) => {
     const [timeRange, setTimeRange] = useState<{ start: number, end: number }>(defaultTimeRange);
@@ -46,7 +47,7 @@ const ChartContainer: React.FC<{
                                         <Button
                                             size="md"
                                             className="flex flex-row gap-1 text-base px-3"
-                                            onClick={() => setChartParams(type as ChartType)}
+                                            onClick={() => setChartParams(type as ChartType, timelines.find(t => t.id === selectedChart)!.params)}
                                         >
                                             <span>{value}</span>
                                         </Button>

@@ -18,6 +18,7 @@ export default function useComparisonChartTimeline(params: ChartParams, type: Ch
                 table: "battery",
                 column: "chargetype",
                 chartType: "categorical",
+                params: { ...params, sid: "battery-chargetype" },
                 timestamp: data.timestamp,
                 value: data.chargetype
             },
@@ -27,6 +28,7 @@ export default function useComparisonChartTimeline(params: ChartParams, type: Ch
                 table: "battery",
                 column: "level",
                 chartType: "numerical",
+                params: { ...params, sid: "battery-level" },
                 timestamp: data.timestamp,
                 value: data.level
             },
@@ -36,6 +38,7 @@ export default function useComparisonChartTimeline(params: ChartParams, type: Ch
                 table: "app_usage",
                 column: "app_name",
                 chartType: "categorical",
+                params: { ...params, sid: "app-usage" },
                 timestamp: appUsageData.timestamp,
                 value: appUsageData.appName
             }
@@ -48,6 +51,7 @@ export default function useComparisonChartTimeline(params: ChartParams, type: Ch
                 table: "battery",
                 column: "chargetype",
                 chartType: "categorical",
+                params: { ...params, uid: "1" },
                 timestamp: data.timestamp,
                 value: data.chargetype
             },
@@ -57,6 +61,7 @@ export default function useComparisonChartTimeline(params: ChartParams, type: Ch
                 table: "battery",
                 column: "chargetype",
                 chartType: "categorical",
+                params: { ...params, uid: "2" },
                 timestamp: data.timestamp,
                 value: data.chargetype
             },
@@ -66,6 +71,7 @@ export default function useComparisonChartTimeline(params: ChartParams, type: Ch
                 table: "battery",
                 column: "chargetype",
                 chartType: "categorical",
+                params: { ...params, uid: "3" },
                 timestamp: data.timestamp,
                 value: data.chargetype
             },
@@ -75,6 +81,7 @@ export default function useComparisonChartTimeline(params: ChartParams, type: Ch
                 table: "battery",
                 column: "chargetype",
                 chartType: "categorical",
+                params: { ...params, uid: "4" },
                 timestamp: data.timestamp,
                 value: data.chargetype
             },
@@ -87,6 +94,7 @@ export default function useComparisonChartTimeline(params: ChartParams, type: Ch
                 table: "battery",
                 column: "chargetype",
                 chartType: "categorical",
+                params: { ...params, date: new Date("2025-04-23") },
                 timestamp: data.timestamp,
                 value: data.chargetype
             },
@@ -96,6 +104,7 @@ export default function useComparisonChartTimeline(params: ChartParams, type: Ch
                 table: "battery",
                 column: "chargetype",
                 chartType: "categorical",
+                params: { ...params, date: new Date("2025-04-22") },
                 timestamp: data.timestamp,
                 value: data.chargetype
             },
@@ -105,6 +114,7 @@ export default function useComparisonChartTimeline(params: ChartParams, type: Ch
                 table: "battery",
                 column: "chargetype",
                 chartType: "categorical",
+                params: { ...params, date: new Date("2025-04-21") },
                 timestamp: data.timestamp,
                 value: data.chargetype
             },
@@ -114,6 +124,7 @@ export default function useComparisonChartTimeline(params: ChartParams, type: Ch
                 table: "battery",
                 column: "chargetype",
                 chartType: "categorical",
+                params: { ...params, date: new Date("2025-04-20") },
                 timestamp: data.timestamp,
                 value: data.chargetype
             },
@@ -127,7 +138,7 @@ export default function useComparisonChartTimeline(params: ChartParams, type: Ch
             case ChartType.IntraPerson:
                 return intraPersonComparisonData;
         }
-    }, [data, appUsageData, type])
+    }, [data, appUsageData, params, type])
 
     return { timeline: timeline as TimelineData[], loading, error };
 }   

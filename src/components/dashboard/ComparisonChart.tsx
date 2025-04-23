@@ -37,11 +37,9 @@ const ComparisonChart: React.FC<({
     ];
 
     const sensors = [
-        { id: "call_log", name: "call_log" },
-        { id: "location", name: "location" },
-        { id: "battery", name: "battery" },
-        { id: "x_y", name: "x_y" },
-        { id: "x_z", name: "x_z" },
+        { id: "battery-chargetype", name: "Battery Charge Type" },
+        { id: "app-usage", name: "App Usage" },
+        { id: "battery-level", name: "Battery Level" },
     ];
 
     return (
@@ -97,7 +95,8 @@ const ComparisonChart: React.FC<({
                     {timeline.length > 0 && <ChartContainer
                         timelines={timeline}
                         chartType={type}
-                        setChartParams={t => setParams(t, params)}
+                        params={params}
+                        setChartParams={setParams}
                         defaultTimeRange={defaultTimeRange} />
                     }
                 </div>

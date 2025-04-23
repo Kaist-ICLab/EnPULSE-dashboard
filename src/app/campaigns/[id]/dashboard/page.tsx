@@ -19,7 +19,7 @@ const Page = () => {
     const { params, setParams } = useChartParams(
         {
             uid: "1",
-            sid: "location",
+            sid: "battery-chargetype",
             date: new Date()
         },
         chartTypes
@@ -32,7 +32,11 @@ const Page = () => {
                 openMessageModal={(sendTo: string) => { setSendTo(sendTo); setMessageModalVisible(true); }}
             />
             {chartTypes.map((type) => (
-                <ComparisonChart key={type} params={params[type]} setParams={setParams} type={type} />
+                <ComparisonChart
+                    key={type}
+                    params={params[type]}
+                    setParams={setParams} type={type}
+                />
             ))}
             {messageModalVisible && <SendMessageFloatingModal
                 sendTo={sendTo}

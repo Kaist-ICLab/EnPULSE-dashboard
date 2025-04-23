@@ -12,6 +12,7 @@ export interface TimelineData {
     table: string;
     column: string;
     chartType: 'numerical' | 'categorical';
+    params: ChartParams;
     timestamp: number[];
     value: (string | number)[];
 }
