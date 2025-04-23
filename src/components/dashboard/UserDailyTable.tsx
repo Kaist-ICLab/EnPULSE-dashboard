@@ -5,6 +5,7 @@ import { Button, Select, Spinner, Tooltip } from "flowbite-react";
 import { useDailyStatTableCheckedState } from "@/hooks/useDailyStatTableCheckedState";
 import { usePaging } from "@/hooks/usePaging";
 import useFormatConfig from "@/hooks/useFormatConfig";
+import Link from "next/link";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -147,9 +148,11 @@ const UserDailyStatTable: React.FC<{
                 <div className="flex items-center gap-3">
                     {
                         checkCount == 1 && (
-                            <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => setUserId(data[checkedState.findIndex((state) => state)].id)}>
-                                <span>Timeline Overview</span>
-                            </Button>
+                            <Link href={`./dashboard/#timeline-overview-comparison-chart`}>
+                                <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => setUserId(data[checkedState.findIndex((state) => state)].id)}>
+                                    <span>Timeline Overview</span>
+                                </Button>
+                            </Link>
                         )
                     }
                     {

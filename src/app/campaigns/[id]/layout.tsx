@@ -20,14 +20,14 @@ export default async function CampaignLayout({
     if (!campaignExists) notFound();
 
     return (
-        <div className="w-full min-h-screen bg-gray-50 flex flex-row ">
+        <div className="w-full h-screen bg-gray-50 flex flex-row ">
             <Sidebar />
             <div className="flex flex-col w-full overflow-hidden">
                 <Header
                     campaigns={campaigns}
                     currentCampaign={currentCampaign}
                 />
-                <main className="flex flex-col w-full items-stretch p-4 gap-4 grow">
+                <main className="flex flex-col w-full items-stretch p-4 gap-4 grow overflow-auto">
                     {children}
                 </main>
             </div>

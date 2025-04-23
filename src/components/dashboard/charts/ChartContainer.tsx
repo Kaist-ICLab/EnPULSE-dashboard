@@ -2,21 +2,13 @@ import { useState } from 'react';
 import TimelineChart from '@/components/dashboard/charts/TimelineChart';
 import TimelineXAxis from '@/components/dashboard/charts/TimelineXAxis';
 import { DnDProvider, DnDItem, DragHandle } from '@/components/common/DnDList';
-
-interface TimelineData {
-    id: string;
-    title: string;
-    table: string;
-    column: string;
-    chartType: 'numerical' | 'categorical';
-    timestamp: number[];
-    value: (string | number)[];
-}
+import { TimelineData, ChartType } from '@/types/chart';
 
 const ChartContainer: React.FC<{
     timelines: TimelineData[];
+    chartType: ChartType;
     defaultTimeRange: { start: number, end: number };
-}> = ({ timelines, defaultTimeRange }) => {
+}> = ({ timelines, chartType, defaultTimeRange }) => {
     const [timeRange, setTimeRange] = useState<{ start: number, end: number }>(defaultTimeRange);
     const [pinnedChart, setPinnedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
@@ -24,7 +16,7 @@ const ChartContainer: React.FC<{
 
     return (
         <div>
-            <div className="p-4 border-b border-gray-200">
+            <div className="py-2 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                     <div>
                         {selectedChart ? (
@@ -40,18 +32,30 @@ const ChartContainer: React.FC<{
                         {selectedChart && (
                             <>
                                 <span className="font-medium text-gray-700">Compare with other:</span>
-                                <button
-                                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                                    onClick={() => {/* TODO: Implement compare with other participant */ }}
-                                >
-                                    Participants
-                                </button>
-                                <button
-                                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                                    onClick={() => {/* TODO: Implement compare with different days */ }}
-                                >
-                                    Days
-                                </button>
+                                {chartType !== ChartType.InterPerson && (
+                                    <button
+                                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                                        onClick={() => {/* TODO: Implement compare with other participant */ }}
+                                    >
+                                        Participants
+                                    </button>
+                                )}
+                                {chartType !== ChartType.TimelineOverview && (
+                                    <button
+                                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                                        onClick={() => {/* TODO: Implement compare with different days */ }}
+                                    >
+                                        Sensors
+                                    </button>
+                                )}
+                                {chartType !== ChartType.IntraPerson && (
+                                    <button
+                                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                                        onClick={() => {/* TODO: Implement compare with different days */ }}
+                                    >
+                                        Days
+                                    </button>
+                                )}
                             </>
                         )}
                     </div>

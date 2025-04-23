@@ -1,5 +1,5 @@
 "use client";
-import TimelineOverview from "@/components/dashboard/TimelineOverview";
+import { InterPersonComparison, IntraPersonComparison, TimelineOverview } from "@/components/dashboard/ComparisonChart";
 import UserDailyStatTable from "@/components/dashboard/UserDailyTable";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
 import { useState } from "react";
@@ -13,6 +13,8 @@ const Page = () => {
         <div className="space-y-6">
             <UserDailyStatTable setUserId={setUserId} openMessageModal={(sendTo: string) => { setSendTo(sendTo); setMessageModalVisible(true); }} />
             <TimelineOverview userId={userId} setUserId={setUserId} />
+            <IntraPersonComparison userId={userId} setUserId={setUserId} />
+            <InterPersonComparison userId={userId} setUserId={setUserId} />
             {messageModalVisible && <SendMessageFloatingModal
                 sendTo={sendTo}
                 onClose={() => setMessageModalVisible(false)}
