@@ -2,30 +2,31 @@ import { useState } from 'react';
 import TimelineChart from '@/components/dashboard/charts/TimelineChart';
 import TimelineXAxis from '@/components/dashboard/charts/TimelineXAxis';
 import { DnDProvider, DnDItem, DragHandle } from '@/components/common/DnDList';
-import { Icon } from '@iconify/react';
-
-interface TimelineData {
-    id: string;
-    title: string;
-    table: string;
-    column: string;
-    chartType: 'numerical' | 'categorical';
-    timestamp: number[];
-    value: (string | number)[];
-}
+import { Button } from 'flowbite-react';
+import { TimelineData, ChartType, ChartParams } from '@/types/chart';
+import Link from 'next/link';
 
 const ChartContainer: React.FC<{
     timelines: TimelineData[];
+    chartType: ChartType;
+    params: ChartParams;
+    setChartParams: (chartType: ChartType, params: ChartParams) => void;
     defaultTimeRange: { start: number, end: number };
-}> = ({ timelines, defaultTimeRange }) => {
+}> = ({ timelines, chartType, setChartParams, defaultTimeRange }) => {
     const [timeRange, setTimeRange] = useState<{ start: number, end: number }>(defaultTimeRange);
     const [pinnedChart, setPinnedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
 
+    const comparisonName = {
+        [ChartType.InterPerson]: "Participants",
+        [ChartType.TimelineOverview]: "Sensors",
+        [ChartType.IntraPerson]: "Days"
+    }
+
     return (
         <div>
-            <div className="p-4 border-b border-gray-200">
+            <div className="py-2 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                     <div>
                         {selectedChart ? (
@@ -41,18 +42,18 @@ const ChartContainer: React.FC<{
                         {selectedChart && (
                             <>
                                 <span className="font-medium text-gray-700">Compare with other:</span>
-                                <button 
-                                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                                    onClick={() => {/* TODO: Implement compare with other participant */ }}
-                                >
-                                    Participants
-                                </button>
-                                <button 
-                                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                                    onClick={() => {/* TODO: Implement compare with different days */ }}
-                                >
-                                    Days
-                                </button>
+                                {Object.entries(comparisonName).map(([type, value]) => (
+                                    chartType !== type && <Link key={type} href={`./dashboard/#${type}-comparison-chart`}>
+                                        <Button
+                                            size="md"
+                                            className="flex flex-row gap-1 text-base px-3"
+                                            onClick={() => setChartParams(type as ChartType, timelines.find(t => t.id === selectedChart)!.params)}
+                                        >
+                                            <span>{value}</span>
+                                        </Button>
+                                    </Link>
+
+                                ))}
                             </>
                         )}
                     </div>
@@ -62,7 +63,7 @@ const ChartContainer: React.FC<{
                 <ChartItem key={timeline.id}
                     timeline={timeline}
                     pinned={true}
-                    onPin={(_) => setPinnedChart(null)}
+                    onPin={() => setPinnedChart(null)}
                     timeRange={timeRange}
                     setTimeRange={setTimeRange}
                     isSelected={selectedChart === timeline.id}
@@ -111,14 +112,14 @@ const ChartItem: React.FC<{
                 console.log("Clicked", timeline.id);
             }} >
                 <DragHandle>
-                    <Icon className='w-6 h-6 text-gray-300' icon="mdi:dots-vertical" />
+                    <span className='w-6 h-6 ml-4 mr-2 text-gray-300 icon-[mdi--hamburger-menu]' />
                 </DragHandle>
-                <div className='flex flex-col w-12'>
+                <div className='flex flex-col w-12 mr-8'>
                     <div className='text-sm overflow-ellipsis'>{timeline.title}</div>
                     <button className='text-gray-400 w-6 cursor-pointer' onClick={() => {
                         onPin(!pinned);
                     }}>
-                        {pinned ? <Icon className="w-6 h-6" icon="mdi:pin-off" /> : <Icon className="w-6 h-6" icon="mdi:pin" />}
+                        {pinned ? <span className="w-6 h-6 icon-[mdi--pin-off]" /> : <span className="w-6 h-6 icon-[mdi--pin]" />}
                     </button>
                 </div>
             </div>
