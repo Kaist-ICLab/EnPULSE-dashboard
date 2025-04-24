@@ -3,6 +3,8 @@
 import { Card } from "flowbite-react";
 import FormatConfigTable, { FormatConfig } from "@/components/settings/FormatConfigTable";
 import { useState } from "react";
+import DatabaseConnection from "@/components/settings/DatabaseConnection";
+import RenameCampaign from "@/components/settings/RenameCampaign";
 
 const Page = () => {
   const [sampleConfig, setSampleConfig] = useState<{ [key: string]: FormatConfig }>({
@@ -30,13 +32,30 @@ const Page = () => {
 
 
   return (<Card>
+    <RenameCampaign />
+    <DatabaseConnection />
     <FormatConfigTable
       config={sampleConfig}
       onConfigSave={(sensor, config) => { sampleConfig[sensor] = config; setSampleConfig({ ...sampleConfig }) }} />
   </Card>);
 }
 
-
-
-
 export default Page;
+// 'use client'
+
+// import { Card } from "flowbite-react";
+// import DatabaseConnection from "@/components/DatabaseConnection";
+// import RenameCampaign from "@/components/RenameCampaign";
+
+// const Page = () => {
+//   return (
+//     <div className="p-4">
+//       <Card className="mb-4">
+//         <div className="space-y-6">
+//           <RenameCampaign />
+//           <DatabaseConnection />
+//         </div>
+//       </Card>
+//     </div>
+//   );
+// }
