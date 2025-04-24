@@ -10,6 +10,7 @@ export type Campaign = {
 type CampaignState = {
     campaigns: Campaign[];
     campaignId: number;
+    renameCampaign: (id: number, newName: string) => boolean;
     selectCampaignId: (id: number) => void;
     selectCampaigns: (campaigns: Campaign[]) => void;
 };
@@ -73,6 +74,17 @@ export const useCampaigns = () => {
         setCampaignId(id);
     };
 
+    const renameCampaign = (id: number, newName: string) => {
+        return false;
+        // set((state) => {
+        //     const newState = {
+        //         campaigns: state.campaigns.map((campaign) => 
+        //             campaign.id === id ? { ...campaign, name: newName } : campaign
+        //         )
+        //     }
+        // }
+    }
+
 
     return {
         campaigns,
@@ -80,6 +92,7 @@ export const useCampaigns = () => {
         currentCampaign,
         selectCampaign,
         setCampaignValues,
+        renameCampaign,
     };
 };
 export default useCampaigns;
