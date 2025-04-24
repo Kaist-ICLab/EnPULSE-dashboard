@@ -1,15 +1,16 @@
 "use client"
 import ChartContainer from "@/components/dashboard/charts/ChartContainer";
-import useComparisonChartTimeline from "@/hooks/useComparisonChartData";
-import { ChartParams, ChartType } from "@/types/chart";
+import useComparisonChartTimeline from "@/hooks/charts/useTimeline";
+import { ChartParams, ChartType, PinQuery } from "@/types/chart";
 import { Card, Select, Spinner } from "flowbite-react";
-
 
 const ComparisonChart: React.FC<({
     params: ChartParams;
     setParams: (type: ChartType, params: ChartParams) => void;
     type: ChartType;
-})> = ({ params, setParams, type }) => {
+    pinQuery: PinQuery;
+    setPinQuery: (pinQuery: PinQuery) => void;
+})> = ({ params, setParams, type, pinQuery, setPinQuery }) => {
     const { timeline, loading, error } = useComparisonChartTimeline(params, type);
 
     const chartName = (() => {
@@ -95,9 +96,11 @@ const ComparisonChart: React.FC<({
                     {timeline.length > 0 && <ChartContainer
                         timelines={timeline}
                         chartType={type}
-                        params={params}
                         setChartParams={setParams}
-                        defaultTimeRange={defaultTimeRange} />
+                        pinQuery={pinQuery}
+                        setPinQuery={setPinQuery}
+                        defaultTimeRange={defaultTimeRange}
+                    />
                     }
                 </div>
             </div>

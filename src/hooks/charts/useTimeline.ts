@@ -1,7 +1,7 @@
 import { ChartParams, ChartType, TimelineData } from "@/types/chart";
 import { useMemo } from "react";
-import useFakeBatteryData from "./useFakeBatteryData";
-import useFakeAppUsageData from "./useFakeAppUsageData";
+import useFakeBatteryData from "../useFakeBatteryData";
+import useFakeAppUsageData from "../useFakeAppUsageData";
 
 
 export default function useComparisonChartTimeline(params: ChartParams, type: ChartType) {

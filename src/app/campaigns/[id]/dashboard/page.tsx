@@ -2,8 +2,8 @@
 import { ComparisonChart } from "@/components/dashboard/ComparisonChart";
 import UserDailyStatTable from "@/components/dashboard/UserDailyTable";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
-import useChartParams from "@/hooks/useChartParams";
-import { ChartType } from "@/types/chart";
+import useChartParams from "@/hooks/charts/useChartParams";
+import { ChartType, PinQuery } from "@/types/chart";
 import { useState } from "react";
 
 const chartTypes = [
@@ -25,6 +25,11 @@ const Page = () => {
         chartTypes
     )
 
+    const [pinQuery, setPinQuery] = useState<PinQuery>(chartTypes.reduce((acc, type) => {
+        acc[type] = null;
+        return acc;
+    }, {} as PinQuery));
+
     return (
         <div className="space-y-6">
             <UserDailyStatTable
@@ -36,6 +41,8 @@ const Page = () => {
                     key={type}
                     params={params[type]}
                     setParams={setParams} type={type}
+                    pinQuery={pinQuery}
+                    setPinQuery={setPinQuery}
                 />
             ))}
             {messageModalVisible && <SendMessageFloatingModal
