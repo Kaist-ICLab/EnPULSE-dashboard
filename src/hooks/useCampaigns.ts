@@ -10,6 +10,7 @@ export type Campaign = {
 type CampaignState = {
     campaigns: Campaign[];
     campaignId: number;
+    renameCampaign: (id: number, newName: string) => boolean;
     selectCampaignId: (id: number) => void;
     selectCampaigns: (campaigns: Campaign[]) => void;
 };
@@ -19,6 +20,25 @@ const useCampaignStore = create<CampaignState>((set) => ({
     campaignId: 0,
     selectCampaignId: (id: number) => {
         set({ campaignId: id });
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('campaignId', id.toString());
+        }
+    },
+    renameCampaign: (id: number, newName: string) => {
+        set((state) => {
+          const newState = {
+            campaigns: state.campaigns.map((campaign) => 
+                campaign.id === id ? { ...campaign, name: newName } : campaign
+            )
+          };
+          
+          // Save to localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('campaigns', JSON.stringify(newState.campaigns));
+          }
+          
+          return newState;
+        });
     },
     selectCampaigns: (campaigns: Campaign[]) => {
         set({ campaigns: campaigns });
@@ -54,6 +74,17 @@ export const useCampaigns = () => {
         setCampaignId(id);
     };
 
+    const renameCampaign = (id: number, newName: string) => {
+        return false;
+        // set((state) => {
+        //     const newState = {
+        //         campaigns: state.campaigns.map((campaign) => 
+        //             campaign.id === id ? { ...campaign, name: newName } : campaign
+        //         )
+        //     }
+        // }
+    }
+
 
     return {
         campaigns,
@@ -61,6 +92,7 @@ export const useCampaigns = () => {
         currentCampaign,
         selectCampaign,
         setCampaignValues,
+        renameCampaign,
     };
 };
 export default useCampaigns;
