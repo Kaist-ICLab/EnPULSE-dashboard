@@ -1,6 +1,6 @@
 'use client'
 
-import useFormatConfig from "@/hooks/useFormatConfig"
+import useFormatConfig from "@/hooks/legacy/useFormatConfig"
 import { Button, Select, Spinner, TextInput } from "flowbite-react"
 import React, { useEffect, useState } from "react"
 

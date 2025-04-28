@@ -1,10 +1,10 @@
 "use client"
-import useUserDailyStat, { UserDailyStat } from "@/hooks/useUserDailyStat";
+import useUserDailyStat, { UserDailyStat } from "@/hooks/legacy/useUserDailyStat";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Select, Spinner, Tooltip } from "flowbite-react";
-import { useDailyStatTableCheckedState } from "@/hooks/useDailyStatTableCheckedState";
-import { usePaging } from "@/hooks/usePaging";
-import useFormatConfig from "@/hooks/useFormatConfig";
+import { useDailyStatTableCheckedState } from "@/hooks/legacy/useDailyStatTableCheckedState";
+import { usePaging } from "@/hooks/legacy/usePaging";
+import useFormatConfig from "@/hooks/legacy/useFormatConfig";
 import Link from "next/link";
 
 const getLevelColor = (level: number): string => {

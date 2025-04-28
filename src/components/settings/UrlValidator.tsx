@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react';
 import { TextInput, Spinner, Button } from 'flowbite-react';
-import { useUrlValidation } from '@/hooks/useUrlValidation';
+import { useUrlValidation } from '@/hooks/legacy/useUrlValidation';
 
 const UrlValidator: React.FC = () => {
   const [input, setInput] = useState('');

@@ -3,8 +3,8 @@
 import ChatRoomDetail from "@/components/messaging/ChatRoomDetail";
 import ChatRoomItem from "@/components/messaging/ChatRoomItem";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
-import useChatRooms from "@/hooks/useChatRooms";
-import useConversation from "@/hooks/useConversation";
+import useChatRooms from "@/hooks/legacy/useChatRooms";
+import useConversation from "@/hooks/legacy/useConversation";
 import { useState } from "react";
 
 const Page = () => {

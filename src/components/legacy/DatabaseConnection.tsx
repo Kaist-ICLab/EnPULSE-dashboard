@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Select } from 'flowbite-react';
 import FileValidator from './FileValidator';
-import UrlValidator from './UrlValidator';
+import UrlValidator from '../settings/UrlValidator';
 import Section from '@/components/common/Section';
-import { useFileValidation } from '@/hooks/useFileValidation';
-import { useUrlValidation } from '@/hooks/useUrlValidation';
+import { useFileValidation } from '@/hooks/legacy/useFileValidation';
+import { useUrlValidation } from '@/hooks/legacy/useUrlValidation';
 
 type ValidatorType = 'url' | 'file';
 

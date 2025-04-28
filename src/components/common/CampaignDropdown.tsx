@@ -1,17 +1,15 @@
 'use client';
 
+import useCampaign from '@/hooks/useCampaign';
 import { Dropdown, DropdownDivider, DropdownHeader, DropdownItem } from 'flowbite-react';
 import Link from 'next/link';
 
-interface CampaignDropdownProps {
-    campaigns: { id: number; name: string }[];
-    currentCampaign: { id: number; name: string };
-}
-
-const CampaignDropdown: React.FC<CampaignDropdownProps> = ({
-    campaigns,
-    currentCampaign,
-}) => {
+const CampaignDropdown: React.FC = () => {
+    const { campaigns, selectedCampaignId } = useCampaign();
+    const currentCampaign = campaigns.get(selectedCampaignId!);
+    if (!currentCampaign) {
+        return null;
+    }
     return (
         <Dropdown
             dismissOnClick={true}
@@ -39,13 +37,11 @@ const CampaignDropdown: React.FC<CampaignDropdownProps> = ({
                     Create a campaign
                 </Link>
             </DropdownItem>
-
             <DropdownDivider />
             <DropdownHeader className="!px-3 !py-1.5 text-sm text-gray-500 text-left">
                 Your campaigns
             </DropdownHeader>
-
-            {campaigns.map((campaign) => (
+            {Array.from(campaigns.values()).map((campaign) => (
                 <DropdownItem key={campaign.id} className={`!px-3 !py-1.5 ${campaign.id === currentCampaign.id ? 'text-blue-600' : 'text-gray-700'}`}>
                     <Link href={`/campaigns/${campaign.id}/`} className={`w-full h-full block rounded-lg text-left `}>
                         {campaign.name}

@@ -1,7 +1,7 @@
 'use client'
 import React from 'react';
 import { TextInput, Spinner, Button } from 'flowbite-react';
-import { useFileValidation } from '@/hooks/useFileValidation';
+import { useFileValidation } from '@/hooks/legacy/useFileValidation';
 
 const FileValidator: React.FC = () => {
   const {
