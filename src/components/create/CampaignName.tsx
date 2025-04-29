@@ -1,7 +1,7 @@
 'use client'
 import { Button, TextInput } from "flowbite-react";
 import { checkCampaignNameDuplicate } from "@/services/campaignService";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 const stateColorMap = {
     "loading": "text-gray-500",
@@ -15,10 +15,12 @@ const stateMessageMap = {
     "error": "Invalid name",
 }
 
-const CampaignName = () => {
+const CampaignName: React.FC<{
+    campaignName: string,
+    setCampaignName: Dispatch<SetStateAction<string>>
+}> = ({ campaignName, setCampaignName }) => {
     const [status, setStatus] = useState<"loading" | "ok" | "error" | null>(null);
     const [isChanged, setIsChanged] = useState(false);
-    const [campaignName, setCampaignName] = useState("");
 
     return (
         <div role="campaign-name">

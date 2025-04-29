@@ -56,6 +56,7 @@ const DisplayConfiguration: React.FC = () => {
                     [type]: value
                 };
             });
+            console.log(changes)
             await updateCampaignField(changes);
         }
         if (dailyCountThreshold !== currentTable?.daily_count_max && currentTableId) {
@@ -71,7 +72,7 @@ const DisplayConfiguration: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-4">
-            <h6 className="text-base font-medium text-gray-900 mb-2">
+            <h6 className="text-base font-medium text-gray-900">
                 Display Configuration
             </h6>
             <div className="flex gap-2 items-stretch">
@@ -101,16 +102,19 @@ const DisplayConfiguration: React.FC = () => {
                 onFieldChange={(fieldId, fieldName, fieldValue) => {
                     const field = currentTableFields.find(field => field.id == fieldId);
                     const currentValue = fieldName == 'role' ? field?.field_role : field?.field_type;
+                    const key = (fieldName === 'role' ? 'field_role-' : 'field_type-') + fieldId.toString()
+
                     if (currentValue !== fieldValue) {
-                        setChangedFields(prev => new Map(prev.set("field_role-" + fieldId.toString(), fieldValue)));
+                        setChangedFields(prev => new Map(prev.set(key, fieldValue)));
                     } else {
                         setChangedFields(prev => {
                             const newMap = new Map(prev);
-                            newMap.delete("field_role-" + fieldId.toString());
+                            newMap.delete(key);
                             return newMap;
                         });
                     }
                 }}
+                addField={() => { }}
                 setDailyCountThreshold={setDailyCountThreshold}
                 dailyCountThreshold={dailyCountThreshold}
             />

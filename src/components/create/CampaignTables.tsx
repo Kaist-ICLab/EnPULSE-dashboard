@@ -2,14 +2,19 @@
 
 import { useState } from "react";
 
-import useCampainTables from "@/hooks/create/useCampainTables";
+import useCampainTables, { NewCampaignTable } from "@/hooks/create/useNewCampainTables";
 import { Button, Card, TextInput } from "flowbite-react";
 import CampaignTableCard from "./CampaignTableCard";
+import { CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
 
-const CampaignSensors = () => {
+const CampaignSensors: React.FC<{
+    tables: NewCampaignTable[],
+    addTable: (name: string, description: string) => void,
+    setDailyCountMax: (index: number, value: number) => void,
+    addField: (tableIndex: number, field: CampaignTableField) => void
+    setField: (tableIndex: number, fieldIdx: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void,
+}> = ({ tables, addTable, setDailyCountMax, addField, setField }) => {
     const [isSensorInputVisible, setIsSensorInputVisible] = useState(false);
-    const { tables, addTable } = useCampainTables();
-
     const [sensorName, setSensorName] = useState("");
     const [sensorDescription, setSensorDescription] = useState("");
 
@@ -23,10 +28,11 @@ const CampaignSensors = () => {
                     <CampaignTableCard
                         key={tableIndex}
                         table={table}
-                        currentTableFields={table.fields}
-                        setChangedFields={setChangedFields}
-                        setDailyCountThreshold={setDailyCountThreshold}
-                        dailyCountThreshold={dailyCountThreshold}
+                        setChangedFields={(id, name, value) => setField(tableIndex, id, name, value)}
+                        addField={field => addField(tableIndex, field,)}
+                        setDailyCountThreshold={v => setDailyCountMax(tableIndex, v)}
+                        dailyCountThreshold={table.daily_count_max}
+                    />
                 )
             }
             {isSensorInputVisible ? (<Card className="shadow-none bg-gray-50 border-gray-300 rounded-lg">

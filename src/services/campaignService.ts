@@ -57,7 +57,8 @@ export const getCampaignTables = async (campaignId: number): Promise<CampaignTab
             campaign_id,
             name,
             daily_count_max`)
-        .eq('campaign_id', campaignId);
+        .eq('campaign_id', campaignId)
+        .order('id', { ascending: true })
 
     if (error) throw new Error(error.message);
     return data;
@@ -68,7 +69,8 @@ export const getCampaignTableFields = async (campaignId: number, campaignTableId
         .from('campaign_table_field')
         .select(`id, campaign_id, campaign_table_id, name, field_type, field_role`)
         .eq('campaign_id', campaignId)
-        .eq('campaign_table_id', campaignTableId);
+        .eq('campaign_table_id', campaignTableId)
+        .order('id', { ascending: true })
 
     if (error) throw new Error(error.message);
     return data;
@@ -76,11 +78,13 @@ export const getCampaignTableFields = async (campaignId: number, campaignTableId
 
 export const updateCampaignTableFields = async (changes: Partial<CampaignTableField>[]): Promise<boolean> => {
     const promises = changes.map(({ id, ...change }) => {
+        console.log({ id, ...change })
         supabase.from('campaign_table_field').update(
             change
-        ).eq('id', id);
+        ).eq('id', id)
     })
     const results = await Promise.allSettled(promises);
+    console.log(results)
     // error만 모으기
     const errors = results
         .filter(result => result.status === 'rejected')
@@ -90,6 +94,8 @@ export const updateCampaignTableFields = async (changes: Partial<CampaignTableFi
         console.error(errors);
         throw new Error(errors.join(', '));
     }
+
+    console.log('Am I returning something?')
     return true;
 }
 
@@ -98,8 +104,6 @@ export const checkCampaignNameDuplicate = async (campaignName: string): Promise<
         .from('campaigns')
         .select('id')
         .eq('name', campaignName);
-
-    console.log(data)
 
     if (error) throw new Error(error.message);
     if (!data || data.length === 0) return false
