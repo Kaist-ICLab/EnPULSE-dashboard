@@ -1,7 +1,7 @@
 "use client"
 import ChartContainer from "@/components/dashboard/charts/ChartContainer";
-import useComparisonChartTimeline from "@/hooks/charts/useTimeline";
-import { ChartParams, ChartType, PinQuery } from "@/types/chart";
+import useComparisonChartTimeline from "@/hooks/legacy/useComparisonChartData";
+import { ChartParams, ChartType } from "@/types/chart";
 import { Card, Select, Spinner } from "flowbite-react";
 
 const ComparisonChart: React.FC<({

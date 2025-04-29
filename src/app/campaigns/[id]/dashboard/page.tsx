@@ -2,8 +2,8 @@
 import { ComparisonChart } from "@/components/dashboard/ComparisonChart";
 import UserDailyStatTable from "@/components/dashboard/UserDailyTable";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
-import useChartParams from "@/hooks/charts/useChartParams";
-import { ChartType, PinQuery } from "@/types/chart";
+import useChartParams from "@/hooks/legacy/useChartParams";
+import { ChartType } from "@/types/chart";
 import { useState } from "react";
 
 const chartTypes = [
@@ -32,7 +32,7 @@ const Page = () => {
 
     return (
         <div className="space-y-6">
-            <UserDailyStatTable
+            {/* <UserDailyStatTable
                 setUserId={v => setParams(ChartType.TimelineOverview, { ...params[ChartType.TimelineOverview], uid: v })}
                 openMessageModal={(sendTo: string) => { setSendTo(sendTo); setMessageModalVisible(true); }}
             />
@@ -49,7 +49,7 @@ const Page = () => {
                 sendTo={sendTo}
                 onClose={() => setMessageModalVisible(false)}
                 onSendButtonClick={() => setMessageModalVisible(false)}
-            />}
+            />} */}
         </div>
     );
 }
