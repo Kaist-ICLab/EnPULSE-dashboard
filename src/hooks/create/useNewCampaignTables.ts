@@ -10,14 +10,22 @@ export interface NewCampaignTable extends CampaignTable {
 export default function useCampainTables() {
     const [tables, setTables] = useState<NewCampaignTable[]>([]);
 
-    const addTable = (name: string, description: string) => {
-        setTables([...tables, { id: -1, campaign_id: -1, name, description, daily_count_max: 0, fields: [] }]);
-    }
-
     const setDailyCountMax = (index: number, value: number) => {
         setTables(tables => {
             const newTable = [...tables]
             newTable.splice(index, 1, { ...tables[index], daily_count_max: value })
+            return newTable
+        })
+    }
+
+    const addTable = (name: string, description: string) => {
+        setTables([...tables, { id: -1, campaign_id: -1, name, description, daily_count_max: 0, fields: [] }]);
+    }
+
+    const removeTable = (index: number) => {
+        setTables(tables => {
+            const newTable = [...tables]
+            newTable.splice(index, 1)
             return newTable
         })
     }
@@ -49,6 +57,7 @@ export default function useCampainTables() {
     return {
         tables,
         addTable,
+        removeTable,
         addField,
         setField,
         setDailyCountMax

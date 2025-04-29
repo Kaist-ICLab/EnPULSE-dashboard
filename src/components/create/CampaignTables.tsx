@@ -10,10 +10,11 @@ import { CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
 const CampaignSensors: React.FC<{
     tables: NewCampaignTable[],
     addTable: (name: string, description: string) => void,
+    removeTable: (index: number) => void,
     setDailyCountMax: (index: number, value: number) => void,
     addField: (tableIndex: number, field: CampaignTableField) => void
     setField: (tableIndex: number, fieldIdx: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void,
-}> = ({ tables, addTable, setDailyCountMax, addField, setField }) => {
+}> = ({ tables, addTable, removeTable, setDailyCountMax, addField, setField }) => {
     const [isSensorInputVisible, setIsSensorInputVisible] = useState(false);
     const [sensorName, setSensorName] = useState("");
     const [sensorDescription, setSensorDescription] = useState("");
@@ -28,6 +29,7 @@ const CampaignSensors: React.FC<{
                     <CampaignTableCard
                         key={tableIndex}
                         table={table}
+                        removeTable={() => removeTable(tableIndex)}
                         setChangedFields={(id, name, value) => setField(tableIndex, id, name, value)}
                         addField={field => addField(tableIndex, field,)}
                         setDailyCountThreshold={v => setDailyCountMax(tableIndex, v)}

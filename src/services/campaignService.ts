@@ -144,13 +144,16 @@ export const updateCampaignTableFields = async (changes: Partial<CampaignTableFi
     return true;
 }
 
-export const checkCampaignNameDuplicate = async (campaignName: string): Promise<boolean> => {
+export const checkCampaignNameValidity = async (campaignName: string): Promise<boolean> => {
+    console.log(campaignName)
+    if (campaignName == '') return false
+
     const { data, error } = await supabase
         .from('campaigns')
         .select('id')
         .eq('name', campaignName);
 
     if (error) throw new Error(error.message);
-    if (!data || data.length === 0) return false
+    if (data && data.length > 0) return false
     return true
 }

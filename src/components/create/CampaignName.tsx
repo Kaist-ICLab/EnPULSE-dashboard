@@ -1,6 +1,6 @@
 'use client'
 import { Button, TextInput } from "flowbite-react";
-import { checkCampaignNameDuplicate } from "@/services/campaignService";
+import { checkCampaignNameValidity } from "@/services/campaignService";
 import { Dispatch, SetStateAction, useState } from "react";
 
 const stateColorMap = {
@@ -17,8 +17,9 @@ const stateMessageMap = {
 
 const CampaignName: React.FC<{
     campaignName: string,
-    setCampaignName: Dispatch<SetStateAction<string>>
-}> = ({ campaignName, setCampaignName }) => {
+    setCampaignName: Dispatch<SetStateAction<string>>,
+    setIsValidName: Dispatch<SetStateAction<boolean>>,
+}> = ({ campaignName, setCampaignName, setIsValidName }) => {
     const [status, setStatus] = useState<"loading" | "ok" | "error" | null>(null);
     const [isChanged, setIsChanged] = useState(false);
 
@@ -31,7 +32,7 @@ const CampaignName: React.FC<{
                 <TextInput
                     type="text"
                     value={campaignName}
-                    onChange={(e) => { setCampaignName(e.target.value); setIsChanged(true) }}
+                    onChange={(e) => { setCampaignName(e.target.value); setIsChanged(true); setIsValidName(false) }}
                     className="w-[400px]"
                 />
                 <Button
@@ -39,8 +40,9 @@ const CampaignName: React.FC<{
                     disabled={!isChanged}
                     onClick={() => {
                         setStatus("loading");
-                        checkCampaignNameDuplicate(campaignName).then((isDuplicate) => {
-                            setStatus(isDuplicate ? "error" : "ok");
+                        checkCampaignNameValidity(campaignName).then((isValid) => {
+                            setStatus(isValid ? "ok" : "error");
+                            setIsValidName(isValid)
                             setIsChanged(false);
                         })
                     }}

@@ -9,8 +9,9 @@ import useCampainTables from "@/hooks/create/useNewCampaignTables"
 import useAddCampaign from "@/hooks/create/useAddCampaign"
 export default function CampaignCreateForm() {
     const [campaignName, setCampaignName] = useState("");
-    const { tables, addTable, addField, setField, setDailyCountMax } = useCampainTables();
-    const { isValid, submitCampaign } = useAddCampaign(campaignName, tables)
+    const [isValidName, setIsValidName] = useState(false);
+    const { tables, addTable, removeTable, addField, setField, setDailyCountMax } = useCampainTables();
+    const { isValid, submitCampaign } = useAddCampaign(campaignName, isValidName, tables)
 
     return (
         <div className="max-w-4xl flex flex-col gap-6">
@@ -18,10 +19,12 @@ export default function CampaignCreateForm() {
             <CampaignName
                 campaignName={campaignName}
                 setCampaignName={setCampaignName}
+                setIsValidName={setIsValidName}
             />
             <CampaignSensors
                 tables={tables}
                 addTable={addTable}
+                removeTable={removeTable}
                 addField={addField}
                 setField={setField}
                 setDailyCountMax={setDailyCountMax}
