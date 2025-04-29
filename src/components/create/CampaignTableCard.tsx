@@ -1,7 +1,7 @@
 import { CampaignTable, CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
 import { Card } from "flowbite-react";
 import FormatConfigTable from "../common/FormatConfigTable";
-import { NewCampaignTable } from "@/hooks/create/useNewCampainTables";
+import { NewCampaignTable } from "@/hooks/create/useNewCampaignTables";
 
 const CampaignTableCard: React.FC<{
     table: NewCampaignTable;
@@ -10,8 +10,6 @@ const CampaignTableCard: React.FC<{
     setDailyCountThreshold: (threshold: number) => void;
     dailyCountThreshold: number;
 }> = ({ table, setChangedFields, addField, setDailyCountThreshold, dailyCountThreshold }) => {
-
-
     return (
         <Card className="mb-2 shadow-none border-gray-300 rounded-lg">
             <div>

@@ -5,10 +5,12 @@ import CampaignName from "./CampaignName"
 import Link from "next/link"
 import CampaignSensors from "./CampaignTables"
 import { useState } from "react"
-import useCampainTables from "@/hooks/create/useNewCampainTables"
+import useCampainTables from "@/hooks/create/useNewCampaignTables"
+import useAddCampaign from "@/hooks/create/useAddCampaign"
 export default function CampaignCreateForm() {
     const [campaignName, setCampaignName] = useState("");
     const { tables, addTable, addField, setField, setDailyCountMax } = useCampainTables();
+    const { isValid, submitCampaign } = useAddCampaign(campaignName, tables)
 
     return (
         <div className="max-w-4xl flex flex-col gap-6">
@@ -25,7 +27,7 @@ export default function CampaignCreateForm() {
                 setDailyCountMax={setDailyCountMax}
             />
             <div className="w-full gap-4 flex mt-5">
-                <Button className="flex-2/3" size="lg" onClick={() => console.log(tables)}>
+                <Button className="flex-2/3" size="lg" disabled={!isValid} onClick={() => submitCampaign()}>
                     Create Campaign
                 </Button>
                 <Link href="/campaigns" className="flex-1/3" >
