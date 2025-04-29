@@ -1,16 +1,16 @@
 
-'use client'
-import { Card } from "flowbite-react";
-import FormatConfigTable from "@/components/settings/FormatConfigTable";
-import DatabaseConnection from "@/components/settings/DatabaseConnection";
 import RenameCampaign from "@/components/settings/RenameCampaign";
+import { loadCampaignsFromServer } from "@/hooks/loadCampaigns";
 
-const Page = () => {
-  return (<Card>
-    <RenameCampaign />
-    <DatabaseConnection />
-    <FormatConfigTable/>
-  </Card>);
+export default async function Page({
+    params,
+}: Readonly<{
+    params: { id: string };
+}>) {
+    const campaigns = await loadCampaignsFromServer();
+    const { id } = await params;
+    const campaignId = parseInt(id);
+    const currentCampaign = campaigns.find((campaign) => campaign.id === campaignId) || { id: -1, name: "Unknown Campaign" };
+
+    return <RenameCampaign currentCampaign={currentCampaign} />
 }
-
-export default Page;

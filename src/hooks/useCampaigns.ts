@@ -21,24 +21,25 @@ const useCampaignStore = create<CampaignState>((set) => ({
     selectCampaignId: (id: number) => {
         set({ campaignId: id });
         if (typeof window !== 'undefined') {
-          localStorage.setItem('campaignId', id.toString());
+            localStorage.setItem('campaignId', id.toString());
         }
     },
     renameCampaign: (id: number, newName: string) => {
         set((state) => {
-          const newState = {
-            campaigns: state.campaigns.map((campaign) => 
-                campaign.id === id ? { ...campaign, name: newName } : campaign
-            )
-          };
-          
-          // Save to localStorage
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('campaigns', JSON.stringify(newState.campaigns));
-          }
-          
-          return newState;
+            const newState = {
+                campaigns: state.campaigns.map((campaign) =>
+                    campaign.id === id ? { ...campaign, name: newName } : campaign
+                )
+            };
+
+            // Save to localStorage
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('campaigns', JSON.stringify(newState.campaigns));
+            }
+
+            return newState;
         });
+        return true;
     },
     selectCampaigns: (campaigns: Campaign[]) => {
         set({ campaigns: campaigns });
@@ -50,6 +51,7 @@ export const useCampaigns = () => {
     const campaignId = useCampaignStore((s) => s.campaignId);
     const setCampaignId = useCampaignStore((s) => s.selectCampaignId);
     const setCampaigns = useCampaignStore((s) => s.selectCampaigns);
+    const renameCampaign = useCampaignStore((s) => s.renameCampaign);
 
     const currentCampaign = useMemo(() => {
         return campaigns.find((c) => c.id === campaignId) || { id: -1, name: "Unknown Campaign" };
@@ -73,17 +75,6 @@ export const useCampaigns = () => {
     const selectCampaign = (id: number) => {
         setCampaignId(id);
     };
-
-    const renameCampaign = (id: number, newName: string) => {
-        return false;
-        // set((state) => {
-        //     const newState = {
-        //         campaigns: state.campaigns.map((campaign) => 
-        //             campaign.id === id ? { ...campaign, name: newName } : campaign
-        //         )
-        //     }
-        // }
-    }
 
 
     return {

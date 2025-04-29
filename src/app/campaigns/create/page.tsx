@@ -1,3 +1,5 @@
+import CreateCampaign from "@/components/campaign/CreateCampaign";
+
 const Page: React.FC = () => {
     return (
         <div className="w-full min-h-screen bg-gray-50 flex flex-row ">
@@ -5,9 +7,10 @@ const Page: React.FC = () => {
                 <div className="px-5 h-16 flex items-center text-black text-2xl font-bold">DataSentry</div>
             </aside>
             <div className="flex flex-col w-full p-4">
-                <h1>Create campaign</h1>
-            </div>
-        </div>
-    );
+                <CreateCampaign />
+            </div >
+        </div >
+
+    )
 }
 export default Page;
