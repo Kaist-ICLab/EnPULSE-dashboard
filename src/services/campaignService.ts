@@ -75,7 +75,7 @@ export const getCampaignTableFields = async (campaignId: number, campaignTableId
 }
 
 export const updateCampaignTableFields = async (changes: Partial<CampaignTableField>[]): Promise<boolean> => {
-    const promises = changes.map(({id, ...change}) => {
+    const promises = changes.map(({ id, ...change }) => {
         supabase.from('campaign_table_field').update(
             change
         ).eq('id', id);
@@ -83,12 +83,25 @@ export const updateCampaignTableFields = async (changes: Partial<CampaignTableFi
     const results = await Promise.allSettled(promises);
     // error만 모으기
     const errors = results
-      .filter(result => result.status === 'rejected')
-      .map(result => result.reason);
+        .filter(result => result.status === 'rejected')
+        .map(result => result.reason);
 
-    if (errors.length > 0){
+    if (errors.length > 0) {
         console.error(errors);
         throw new Error(errors.join(', '));
     }
     return true;
+}
+
+export const checkCampaignNameDuplicate = async (campaignName: string): Promise<boolean> => {
+    const { data, error } = await supabase
+        .from('campaigns')
+        .select('id')
+        .eq('name', campaignName);
+
+    console.log(data)
+
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) return false
+    return true
 }

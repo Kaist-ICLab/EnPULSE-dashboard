@@ -1,9 +1,13 @@
 'use client'
 
+import { Button, Select } from "flowbite-react";
+import FormatConfigTable from "../common/FormatConfigTable";
+import { useEffect } from "react";
+import { CampaignTableField } from "@/types/campaign";
+import { useMemo } from "react";
+import { useState } from "react";
 import useCampaign from "@/hooks/useCampaign";
-import { CampaignTable, CampaignTableField, FieldRoleOption, FieldTypeOption } from "@/types/campaign";
-import { Button, Select, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
-import React, { useEffect, useMemo, useState } from "react";
+import { CampaignTable } from "@/types/campaign";
 
 const DisplayConfiguration: React.FC = () => {
     const [currentTableId, setCurrentTableId] = useState<number | null>(null);
@@ -37,13 +41,13 @@ const DisplayConfiguration: React.FC = () => {
     }, [currentTable]);
 
     // Memoize change detection
-    const hasChanged = useMemo(() => 
-        changedFields.size > 0 || dailyCountThreshold !== currentTable?.daily_count_max, 
-    [changedFields, dailyCountThreshold, currentTable, campaignTables]);
+    const hasChanged = useMemo(() =>
+        changedFields.size > 0 || dailyCountThreshold !== currentTable?.daily_count_max,
+        [changedFields, dailyCountThreshold, currentTable]);
 
     const updateChanges = async () => {
         console.log("updateChanges");
-        if(changedFields.size > 0 && currentTableId) {
+        if (changedFields.size > 0 && currentTableId) {
             const changes = Array.from(changedFields.entries()).map(([key, value]) => {
                 const [type, id] = key.split("-");
                 return {
@@ -52,9 +56,9 @@ const DisplayConfiguration: React.FC = () => {
                     [type]: value
                 };
             });
-            await updateCampaignField(changes);  
+            await updateCampaignField(changes);
         }
-        if(dailyCountThreshold !== currentTable?.daily_count_max && currentTableId) {
+        if (dailyCountThreshold !== currentTable?.daily_count_max && currentTableId) {
             console.log("updateCampaignTable", currentTableId, dailyCountThreshold);
             await updateCampaignTable(currentTableId, dailyCountThreshold);
         }
@@ -92,84 +96,27 @@ const DisplayConfiguration: React.FC = () => {
                     {'Save'}
                 </Button>
             </div>
-            <Table className="w-fit">
-                <TableHead>
-                    <TableRow>
-                        {["field name", "field role", "field type"].map((header) => (
-                            <TableHeadCell key={header}>{header}</TableHeadCell>
-                        ))}
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {currentTableFields.map((field) => (
-                        <TableRow key={field.id} className="bg-white text-gray-900">
-                            <TableCell>{field.name}</TableCell>
-                            <TableCell>
-                                <select
-                                    className="w-[120px] bg-transparent focus:outline-none p-2 shadow-none"
-                                    defaultValue={field.field_role}
-                                    onChange={(e) => {
-                                        if(e.target.value !== field.field_role) {
-                                            setChangedFields(prev => new Map(prev.set("field_role-"+field.id.toString(), e.target.value)));
-                                        }else{
-                                            setChangedFields(prev => {
-                                                const newMap = new Map(prev);
-                                                newMap.delete("field_role-"+field.id.toString());
-                                                return newMap;
-                                            });
-                                        }
-                                    }}
-                                >
-                                    {FieldRoleOption.map((option) => (
-                                        <option key={option} value={option}>
-                                            {option}
-                                        </option>
-                                    ))}
-                                </select>
-                            </TableCell>
-                            <TableCell>
-                                <select
-                                    className="w-[120px] bg-transparent focus:outline-none p-2 shadow-none"
-                                    defaultValue={field.field_type}
-                                    onChange={(e) => {
-                                        if(e.target.value !== field.field_type) {
-                                            setChangedFields(prev => new Map(prev.set("field_type-"+field.id.toString(), e.target.value)));
-                                        }else{
-                                            setChangedFields(prev => {
-                                                const newMap = new Map(prev);
-                                                newMap.delete("field_type-"+field.id.toString());
-                                                return newMap;
-                                            });
-                                        }
-                                    }}
-                                >
-                                    {FieldTypeOption.map((option) => (
-                                        <option key={option} value={option}>
-                                            {option}
-                                        </option>
-                                    ))}
-                                </select>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-            <div className="w-fit mt-3 flex flex-col border-1 border-gray-200 divide-y divide-gray-200">
-                <div className="flex divide-x divide-gray-200">
-                    <div className="bg-gray-50 px-4 py-3 uppercase text-sm">
-                        Daily Count Threshold
-                    </div>
-                    <input
-                        type="number"
-                        value={dailyCountThreshold}
-                        onChange={(e) => setDailyCountThreshold(Number(e.target.value))}
-                        className="w-[80px] outline-none focus:outline-none pl-3"
-                    />
-                </div>
-            </div>
+            <FormatConfigTable
+                currentTableFields={currentTableFields}
+                onFieldChange={(fieldId, fieldName, fieldValue) => {
+                    const field = currentTableFields.find(field => field.id == fieldId);
+                    const currentValue = fieldName == 'role' ? field?.field_role : field?.field_type;
+                    if (currentValue !== fieldValue) {
+                        setChangedFields(prev => new Map(prev.set("field_role-" + fieldId.toString(), fieldValue)));
+                    } else {
+                        setChangedFields(prev => {
+                            const newMap = new Map(prev);
+                            newMap.delete("field_role-" + fieldId.toString());
+                            return newMap;
+                        });
+                    }
+                }}
+                setDailyCountThreshold={setDailyCountThreshold}
+                dailyCountThreshold={dailyCountThreshold}
+            />
+
         </div>
-    );
-};
+    )
+}
 
 export default DisplayConfiguration;
-
