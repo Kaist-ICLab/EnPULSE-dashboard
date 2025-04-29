@@ -1,3 +1,4 @@
+'use client'
 import { Button, Spinner, TextInput } from "flowbite-react";
 import { useEffect, useState } from "react";
 import useCampaign from "@/hooks/useCampaign";

@@ -1,5 +1,7 @@
 export type FieldType = 'categorical' | 'numerical' | 'timedelta' | 'datetime';
 export type FieldRole = 'uid' | 'timestamp' | 'data' | 'ignore';
+export const FieldRoleOption: FieldRole[] = ['uid', 'timestamp', 'data', 'ignore'];
+export const FieldTypeOption: FieldType[] = ['categorical', 'numerical', 'timedelta', 'datetime'];
 
 export interface Campaign {
     id: number;

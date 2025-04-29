@@ -16,14 +16,15 @@ CREATE TABLE campaign_table (
 
 CREATE TABLE campaign_table_field (
     id SERIAL PRIMARY KEY,
+    campaign_id INTEGER NOT NULL,
     campaign_table_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     description TEXT,
-    data_type TEXT NOT NULL CHECK (
-        data_type IN ('categorical', 'numerical', 'timedelta', 'datetime')
+    field_type TEXT NOT NULL CHECK (
+        field_type IN ('categorical', 'numerical', 'timedelta', 'datetime')
     ),
-    column_role TEXT NOT NULL CHECK (
-        column_role IN ('uid', 'timestamp', 'data', 'ignore')
+    field_role TEXT NOT NULL CHECK (
+        field_role IN ('uid', 'timestamp', 'data', 'ignore')
     ),
     FOREIGN KEY (campaign_table_id) REFERENCES campaign_table(id)
 );

@@ -6,7 +6,8 @@
 - [Plotly.js](https://plotly.com/javascript/) - Framework for data visualization
 - [TailwindCSS](https://tailwindcss.com/) - CSS Utility framework
 - [Iconify](https://iconify.design/docs/usage/css/tailwind/tailwind4/) - Icon library, we use Iconify for TailwindCSS
-- [Flowbite-React]()https://flowbite-react.com/ - Our basic components were implemented by adapting components from Flowbite-Resact
+- [Flowbite-React](https://flowbite-react.com/) - Our basic components were implemented by adapting components from Flowbite-Resact
+- [Supabase]() -
 
 ## Routing
 

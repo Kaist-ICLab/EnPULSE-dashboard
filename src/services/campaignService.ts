@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { Campaign, CampaignTableField } from '@/types/campaign';
+import { Campaign, CampaignTable, CampaignTableField } from '@/types/campaign';
 
 export const getCampaigns = async (): Promise<Campaign[]> => {
     const { data, error } = await supabase
@@ -49,29 +49,46 @@ export const createCampaign = async (campaign: Campaign): Promise<boolean> => {
     return true;
 }
 
-export const getCampaignDetail = async (id: number): Promise<Campaign> => {
+export const getCampaignTables = async (campaignId: number): Promise<CampaignTable[]> => {
     const { data, error } = await supabase
-        .from('campaigns')
+        .from('campaign_table')
         .select(`
-      id,
-      name,
-      campaign_table (
-        id,
-        name,
-        description,
-        daily_count_max,
-        campaign_table_field (
-          id,
-          name,
-          description,
-          data_type,
-          column_role
-        )
-      )
-    `)
-        .eq('id', id)
-        .single();
+            id,
+            campaign_id,
+            name,
+            daily_count_max`)
+        .eq('campaign_id', campaignId);
 
     if (error) throw new Error(error.message);
     return data;
+}
+
+export const getCampaignTableFields = async (campaignId: number, campaignTableId: number): Promise<CampaignTableField[]> => {
+    const { data, error } = await supabase
+        .from('campaign_table_field')
+        .select(`id, campaign_id, campaign_table_id, name, field_type, field_role`)
+        .eq('campaign_id', campaignId)
+        .eq('campaign_table_id', campaignTableId);
+
+    if (error) throw new Error(error.message);
+    return data;
+}
+
+export const updateCampaignTableFields = async (changes: Partial<CampaignTableField>[]): Promise<boolean> => {
+    const promises = changes.map(({id, ...change}) => {
+        supabase.from('campaign_table_field').update(
+            change
+        ).eq('id', id);
+    })
+    const results = await Promise.allSettled(promises);
+    // error만 모으기
+    const errors = results
+      .filter(result => result.status === 'rejected')
+      .map(result => result.reason);
+
+    if (errors.length > 0){
+        console.error(errors);
+        throw new Error(errors.join(', '));
+    }
+    return true;
 }
