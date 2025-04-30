@@ -3,20 +3,14 @@
 import ChatRoomDetail from "@/components/messaging/ChatRoomDetail";
 import ChatRoomItem from "@/components/messaging/ChatRoomItem";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
-import useChatRooms from "@/hooks/legacy/useChatRooms";
+import useChatRooms from "@/hooks/messaging/useChatRooms";
 import useConversation from "@/hooks/legacy/useConversation";
 import { useState } from "react";
 
 const Page = () => {
     const { conversation, setSelectedChatRoom } = useConversation();
-    const { chatRooms, updateReadCount } = useChatRooms();
+    const { chatRooms } = useChatRooms();
     const [showCompose, setShowCompose] = useState(false);
-
-    const handleSendMessage = () => {
-        // TODO: Implement send message logic here
-        console.log('Sending message...');
-        setShowCompose(false);
-    };
 
     return (
         <div className="w-full h-[calc(100vh-100px)]">
@@ -37,16 +31,17 @@ const Page = () => {
                     {/* 왼쪽 패널 */}
                     <div className="w-full sm:w-1/3 lg:w-1/4 border-r border-gray-200 overflow-y-auto">
                         <div className="space-y-2 px-4">
-                            {chatRooms?.map((chatRoom) => (
+                            {chatRooms?.map((chatRoom, i) => (
                                 <ChatRoomItem
-                                    key={chatRoom.id}
-                                    email={chatRoom.email}
-                                    lastMessage={chatRoom.lastMessage}
-                                    unreadCount={chatRoom.unreadCount}
-                                    isSelected={conversation?.chatRoom.id === chatRoom.id}
+                                    key={i}
+                                    email={chatRoom.uuid}
+                                    lastMessage={chatRoom.last_message}
+                                    unreadCount={chatRoom.unread_count}
+                                    // isSelected={conversation?.chatRoom.id === chatRoom.id}
+                                    isSelected={false}
                                     onClick={() => {
                                         setSelectedChatRoom(chatRoom);
-                                        updateReadCount(chatRoom);
+                                        // updateReadCount(chatRoom);
                                     }}
                                 />))}
                         </div>
@@ -61,9 +56,8 @@ const Page = () => {
             </div>
             {showCompose && (
                 <SendMessageFloatingModal
-                    sendTo={conversation?.chatRoom.email || ''}
+                    initialSendTo={conversation?.chatRoom.email || ''}
                     onClose={() => setShowCompose(false)}
-                    onSendButtonClick={handleSendMessage}
                 />
             )}
         </div>
