@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import useCampainTables, { NewCampaignTable } from "@/hooks/create/useNewCampaignTables";
+import { NewCampaignTable } from "@/hooks/create/useNewCampaignTables";
 import { Button, Card, TextInput } from "flowbite-react";
 import CampaignTableCard from "./CampaignTableCard";
 import { CampaignTableField, FieldRole, FieldType } from "@/types/campaign";

@@ -1,4 +1,4 @@
-import { CampaignTable, CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
+import { CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
 import { Card } from "flowbite-react";
 import FormatConfigTable from "../common/FormatConfigTable";
 import { NewCampaignTable } from "@/hooks/create/useNewCampaignTables";

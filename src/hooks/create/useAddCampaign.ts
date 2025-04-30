@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { NewCampaignTable } from "./useNewCampaignTables";
-import { Campaign, CampaignTable, CampaignTableField } from "@/types/campaign";
+import { CampaignTableField } from "@/types/campaign";
 import { createCampaign, createCampaignTable, createCampaignTableFields } from "@/services/campaignService";
 import { useRouter } from "next/navigation";
 
@@ -18,26 +18,27 @@ export default function useAddCampaign(
         if (tables.some(t => t.fields.length == 0)) return false
 
         return true
-    }, [campaignName, isValidName, tables])
+    }, [isValidName, tables])
 
     const submitCampaign = async () => {
         const campaignId = await createCampaign({ name: campaignName })
 
-        const insertedTables = tables.map(t => ({
-            ...t,
-            id: -1,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const insertedTables = tables.map(({ id, fields, ...others }) => ({
+            ...others,
             campaign_id: campaignId,
             description: '',
-        } as CampaignTable))
+        }))
+        console.log(insertedTables)
 
         const tableId = await createCampaignTable(insertedTables)
         const insertedTableFields = tables.map((t, i) => (
-            t.fields.map(tf => ({ ...tf, campaign_id: campaignId, campaign_table_id: tableId[i] }))
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            t.fields.map(({ id, ...others }) => ({ ...others, campaign_id: campaignId, campaign_table_id: tableId[i] }))
         )).flat() as CampaignTableField[]
 
         const result = await createCampaignTableFields(insertedTableFields)
-
-        if (result) router.push(`../${campaignId}/dashboard`)
+        if (result) router.push(`./${campaignId}/dashboard`)
     }
 
     return { isValid, submitCampaign }

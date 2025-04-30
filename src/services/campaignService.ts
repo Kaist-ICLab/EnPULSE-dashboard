@@ -45,7 +45,7 @@ export const createCampaign = async (campaign: Omit<Campaign, 'id'>): Promise<nu
     // TODO: Check auto_increment key. It should be uploadable without id!!
     const { data, error } = await supabase
         .from('campaigns')
-        .insert({ id: 5, ...campaign })
+        .insert(campaign)
         .select()
 
     if (error) throw new Error(error.message);
@@ -68,7 +68,7 @@ export const getCampaignTables = async (campaignId: number): Promise<CampaignTab
     return data;
 }
 
-export const createCampaignTable = async (campainTables: CampaignTable[]): Promise<number[]> => {
+export const createCampaignTable = async (campainTables: Omit<CampaignTable, 'id'>[]): Promise<number[]> => {
     const promises = campainTables.map(ct => {
         return supabase.from('campaign_table')
             .insert(ct)
@@ -103,9 +103,10 @@ export const getCampaignTableFields = async (campaignId: number, campaignTableId
 }
 
 export const createCampaignTableFields = async (campainTableFields: CampaignTableField[]): Promise<boolean> => {
-    const promises = campainTableFields.map(ctf => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const promises = campainTableFields.map(({ id, ...others }) => {
         return supabase.from('campaign_table_field')
-            .insert(ctf)
+            .insert(others)
             .select()
     })
 
