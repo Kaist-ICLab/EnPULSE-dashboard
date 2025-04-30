@@ -124,14 +124,13 @@ export const createCampaignTableFields = async (campainTableFields: CampaignTabl
 }
 
 export const updateCampaignTableFields = async (changes: Partial<CampaignTableField>[]): Promise<boolean> => {
+    console.log(changes)
     const promises = changes.map(({ id, ...change }) => {
-        console.log({ id, ...change })
-        supabase.from('campaign_table_field').update(
+        return supabase.from('campaign_table_field').update(
             change
         ).eq('id', id)
     })
     const results = await Promise.allSettled(promises);
-    console.log(results)
     // error만 모으기
     const errors = results
         .filter(result => result.status === 'rejected')

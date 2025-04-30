@@ -17,7 +17,6 @@ const DisplayConfiguration: React.FC = () => {
 
     // Memoize current table and its fields
     const currentTable = useMemo((): CampaignTable | undefined => {
-        console.log("currentTable", campaignTables.get(currentTableId!));
         return campaignTables.get(currentTableId!);
     }, [campaignTables, currentTableId]);
 
@@ -46,7 +45,6 @@ const DisplayConfiguration: React.FC = () => {
         [changedFields, dailyCountThreshold, currentTable]);
 
     const updateChanges = async () => {
-        console.log("updateChanges");
         if (changedFields.size > 0 && currentTableId) {
             const changes = Array.from(changedFields.entries()).map(([key, value]) => {
                 const [type, id] = key.split("-");
@@ -56,11 +54,9 @@ const DisplayConfiguration: React.FC = () => {
                     [type]: value
                 };
             });
-            console.log(changes)
             await updateCampaignField(changes);
         }
         if (dailyCountThreshold !== currentTable?.daily_count_max && currentTableId) {
-            console.log("updateCampaignTable", currentTableId, dailyCountThreshold);
             await updateCampaignTable(currentTableId, dailyCountThreshold);
         }
         setChangedFields(new Map());
