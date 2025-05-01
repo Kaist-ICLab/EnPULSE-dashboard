@@ -7,8 +7,7 @@ import { useEffect, useRef } from "react";
 const ChatRoomDetail: React.FC<{
     announcement: Message | null,
     conversation: Message[];
-    receiverEmail: string;
-}> = ({ announcement, receiverEmail, conversation }) => {
+}> = ({ announcement, conversation }) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
         if (scrollRef.current) {
@@ -17,12 +16,7 @@ const ChatRoomDetail: React.FC<{
     }, [conversation]);
 
     return (
-        <div className="w-full sm:w-2/3 lg:w-3/4 flex flex-col h-full">
-            {/* 수신자 정보 */}
-            <div className="border-b border-gray-200 p-4 font-medium text-gray-700">
-                {receiverEmail}
-            </div>
-
+        <>
             {/* 메시지 히스토리 */}
             <div className="flex-1 overflow-y-scroll" ref={scrollRef}>
                 {announcement && <div className="sticky top-2.5">
@@ -74,7 +68,7 @@ const ChatRoomDetail: React.FC<{
                 </div>
 
             </div>
-        </div>
+        </>
     )
 }
 

@@ -47,14 +47,18 @@ const Page = () => {
                                 />))}
                         </div>
                     </div>
-
-                    {loading ? <div className="flex w-full justify-center items-center h-full"><Spinner size="xl" /></div> : conversation && (
-                        <ChatRoomDetail
-                            receiverEmail={chatRooms?.find(v => v.id === selectedSessionId)?.email || ''}
-                            announcement={announcement}
-                            conversation={conversation}
-                        />
-                    )}
+                    <div className="w-full sm:w-2/3 lg:w-3/4 flex flex-col h-full">
+                        {/* 수신자 정보 */}
+                        <div className="border-b border-gray-200 p-4 font-medium text-gray-700">
+                            {chatRooms?.find(v => v.id === selectedSessionId)?.email || ''}
+                        </div>
+                        {loading ? <div className="flex flex-1 overflow-y-scroll justify-center items-center"><Spinner className="w-16 h-16" size="xl" /></div> : conversation && (
+                            <ChatRoomDetail
+                                announcement={announcement}
+                                conversation={conversation}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
             {showCompose && (
