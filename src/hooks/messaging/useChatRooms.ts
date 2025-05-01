@@ -11,10 +11,16 @@ export default function useChatRooms() {
         if (eventType === 'UPDATE') {
             const replaceIndex = chatRooms.findIndex(room => room.id === newInfo.id);
             if (replaceIndex === -1) return;
-
             const email = chatRooms[replaceIndex].email;
-            chatRooms.splice(replaceIndex, 1)
-            setChatRooms([{ ...newInfo, email }, ...chatRooms])
+
+            // Use locks when HTTPS context is available
+            // ...Or find out how can we implement atomic operation
+            // navigator.locks.request('chatRooms_update', async () => {
+            const newChatRooms = structuredClone(chatRooms)
+            newChatRooms.splice(replaceIndex, 1)
+            setChatRooms([{ ...newInfo, email }, ...newChatRooms])
+            // })
+
         } else if (eventType === 'INSERT') {
             getEmailByUuid(newInfo.uuid).then(email => {
                 setChatRooms(prev => [{ ...newInfo, email }, ...prev]);

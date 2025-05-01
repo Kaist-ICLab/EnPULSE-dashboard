@@ -19,7 +19,7 @@ const ChatRoomDetail: React.FC<{
         <>
             {/* 메시지 히스토리 */}
             <div className="flex-1 overflow-y-scroll" ref={scrollRef}>
-                {announcement && <div className="sticky top-2.5">
+                {announcement && <div className="sticky top-2.5 z-10">
                     <Card className="mx-2.5 py-0">
                         <div className="w-full flex gap-4">
                             <div className="flex justify-center items-center">
