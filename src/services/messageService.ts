@@ -1,14 +1,26 @@
 import { supabase } from '@/lib/supabase';
 import { ChatSession, ChatSessionWithEmail, Message } from '@/types/message';
 
-export const getUuidByEmail = async (email: string): Promise<string> => {
-    const { data, error } = await supabase
-        .from('profiles')
-        .select(`uuid`)
-        .eq('email', email)
+export const getUuidByEmail = async (email: string[]): Promise<string[]> => {
+    const promises = email.map(e => {
+        return supabase.from('profiles')
+            .select(`uuid`)
+            .eq('email', e)
+    })
 
-    if (error) throw new Error(error.message);
-    return data[0].uuid;
+    const results = await Promise.allSettled(promises)
+    const errors = results
+        .filter(result => result.status === 'rejected')
+        .map(result => result.reason);
+
+    if (errors.length > 0) {
+        console.error(errors);
+        throw new Error(errors.join(', '));
+    }
+
+    return results
+        .filter(result => result.status === 'fulfilled')
+        .map(result => result.value.data?.at(0)?.uuid as string);
 }
 
 export const getEmailByUuid = async (uuid: string): Promise<string> => {
@@ -21,21 +33,46 @@ export const getEmailByUuid = async (uuid: string): Promise<string> => {
     return data[0].email;
 }
 
-export const ensureChatSession = async (uuid: string, campaignId: number): Promise<number> => {
-    const { data, error } = await supabase
-        .from('chat_sessions')
+export const ensureChatSession = async (uuid: string[], campaignId: number): Promise<number> => {
+    const checkSession = uuid.map(id => {
+        return supabase.from('chat_sessions')
+            .select(`id, name`)
+            .eq('uuid', id)
+            .eq('campaign_id', campaignId)
+    })
+
+    const res = supabase.from('chat_sessions')
         .select(`id, name`)
-        .eq('uuid', uuid)
+        .eq('uuid', id)
         .eq('campaign_id', campaignId)
-        .select()
+
+    const res2 = supabase.from('chat_sessions')
+        .update({})
+
+    const results = await Promise.allSettled(checkSession)
+    const errors = results
+        .filter(result => result.status === 'rejected')
+        .map(result => result.reason);
+
+    if (errors.length > 0) {
+        console.error(errors);
+        throw new Error(errors.join(', '));
+    }
+
+    const generateSession = results.filter(result => result.status === 'fulfilled')
+        .map(results => results.value.data)
+        .filter(results => results && results.length > 0)
+        .map(data => {
+            return supabase
+                .from('chat_sessions')
+                .insert({ data.uuid, campaign_id: campaignId, last_message: '', last_message_time: new Date().toISOString() })
+                .select()
+        })
 
     if (error) throw new Error(error.message);
     if (data.length > 0) return data[0].id;
 
-    const { data: newSession, error: newSessionError } = await supabase
-        .from('chat_sessions')
-        .insert({ uuid, campaign_id: campaignId, last_message: '', last_message_time: new Date().toISOString() })
-        .select()
+    const { data: newSession, error: newSessionError } = await 
 
     if (newSessionError) throw new Error(newSessionError.message);
     return newSession[0].id;
@@ -75,9 +112,7 @@ export const subscribeChatRoomUpdate = (campaignId: number, patchChatRooms: (new
 
     const channel = supabase.realtime.channel('chatroom-channel')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_sessions', filter: `campaign_id=eq.${campaignId}` }, (payload) => {
-            console.log(payload)
             patchChatRooms(payload.new as ChatSession, payload.eventType)
-            // setChatRooms([...payload.new, payload.] as ChatSession[])
         }).subscribe()
     return () => supabase.removeChannel(channel)
 }
