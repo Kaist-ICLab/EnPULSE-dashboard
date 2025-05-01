@@ -34,7 +34,7 @@ const Page = () => {
                             {chatRooms?.map((chatRoom, i) => (
                                 <ChatRoomItem
                                     key={i}
-                                    email={chatRoom.uuid}
+                                    email={chatRoom.email}
                                     lastMessage={chatRoom.last_message}
                                     unreadCount={chatRoom.unread_count}
                                     // isSelected={conversation?.chatRoom.id === chatRoom.id}

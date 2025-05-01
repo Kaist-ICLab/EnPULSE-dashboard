@@ -1,24 +1,39 @@
-import { subscribeChatRoomUpdate } from "@/services/messageService";
-import { ChatSession } from "@/types/message";
-import { useEffect, useState } from "react";
+import { getChatRooms, getEmailByUuid, subscribeChatRoomUpdate } from "@/services/messageService";
+import { ChatSession, ChatSessionWithEmail } from "@/types/message";
+import { useCallback, useEffect, useState } from "react";
 import useCampaign from "../useCampaign";
 
 export default function useChatRooms() {
     const { selectedCampaignId } = useCampaign();
-    const [chatRooms, setChatRooms] = useState<ChatSession[]>([]);
+    const [chatRooms, setChatRooms] = useState<ChatSessionWithEmail[]>([]);
 
-    useEffect(() => { })
+    const patchChatRooms = useCallback((newInfo: ChatSession, eventType: 'UPDATE' | 'INSERT' | 'DELETE') => {
+        if (eventType === 'UPDATE') {
+            const replaceIndex = chatRooms.findIndex(room => room.id === newInfo.id);
+            if (replaceIndex === -1) return;
+            const email = chatRooms[replaceIndex].email;
+            setChatRooms(prev => [...prev.slice(0, replaceIndex), { ...newInfo, email }, ...prev.slice(replaceIndex + 1)]);
+        } else if (eventType === 'INSERT') {
+            getEmailByUuid(newInfo.uuid).then(email => {
+                setChatRooms(prev => [...prev, { ...newInfo, email }]);
+            })
+        }
+    }, [chatRooms])
 
     useEffect(() => {
-        let unsubscribe: () => void;
-        async function setupChatRooms() {
-            unsubscribe = await subscribeChatRoomUpdate(selectedCampaignId!, setChatRooms);
+        async function get() {
+            return await getChatRooms(selectedCampaignId!);
         }
-        setupChatRooms();
-        return () => {
-            unsubscribe?.();
-        };
+
+        if (selectedCampaignId) {
+            get().then(setChatRooms);
+        }
     }, [selectedCampaignId]);
+
+    useEffect(() => {
+        const unsubscribe = subscribeChatRoomUpdate(selectedCampaignId!, patchChatRooms);
+        return unsubscribe;
+    }, [selectedCampaignId, patchChatRooms]);
 
     return { chatRooms };
 }

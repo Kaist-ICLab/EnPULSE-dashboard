@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { ChatSession, Message } from '@/types/message';
-import { Dispatch, SetStateAction } from 'react';
+import { ChatSession, ChatSessionWithEmail, Message } from '@/types/message';
 
 export const getUuidByEmail = async (email: string): Promise<string> => {
     const { data, error } = await supabase
@@ -10,6 +9,16 @@ export const getUuidByEmail = async (email: string): Promise<string> => {
 
     if (error) throw new Error(error.message);
     return data[0].uuid;
+}
+
+export const getEmailByUuid = async (uuid: string): Promise<string> => {
+    const { data, error } = await supabase
+        .from('profiles')
+        .select(`email`)
+        .eq('uuid', uuid)
+
+    if (error) throw new Error(error.message);
+    return data[0].email;
 }
 
 export const ensureChatSession = async (uuid: string, campaignId: number): Promise<number> => {
@@ -41,22 +50,24 @@ export const createMessages = async (message: Message): Promise<boolean> => {
     return true
 }
 
-export const getChatRooms = async (campaignId: number): Promise<ChatSession[]> => {
+export const getChatRooms = async (campaignId: number): Promise<ChatSessionWithEmail[]> => {
     const { data, error } = await supabase
         .from('chat_sessions')
-        .select()
+        .select('*, profiles(email)')
         .eq('campaign_id', campaignId)
 
+    console.log(data)
     if (error) throw new Error(error.message);
-    return data
+    return data.map(({ profiles, ...others }) => ({ ...others, email: profiles.email }))
 }
 
-export const subscribeChatRoomUpdate = async (campaignId: number, patchChatRooms: Dispatch<SetStateAction<ChatSession[]>>): Promise<() => void> => {
+export const subscribeChatRoomUpdate = (campaignId: number, patchChatRooms: (newInfo: ChatSession, eventType: 'UPDATE' | 'INSERT' | 'DELETE') => void): () => void => {
     if (!campaignId) return () => { }
 
     const channel = supabase.realtime.channel('random-channel-name')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_sessions', filter: `campaign_id=eq.${campaignId}` }, (payload) => {
             console.log(payload)
+            patchChatRooms(payload.new as ChatSession, payload.eventType)
             // setChatRooms([...payload.new, payload.] as ChatSession[])
         }).subscribe()
     return () => supabase.removeChannel(channel)

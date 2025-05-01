@@ -11,9 +11,14 @@ export interface Message {
 }
 
 export interface ChatSession {
+    id: number,
     uuid: string,
     campaign_id: number,
     last_message: string,
     last_message_time: number,
     unread_count: number,
+}
+
+export interface ChatSessionWithEmail extends ChatSession {
+    email: string;
 }
