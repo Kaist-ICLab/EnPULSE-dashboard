@@ -47,6 +47,14 @@ export const createMessages = async (message: Message): Promise<boolean> => {
         .insert(message)
 
     if (error) throw new Error(error.message);
+
+    const { error: error2 } = await supabase
+        .from('chat_sessions')
+        .update({ unread_count: 0 })
+        .eq('id', message.session_id)
+
+    if (error2) throw new Error(error2.message);
+
     return true
 }
 
@@ -55,6 +63,7 @@ export const getChatRooms = async (campaignId: number): Promise<ChatSessionWithE
         .from('chat_sessions')
         .select('*, profiles(email)')
         .eq('campaign_id', campaignId)
+        .order('last_message_time', { ascending: false })
 
     console.log(data)
     if (error) throw new Error(error.message);
@@ -64,7 +73,7 @@ export const getChatRooms = async (campaignId: number): Promise<ChatSessionWithE
 export const subscribeChatRoomUpdate = (campaignId: number, patchChatRooms: (newInfo: ChatSession, eventType: 'UPDATE' | 'INSERT' | 'DELETE') => void): () => void => {
     if (!campaignId) return () => { }
 
-    const channel = supabase.realtime.channel('random-channel-name')
+    const channel = supabase.realtime.channel('chatroom-channel')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_sessions', filter: `campaign_id=eq.${campaignId}` }, (payload) => {
             console.log(payload)
             patchChatRooms(payload.new as ChatSession, payload.eventType)
@@ -72,3 +81,25 @@ export const subscribeChatRoomUpdate = (campaignId: number, patchChatRooms: (new
         }).subscribe()
     return () => supabase.removeChannel(channel)
 }
+
+export const getMessages = async (sessionId: number): Promise<Message[]> => {
+    const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('id', { ascending: true })
+
+    if (error) throw new Error(error.message);
+    return data;
+}
+
+export const subscribeMessageUpdate = (sessionId: number, patchMessages: (newInfo: Message) => void): () => void => {
+    if (!sessionId) return () => { }
+
+    const channel = supabase.realtime.channel('message-channel')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `session_id=eq.${sessionId}` }, (payload) => {
+            patchMessages(payload.new as Message)
+        }).subscribe()
+    return () => supabase.removeChannel(channel)
+}
+

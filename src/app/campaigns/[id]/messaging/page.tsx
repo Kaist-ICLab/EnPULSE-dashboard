@@ -4,12 +4,14 @@ import ChatRoomDetail from "@/components/messaging/ChatRoomDetail";
 import ChatRoomItem from "@/components/messaging/ChatRoomItem";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
 import useChatRooms from "@/hooks/messaging/useChatRooms";
-import useConversation from "@/hooks/legacy/useConversation";
+import useConversation from "@/hooks/messaging/useConversation";
+import { Spinner } from "flowbite-react";
 import { useState } from "react";
 
 const Page = () => {
-    const { conversation, setSelectedChatRoom } = useConversation();
+    const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
     const { chatRooms } = useChatRooms();
+    const { conversation, loading, error } = useConversation(selectedSessionId);
     const [showCompose, setShowCompose] = useState(false);
 
     return (
@@ -30,25 +32,25 @@ const Page = () => {
                 <div className="flex flex-1 min-h-0">
                     {/* 왼쪽 패널 */}
                     <div className="w-full sm:w-1/3 lg:w-1/4 border-r border-gray-200 overflow-y-auto">
-                        <div className="space-y-2 px-4">
+                        <div className="space-y-2 p-4">
                             {chatRooms?.map((chatRoom, i) => (
                                 <ChatRoomItem
                                     key={i}
                                     email={chatRoom.email}
                                     lastMessage={chatRoom.last_message}
                                     unreadCount={chatRoom.unread_count}
-                                    // isSelected={conversation?.chatRoom.id === chatRoom.id}
-                                    isSelected={false}
+                                    isSelected={selectedSessionId === chatRoom.id}
                                     onClick={() => {
-                                        setSelectedChatRoom(chatRoom);
+                                        setSelectedSessionId(chatRoom.id);
                                         // updateReadCount(chatRoom);
                                     }}
                                 />))}
                         </div>
                     </div>
 
-                    {conversation && (
+                    {loading ? <div className="flex w-full justify-center items-center h-full"><Spinner size="xl" /></div> : conversation && (
                         <ChatRoomDetail
+                            receiverEmail={chatRooms?.find(v => v.id === selectedSessionId)?.email || ''}
                             conversation={conversation}
                         />
                     )}
@@ -56,7 +58,7 @@ const Page = () => {
             </div>
             {showCompose && (
                 <SendMessageFloatingModal
-                    initialSendTo={conversation?.chatRoom.email || ''}
+                    initialSendTo={chatRooms?.find(v => v.id === selectedSessionId)?.email || ''}
                     onClose={() => setShowCompose(false)}
                 />
             )}

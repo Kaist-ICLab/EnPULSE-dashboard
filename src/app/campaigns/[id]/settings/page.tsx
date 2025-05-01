@@ -4,7 +4,7 @@ import DisplayConfiguration from "@/components/settings/DisplayConfiguration";
 import { Card } from "flowbite-react";
 
 const Page = () => {
-    return (<Card>
+    return (<Card className="m-4">
         <Section title="General">
             <CampaignName />
         </Section>

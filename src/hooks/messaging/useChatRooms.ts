@@ -11,11 +11,12 @@ export default function useChatRooms() {
         if (eventType === 'UPDATE') {
             const replaceIndex = chatRooms.findIndex(room => room.id === newInfo.id);
             if (replaceIndex === -1) return;
+
             const email = chatRooms[replaceIndex].email;
-            setChatRooms(prev => [...prev.slice(0, replaceIndex), { ...newInfo, email }, ...prev.slice(replaceIndex + 1)]);
+            setChatRooms(prev => [{ ...newInfo, email }, ...prev.slice(0, replaceIndex), ...prev.slice(replaceIndex + 1)]);
         } else if (eventType === 'INSERT') {
             getEmailByUuid(newInfo.uuid).then(email => {
-                setChatRooms(prev => [...prev, { ...newInfo, email }]);
+                setChatRooms(prev => [{ ...newInfo, email }, ...prev]);
             })
         }
     }, [chatRooms])
