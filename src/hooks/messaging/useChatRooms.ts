@@ -13,7 +13,8 @@ export default function useChatRooms() {
             if (replaceIndex === -1) return;
 
             const email = chatRooms[replaceIndex].email;
-            setChatRooms(prev => [{ ...newInfo, email }, ...prev.slice(0, replaceIndex), ...prev.slice(replaceIndex + 1)]);
+            chatRooms.splice(replaceIndex, 1)
+            setChatRooms([{ ...newInfo, email }, ...chatRooms])
         } else if (eventType === 'INSERT') {
             getEmailByUuid(newInfo.uuid).then(email => {
                 setChatRooms(prev => [{ ...newInfo, email }, ...prev]);

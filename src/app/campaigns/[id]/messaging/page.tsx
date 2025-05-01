@@ -11,11 +11,11 @@ import { useState } from "react";
 const Page = () => {
     const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
     const { chatRooms } = useChatRooms();
-    const { conversation, loading, error } = useConversation(selectedSessionId);
+    const { announcement, conversation, loading, error } = useConversation(selectedSessionId);
     const [showCompose, setShowCompose] = useState(false);
 
     return (
-        <div className="w-full h-[calc(100vh-100px)]">
+        <div className="w-full h-full">
             <div className="flex flex-col h-full">
                 {/* Header row */}
                 <div className="p-4 flex justify-between items-center border-b border-gray-200">
@@ -51,6 +51,7 @@ const Page = () => {
                     {loading ? <div className="flex w-full justify-center items-center h-full"><Spinner size="xl" /></div> : conversation && (
                         <ChatRoomDetail
                             receiverEmail={chatRooms?.find(v => v.id === selectedSessionId)?.email || ''}
+                            announcement={announcement}
                             conversation={conversation}
                         />
                     )}

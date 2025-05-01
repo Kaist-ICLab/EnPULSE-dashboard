@@ -93,6 +93,19 @@ export const getMessages = async (sessionId: number): Promise<Message[]> => {
     return data;
 }
 
+export const getAnnouncement = async (sessionId: number): Promise<Message> => {
+    const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('session_id', sessionId)
+        .eq('message_type', 'announcement')
+        .order('id', { ascending: false })
+        .limit(1)
+
+    if (error) throw new Error(error.message);
+    return data[0];
+}
+
 export const subscribeMessageUpdate = (sessionId: number, patchMessages: (newInfo: Message) => void): () => void => {
     if (!sessionId) return () => { }
 
