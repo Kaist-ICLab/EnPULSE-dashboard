@@ -16,9 +16,12 @@ export default function useChatRooms() {
             // Use locks when HTTPS context is available
             // ...Or find out how can we implement atomic operation
             // navigator.locks.request('chatRooms_update', async () => {
-            const newChatRooms = structuredClone(chatRooms)
-            newChatRooms.splice(replaceIndex, 1)
-            setChatRooms([{ ...newInfo, email }, ...newChatRooms])
+            setChatRooms(prev => {
+                const newChatRooms = structuredClone(prev)
+                newChatRooms.splice(replaceIndex, 1)
+                return [{ ...newInfo, email }, ...newChatRooms]
+            })
+
             // })
 
         } else if (eventType === 'INSERT') {

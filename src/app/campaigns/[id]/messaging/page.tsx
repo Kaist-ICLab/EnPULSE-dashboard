@@ -5,7 +5,7 @@ import ChatRoomItem from "@/components/messaging/ChatRoomItem";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
 import useChatRooms from "@/hooks/messaging/useChatRooms";
 import useConversation from "@/hooks/messaging/useConversation";
-import { Spinner } from "flowbite-react";
+import { Button, Spinner } from "flowbite-react";
 import { useState } from "react";
 
 const Page = () => {
@@ -17,17 +17,6 @@ const Page = () => {
     return (
         <div className="w-full h-full">
             <div className="flex flex-col h-full">
-                {/* Header row */}
-                <div className="p-4 flex justify-between items-center border-b border-gray-200">
-                    <div className="font-semibold text-gray-700">Messages</div>
-                    <button
-                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                        onClick={() => setShowCompose(true)}
-                    >
-                        Send Message
-                    </button>
-                </div>
-
                 {/* Chat panel */}
                 <div className="flex flex-1 min-h-0">
                     {/* 왼쪽 패널 */}
@@ -49,8 +38,11 @@ const Page = () => {
                     </div>
                     <div className="w-full sm:w-2/3 lg:w-3/4 flex flex-col h-full">
                         {/* 수신자 정보 */}
-                        <div className="border-b border-gray-200 p-4 font-medium text-gray-700">
+                        <div className="h-16 flex items-center border-b border-gray-200 px-4 font-medium text-gray-700">
                             {chatRooms?.find(v => v.id === selectedSessionId)?.email || ''}
+                            <Button className="ml-auto" onClick={() => setShowCompose(true)}>
+                                Send Message
+                            </Button>
                         </div>
                         {loading ? <div className="flex flex-1 overflow-y-scroll justify-center items-center"><Spinner className="w-16 h-16" size="xl" /></div> : conversation && (
                             <ChatRoomDetail
