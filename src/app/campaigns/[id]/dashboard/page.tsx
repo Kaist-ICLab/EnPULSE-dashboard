@@ -1,9 +1,11 @@
 "use client";
+import DashboardCard from "@/components/campaign/DashboardCard";
 import { ComparisonChart } from "@/components/dashboard/ComparisonChart";
 import UserDailyStatTable from "@/components/dashboard/UserDailyTable";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
 import useChartParams from "@/hooks/legacy/useChartParams";
 import { ChartType } from "@/types/chart";
+import { Button } from "flowbite-react";
 import { useState } from "react";
 
 const chartTypes = [
@@ -13,6 +15,7 @@ const chartTypes = [
 ]
 
 const Page = () => {
+    const [lastLoaded, setLastLoaded] = useState<Date>(new Date())
     const [sendTo, setSendTo] = useState<string>("");
     const [messageModalVisible, setMessageModalVisible] = useState<boolean>(false);
 
@@ -31,11 +34,25 @@ const Page = () => {
     }, {} as PinQuery));
 
     return (
-        <div className="space-y-6">
-            {/* <UserDailyStatTable
+        <div className="space-y-4 p-4">
+            <DashboardCard>
+                <div className="flex items-center">
+                    <span className="font-semibold">Last updated: {lastLoaded.toDateString() + ', ' + lastLoaded.toLocaleTimeString()}</span>
+                    <Button
+                        className="ml-auto"
+                        onClick={() => {
+                            setLastLoaded(new Date())
+                        }}
+                    >
+                        <span className="icon-[eva--sync-fill] w-6 h-6 mr-2"></span> Sync now
+                    </Button>
+                </div>
+            </DashboardCard>
+            <UserDailyStatTable
                 setUserId={v => setParams(ChartType.TimelineOverview, { ...params[ChartType.TimelineOverview], uid: v })}
                 openMessageModal={(sendTo: string) => { setSendTo(sendTo); setMessageModalVisible(true); }}
             />
+            {/*
             {chartTypes.map((type) => (
                 <ComparisonChart
                     key={type}
@@ -45,11 +62,13 @@ const Page = () => {
                     setPinQuery={setPinQuery}
                 />
             ))}
-            {messageModalVisible && <SendMessageFloatingModal
-                sendTo={sendTo}
-                onClose={() => setMessageModalVisible(false)}
-                onSendButtonClick={() => setMessageModalVisible(false)}
-            />} */}
+                */}
+            {
+                messageModalVisible && <SendMessageFloatingModal
+                    initialSendTo={sendTo}
+                    onClose={() => setMessageModalVisible(false)}
+                />
+            }
         </div>
     );
 }

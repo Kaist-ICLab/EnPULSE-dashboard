@@ -6,6 +6,7 @@ import { useDailyStatTableCheckedState } from "@/hooks/legacy/useDailyStatTableC
 import { usePaging } from "@/hooks/legacy/usePaging";
 import useFormatConfig from "@/hooks/legacy/useFormatConfig";
 import Link from "next/link";
+import { getCampaignDailySummary } from "../../services/chartService";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -126,6 +127,10 @@ const UserDailyStatTable: React.FC<{
         ))
         return result;
     }, [formatConfig, maxDailyCount])
+
+    useEffect(() => {
+        getCampaignDailySummary(4, page, rowsPerPage).then(result => console.log(result))
+    })
 
     useEffect(() => {
         if (ref.current && !loading) {
