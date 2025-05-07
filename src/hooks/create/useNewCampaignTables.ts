@@ -1,11 +1,11 @@
 import { CampaignTable, CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
 import { useState } from "react";
+import { templateTable } from "./sensorTemplate";
 
 export interface NewCampaignTable extends CampaignTable {
     description: string;
     fields: CampaignTableField[];
 }
-
 
 export default function useCampainTables() {
     const [tables, setTables] = useState<NewCampaignTable[]>([]);
@@ -18,8 +18,12 @@ export default function useCampainTables() {
         })
     }
 
-    const addTable = (name: string, description: string) => {
-        setTables([...tables, { id: -1, campaign_id: -1, name, description, daily_count_max: 0, fields: [] }]);
+    const addTable = (name: string, description: string, fields: CampaignTableField[] = []) => {
+        setTables([...tables, { id: -1, campaign_id: -1, name, description, daily_count_max: 0, fields }]);
+    }
+
+    const addNewTemplateTable = (idx: number) => {
+        setTables([...tables, structuredClone(templateTable[idx])])
     }
 
     const removeTable = (index: number) => {
@@ -57,6 +61,7 @@ export default function useCampainTables() {
     return {
         tables,
         addTable,
+        addNewTemplateTable,
         removeTable,
         addField,
         setField,

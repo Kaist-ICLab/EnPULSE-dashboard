@@ -3,18 +3,20 @@
 import { useState } from "react";
 
 import { NewCampaignTable } from "@/hooks/create/useNewCampaignTables";
-import { Button, Card, TextInput } from "flowbite-react";
+import { Button, Card, Dropdown, DropdownItem, TextInput } from "flowbite-react";
 import CampaignTableCard from "./CampaignTableCard";
 import { CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
+import { templateTable } from "@/hooks/create/sensorTemplate";
 
 const CampaignSensors: React.FC<{
     tables: NewCampaignTable[],
     addTable: (name: string, description: string) => void,
     removeTable: (index: number) => void,
+    addNewTemplateTable: (idx: number) => void,
     setDailyCountMax: (index: number, value: number) => void,
     addField: (tableIndex: number, field: CampaignTableField) => void
     setField: (tableIndex: number, fieldIdx: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void,
-}> = ({ tables, addTable, removeTable, setDailyCountMax, addField, setField }) => {
+}> = ({ tables, addTable, removeTable, addNewTemplateTable, setDailyCountMax, addField, setField }) => {
     const [isSensorInputVisible, setIsSensorInputVisible] = useState(false);
     const [sensorName, setSensorName] = useState("");
     const [sensorDescription, setSensorDescription] = useState("");
@@ -69,9 +71,20 @@ const CampaignSensors: React.FC<{
                 </div>
 
             </Card>) :
-                <Button className="w-full mt-3 border-gray-300 border-2 hover:bg-gray-100" color="white" size="lg" onClick={() => { setIsSensorInputVisible(true); setSensorName(""); setSensorDescription("") }}>
-                    <span className="icon-[tabler--plus] mr-2"></span> Add sensor
-                </Button>
+                <div className="flex gap-4 items-center mt-3">
+                    <Dropdown className="flex-1/2" label="Add sensors from template" size="lg">
+                        {
+                            templateTable.map((table, idx) => (
+                                <DropdownItem key={idx} onClick={() => addNewTemplateTable(idx)}>{table.name}</DropdownItem>
+                            ))
+                        }
+                    </Dropdown>
+                    <div>Or</div>
+                    <Button className="flex-1/2 border-gray-300 border-2 hover:bg-gray-100" color="white" size="lg" onClick={() => { setIsSensorInputVisible(true); setSensorName(""); setSensorDescription("") }}>
+                        <span className="icon-[tabler--plus] mr-2"></span> Add custom sensor
+                    </Button>
+                </div>
+
             }
 
         </div>

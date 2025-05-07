@@ -10,9 +10,7 @@ const CampaignsPage: React.FC = () => {
     useEffect(() => {
         fetchCampaigns();
     }, []);
-    useEffect(() => {
-        console.log(campaigns);
-    }, [campaigns]);
+
     return (
         <div className="w-full min-h-screen bg-gray-50 flex flex-row ">
             <aside className="min-h-screen w-64 flex flex-col border-r border-gray-200">

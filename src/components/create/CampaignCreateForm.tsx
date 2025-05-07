@@ -10,7 +10,7 @@ import useAddCampaign from "@/hooks/create/useAddCampaign"
 export default function CampaignCreateForm() {
     const [campaignName, setCampaignName] = useState("");
     const [isValidName, setIsValidName] = useState(false);
-    const { tables, addTable, removeTable, addField, setField, setDailyCountMax } = useCampainTables();
+    const { tables, addTable, removeTable, addField, setField, setDailyCountMax, addNewTemplateTable } = useCampainTables();
     const { isValid, submitCampaign } = useAddCampaign(campaignName, isValidName, tables)
 
     return (
@@ -28,6 +28,7 @@ export default function CampaignCreateForm() {
                 addField={addField}
                 setField={setField}
                 setDailyCountMax={setDailyCountMax}
+                addNewTemplateTable={addNewTemplateTable}
             />
             <div className="w-full gap-4 flex mt-5">
                 <Button className="flex-2/3" size="lg" disabled={!isValid} onClick={() => submitCampaign()}>
