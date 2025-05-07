@@ -11,13 +11,9 @@ export type UserDailyStat = {
     };
 };
 
-// export type DynamicDataColumn = {
-//     dailyCount: number;
-//     timeline: number[];
-// };
-
 export type DynamicDataColumn = {
     dailyCount: number;
+    dailyCountMax: number;
     timeline: number[];
 };
 
@@ -39,11 +35,11 @@ export const useUserDailyStat = (
     const maxDailyCount = useMemo(() => {
         const res = {} as { [name: string]: number }
         columns.forEach(key => {
-            res[key] = 100
+            res[key] = data[0].columns[key].dailyCountMax
         })
 
         return res
-    }, [columns])
+    }, [data, columns])
 
     // // In practice, this should be calculated by the server as the client cannot see all the data
     // const maxDailyCount = useMemo(() => {
@@ -61,7 +57,7 @@ export const useUserDailyStat = (
 
         const load = async () => {
             const count = await getDailyStatCount(selectedCampaignId)
-            const statData = await getCampaignDailySummary(selectedCampaignId, page, rowsPerPage)
+            const statData = await getCampaignDailySummary(selectedCampaignId, date, page, rowsPerPage)
 
             setTotalPage(Math.ceil(count ? count / rowsPerPage : 0))
             setData(statData)
@@ -70,7 +66,7 @@ export const useUserDailyStat = (
 
         setLoading(true)
         load()
-    }, [page, rowsPerPage, setTotalPage, selectedCampaignId, syncTime])
+    }, [date, page, rowsPerPage, setTotalPage, selectedCampaignId, syncTime])
 
     return { data, columns, maxDailyCount, loading }
 }

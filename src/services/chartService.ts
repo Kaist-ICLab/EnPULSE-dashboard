@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { mapQuery } from '@/lib/supabaseHelper';
 // import { mapQuery } from '@/lib/supabaseHelper';
 
-export async function getCampaignDailySummary(campaignId: number, page: number, pageCount: number) {
+export async function getCampaignDailySummary(campaignId: number, date: Date, page: number, pageCount: number) {
     const from = (page - 1) * pageCount;
     const to = from + pageCount - 1;
 
@@ -11,6 +11,7 @@ export async function getCampaignDailySummary(campaignId: number, page: number, 
         .from(`profiles`)
         .select(`uuid, email, campaign_table_user_daily_summary(*), messages(count)`)
         .eq('campaign_id', campaignId)
+        .filter('campaign_table_user_daily_summary.day', 'eq', date.toISOString().split('T')[0])
         .range(from, to)
 
     if (error) throw new Error(error.message);
@@ -19,10 +20,11 @@ export async function getCampaignDailySummary(campaignId: number, page: number, 
     const columnNameQuery = await mapQuery(campaignTableId, v => {
         return supabase
             .from(`campaign_table`)
-            .select(`name`)
+            .select(`name, daily_count_max`)
             .eq(`id`, v)
     })
     const columnName = columnNameQuery.map(v => v[0].name)
+    const dailyCountMax = columnNameQuery.map(v => v[0].daily_count_max)
 
     return data.map(v => {
         const columns = {} as { [name: string]: DynamicDataColumn }
@@ -33,6 +35,7 @@ export async function getCampaignDailySummary(campaignId: number, page: number, 
             )
             const dailyCount = timeline.reduce((a, b) => a + b, 0)
             columns[columnName[idx]] = {
+                dailyCountMax: dailyCountMax[idx],
                 dailyCount,
                 timeline
             }
@@ -57,3 +60,5 @@ export async function getDailyStatCount(campaignId: number) {
 
     return count
 }
+
+// export async function getD

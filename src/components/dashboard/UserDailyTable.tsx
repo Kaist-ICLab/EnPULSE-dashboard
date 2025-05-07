@@ -1,10 +1,9 @@
 "use client"
 import useUserDailyStat, { UserDailyStat } from "@/hooks/charts/useUserDailyStat";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button, Select, Spinner, Tooltip } from "flowbite-react";
 import { useDailyStatTableCheckedState } from "@/hooks/charts/useDailyStatTableCheckedState";
 import { usePaging } from "@/hooks/legacy/usePaging";
-import useFormatConfig from "@/hooks/legacy/useFormatConfig";
 import Link from "next/link";
 
 const getLevelColor = (level: number): string => {
@@ -18,7 +17,7 @@ const getLevelColor = (level: number): string => {
     return levels[Math.max(0, Math.min(4, level))]; // 0~4 범위 고정
 }
 
-const Timeline: React.FC<{ values: number[] }> = ({ values }) => {
+const Timeline: React.FC<{ values: number[], max: number }> = ({ values, max }) => {
     if (values.length !== 8) {
         throw new Error(`Timeline length must be 8. Received: ${values.length}`);
     }
@@ -28,14 +27,13 @@ const Timeline: React.FC<{ values: number[] }> = ({ values }) => {
             {values.map((level, i) => (
                 <Tooltip key={i} content={`${level}`} trigger="hover">
                     <div
-                        className={`w-3 h-[30px] ${getLevelColor(level)}`}
+                        className={`w-3 h-[30px] ${getLevelColor(Math.floor(level / max * 5))}`}
                     />
                 </Tooltip>
             ))}
         </div>
     );
 }
-
 
 const DailyCount: React.FC<{
     value: number;
@@ -62,8 +60,6 @@ const DailyCount: React.FC<{
     );
 }
 
-
-
 const cellStyle = "p-2 border-r border-gray-200"
 const rowStyle = "border-b border-l border-gray-200"
 
@@ -87,7 +83,7 @@ const UserRow: React.FC<{
                     </Tooltip>
                 </td>,
                 <td key={`${key}-timeline`} className={cellStyle}>
-                    <Timeline values={metric.timeline} />
+                    <Timeline values={metric.timeline} max={max[key] / 8} />
                 </td>]
             ))}
         </tr>
@@ -101,7 +97,6 @@ const ChartTooltipContent: React.FC = () => {
             <p className="mb-1">Timeline: # of data collected in a 3 hour window.</p>
             <p>Hover over the components to see the details!</p>
         </>
-
     )
 }
 
@@ -115,18 +110,17 @@ const UserDailyStatTable: React.FC<{
     const [tableHeight, setTableHeight] = useState(500)
 
     const { page, rowsPerPage, totalPage, changePageBy, setRowsPerPage, setTotalPage } = usePaging(5)
-    const { loading: configLoading, formatConfig } = useFormatConfig();
-    const { data, loading: statLoading, columns, maxDailyCount } = useUserDailyStat(date, page, rowsPerPage, setTotalPage, syncTime);
+    const { data, loading, columns, maxDailyCount: dailyCountThreshold } = useUserDailyStat(date, page, rowsPerPage, setTotalPage, syncTime);
     const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } = useDailyStatTableCheckedState(data);
 
-    const loading = statLoading || configLoading;
-    const dailyCountThreshold = useMemo(() => {
-        const result: { [key: string]: number } = {};
-        Object.entries(formatConfig).forEach(([sensorName, config]) => (
-            result[sensorName] = config.thresholdMode == 'max' ? maxDailyCount[sensorName] : config.threshold
-        ))
-        return result;
-    }, [formatConfig, maxDailyCount])
+    // const loading = statLoading || configLoading;
+    // const dailyCountThreshold = useMemo(() => {
+    //     const result: { [key: string]: number } = {};
+    //     Object.entries(formatConfig).forEach(([sensorName, config]) => (
+    //         result[sensorName] = config.thresholdMode == 'max' ? maxDailyCount[sensorName] : config.threshold
+    //     ))
+    //     return result;
+    // }, [formatConfig, maxDailyCount])
 
     useEffect(() => {
         if (ref.current && !loading) {
