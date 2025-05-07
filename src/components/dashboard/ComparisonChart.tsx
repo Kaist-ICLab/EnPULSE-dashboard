@@ -1,6 +1,6 @@
 "use client"
 import ChartContainer from "@/components/dashboard/charts/ChartContainer";
-import useComparisonChartTimeline from "@/hooks/legacy/useComparisonChartData";
+import useTimeline from "@/hooks/charts/useTimeline";
 import useCampaign from "@/hooks/useCampaign";
 import { ChartParams, ChartType, PinQuery } from "@/types/chart";
 import { Card, Select, Spinner } from "flowbite-react";
@@ -13,8 +13,7 @@ const ComparisonChart: React.FC<({
     pinQuery: PinQuery;
     setPinQuery: (pinQuery: PinQuery) => void;
 })> = ({ params, setParams, type, pinQuery, setPinQuery }) => {
-    console.log(params)
-    const { timeline, loading, error } = useComparisonChartTimeline(params, type);
+    const { timeline, loading, error } = useTimeline(params, type);
     const { campaignTables, campaignTableFields, campaignParticipants } = useCampaign()
 
     const sensors = useMemo(() => {

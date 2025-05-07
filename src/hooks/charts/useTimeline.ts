@@ -1,12 +1,21 @@
 import { ChartParams, ChartType, TimelineData } from "@/types/chart";
-import { useMemo } from "react";
-import useFakeBatteryData from "../useFakeBatteryData";
-import useFakeAppUsageData from "../useFakeAppUsageData";
+import { useEffect, useMemo } from "react";
+import useFakeBatteryData from "../legacy/useFakeBatteryData";
+import useFakeAppUsageData from "../legacy/useFakeAppUsageData";
+import useCampaign from "../useCampaign";
+import { getTimelineOverviewData } from "@/services/chartService";
 
 
-export default function useComparisonChartTimeline(params: ChartParams, type: ChartType) {
+export default function useTimeline(params: ChartParams, type: ChartType) {
     const { data, loading, error } = useFakeBatteryData();
     const { data: appUsageData } = useFakeAppUsageData();
+
+    const { selectedCampaignId } = useCampaign();
+    useEffect(() => {
+        if (!selectedCampaignId) return;
+
+        getTimelineOverviewData(selectedCampaignId, params);
+    }, [selectedCampaignId, params]);
 
     const timeline = useMemo(() => {
         if (!data || !appUsageData) return []

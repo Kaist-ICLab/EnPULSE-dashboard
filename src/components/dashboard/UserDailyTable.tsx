@@ -171,40 +171,48 @@ const UserDailyStatTable: React.FC<{
                     <div className="flex justify-center items-center" style={{ minHeight: `${tableHeight}px` }}  >
                         <Spinner size="xl" />
                     </div>
-                ) : (<table className="table-fixed w-fit" >
-                    <colgroup>
-                        <col className="w-[60px]" />
-                        <col className="w-[200px]" />
-                        <col className="w-[200px]" />
-                        {columns.map((key) => ([
-                            <col key={`${key}-col-dailycount`} className="w-[160px]" />,
-                            <col key={`${key}-col-timeline`} className="w-[160px]" />
-                        ]))}
-                    </colgroup>
-                    <thead className="uppercase text-gray-500 border-t border-gray-200 bg-gray-50 text-xs">
-                        <tr className={[rowStyle, 'h-[25px]'].join(' ')}>
-                            <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>
-                                <input className="w-4 h-4" type="checkbox" checked={isAllChecked} onChange={toggleAllChecked} />
-                            </th>
-                            <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>Email / UID</th>
-                            <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>Contacts</th>
-                            {columns.map((key) => (
-                                <th key={`${key}-th`} className={['py-0', cellStyle, 'text-center'].join(' ')} colSpan={2}>{key.replace(/_/g, " ")}</th>
-                            ))}
-                        </tr>
-                        <tr className={[rowStyle, 'h-[25px]'].join(' ')}>
-                            {columns.map((key) => ([
-                                <th key={`${key}-th-dailycount`} className={['py-0', cellStyle, 'text-center'].join(' ')}>DAILY COUNT</th>,
-                                <th key={`${key}-th-timeline`} className={['py-0', cellStyle, 'text-center'].join(' ')}>DAILY TIMELINE</th>
-                            ]))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.map((row, index) => (
-                            <UserRow key={`row-${row.uuid}`} row={row} max={dailyCountThreshold} isSelected={checkedState[index]} toggleChecked={() => toggleChecked(index)} />
-                        ))}
-                    </tbody>
-                </table>)}
+                ) : (
+                    data.length > 0 ? (
+                        <table className="table-fixed w-fit" >
+                            <colgroup>
+                                <col className="w-[60px]" />
+                                <col className="w-[200px]" />
+                                <col className="w-[200px]" />
+                                {columns.map((key) => ([
+                                    <col key={`${key}-col-dailycount`} className="w-[160px]" />,
+                                    <col key={`${key}-col-timeline`} className="w-[160px]" />
+                                ]))}
+                            </colgroup>
+                            <thead className="uppercase text-gray-500 border-t border-gray-200 bg-gray-50 text-xs">
+                                <tr className={[rowStyle, 'h-[25px]'].join(' ')}>
+                                    <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>
+                                        <input className="w-4 h-4" type="checkbox" checked={isAllChecked} onChange={toggleAllChecked} />
+                                    </th>
+                                    <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>Email / UID</th>
+                                    <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>Contacts</th>
+                                    {columns.map((key) => (
+                                        <th key={`${key}-th`} className={['py-0', cellStyle, 'text-center'].join(' ')} colSpan={2}>{key.replace(/_/g, " ")}</th>
+                                    ))}
+                                </tr>
+                                <tr className={[rowStyle, 'h-[25px]'].join(' ')}>
+                                    {columns.map((key) => ([
+                                        <th key={`${key}-th-dailycount`} className={['py-0', cellStyle, 'text-center'].join(' ')}>DAILY COUNT</th>,
+                                        <th key={`${key}-th-timeline`} className={['py-0', cellStyle, 'text-center'].join(' ')}>DAILY TIMELINE</th>
+                                    ]))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.map((row, index) => (
+                                    <UserRow key={`row-${row.uuid}`} row={row} max={dailyCountThreshold} isSelected={checkedState[index]} toggleChecked={() => toggleChecked(index)} />
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <div className="flex h-48 justify-center items-center bg-gray-100">
+                            <span className=" text-gray-500">No data</span>
+                        </div>
+                    )
+                )}
             </div>
             <div className="flex items-center justify-between px-2 py-3 w-full">
                 <div className="flex items-center gap-4">

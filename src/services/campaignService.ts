@@ -42,7 +42,6 @@ export const updateCampaignField = async (fieldId: number, changes: Partial<Camp
 
 
 export const createCampaign = async (campaign: Omit<Campaign, 'id'>): Promise<number> => {
-    // TODO: Check auto_increment key. It should be uploadable without id!!
     const { data, error } = await supabase
         .from('campaigns')
         .insert(campaign)

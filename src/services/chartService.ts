@@ -1,6 +1,7 @@
 import { DynamicDataColumn } from '@/hooks/charts/useUserDailyStat';
 import { supabase } from '@/lib/supabase';
 import { mapQuery } from '@/lib/supabaseHelper';
+import { ChartParams } from '@/types/chart';
 // import { mapQuery } from '@/lib/supabaseHelper';
 
 export async function getCampaignDailySummary(campaignId: number, date: Date, page: number, pageCount: number) {
@@ -15,6 +16,8 @@ export async function getCampaignDailySummary(campaignId: number, date: Date, pa
         .range(from, to)
 
     if (error) throw new Error(error.message);
+
+    if (data.length == 0) return []
 
     const campaignTableId = data[0].campaign_table_user_daily_summary.map(v => v.campaign_table_id)
     const columnNameQuery = await mapQuery(campaignTableId, v => {
@@ -58,5 +61,16 @@ export async function getDailyStatCount(campaignId: number) {
 
     if (error) throw new Error(error.message);
 
-    return count
+    return Math.max(count ?? 1, 1)
+}
+
+export async function getTimelineOverviewData(campaignId: number, { uuid, date }: ChartParams) {
+    const { data, error } = await supabase
+        .from(`campaign_table_field`)
+        .select(`*`)
+        .eq('campaign_id', campaignId)
+
+    if (error) throw new Error(error.message);
+
+    console.log(data)
 }
