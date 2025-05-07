@@ -16,8 +16,8 @@ export interface TimelineData {
 }
 
 export type ChartParams = {
-    uid: string,
-    sid: string,
+    uuid: string,
+    sid: number,
     date: Date,
 }
 

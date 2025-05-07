@@ -1,7 +1,6 @@
 import { create } from 'zustand';
-import { Campaign, CampaignTable, CampaignTableField } from '@/types/campaign';
-import { getCampaigns, getCampaignTableFields, getCampaignTables, updateCampaignName, updateCampaignTable, updateCampaignTableFields } from '@/services/campaignService';
-import { get } from 'http';
+import { Campaign, CampaignTable, CampaignTableField, CampaignParticipant } from '@/types/campaign';
+import { getCampaignParticipants, getCampaigns, getCampaignTableFields, getCampaignTables, updateCampaignName, updateCampaignTable, updateCampaignTableFields } from '@/services/campaignService';
 
 export type ResponseStatus = 'loading' | 'ok' | 'error';
 interface Response {
@@ -13,6 +12,7 @@ interface CampaignState {
     campaigns: Map<number, Campaign>;
     campaignTables: Map<number, CampaignTable>;
     campaignTableFields: Map<number, CampaignTableField>;
+    campaignParticipants: Map<string, CampaignParticipant>;
     selectedCampaignId: number | null;
     responses: {
         fetchCampaigns: Response,
@@ -32,6 +32,7 @@ const useCampaign = create<CampaignState>((set, get) => ({
     campaigns: new Map(),
     campaignTables: new Map(),
     campaignTableFields: new Map(),
+    campaignParticipants: new Map(),
     selectedCampaignId: null,
     responses: {
         fetchCampaigns: {
@@ -66,14 +67,18 @@ const useCampaign = create<CampaignState>((set, get) => ({
         try {
             if (get().selectedCampaignId === campaignId) return;
             set((state) => ({ responses: { ...state.responses, selectCampaign: { status: 'loading', message: "Selecting campaign..." } } }));
+
             const campaignTables = await getCampaignTables(campaignId);
             const campaignTableFields = (await Promise.all(campaignTables.map(async (campaignTable) => {
                 return await getCampaignTableFields(campaignId, campaignTable.id);
             }))).flat();
+            const campaignParticipants = await getCampaignParticipants(campaignId);
+
             set({
                 campaignTables: new Map(campaignTables.map(campaignTable => [campaignTable.id, campaignTable])),
                 campaignTableFields: new Map(campaignTableFields.map(campaignTableField => [campaignTableField.id, campaignTableField])),
                 selectedCampaignId: campaignId,
+                campaignParticipants: new Map(campaignParticipants.map(campaignParticipant => [campaignParticipant.uuid, campaignParticipant])),
                 responses: { ...get().responses, selectCampaign: { status: 'ok', message: "Campaign selected" } }
             });
         } catch (error) {
@@ -89,7 +94,7 @@ const useCampaign = create<CampaignState>((set, get) => ({
                 responses: { ...state.responses, updateCampaignName: { status: 'ok', message: null } },
                 campaigns: new Map(state.campaigns.set(campaignId, { ...state.campaigns.get(campaignId)!, name }))
             }));
-        } catch (error) {
+        } catch {
             set((state) => ({ responses: { ...state.responses, updateCampaignName: { status: 'error', message: "Error updating campaign name" } } }));
         }
     },
@@ -101,7 +106,7 @@ const useCampaign = create<CampaignState>((set, get) => ({
                 campaignTables: new Map(state.campaignTables.set(tableId, { ...state.campaignTables.get(tableId)!, daily_count_max: dailyCountMax })),
                 responses: { ...state.responses, updateCampaignTable: { status: 'ok', message: null } },
             }));
-        } catch (error) {
+        } catch {
             set((state) => ({
                 responses: {
                     ...state.responses,
@@ -124,7 +129,7 @@ const useCampaign = create<CampaignState>((set, get) => ({
                 })),
                 responses: { ...state.responses, updateCampaignField: { status: 'ok', message: null } },
             }));
-        } catch (error) {
+        } catch {
             set((state) => ({
                 responses: { ...state.responses, updateCampaignField: { status: 'error', message: "Error updating campaign field" } }
             }));

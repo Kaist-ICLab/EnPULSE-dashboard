@@ -22,9 +22,9 @@ export async function getCampaignDailySummary(campaignId: number, date: Date, pa
             .from(`campaign_table`)
             .select(`name, daily_count_max`)
             .eq(`id`, v)
-    })
-    const columnName = columnNameQuery.map(v => v[0].name)
-    const dailyCountMax = columnNameQuery.map(v => v[0].daily_count_max)
+    }) as { name: string; daily_count_max: number }[][]
+    const columnName = columnNameQuery.map(v => v[0]?.name ?? '')
+    const dailyCountMax = columnNameQuery.map(v => v[0]?.daily_count_max ?? 0)
 
     return data.map(v => {
         const columns = {} as { [name: string]: DynamicDataColumn }
@@ -59,8 +59,4 @@ export async function getDailyStatCount(campaignId: number) {
     if (error) throw new Error(error.message);
 
     return count
-}
-
-export async function getTimelineOverviewData(campaignId: number, uuid: string) {
-
 }

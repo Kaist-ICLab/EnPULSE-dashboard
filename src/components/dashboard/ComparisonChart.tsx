@@ -13,16 +13,21 @@ const ComparisonChart: React.FC<({
     pinQuery: PinQuery;
     setPinQuery: (pinQuery: PinQuery) => void;
 })> = ({ params, setParams, type, pinQuery, setPinQuery }) => {
+    console.log(params)
     const { timeline, loading, error } = useComparisonChartTimeline(params, type);
-    const { campaignTables, campaignTableFields } = useCampaign()
+    const { campaignTables, campaignTableFields, campaignParticipants } = useCampaign()
 
     const sensors = useMemo(() => {
         const ret = Array.from(campaignTables.entries()).map(([, table]) =>
             Array.from(campaignTableFields.values()).filter(v => v.campaign_table_id == table.id)
-                .map(v => ({ id: v.id, tableId: table.id, name: `${table.name} - ${v.name}` }))
-        )
-        return ret.flat();
+                .map(v => ({ ...v, tableId: table.id, name: `${table.name.replace('_', ' ')} - ${v.name}` }))
+        ).flat();
+        return ret.filter(v => v.field_role === 'data');
     }, [campaignTables, campaignTableFields])
+
+    const users = useMemo(() => {
+        return Array.from(campaignParticipants.values()).map(v => ({ id: v.uuid, name: v.email }))
+    }, [campaignParticipants])
 
     const chartName = (() => {
         switch (type) {
@@ -41,13 +46,6 @@ const ComparisonChart: React.FC<({
         end: new Date().setHours(23, 59, 59, 999),
     }
 
-    // Mock user data - replace with actual user data from your backend
-    const users = [
-        { id: "1", name: "User 1" },
-        { id: "2", name: "User 2" },
-        { id: "3", name: "User 3" },
-    ];
-
     return (
         <Card id={`${type}-comparison-chart`}>
             <div className="w-full">
@@ -57,8 +55,8 @@ const ComparisonChart: React.FC<({
                         {type !== ChartType.InterPerson && <div className="w-full sm:w-48">
                             <Select
                                 icon={() => <span className="icon-[material-symbols--person-rounded]"></span>}
-                                value={params.uid}
-                                onChange={(e) => setParams(type, { ...params, uid: e.target.value })}
+                                value={params.uuid}
+                                onChange={(e) => setParams(type, { ...params, uuid: e.target.value })}
                             >
                                 <option value="">Select User</option>
                                 {users.map((user) => (
@@ -72,7 +70,7 @@ const ComparisonChart: React.FC<({
                             <Select
                                 icon={() => <span className="icon-[material-symbols--sensors-rounded]"></span>}
                                 value={params.sid}
-                                onChange={(e) => setParams(type, { ...params, sid: e.target.value })}
+                                onChange={(e) => setParams(type, { ...params, sid: parseInt(e.target.value) })}
                             >
                                 <option value="">Select Sensor</option>
                                 {sensors.map((sensor) => (

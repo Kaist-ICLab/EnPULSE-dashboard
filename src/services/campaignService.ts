@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { Campaign, CampaignTable, CampaignTableField } from '@/types/campaign';
+import { Campaign, CampaignParticipant, CampaignTable, CampaignTableField } from '@/types/campaign';
 
 export const getCampaigns = async (): Promise<Campaign[]> => {
     const { data, error } = await supabase
@@ -157,9 +157,9 @@ export const checkCampaignNameValidity = async (campaignName: string): Promise<b
     return true
 }
 
-export async function getCampaignUser(campaignId: number) {
+export async function getCampaignParticipants(campaignId: number): Promise<CampaignParticipant[]> {
     const { data, error } = await supabase
-        .from('campaigns')
+        .from('profiles')
         .select('uuid, email')
         .eq('campaign_id', campaignId)
 

@@ -24,4 +24,10 @@ export interface CampaignTableField {
     description?: string,
     field_type: FieldType;
     field_role: FieldRole;
-} 
+}
+
+export interface CampaignParticipant {
+    uuid: string;
+    email: string;
+}
+

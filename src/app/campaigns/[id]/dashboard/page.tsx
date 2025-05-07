@@ -3,15 +3,15 @@ import DashboardCard from "@/components/campaign/DashboardCard";
 import { ComparisonChart } from "@/components/dashboard/ComparisonChart";
 import UserDailyStatTable from "@/components/dashboard/UserDailyTable";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
-import useChartParams from "@/hooks/legacy/useChartParams";
+import useChartParams from "@/hooks/charts/useChartParams";
 import { ChartType, PinQuery } from "@/types/chart";
 import { Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 
 const chartTypes = [
     ChartType.TimelineOverview,
-    // ChartType.IntraPerson,
-    // ChartType.InterPerson
+    ChartType.IntraPerson,
+    ChartType.InterPerson
 ]
 
 const Page = () => {
@@ -19,14 +19,7 @@ const Page = () => {
     const [sendTo, setSendTo] = useState<string>("");
     const [messageModalVisible, setMessageModalVisible] = useState<boolean>(false);
 
-    const { params, setParams } = useChartParams(
-        {
-            uid: "1",
-            sid: "battery-chargetype",
-            date: new Date()
-        },
-        chartTypes
-    )
+    const { params, setParams } = useChartParams(chartTypes)
 
     const [pinQuery, setPinQuery] = useState<PinQuery>(chartTypes.reduce((acc, type) => {
         acc[type] = null;
@@ -54,7 +47,7 @@ const Page = () => {
             </DashboardCard>
             <UserDailyStatTable
                 syncTime={lastLoaded}
-                setUserId={v => setParams(ChartType.TimelineOverview, { ...params[ChartType.TimelineOverview], uid: v })}
+                setUserId={v => setParams(ChartType.TimelineOverview, { ...params[ChartType.TimelineOverview], uuid: v })}
                 openMessageModal={(sendTo: string) => { setSendTo(sendTo); setMessageModalVisible(true); }}
             />
 
