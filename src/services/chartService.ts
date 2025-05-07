@@ -61,4 +61,6 @@ export async function getDailyStatCount(campaignId: number) {
     return count
 }
 
-// export async function getD
+export async function getTimelineOverviewData(campaignId: number, uuid: string) {
+
+}

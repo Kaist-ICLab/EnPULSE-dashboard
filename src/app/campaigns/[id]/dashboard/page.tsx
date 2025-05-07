@@ -4,14 +4,14 @@ import { ComparisonChart } from "@/components/dashboard/ComparisonChart";
 import UserDailyStatTable from "@/components/dashboard/UserDailyTable";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
 import useChartParams from "@/hooks/legacy/useChartParams";
-import { ChartType } from "@/types/chart";
+import { ChartType, PinQuery } from "@/types/chart";
 import { Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 
 const chartTypes = [
     ChartType.TimelineOverview,
-    ChartType.IntraPerson,
-    ChartType.InterPerson
+    // ChartType.IntraPerson,
+    // ChartType.InterPerson
 ]
 
 const Page = () => {
@@ -28,10 +28,10 @@ const Page = () => {
         chartTypes
     )
 
-    // const [pinQuery, setPinQuery] = useState<PinQuery>(chartTypes.reduce((acc, type) => {
-    //     acc[type] = null;
-    //     return acc;
-    // }, {} as PinQuery));
+    const [pinQuery, setPinQuery] = useState<PinQuery>(chartTypes.reduce((acc, type) => {
+        acc[type] = null;
+        return acc;
+    }, {} as PinQuery));
 
     useEffect(() => {
         setLastLoaded(new Date())
@@ -57,7 +57,7 @@ const Page = () => {
                 setUserId={v => setParams(ChartType.TimelineOverview, { ...params[ChartType.TimelineOverview], uid: v })}
                 openMessageModal={(sendTo: string) => { setSendTo(sendTo); setMessageModalVisible(true); }}
             />
-            {/*
+
             {chartTypes.map((type) => (
                 <ComparisonChart
                     key={type}
@@ -67,7 +67,7 @@ const Page = () => {
                     setPinQuery={setPinQuery}
                 />
             ))}
-                */}
+
             {
                 messageModalVisible && <SendMessageFloatingModal
                     initialSendTo={sendTo}

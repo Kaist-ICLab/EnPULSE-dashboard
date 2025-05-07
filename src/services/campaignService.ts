@@ -145,7 +145,6 @@ export const updateCampaignTableFields = async (changes: Partial<CampaignTableFi
 }
 
 export const checkCampaignNameValidity = async (campaignName: string): Promise<boolean> => {
-    console.log(campaignName)
     if (campaignName == '') return false
 
     const { data, error } = await supabase
@@ -156,4 +155,15 @@ export const checkCampaignNameValidity = async (campaignName: string): Promise<b
     if (error) throw new Error(error.message);
     if (data && data.length > 0) return false
     return true
+}
+
+export async function getCampaignUser(campaignId: number) {
+    const { data, error } = await supabase
+        .from('campaigns')
+        .select('uuid, email')
+        .eq('campaign_id', campaignId)
+
+    if (error) throw new Error(error.message);
+
+    return data
 }

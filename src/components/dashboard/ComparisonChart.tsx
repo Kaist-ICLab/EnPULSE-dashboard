@@ -1,8 +1,10 @@
 "use client"
 import ChartContainer from "@/components/dashboard/charts/ChartContainer";
 import useComparisonChartTimeline from "@/hooks/legacy/useComparisonChartData";
-import { ChartParams, ChartType } from "@/types/chart";
+import useCampaign from "@/hooks/useCampaign";
+import { ChartParams, ChartType, PinQuery } from "@/types/chart";
 import { Card, Select, Spinner } from "flowbite-react";
+import { useMemo } from "react";
 
 const ComparisonChart: React.FC<({
     params: ChartParams;
@@ -12,6 +14,15 @@ const ComparisonChart: React.FC<({
     setPinQuery: (pinQuery: PinQuery) => void;
 })> = ({ params, setParams, type, pinQuery, setPinQuery }) => {
     const { timeline, loading, error } = useComparisonChartTimeline(params, type);
+    const { campaignTables, campaignTableFields } = useCampaign()
+
+    const sensors = useMemo(() => {
+        const ret = Array.from(campaignTables.entries()).map(([, table]) =>
+            Array.from(campaignTableFields.values()).filter(v => v.campaign_table_id == table.id)
+                .map(v => ({ id: v.id, tableId: table.id, name: `${table.name} - ${v.name}` }))
+        )
+        return ret.flat();
+    }, [campaignTables, campaignTableFields])
 
     const chartName = (() => {
         switch (type) {
@@ -35,12 +46,6 @@ const ComparisonChart: React.FC<({
         { id: "1", name: "User 1" },
         { id: "2", name: "User 2" },
         { id: "3", name: "User 3" },
-    ];
-
-    const sensors = [
-        { id: "battery-chargetype", name: "Battery Charge Type" },
-        { id: "app-usage", name: "App Usage" },
-        { id: "battery-level", name: "Battery Level" },
     ];
 
     return (
