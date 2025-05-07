@@ -6,7 +6,7 @@ import SendMessageFloatingModal from "@/components/messaging/SendMessageFloating
 import useChartParams from "@/hooks/legacy/useChartParams";
 import { ChartType } from "@/types/chart";
 import { Button } from "flowbite-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const chartTypes = [
     ChartType.TimelineOverview,
@@ -15,7 +15,7 @@ const chartTypes = [
 ]
 
 const Page = () => {
-    const [lastLoaded, setLastLoaded] = useState<Date>(new Date())
+    const [lastLoaded, setLastLoaded] = useState<Date | null>(null)
     const [sendTo, setSendTo] = useState<string>("");
     const [messageModalVisible, setMessageModalVisible] = useState<boolean>(false);
 
@@ -28,16 +28,20 @@ const Page = () => {
         chartTypes
     )
 
-    const [pinQuery, setPinQuery] = useState<PinQuery>(chartTypes.reduce((acc, type) => {
-        acc[type] = null;
-        return acc;
-    }, {} as PinQuery));
+    // const [pinQuery, setPinQuery] = useState<PinQuery>(chartTypes.reduce((acc, type) => {
+    //     acc[type] = null;
+    //     return acc;
+    // }, {} as PinQuery));
+
+    useEffect(() => {
+        setLastLoaded(new Date())
+    }, [])
 
     return (
         <div className="space-y-4 p-4">
             <DashboardCard>
                 <div className="flex items-center">
-                    <span className="font-semibold">Last updated: {lastLoaded.toDateString() + ', ' + lastLoaded.toLocaleTimeString()}</span>
+                    <span className="font-semibold">Last updated: {lastLoaded ? lastLoaded.toDateString() + ', ' + lastLoaded.toLocaleTimeString() : ''}</span>
                     <Button
                         className="ml-auto"
                         onClick={() => {
@@ -49,6 +53,7 @@ const Page = () => {
                 </div>
             </DashboardCard>
             <UserDailyStatTable
+                syncTime={lastLoaded}
                 setUserId={v => setParams(ChartType.TimelineOverview, { ...params[ChartType.TimelineOverview], uid: v })}
                 openMessageModal={(sendTo: string) => { setSendTo(sendTo); setMessageModalVisible(true); }}
             />

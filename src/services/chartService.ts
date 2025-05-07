@@ -1,4 +1,6 @@
+import { DynamicDataColumn } from '@/hooks/charts/useUserDailyStat';
 import { supabase } from '@/lib/supabase';
+import { mapQuery } from '@/lib/supabaseHelper';
 // import { mapQuery } from '@/lib/supabaseHelper';
 
 export async function getCampaignDailySummary(campaignId: number, page: number, pageCount: number) {
@@ -13,35 +15,45 @@ export async function getCampaignDailySummary(campaignId: number, page: number, 
 
     if (error) throw new Error(error.message);
 
-    console.log(data)
-    return data.map(v => ({
-        email: v.email,
-        uuid: v.uuid,
-        contacts: v.messages[0].count,
-        columns: Array.from({ length: 8 }).map((_, idx) => v.campaign_table_user_daily_summary)
-    }))
+    const campaignTableId = data[0].campaign_table_user_daily_summary.map(v => v.campaign_table_id)
+    const columnNameQuery = await mapQuery(campaignTableId, v => {
+        return supabase
+            .from(`campaign_table`)
+            .select(`name`)
+            .eq(`id`, v)
+    })
+    const columnName = columnNameQuery.map(v => v[0].name)
 
-    // const uuid = profiles.map(v => v.uuid as string)
-    // const dataCounts = await mapQuery(uuid, uid => {
-    //     return supabase
-    //         .from(`campaign_table_user_daily_summary`)
-    //         .select(`*`)
-    //         .eq('uuid', uid)
-    // })
+    return data.map(v => {
+        const columns = {} as { [name: string]: DynamicDataColumn }
 
-    // const contacts = await mapQuery(uuid, uid => {
-    //     return supabase
-    //         .from('messages')
-    //         // .select('content')
-    //         .select('*', { count: 'exact', head: true })
-    //         .eq('uuid', uid)
-    // }, true)
+        v.campaign_table_user_daily_summary.forEach((table, idx) => {
+            const timeline = Array.from({ length: 8 }).map((_, i) =>
+                table[`hourly_count_${i}`]
+            )
+            const dailyCount = timeline.reduce((a, b) => a + b, 0)
+            columns[columnName[idx]] = {
+                dailyCount,
+                timeline
+            }
+        })
 
-    // console.log(contacts)
+        return {
+            email: v.email,
+            uuid: v.uuid,
+            contacts: v.messages[0].count,
+            columns
+        }
+    })
+}
 
-    // const results = uuid.map((_, i) => ({
-    //     columns: [...dataCounts[i]], contacts: contacts[i], profiles:
-    // }))
+export async function getDailyStatCount(campaignId: number) {
+    const { count, error } = await supabase
+        .from(`profiles`)
+        .select(`*`, { count: 'exact' })
+        .eq('campaign_id', campaignId)
 
-    // return results
+    if (error) throw new Error(error.message);
+
+    return count
 }

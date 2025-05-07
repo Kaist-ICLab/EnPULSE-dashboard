@@ -1,12 +1,11 @@
 "use client"
-import useUserDailyStat, { UserDailyStat } from "@/hooks/legacy/useUserDailyStat";
+import useUserDailyStat, { UserDailyStat } from "@/hooks/charts/useUserDailyStat";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Select, Spinner, Tooltip } from "flowbite-react";
-import { useDailyStatTableCheckedState } from "@/hooks/legacy/useDailyStatTableCheckedState";
+import { useDailyStatTableCheckedState } from "@/hooks/charts/useDailyStatTableCheckedState";
 import { usePaging } from "@/hooks/legacy/usePaging";
 import useFormatConfig from "@/hooks/legacy/useFormatConfig";
 import Link from "next/link";
-import { getCampaignDailySummary } from "../../services/chartService";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -107,16 +106,17 @@ const ChartTooltipContent: React.FC = () => {
 }
 
 const UserDailyStatTable: React.FC<{
+    syncTime: Date | null,
     setUserId: (userId: string) => void;
     openMessageModal: (sendTo: string) => void;
-}> = ({ setUserId, openMessageModal }) => {
+}> = ({ syncTime, setUserId, openMessageModal }) => {
     const ref = useRef<HTMLDivElement>(null)
     const [date, setDate] = useState(new Date())
     const [tableHeight, setTableHeight] = useState(500)
 
     const { page, rowsPerPage, totalPage, changePageBy, setRowsPerPage, setTotalPage } = usePaging(5)
     const { loading: configLoading, formatConfig } = useFormatConfig();
-    const { data, columns, maxDailyCount, loading: statLoading } = useUserDailyStat(date, page, rowsPerPage, setTotalPage);
+    const { data, loading: statLoading, columns, maxDailyCount } = useUserDailyStat(date, page, rowsPerPage, setTotalPage, syncTime);
     const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } = useDailyStatTableCheckedState(data);
 
     const loading = statLoading || configLoading;
@@ -127,10 +127,6 @@ const UserDailyStatTable: React.FC<{
         ))
         return result;
     }, [formatConfig, maxDailyCount])
-
-    useEffect(() => {
-        getCampaignDailySummary(4, page, rowsPerPage).then(result => console.log(result))
-    })
 
     useEffect(() => {
         if (ref.current && !loading) {
@@ -154,7 +150,7 @@ const UserDailyStatTable: React.FC<{
                     {
                         checkCount == 1 && (
                             <Link href={`./dashboard/#timeline-overview-comparison-chart`}>
-                                <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => setUserId(data[checkedState.findIndex((state) => state)].id)}>
+                                <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => setUserId(data[checkedState.findIndex((state) => state)].uuid)}>
                                     <span>Timeline Overview</span>
                                 </Button>
                             </Link>
@@ -211,7 +207,7 @@ const UserDailyStatTable: React.FC<{
                     </thead>
                     <tbody>
                         {data.map((row, index) => (
-                            <UserRow key={`row-${row.id}`} row={row} max={dailyCountThreshold} isSelected={checkedState[index]} toggleChecked={() => toggleChecked(index)} />
+                            <UserRow key={`row-${row.uuid}`} row={row} max={dailyCountThreshold} isSelected={checkedState[index]} toggleChecked={() => toggleChecked(index)} />
                         ))}
                     </tbody>
                 </table>)}
