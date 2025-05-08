@@ -65,7 +65,6 @@ export const getChatRooms = async (campaignId: number): Promise<ChatSessionWithE
         .eq('campaign_id', campaignId)
         .order('last_message_time', { ascending: false })
 
-    console.log(data)
     if (error) throw new Error(error.message);
     return data.map(({ profiles, ...others }) => ({ ...others, email: profiles.email }))
 }
@@ -75,7 +74,6 @@ export const subscribeChatRoomUpdate = (campaignId: number, patchChatRooms: (new
 
     const channel = supabase.realtime.channel('chatroom-channel')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_sessions', filter: `campaign_id=eq.${campaignId}` }, (payload) => {
-            console.log(payload)
             patchChatRooms(payload.new as ChatSession, payload.eventType)
         }).subscribe()
     return () => supabase.removeChannel(channel)
