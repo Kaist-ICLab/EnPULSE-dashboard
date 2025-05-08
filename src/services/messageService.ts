@@ -42,13 +42,14 @@ export const ensureChatSession = async (uuid: string[], campaignId: number): Pro
     }).then(l => l.map(v => v?.at(0)))
 
     const sessions = uuid.map((id, idx) => {
-        return existingSession[idx] ?? newSessions.find(v => v?.uuid == id)
+        return existingSession[idx] ?? newSessions.find(v => v?.uuid == id).id
     })
 
     return sessions
 }
 
 export const createMessages = async (message: Message[]): Promise<boolean> => {
+    console.log(message)
     await mapQuery(message, m => {
         return supabase
             .from('messages')
