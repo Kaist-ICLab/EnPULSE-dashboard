@@ -17,12 +17,12 @@ export interface TimelineData {
 
 export type ChartParams = {
     uuid: string,
-    sid: string,
+    fieldId: number,
     date: Date,
 }
 
 export type PinQuery = {
     [ChartType.IntraPerson]: { date: Date } | null;
     [ChartType.InterPerson]: { uuid: string } | null;
-    [ChartType.TimelineOverview]: { sid: string } | null;
+    [ChartType.TimelineOverview]: { fieldId: number } | null;
 };

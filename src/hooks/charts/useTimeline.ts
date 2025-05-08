@@ -11,8 +11,8 @@ export default function useTimeline(params: ChartParams, type: ChartType) {
 
     const { mergedTabledFields, selectedCampaignId } = useCampaign();
     useEffect(() => {
-        const { uuid, date, sid } = params;
-        if (!selectedCampaignId || !uuid || !date || !sid) return;
+        const { uuid, date, fieldId } = params;
+        if (!selectedCampaignId || !uuid || !date || !fieldId) return;
 
         setLoading(true);
         setError(null);
@@ -26,5 +26,5 @@ export default function useTimeline(params: ChartParams, type: ChartType) {
         fetchData();
     }, [selectedCampaignId, params, mergedTabledFields]);
 
-    return { timeline: timeline as TimelineData[], loading, error };
+    return { timeline, loading, error };
 }   

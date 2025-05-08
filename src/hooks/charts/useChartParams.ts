@@ -9,7 +9,7 @@ function useChartParams(
     const [params, _setParams] = useState<{ [key: string]: ChartParams }>(chartType.reduce((acc, type) => {
         acc[type] = {
             uuid: '',
-            sid: '',
+            fieldId: 0,
             date: new Date()
         };
         return acc;
@@ -23,7 +23,7 @@ function useChartParams(
         chartType.forEach(type => {
             setParams(type, {
                 uuid: Array.from(campaignParticipants.values()).map(v => v.uuid)[0],
-                sid: Array.from(campaignTableFields.values()).filter(v => v.field_role === 'data').map(v => v.id)[0],
+                fieldId: Array.from(campaignTableFields.values()).filter(v => v.field_role === 'data').map(v => v.id)[0],
                 date: new Date()
             })
         })

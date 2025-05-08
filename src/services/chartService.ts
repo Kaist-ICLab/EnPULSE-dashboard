@@ -90,5 +90,12 @@ export async function getTimelineOverviewData<T>(fields: CampaignTableFieldWithT
             value: data[idx].map(d => d[v.name])
         }
     ))
-
 }
+
+// export async function getInterPersonData(fields: CampaignTableFieldWithTable[], params: ChartParams) {
+//     const { uuid, date } = params;
+//     const data = await mapQuery(fields, v => {
+//         return supabase
+//             .from(v.tableName)
+//             .select(`${v.name}, timestamp`)
+// }

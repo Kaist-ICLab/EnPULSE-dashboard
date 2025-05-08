@@ -59,8 +59,8 @@ const ComparisonChart: React.FC<({
                         {type !== ChartType.TimelineOverview && <div className="w-full sm:w-48">
                             <Select
                                 icon={() => <span className="icon-[material-symbols--sensors-rounded]"></span>}
-                                value={params.sid}
-                                onChange={(e) => setParams(type, { ...params, sid: e.target.value })}
+                                value={params.fieldId}
+                                onChange={(e) => setParams(type, { ...params, fieldId: parseInt(e.target.value) })}
                             >
                                 <option value="">Select Sensor</option>
                                 {mergedTabledFields.map((sensor) => (

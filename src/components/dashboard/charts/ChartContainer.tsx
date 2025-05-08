@@ -32,7 +32,7 @@ const ChartContainer: React.FC<{
             case ChartType.InterPerson:
                 return timelines.find(t => t.params.uuid === pinQuery[ChartType.InterPerson]?.uuid)?.id || null
             case ChartType.TimelineOverview:
-                return timelines.find(t => t.params.sid === pinQuery[ChartType.TimelineOverview]?.sid)?.id || null
+                return timelines.find(t => t.params.fieldId === pinQuery[ChartType.TimelineOverview]?.fieldId)?.id || null
         }
     }, [chartType, timelines, pinQuery])
 
@@ -42,7 +42,7 @@ const ChartContainer: React.FC<{
         } else if (chartType == ChartType.InterPerson) {
             setPinQuery({ ...pinQuery, [chartType]: params ? { uuid: params.uuid } : null })
         } else if (chartType == ChartType.TimelineOverview) {
-            setPinQuery({ ...pinQuery, [chartType]: params ? { sid: params.sid } : null })
+            setPinQuery({ ...pinQuery, [chartType]: params ? { fieldId: params.fieldId } : null })
         }
     }
 

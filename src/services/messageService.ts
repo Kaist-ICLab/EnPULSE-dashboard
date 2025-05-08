@@ -28,7 +28,7 @@ export const ensureChatSession = async (uuid: string[], campaignId: number): Pro
             .select(`id`)
             .eq('uuid', id)
             .eq('campaign_id', campaignId)
-    })
+    }) as { id: number }[][]
     const existingSession = results.map(result => result?.at(0)?.id as number)
 
     const unavailableSession = results.map((result, idx) => ({ idx, result }))
