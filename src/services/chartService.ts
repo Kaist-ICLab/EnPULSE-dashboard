@@ -1,7 +1,7 @@
 import { DynamicDataColumn } from '@/hooks/charts/useUserDailyStat';
 import { supabase } from '@/lib/supabase';
 import { mapQuery } from '@/lib/supabaseHelper';
-import { CampaignTableFieldWithTable } from '@/types/campaign';
+import { CampaignParticipant, CampaignTableFieldWithTable } from '@/types/campaign';
 import { ChartParams } from '@/types/chart';
 // import { mapQuery } from '@/lib/supabaseHelper';
 
@@ -65,7 +65,7 @@ export async function getDailyStatCount(campaignId: number) {
     return Math.max(count ?? 1, 1)
 }
 
-export async function getTimelineOverviewData<T>(fields: CampaignTableFieldWithTable[], params: ChartParams) {
+export async function getTimelineOverviewData(fields: CampaignTableFieldWithTable[], params: ChartParams) {
     const { uuid, date } = params;
     const data = await mapQuery(fields, v => {
         return supabase
@@ -92,10 +92,35 @@ export async function getTimelineOverviewData<T>(fields: CampaignTableFieldWithT
     ))
 }
 
-// export async function getInterPersonData(fields: CampaignTableFieldWithTable[], params: ChartParams) {
-//     const { uuid, date } = params;
-//     const data = await mapQuery(fields, v => {
-//         return supabase
-//             .from(v.tableName)
-//             .select(`${v.name}, timestamp`)
-// }
+export async function getInterPersonData(fields: CampaignTableFieldWithTable[], participants: CampaignParticipant[], params: ChartParams) {
+    const { date, fieldId } = params;
+
+    const field = fields.find(v => v.id === fieldId)
+    if (!field) throw new Error('Field not found');
+
+    const tableName = field.tableName
+    const columnName = field.name
+
+    const data = await mapQuery(participants, p => {
+        return supabase
+            .from(tableName)
+            .select(`${columnName}, timestamp`)
+            .eq('uuid', p.uuid)
+            .gte('timestamp', date.toISOString().split('T')[0])
+            .lt('timestamp', new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+    }) as unknown as { timestamp: string, [key: string]: any }[][]
+
+    return participants.map((p, idx) => (
+        {
+            title: p.email,
+            id: p.uuid,
+            table: tableName,
+            column: columnName,
+            chartType: (field.field_type === "categorical" ? "categorical" : "numerical") as ("categorical" | "numerical"),
+            params,
+            timestamp: data[idx].map(d => new Date(d.timestamp).getTime()),
+            value: data[idx].map(d => d[columnName])
+        }
+    ))
+}
+

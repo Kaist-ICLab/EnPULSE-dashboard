@@ -1,7 +1,7 @@
 import { ChartParams, ChartType, TimelineData } from "@/types/chart";
 import { useEffect, useState } from "react";
 import useCampaign from "../useCampaign";
-import { getTimelineOverviewData } from "@/services/chartService";
+import { getInterPersonData, getTimelineOverviewData } from "@/services/chartService";
 
 
 export default function useTimeline(params: ChartParams, type: ChartType) {
@@ -9,7 +9,7 @@ export default function useTimeline(params: ChartParams, type: ChartType) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
 
-    const { mergedTabledFields, selectedCampaignId } = useCampaign();
+    const { mergedTabledFields, selectedCampaignId, campaignParticipants } = useCampaign();
     useEffect(() => {
         const { uuid, date, fieldId } = params;
         if (!selectedCampaignId || !uuid || !date || !fieldId) return;
@@ -18,13 +18,18 @@ export default function useTimeline(params: ChartParams, type: ChartType) {
         setError(null);
 
         async function fetchData() {
-            const data = await getTimelineOverviewData(mergedTabledFields, params);
+            let data: TimelineData[] = [];
+            if (type === ChartType.TimelineOverview) {
+                data = await getTimelineOverviewData(mergedTabledFields, params);
+            } else if (type === ChartType.InterPerson) {
+                data = await getInterPersonData(mergedTabledFields, Array.from(campaignParticipants.values()), params);
+            }
             setTimeline(data);
             setLoading(false);
         }
 
         fetchData();
-    }, [selectedCampaignId, params, mergedTabledFields]);
+    }, [selectedCampaignId, params, mergedTabledFields, campaignParticipants, type]);
 
     return { timeline, loading, error };
 }   
