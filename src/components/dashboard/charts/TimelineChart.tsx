@@ -9,11 +9,11 @@ const TimelineChart: React.FC<{
     id: string;
     chartType: 'categorical' | 'numerical';
     timeRange: { start: number, end: number };
+    defaultTimeRange: { start: number, end: number };
     data: { timestamp: number[], value: (string | number)[] };
     onComplete: (timeRange: { start: number, end: number }) => void;
-}> = ({ id, data, chartType, timeRange, onComplete }) => {
+}> = ({ id, data, chartType, timeRange, defaultTimeRange, onComplete }) => {
     const chartRef = useRef<HTMLDivElement>(null);
-    const initialTimeRangeRef = useRef<{ start: number, end: number } | null>(null);
     // Store original colors for each trace
     const colorQueue = useRef<{ traceIndex: number, colorIndex: number }[] | null>(null)
 
@@ -94,23 +94,22 @@ const TimelineChart: React.FC<{
 
         createPlot(chartRef.current, plotData, layout, config)
             .then((plot) => {
-                // Store the initial time range
-                if (!initialTimeRangeRef.current) {
-                    const xaxis = plot._fullLayout.xaxis;
-                    initialTimeRangeRef.current = {
-                        start: new Date(xaxis.range[0]).getTime(),
-                        end: new Date(xaxis.range[1]).getTime()
-                    };
-                }
+                // // Store the initial time range
+                // if (!initialTimeRangeRef.current) {
+                //     const xaxis = plot._fullLayout.xaxis;
+                //     initialTimeRangeRef.current = {
+                //         start: new Date(xaxis.range[0]).getTime(),
+                //         end: new Date(xaxis.range[1]).getTime()
+                //     };
+                // }
 
                 const handleRelayout = (event: PlotlyRelayoutEvent) => {
-                    console.log(event);
                     if (event["xaxis.range[0]"] && event["xaxis.range[1]"]) {
                         const start = new Date(event["xaxis.range[0]"]).getTime();
                         const end = new Date(event["xaxis.range[1]"]).getTime();
                         onComplete({ start, end });
                     } else if (event['xaxis.autorange'] && event['yaxis.autorange']) {
-                        onComplete(initialTimeRangeRef.current ?? timeRange);
+                        onComplete(defaultTimeRange);
                     }
                 };
 
@@ -118,7 +117,6 @@ const TimelineChart: React.FC<{
 
                 // Add event handler for legend clicks
                 plot.on("plotly_legendclick", (event: { curveNumber: number }) => {
-                    console.log('click')
                     if (colorQueue.current == null) return
                     // Get the clicked trace index
                     const traceIndex = event.curveNumber;
@@ -149,8 +147,6 @@ const TimelineChart: React.FC<{
                         const spliceIndex = colorQueue.current.findIndex(item => item.traceIndex === traceIndex)
                         colorQueue.current.splice(spliceIndex, 1)
                     }
-
-                    console.log(traceIndex, colorQueue.current)
 
                     // Update the trace color based on visibility
                     loadPlotly().then(Plotly => {
@@ -184,7 +180,7 @@ const TimelineChart: React.FC<{
                 }).catch(console.error);
             }
         };
-    }, [data, timeRange, id, chartType, onComplete]);
+    }, [data, timeRange, id, chartType, onComplete, defaultTimeRange]);
 
     return (
         <div className='w-full flex flex-row justify-center items-center'>

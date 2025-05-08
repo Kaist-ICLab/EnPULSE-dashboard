@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Campaign, CampaignTable, CampaignTableField, CampaignParticipant } from '@/types/campaign';
+import { Campaign, CampaignTable, CampaignTableField, CampaignParticipant, CampaignTableFieldWithTable } from '@/types/campaign';
 import { getCampaignParticipants, getCampaigns, getCampaignTableFields, getCampaignTables, updateCampaignName, updateCampaignTable, updateCampaignTableFields } from '@/services/campaignService';
 
 export type ResponseStatus = 'loading' | 'ok' | 'error';
@@ -13,6 +13,7 @@ interface CampaignState {
     campaignTables: Map<number, CampaignTable>;
     campaignTableFields: Map<number, CampaignTableField>;
     campaignParticipants: Map<string, CampaignParticipant>;
+    mergedTabledFields: Array<CampaignTableFieldWithTable>;
     selectedCampaignId: number | null;
     responses: {
         fetchCampaigns: Response,
@@ -33,6 +34,7 @@ const useCampaign = create<CampaignState>((set, get) => ({
     campaignTables: new Map(),
     campaignTableFields: new Map(),
     campaignParticipants: new Map(),
+    mergedTabledFields: [],
     selectedCampaignId: null,
     responses: {
         fetchCampaigns: {
@@ -56,7 +58,8 @@ const useCampaign = create<CampaignState>((set, get) => ({
                 responses: { ...state.responses, fetchCampaigns: { status: 'ok', message: null } },
                 campaigns: new Map(campaigns.map(campaign => [campaign.id, campaign]))
             }));
-        } catch {
+        } catch (error) {
+            console.log(error)
             set((state) => ({ responses: { ...state.responses, fetchCampaigns: { status: 'error', message: "Error fetching campaigns" } } }));
         }
     },
@@ -73,14 +76,29 @@ const useCampaign = create<CampaignState>((set, get) => ({
                 return await getCampaignTableFields(campaignId, campaignTable.id);
             }))).flat();
             const campaignParticipants = await getCampaignParticipants(campaignId);
+            const tablesMap = new Map(campaignTables.map(campaignTable => [campaignTable.id, campaignTable]));
+            const fieldsMap = new Map(campaignTableFields.map(campaignTableField => [campaignTableField.id, campaignTableField]));
+
+            const mergedTabledFields = Array.from(tablesMap.entries()).map(([, table]) =>
+                Array.from(fieldsMap.values())
+                    .filter(field => field.campaign_table_id === table.id)
+                    .map(field => ({
+                        ...field,
+                        tableId: table.id,
+                        tableName: table.name,
+                        displayName: `${table.name.replace('_', ' ')} - ${field.name}`
+                    }))
+            ).flat().filter(field => field.field_role === "data");
 
             set({
-                campaignTables: new Map(campaignTables.map(campaignTable => [campaignTable.id, campaignTable])),
-                campaignTableFields: new Map(campaignTableFields.map(campaignTableField => [campaignTableField.id, campaignTableField])),
+                campaignTables: tablesMap,
+                campaignTableFields: fieldsMap,
+                mergedTabledFields,
                 selectedCampaignId: campaignId,
                 campaignParticipants: new Map(campaignParticipants.map(campaignParticipant => [campaignParticipant.uuid, campaignParticipant])),
                 responses: { ...get().responses, selectCampaign: { status: 'ok', message: "Campaign selected" } }
             });
+
         } catch (error) {
             console.error(error);
             set((state) => ({ responses: { ...state.responses, selectCampaign: { status: 'error', message: "Error selecting campaign" } } }));

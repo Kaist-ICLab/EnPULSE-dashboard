@@ -14,15 +14,7 @@ const ComparisonChart: React.FC<({
     setPinQuery: (pinQuery: PinQuery) => void;
 })> = ({ params, setParams, type, pinQuery, setPinQuery }) => {
     const { timeline, loading, error } = useTimeline(params, type);
-    const { campaignTables, campaignTableFields, campaignParticipants } = useCampaign()
-
-    const sensors = useMemo(() => {
-        const ret = Array.from(campaignTables.entries()).map(([, table]) =>
-            Array.from(campaignTableFields.values()).filter(v => v.campaign_table_id == table.id)
-                .map(v => ({ ...v, tableId: table.id, name: `${table.name.replace('_', ' ')} - ${v.name}` }))
-        ).flat();
-        return ret.filter(v => v.field_role === 'data');
-    }, [campaignTables, campaignTableFields])
+    const { campaignParticipants, mergedTabledFields } = useCampaign()
 
     const users = useMemo(() => {
         return Array.from(campaignParticipants.values()).map(v => ({ id: v.uuid, name: v.email }))
@@ -39,10 +31,9 @@ const ComparisonChart: React.FC<({
         }
     })();
 
-
     const defaultTimeRange = {
-        start: new Date().setHours(0, 0, 0, 0),
-        end: new Date().setHours(23, 59, 59, 999),
+        start: params.date.setHours(0, 0, 0, 0),
+        end: params.date.setHours(23, 59, 59, 999),
     }
 
     return (
@@ -69,12 +60,12 @@ const ComparisonChart: React.FC<({
                             <Select
                                 icon={() => <span className="icon-[material-symbols--sensors-rounded]"></span>}
                                 value={params.sid}
-                                onChange={(e) => setParams(type, { ...params, sid: parseInt(e.target.value) })}
+                                onChange={(e) => setParams(type, { ...params, sid: e.target.value })}
                             >
                                 <option value="">Select Sensor</option>
-                                {sensors.map((sensor) => (
+                                {mergedTabledFields.map((sensor) => (
                                     <option key={sensor.id} value={sensor.id}>
-                                        {sensor.name}
+                                        {sensor.displayName}
                                     </option>
                                 ))}
                             </Select>
@@ -93,7 +84,7 @@ const ComparisonChart: React.FC<({
                 <div className="w-full rounded-lg py-4 flex flex-col gap-4">
                     {loading && <Spinner className="w-full" />}
                     {error && (
-                        <p className="text-red-500 font-medium">❌ 데이터 로딩 실패: {error}</p>
+                        <p className="text-red-500 font-medium">❌ 데이터 로딩 실패: {error.message}</p>
                     )}
                     {timeline.length > 0 && <ChartContainer
                         timelines={timeline}

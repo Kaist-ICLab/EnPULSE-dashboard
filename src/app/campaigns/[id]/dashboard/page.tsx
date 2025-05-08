@@ -1,6 +1,6 @@
 "use client";
 import DashboardCard from "@/components/campaign/DashboardCard";
-import { ComparisonChart } from "@/components/dashboard/ComparisonChart";
+import { ComparisonChart } from "@/components/dashboard/charts/ComparisonChart";
 import UserDailyStatTable from "@/components/dashboard/UserDailyTable";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
 import useChartParams from "@/hooks/charts/useChartParams";

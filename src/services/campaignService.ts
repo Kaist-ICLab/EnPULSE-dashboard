@@ -123,7 +123,6 @@ export const createCampaignTableFields = async (campainTableFields: CampaignTabl
 }
 
 export const updateCampaignTableFields = async (changes: Partial<CampaignTableField>[]): Promise<boolean> => {
-    console.log(changes)
     const promises = changes.map(({ id, ...change }) => {
         return supabase.from('campaign_table_field').update(
             change

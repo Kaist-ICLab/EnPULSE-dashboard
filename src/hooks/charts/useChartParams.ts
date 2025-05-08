@@ -9,7 +9,7 @@ function useChartParams(
     const [params, _setParams] = useState<{ [key: string]: ChartParams }>(chartType.reduce((acc, type) => {
         acc[type] = {
             uuid: '',
-            sid: 0,
+            sid: '',
             date: new Date()
         };
         return acc;

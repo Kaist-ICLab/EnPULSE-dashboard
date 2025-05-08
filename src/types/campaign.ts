@@ -31,3 +31,9 @@ export interface CampaignParticipant {
     email: string;
 }
 
+export interface CampaignTableFieldWithTable extends CampaignTableField {
+    tableId: number;
+    tableName: string;
+    displayName: string;
+}
+

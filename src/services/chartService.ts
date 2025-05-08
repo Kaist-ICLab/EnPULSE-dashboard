@@ -1,6 +1,7 @@
 import { DynamicDataColumn } from '@/hooks/charts/useUserDailyStat';
 import { supabase } from '@/lib/supabase';
 import { mapQuery } from '@/lib/supabaseHelper';
+import { CampaignTableFieldWithTable } from '@/types/campaign';
 import { ChartParams } from '@/types/chart';
 // import { mapQuery } from '@/lib/supabaseHelper';
 
@@ -64,13 +65,30 @@ export async function getDailyStatCount(campaignId: number) {
     return Math.max(count ?? 1, 1)
 }
 
-export async function getTimelineOverviewData(campaignId: number, { uuid, date }: ChartParams) {
-    const { data, error } = await supabase
-        .from(`campaign_table_field`)
-        .select(`*`)
-        .eq('campaign_id', campaignId)
+export async function getTimelineOverviewData<T>(fields: CampaignTableFieldWithTable[], params: ChartParams) {
+    const { uuid, date } = params;
+    const data = await mapQuery(fields, v => {
+        return supabase
+            .from(v.tableName)
+            .select(`${v.name}, timestamp`)
+            .eq('uuid', uuid)
+            .gte('timestamp', date.toISOString().split('T')[0])
+            .lt('timestamp', new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+    }) as unknown as { timestamp: string, [key: string]: any }[][]
 
-    if (error) throw new Error(error.message);
+    const timestamp = data[0]?.map(v => new Date(v.timestamp).getTime())
 
-    console.log(data)
+    return fields.map((v, idx) => (
+        {
+            title: v.displayName,
+            id: `${v.id}`,
+            table: v.tableName,
+            column: v.name,
+            chartType: (v.field_type === "categorical" ? "categorical" : "numerical") as ("categorical" | "numerical"),
+            params,
+            timestamp,
+            value: data[idx].map(d => d[v.name])
+        }
+    ))
+
 }

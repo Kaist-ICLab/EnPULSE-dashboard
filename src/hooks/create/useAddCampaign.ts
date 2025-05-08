@@ -29,7 +29,6 @@ export default function useAddCampaign(
             campaign_id: campaignId,
             description: '',
         }))
-        console.log(insertedTables)
 
         const tableId = await createCampaignTable(insertedTables)
         const insertedTableFields = tables.map((t, i) => (
