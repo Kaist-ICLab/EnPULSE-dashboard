@@ -46,6 +46,12 @@ const EmailAutocompleteInput: React.FC<{
                         if (e.key === 'ArrowUp') {
                             setFocusIndex(v => Math.max(v - 1, -1));
                         }
+
+                        if (e.key === 'Backspace') {
+                            if (value.length === 0) {
+                                setSendTo(prev => prev.slice(0, -1));
+                            }
+                        }
                     }}
                 />
             </div>

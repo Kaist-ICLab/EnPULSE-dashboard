@@ -3,6 +3,7 @@ import useSendMessage from '@/hooks/messaging/sendMessage';
 import React, { useState } from 'react';
 import EmailAutocompleteInput from './EmailAutocompleteInput';
 import { CampaignParticipant } from '@/types/campaign';
+import { Button } from 'flowbite-react';
 
 const SendMessageFloatingModal: React.FC<{
     initialSendTo: CampaignParticipant[],
@@ -50,28 +51,18 @@ const SendMessageFloatingModal: React.FC<{
                     />
                 </div>
                 <div className="mt-4 flex justify-end gap-2">
-                    <button
-                        className={`px-4 py-2 rounded-md transition-colors ${messageType === 'chat'
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-yellow-500 text-white'
-                            }`}
-                        onClick={() => setMessageType(messageType === 'chat' ? 'announcement' : 'chat')}
-                    >
+                    <Button color={`${messageType === 'chat' ? 'blue' : 'yellow'}`} size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => setMessageType(messageType === 'chat' ? 'announcement' : 'chat')}>
                         {messageType === 'chat' ? 'Chat' : 'Announcement'}
-                    </button>
-                    <button
-                        className={`px-4 py-2 text-white rounded-md hover:opacity-90 transition-colors ${messageType === 'chat' ? 'bg-blue-500' : 'bg-yellow-500'
-                            }`}
-                        onClick={async () => {
-                            await sendMessageByUuid(sendTo.map(v => v.uuid), selectedCampaignId!);
-                            onClose();
-                        }}
-                    >
-                        Send
-                    </button>
+                    </Button>
+                    <Button color={`${messageType === 'chat' ? 'blue' : 'yellow'}`} size="md" className="flex flex-row gap-1 text-base px-3" onClick={async () => {
+                        await sendMessageByUuid(sendTo.map(v => v.uuid), selectedCampaignId!);
+                        onClose();
+                    }}>
+                        <span className="w-5 h-5 mt-0.5 icon-[material-symbols--send]"></span> Send
+                    </Button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

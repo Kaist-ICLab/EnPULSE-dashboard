@@ -16,7 +16,9 @@ export default function useEmailAutoComplete(
     const suggestions = useMemo(() => {
         if (!value) return []
 
-        const suggestions = Array.from(campaignParticipants.values()).filter(p => !sendTo.includes(p)).filter(p => p.email.toLowerCase().includes(value.toLowerCase()));
+        const suggestions = Array.from(campaignParticipants.values())
+            .filter(p => !sendTo.map(v => v.email).includes(p.email))
+            .filter(p => p.email.toLowerCase().includes(value.toLowerCase()));
         return suggestions
     }, [campaignParticipants, value, sendTo])
 
