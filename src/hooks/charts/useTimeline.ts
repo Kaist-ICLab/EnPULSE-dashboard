@@ -1,7 +1,7 @@
 import { ChartParams, ChartType, TimelineData } from "@/types/chart";
 import { useEffect, useState } from "react";
 import useCampaign from "../useCampaign";
-import { getInterPersonData, getTimelineOverviewData } from "@/services/chartService";
+import { getInterPersonData, getIntraPersonData, getTimelineOverviewData } from "@/services/chartService";
 
 
 export default function useTimeline(params: ChartParams, type: ChartType) {
@@ -23,7 +23,10 @@ export default function useTimeline(params: ChartParams, type: ChartType) {
                 data = await getTimelineOverviewData(mergedTabledFields, params);
             } else if (type === ChartType.InterPerson) {
                 data = await getInterPersonData(mergedTabledFields, Array.from(campaignParticipants.values()), params);
+            } else if (type === ChartType.IntraPerson) {
+                data = await getIntraPersonData(mergedTabledFields, params);
             }
+
             setTimeline(data);
             setLoading(false);
         }

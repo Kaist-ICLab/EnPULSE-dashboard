@@ -85,7 +85,7 @@ export async function getTimelineOverviewData(fields: CampaignTableFieldWithTabl
             table: v.tableName,
             column: v.name,
             chartType: (v.field_type === "categorical" ? "categorical" : "numerical") as ("categorical" | "numerical"),
-            params,
+            params: { ...params, fieldId: v.id },
             timestamp,
             value: data[idx].map(d => d[v.name])
         }
@@ -117,10 +117,41 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
             table: tableName,
             column: columnName,
             chartType: (field.field_type === "categorical" ? "categorical" : "numerical") as ("categorical" | "numerical"),
-            params,
+            params: { ...params, uuid: p.uuid },
             timestamp: data[idx].map(d => new Date(d.timestamp).getTime()),
             value: data[idx].map(d => d[columnName])
         }
     ))
 }
 
+export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], params: ChartParams) {
+    const { date, fieldId, uuid } = params;
+
+    const field = fields.find(v => v.id === fieldId)
+    if (!field) throw new Error('Field not found');
+
+    const tableName = field.tableName
+    const columnName = field.name
+
+    const dates = Array.from({ length: 7 }, (_, i) => new Date(date.getTime() - i * 24 * 60 * 60 * 1000))
+
+    const data = await mapQuery(dates, d => {
+        return supabase
+            .from(tableName)
+            .select(`${columnName}, timestamp`)
+            .eq('uuid', uuid)
+            .gte('timestamp', d.toISOString().split('T')[0])
+            .lt('timestamp', new Date(d.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+    }) as unknown as { timestamp: string, [key: string]: any }[][]
+
+    return dates.map((d, idx) => ({
+        title: d.toISOString().split('T')[0],
+        id: d.toISOString().split('T')[0],
+        table: tableName,
+        column: columnName,
+        chartType: (field.field_type === "categorical" ? "categorical" : "numerical") as ("categorical" | "numerical"),
+        params: { ...params, date: d },
+        timestamp: data[idx].map(v => new Date(v.timestamp).getTime()),
+        value: data[idx].map(v => v[columnName])
+    }))
+}

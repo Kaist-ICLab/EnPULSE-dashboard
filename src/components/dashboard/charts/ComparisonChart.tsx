@@ -32,8 +32,8 @@ const ComparisonChart: React.FC<({
     })();
 
     const defaultTimeRange = {
-        start: params.date.setHours(0, 0, 0, 0),
-        end: params.date.setHours(23, 59, 59, 999),
+        start: new Date(0).setHours(0, 0, 0, 0),
+        end: new Date(0).setHours(23, 59, 59, 999),
     }
 
     return (
@@ -70,14 +70,14 @@ const ComparisonChart: React.FC<({
                                 ))}
                             </Select>
                         </div>}
-                        {type !== ChartType.IntraPerson && <div className="w-full sm:w-48">
+                        <div className="w-full sm:w-48">
                             <input
                                 type="date"
                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                                 value={params.date.toISOString().split('T')[0]}
                                 onChange={(e) => setParams(type, { ...params, date: new Date(e.target.value) })}
                             />
-                        </div>}
+                        </div>
                     </div>
                 </div>
 

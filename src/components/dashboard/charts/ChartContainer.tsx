@@ -14,7 +14,6 @@ const ChartContainer: React.FC<{
     setPinQuery: (pinQuery: PinQuery) => void;
     defaultTimeRange: { start: number, end: number };
 }> = ({ timelines, chartType, setChartParams, defaultTimeRange, pinQuery, setPinQuery }) => {
-
     const [timeRange, setTimeRange] = useState<{ start: number, end: number }>(defaultTimeRange);
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
@@ -22,6 +21,10 @@ const ChartContainer: React.FC<{
     useEffect(() => {
         setTimeRange(defaultTimeRange)
     }, [defaultTimeRange])
+
+    useEffect(() => {
+        setChartOrder(timelines.map((d) => d.id))
+    }, [timelines])
 
     const pinnedChart = useMemo(() => {
         if (pinQuery[chartType] == null) return null
@@ -140,6 +143,8 @@ const ChartItem: React.FC<{
     isSelected: boolean;
     setSelectedChart: (id: string | null) => void;
 }> = ({ timeline, pinned, onPin, timeRange, defaultTimeRange, setTimeRange, isSelected, setSelectedChart }) => {
+    if (!timeline) return
+
     return (
         <DnDItem id={timeline.id} className={`w-full flex flex-row justify-center items-center p-2 ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}`} >
             <div className='w-18 flex flex-row justify-center items-center' onClick={() => {
@@ -165,6 +170,7 @@ const ChartItem: React.FC<{
                     chartType={timeline.chartType}
                     timeRange={timeRange}
                     defaultTimeRange={defaultTimeRange}
+                    baseTime={timeline.params.date.getTime()}
                     onComplete={setTimeRange}
                     data={{ timestamp: timeline.timestamp, value: timeline.value }}
                 />

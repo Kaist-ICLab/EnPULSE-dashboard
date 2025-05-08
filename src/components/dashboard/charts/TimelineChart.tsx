@@ -10,9 +10,10 @@ const TimelineChart: React.FC<{
     chartType: 'categorical' | 'numerical';
     timeRange: { start: number, end: number };
     defaultTimeRange: { start: number, end: number };
+    baseTime: number;
     data: { timestamp: number[], value: (string | number)[] };
     onComplete: (timeRange: { start: number, end: number }) => void;
-}> = ({ id, data, chartType, timeRange, defaultTimeRange, onComplete }) => {
+}> = ({ id, data, chartType, timeRange, defaultTimeRange, baseTime, onComplete }) => {
     const chartRef = useRef<HTMLDivElement>(null);
     // Store original colors for each trace
     const colorQueue = useRef<{ traceIndex: number, colorIndex: number }[] | null>(null)
@@ -35,7 +36,7 @@ const TimelineChart: React.FC<{
             paper_bgcolor: 'white',
             xaxis: {
                 type: 'date',
-                range: [timeRange.start, timeRange.end],
+                range: [baseTime + timeRange.start, baseTime + timeRange.end],
                 visible: false
             },
             bargap: 0.01,
@@ -107,7 +108,8 @@ const TimelineChart: React.FC<{
                     if (event["xaxis.range[0]"] && event["xaxis.range[1]"]) {
                         const start = new Date(event["xaxis.range[0]"]).getTime();
                         const end = new Date(event["xaxis.range[1]"]).getTime();
-                        onComplete({ start, end });
+                        onComplete({ start: start - baseTime, end: end - baseTime });
+
                     } else if (event['xaxis.autorange'] && event['yaxis.autorange']) {
                         onComplete(defaultTimeRange);
                     }
@@ -180,7 +182,7 @@ const TimelineChart: React.FC<{
                 }).catch(console.error);
             }
         };
-    }, [data, timeRange, id, chartType, onComplete, defaultTimeRange]);
+    }, [data, timeRange, baseTime, id, chartType, onComplete, defaultTimeRange]);
 
     return (
         <div className='w-full flex flex-row justify-center items-center'>
