@@ -4,6 +4,7 @@ import { ComparisonChart } from "@/components/dashboard/charts/ComparisonChart";
 import UserDailyStatTable from "@/components/dashboard/UserDailyTable";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
 import useChartParams from "@/hooks/charts/useChartParams";
+import { CampaignParticipant } from "@/types/campaign";
 import { ChartType, PinQuery } from "@/types/chart";
 import { Button } from "flowbite-react";
 import { useEffect, useState } from "react";
@@ -16,7 +17,7 @@ const chartTypes = [
 
 const Page = () => {
     const [lastLoaded, setLastLoaded] = useState<Date | null>(null)
-    const [sendTo, setSendTo] = useState<string>("");
+    const [sendTo, setSendTo] = useState<CampaignParticipant[]>([]);
     const [messageModalVisible, setMessageModalVisible] = useState<boolean>(false);
 
     const { params, setParams } = useChartParams(chartTypes)
@@ -48,7 +49,7 @@ const Page = () => {
             <UserDailyStatTable
                 syncTime={lastLoaded}
                 setUserId={v => setParams(ChartType.TimelineOverview, { ...params[ChartType.TimelineOverview], uuid: v })}
-                openMessageModal={(sendTo: string) => { setSendTo(sendTo); setMessageModalVisible(true); }}
+                openMessageModal={(sendTo: CampaignParticipant[]) => { setSendTo(sendTo); setMessageModalVisible(true); }}
             />
 
             {chartTypes.map((type) => (

@@ -6,13 +6,15 @@ import SendMessageFloatingModal from "@/components/messaging/SendMessageFloating
 import useChatRooms from "@/hooks/messaging/useChatRooms";
 import useConversation from "@/hooks/messaging/useConversation";
 import { Button, Spinner } from "flowbite-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 const Page = () => {
     const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
     const { chatRooms } = useChatRooms();
     const { announcement, conversation, loading, error } = useConversation(selectedSessionId);
     const [showCompose, setShowCompose] = useState(false);
+
+    const selectedChatRoom = useMemo(() => chatRooms?.find(v => v.id === selectedSessionId), [chatRooms, selectedSessionId]);
 
     return (
         <div className="w-full h-full">
@@ -55,7 +57,7 @@ const Page = () => {
             </div>
             {showCompose && (
                 <SendMessageFloatingModal
-                    initialSendTo={chatRooms?.find(v => v.id === selectedSessionId)?.email || ''}
+                    initialSendTo={selectedChatRoom ? [selectedChatRoom] : []}
                     onClose={() => setShowCompose(false)}
                 />
             )}

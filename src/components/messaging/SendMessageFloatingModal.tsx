@@ -1,17 +1,19 @@
 import useCampaign from '@/hooks/useCampaign';
 import useSendMessage from '@/hooks/messaging/sendMessage';
 import React, { useState } from 'react';
+import EmailAutocompleteInput from './EmailAutocompleteInput';
+import { CampaignParticipant } from '@/types/campaign';
 
 const SendMessageFloatingModal: React.FC<{
-    initialSendTo: string,
+    initialSendTo: CampaignParticipant[],
     onClose: () => void;
-}> = ({ initialSendTo = '', onClose }) => {
+}> = ({ initialSendTo = [], onClose }) => {
     const { selectedCampaignId } = useCampaign();
     const [sendTo, setSendTo] = useState(initialSendTo);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [messageType, setMessageType] = useState<'chat' | 'announcement'>('chat');
-    const { sendMessageByEmail } = useSendMessage({ title, content, message_type: messageType, sender_type: 'admin' });
+    const { sendMessageByUuid } = useSendMessage({ title, content, message_type: messageType, sender_type: 'admin' });
 
     return (
         <div className="fixed bottom-6 right-6 w-full sm:w-[500px] h-[500px] bg-white shadow-lg rounded-t-lg border border-gray-200 flex flex-col">
@@ -23,12 +25,9 @@ const SendMessageFloatingModal: React.FC<{
             </div>
             <div className="p-4 flex-1 flex flex-col">
                 <div className="mb-4">
-                    <input
-                        type="text"
-                        placeholder="To"
-                        value={sendTo}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                        onChange={(e) => setSendTo(e.target.value)}
+                    <EmailAutocompleteInput
+                        sendTo={sendTo}
+                        setSendTo={setSendTo}
                     />
                 </div>
                 {messageType === 'announcement' && (
@@ -64,7 +63,7 @@ const SendMessageFloatingModal: React.FC<{
                         className={`px-4 py-2 text-white rounded-md hover:opacity-90 transition-colors ${messageType === 'chat' ? 'bg-blue-500' : 'bg-yellow-500'
                             }`}
                         onClick={async () => {
-                            await sendMessageByEmail(sendTo.split(',').map(v => v.trim()), selectedCampaignId!);
+                            await sendMessageByUuid(sendTo.map(v => v.uuid), selectedCampaignId!);
                             onClose();
                         }}
                     >

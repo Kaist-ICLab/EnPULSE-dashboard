@@ -5,6 +5,7 @@ import { Button, Select, Spinner, Tooltip } from "flowbite-react";
 import { useDailyStatTableCheckedState } from "@/hooks/charts/useDailyStatTableCheckedState";
 import { usePaging } from "@/hooks/legacy/usePaging";
 import Link from "next/link";
+import { CampaignParticipant } from "@/types/campaign";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -103,7 +104,7 @@ const ChartTooltipContent: React.FC = () => {
 const UserDailyStatTable: React.FC<{
     syncTime: Date | null,
     setUserId: (userId: string) => void;
-    openMessageModal: (sendTo: string) => void;
+    openMessageModal: (sendTo: CampaignParticipant[]) => void;
 }> = ({ syncTime, setUserId, openMessageModal }) => {
     const ref = useRef<HTMLDivElement>(null)
     const [date, setDate] = useState(new Date())
@@ -152,7 +153,7 @@ const UserDailyStatTable: React.FC<{
                     }
                     {
                         checkCount >= 1 && (
-                            <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => openMessageModal(data.filter((_, i) => checkedState[i]).map(v => v.email).join(', '))}>
+                            <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => openMessageModal(data.filter((_, i) => checkedState[i]).map(v => ({ email: v.email, uuid: v.uuid })))}>
                                 <span className="w-5 h-5 mt-0.5 icon-[material-symbols--send]"></span>
                                 <span>Send</span>
                             </Button>

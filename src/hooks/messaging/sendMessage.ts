@@ -7,9 +7,7 @@ export default function useSendMessage(message: Omit<Message, 'uuid' | 'session_
         return response
     }
 
-    const sendMessageByEmail = async (email: string[], campaignId: number) => {
-        const uuid = await emailToUuid(email);
-        console.log(uuid)
+    const sendMessageByUuid = async (uuid: string[], campaignId: number) => {
         const sessionId = await ensureChatSession(uuid, campaignId);
         await sendMessageBySessionId(uuid, sessionId);
     }
@@ -23,5 +21,5 @@ export default function useSendMessage(message: Omit<Message, 'uuid' | 'session_
         await createMessages(messages)
     }
 
-    return { emailToUuid, sendMessageByEmail };
+    return { emailToUuid, sendMessageByUuid };
 }
