@@ -71,7 +71,10 @@ const TimelineChart: React.FC<{
         } else {
             // Create a map of unique categories to colors
             const uniqueCategories = [...new Set(data.value as string[])].sort();
-            if (colorQueue.current == null) {
+
+            if (uniqueCategories.length == 0) {
+                colorQueue.current = null
+            } else if (colorQueue.current == null) {
                 colorQueue.current = uniqueCategories.filter((_, i) => i < colors.length).map((_, i) => ({ traceIndex: i, colorIndex: i }))
             }
 
