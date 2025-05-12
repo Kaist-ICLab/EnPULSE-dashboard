@@ -29,6 +29,7 @@ const CampaignTableCard: React.FC<{
                     addField={addField}
                     setDailyCountThreshold={setDailyCountThreshold}
                     dailyCountThreshold={dailyCountThreshold}
+                    canAddField={table.isCustom}
                 />
             </div>
 

@@ -24,7 +24,7 @@ export default function useAddCampaign(
         const campaignId = await createCampaign({ name: campaignName })
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const insertedTables = tables.map(({ id, fields, ...others }) => ({
+        const insertedTables = tables.map(({ id, fields, isCustom, ...others }) => ({
             ...others,
             campaign_id: campaignId,
             description: '',

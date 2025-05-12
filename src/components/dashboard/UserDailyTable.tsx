@@ -6,6 +6,7 @@ import { useDailyStatTableCheckedState } from "@/hooks/charts/useDailyStatTableC
 import { usePaging } from "@/hooks/legacy/usePaging";
 import Link from "next/link";
 import { CampaignParticipant } from "@/types/campaign";
+import { ChartParams, ChartType } from "@/types/chart";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -103,9 +104,10 @@ const ChartTooltipContent: React.FC = () => {
 
 const UserDailyStatTable: React.FC<{
     syncTime: Date | null,
-    setUserId: (userId: string) => void;
+    timelineOverviewParams: ChartParams,
+    setParams: (type: ChartType, params: ChartParams) => void;
     openMessageModal: (sendTo: CampaignParticipant[]) => void;
-}> = ({ syncTime, setUserId, openMessageModal }) => {
+}> = ({ syncTime, timelineOverviewParams, setParams, openMessageModal }) => {
     const ref = useRef<HTMLDivElement>(null)
     const [date, setDate] = useState(new Date())
     const [tableHeight, setTableHeight] = useState(500)
@@ -145,7 +147,10 @@ const UserDailyStatTable: React.FC<{
                     {
                         checkCount == 1 && (
                             <Link href={`./dashboard/#timeline-overview-comparison-chart`}>
-                                <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => setUserId(data[checkedState.findIndex((state) => state)].uuid)}>
+                                <Button
+                                    color="blue" size="md" className="flex flex-row gap-1 text-base px-3"
+                                    onClick={() => setParams(ChartType.TimelineOverview, { ...timelineOverviewParams, date: date, uuid: data[checkedState.findIndex((state) => state)].uuid })}
+                                >
                                     <span>Timeline Overview</span>
                                 </Button>
                             </Link>

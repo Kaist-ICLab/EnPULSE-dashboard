@@ -7,11 +7,12 @@ import { useEffect, useRef, useState } from "react";
 const FormatConfigTable: React.FC<{
     currentTableFields: CampaignTableField[];
     // setChangedFields: (callback: (prev: Map<string, string>) => Map<string, string>) => void;
+    canAddField: boolean | undefined;
     onFieldChange: (fieldId: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void;
     addField: (field: CampaignTableField) => void,
     setDailyCountThreshold: (threshold: number) => void;
     dailyCountThreshold: number;
-}> = ({ currentTableFields, onFieldChange, addField, setDailyCountThreshold, dailyCountThreshold }) => {
+}> = ({ currentTableFields, onFieldChange, addField, setDailyCountThreshold, dailyCountThreshold, canAddField = false }) => {
     const [fieldName, setFieldName] = useState('')
     const [fieldRole, setFieldRole] = useState<FieldRole>('data')
     const [fieldType, setFieldType] = useState<FieldType>('numerical')
@@ -122,17 +123,20 @@ const FormatConfigTable: React.FC<{
                         }
                     </TableBody>
                 </Table>
-                <div
-                    className="w-full px-6 py-2 flex justify-center items-center border-t-1 border-gray-200 cursor-pointer hover:bg-gray-50"
-                    onClick={() => {
-                        setFieldName("")
-                        setFieldRole('data')
-                        setFieldType('numerical')
-                        setIsFieldInputShown(true)
-                    }}
-                >
-                    <span className="icon-[tabler--plus] mr-2"></span> Add Field
-                </div>
+                {
+                    canAddField &&
+                    <div
+                        className="w-full px-6 py-2 flex justify-center items-center border-t-1 border-gray-200 cursor-pointer hover:bg-gray-50"
+                        onClick={() => {
+                            setFieldName("")
+                            setFieldRole('data')
+                            setFieldType('numerical')
+                            setIsFieldInputShown(true)
+                        }}
+                    >
+                        <span className="icon-[tabler--plus] mr-2"></span> Add Field
+                    </div>
+                }
             </div>
             <div className="w-fit flex flex-col mt-2">
                 <div className="flex rounded-lg border-1 border-gray-200 overflow-hidden">

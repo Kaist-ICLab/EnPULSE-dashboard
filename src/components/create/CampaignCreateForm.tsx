@@ -5,12 +5,12 @@ import CampaignName from "./CampaignName"
 import Link from "next/link"
 import CampaignSensors from "./CampaignTables"
 import { useState } from "react"
-import useCampainTables from "@/hooks/create/useNewCampaignTables"
+import useNewCampainTables from "@/hooks/create/useNewCampaignTables"
 import useAddCampaign from "@/hooks/create/useAddCampaign"
 export default function CampaignCreateForm() {
     const [campaignName, setCampaignName] = useState("");
     const [isValidName, setIsValidName] = useState(false);
-    const { tables, addTable, removeTable, addField, setField, setDailyCountMax, addNewTemplateTable } = useCampainTables();
+    const { tables, addTable, removeTable, addField, setField, setDailyCountMax, addNewTemplateTable } = useNewCampainTables();
     const { isValid, submitCampaign } = useAddCampaign(campaignName, isValidName, tables)
 
     return (

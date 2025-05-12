@@ -5,9 +5,10 @@ import { templateTable } from "./sensorTemplate";
 export interface NewCampaignTable extends CampaignTable {
     description: string;
     fields: CampaignTableField[];
+    isCustom?: boolean;
 }
 
-export default function useCampainTables() {
+export default function useNewCampainTables() {
     const [tables, setTables] = useState<NewCampaignTable[]>([]);
 
     const setDailyCountMax = (index: number, value: number) => {
@@ -18,8 +19,8 @@ export default function useCampainTables() {
         })
     }
 
-    const addTable = (name: string, description: string, fields: CampaignTableField[] = []) => {
-        setTables([...tables, { id: -1, campaign_id: -1, name, description, daily_count_max: 0, fields }]);
+    const addTable = (name: string, description: string, fields: CampaignTableField[] = [], isCustom: boolean = true) => {
+        setTables([...tables, { id: -1, campaign_id: -1, name, description, daily_count_max: 0, fields, isCustom }]);
     }
 
     const addNewTemplateTable = (idx: number) => {

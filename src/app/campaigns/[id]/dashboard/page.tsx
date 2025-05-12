@@ -48,7 +48,8 @@ const Page = () => {
             </DashboardCard>
             <UserDailyStatTable
                 syncTime={lastLoaded}
-                setUserId={v => setParams(ChartType.TimelineOverview, { ...params[ChartType.TimelineOverview], uuid: v })}
+                timelineOverviewParams={params[ChartType.TimelineOverview]}
+                setParams={setParams}
                 openMessageModal={(sendTo: CampaignParticipant[]) => { setSendTo(sendTo); setMessageModalVisible(true); }}
             />
 
