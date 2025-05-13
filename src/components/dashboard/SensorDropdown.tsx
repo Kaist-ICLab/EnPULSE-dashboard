@@ -1,6 +1,6 @@
 import useCampaign from "@/hooks/useCampaign";
 import { Dropdown, DropdownDivider, DropdownItem, createTheme } from "flowbite-react";
-import { useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useMemo, useState } from "react";
 
 const baseInnerTheme = {
     arrowIcon: "ml-auto h-4 w-4",
@@ -9,13 +9,13 @@ const baseInnerTheme = {
     }
 }
 
-const SensorDropdown: React.FC = () => {
+const SensorDropdown: React.FC<{
+    selectedFields: { [key: number]: boolean }
+    setSelectedFields: Dispatch<SetStateAction<{ [key: number]: boolean }>>
+}> = ({ selectedFields, setSelectedFields }) => {
     const { campaignTables, mergedTabledFields: mergedTableFields } = useCampaign();
     const [selectedSensor, setSelectedSensor] = useState(-1)
-    const [selectedFields, setSelectedFields] = useState<{ [key: number]: boolean }>(mergedTableFields.reduce((acc, field) => {
-        acc[field.id] = false
-        return acc
-    }, {} as { [key: number]: boolean }))
+
 
     const dropdownLabel = useMemo(() => {
         const selectedId = Object.keys(selectedFields).filter(key => selectedFields[Number(key)])
@@ -50,9 +50,9 @@ const SensorDropdown: React.FC = () => {
     return (
         <Dropdown
             label={dropdownLabel}
-            placement="bottom-start"
+            placement="bottom-end"
             dismissOnClick={false}
-            onClick={() => setSelectedSensor(-1)}
+            onMouseUp={() => setSelectedSensor(-1)}
         >
             {Array.from(campaignTables.values()).map((table, tidx) => (
                 <div key={table.id} className="relative group">

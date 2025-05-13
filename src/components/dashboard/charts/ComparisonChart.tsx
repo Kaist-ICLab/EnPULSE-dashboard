@@ -4,7 +4,7 @@ import useTimeline from "@/hooks/charts/useTimeline";
 import useCampaign from "@/hooks/useCampaign";
 import { ChartParams, ChartType, PinQuery } from "@/types/chart";
 import { Card, Select, Spinner } from "flowbite-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import SensorDropdown from "../SensorDropdown";
 
 const ComparisonChart: React.FC<({
@@ -16,6 +16,11 @@ const ComparisonChart: React.FC<({
 })> = ({ params, setParams, type, pinQuery, setPinQuery }) => {
     const { timeline, loading, error } = useTimeline(params, type);
     const { campaignParticipants, mergedTabledFields } = useCampaign()
+
+    const [selectedFields, setSelectedFields] = useState<{ [key: number]: boolean }>(mergedTabledFields.reduce((acc, field) => {
+        acc[field.id] = false
+        return acc
+    }, {} as { [key: number]: boolean }))
 
     const users = useMemo(() => {
         return Array.from(campaignParticipants.values()).map(v => ({ id: v.uuid, name: v.email }))
@@ -44,7 +49,10 @@ const ComparisonChart: React.FC<({
                     <h2 className="text-xl font-semibold">{chartName}</h2>
                     <div className="flex flex-col sm:flex-row gap-4">
                         {type == ChartType.TimelineOverview &&
-                            <SensorDropdown />
+                            <SensorDropdown
+                                selectedFields={selectedFields}
+                                setSelectedFields={setSelectedFields}
+                            />
                         }
                         {type !== ChartType.InterPerson && <div className="w-full sm:w-48">
                             <Select
@@ -90,7 +98,7 @@ const ComparisonChart: React.FC<({
                         <p className="text-red-500 font-medium">❌ 데이터 로딩 실패: {error.message}</p>
                     )}
                     {timeline.length > 0 && <ChartContainer
-                        timelines={timeline}
+                        timelines={timeline.filter(v => (selectedFields[v.params.fieldId] || type !== ChartType.TimelineOverview))}
                         chartType={type}
                         setChartParams={setParams}
                         pinQuery={pinQuery}
