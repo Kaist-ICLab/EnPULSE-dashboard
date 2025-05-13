@@ -10,7 +10,7 @@ const baseInnerTheme = {
 }
 
 const SensorDropdown: React.FC = () => {
-    const { campaignTables, campaignTableFields, mergedTabledFields: mergedTableFields } = useCampaign();
+    const { campaignTables, mergedTabledFields: mergedTableFields } = useCampaign();
     const [selectedSensor, setSelectedSensor] = useState(-1)
     const [selectedFields, setSelectedFields] = useState<{ [key: number]: boolean }>(mergedTableFields.reduce((acc, field) => {
         acc[field.id] = false
@@ -18,15 +18,25 @@ const SensorDropdown: React.FC = () => {
     }, {} as { [key: number]: boolean }))
 
     const dropdownLabel = useMemo(() => {
-        const selectedId = Object.keys(selectedFields).find(key => selectedFields[Number(key)])
+        const selectedId = Object.keys(selectedFields).filter(key => selectedFields[Number(key)])
         if (!selectedId || selectedId?.length == 0) {
             return "Select Sensor"
-        } else if (selectedId.length == 1) {
-            return mergedTableFields.find(field => field.id == Number(selectedId))?.displayName
+        }
+
+        const selected = Number(selectedId[0])
+
+        if (selectedId.length == 1) {
+            return mergedTableFields.find(field => field.id == selected)?.displayName
         } else {
-            return `${mergedTableFields.find(field => field.id == Number(selectedId))?.displayName} + ${Object.values(selectedFields).filter(selected => selected).length - 1} more`
+            return `${mergedTableFields.find(field => field.id == selected)?.displayName} + ${Object.values(selectedFields).filter(selected => selected).length - 1} more`
         }
     }, [selectedFields, mergedTableFields])
+
+    const isAllSelected = useMemo(() => {
+        return Array.from(campaignTables.values()).map(table =>
+            mergedTableFields.filter(field => field.campaign_table_id === table.id).every(field => selectedFields[field.id])
+        )
+    }, [selectedFields, mergedTableFields, campaignTables])
 
     const innerTheme = createTheme(baseInnerTheme)
     const selectedInnerTheme = createTheme({
@@ -37,15 +47,14 @@ const SensorDropdown: React.FC = () => {
         }
     })
 
-
     return (
         <Dropdown
-            label="Select Sensor"
+            label={dropdownLabel}
             placement="bottom-start"
             dismissOnClick={false}
             onClick={() => setSelectedSensor(-1)}
         >
-            {Array.from(campaignTables.values()).map((table) => (
+            {Array.from(campaignTables.values()).map((table, tidx) => (
                 <div key={table.id} className="relative group">
                     <DropdownItem as="div" className="p-0 w-full">
                         <Dropdown
@@ -57,8 +66,7 @@ const SensorDropdown: React.FC = () => {
                             applyTheme="replace"
                             color="light"
                         >
-                            {Array.from(campaignTableFields.values())
-                                .filter(field => field.campaign_table_id === table.id)
+                            {mergedTableFields.filter(field => field.campaign_table_id === table.id)
                                 .map((field) => (
                                     <DropdownItem key={field.id} className="bg-white" onClick={() => {
                                         setSelectedFields(prev => ({
@@ -76,8 +84,21 @@ const SensorDropdown: React.FC = () => {
                                     </DropdownItem>
                                 ))}
                             <DropdownDivider />
-                            <DropdownItem className="font-bold">
-                                Select all
+                            <DropdownItem className="font-bold" onClick={() => {
+                                setSelectedFields(prev => {
+                                    const keys = mergedTableFields.filter(field => field.campaign_table_id === table.id).map(field => field.id)
+                                    const newSelectedFields = structuredClone(prev)
+                                    keys.forEach(key => {
+                                        newSelectedFields[key] = !isAllSelected[tidx]
+                                    })
+                                    return newSelectedFields
+                                });
+                            }}>
+                                {
+                                    isAllSelected[tidx] ?
+                                        "Deselect all" :
+                                        "Select all"
+                                }
                             </DropdownItem>
                         </Dropdown>
                     </DropdownItem>
