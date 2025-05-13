@@ -5,6 +5,7 @@ import useCampaign from "@/hooks/useCampaign";
 import { ChartParams, ChartType, PinQuery } from "@/types/chart";
 import { Card, Select, Spinner } from "flowbite-react";
 import { useMemo } from "react";
+import SensorDropdown from "../SensorDropdown";
 
 const ComparisonChart: React.FC<({
     params: ChartParams;
@@ -42,9 +43,11 @@ const ComparisonChart: React.FC<({
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <h2 className="text-xl font-semibold">{chartName}</h2>
                     <div className="flex flex-col sm:flex-row gap-4">
+                        {type == ChartType.TimelineOverview &&
+                            <SensorDropdown />
+                        }
                         {type !== ChartType.InterPerson && <div className="w-full sm:w-48">
                             <Select
-                                icon={() => <span className="icon-[material-symbols--person-rounded]"></span>}
                                 value={params.uuid}
                                 onChange={(e) => setParams(type, { ...params, uuid: e.target.value })}
                             >
@@ -63,14 +66,14 @@ const ComparisonChart: React.FC<({
                                 onChange={(e) => setParams(type, { ...params, fieldId: parseInt(e.target.value) })}
                             >
                                 <option value="">Select Sensor</option>
-                                {mergedTabledFields.map((sensor) => (
+                                {Object.values(mergedTabledFields).flat().map((sensor) => (
                                     <option key={sensor.id} value={sensor.id}>
                                         {sensor.displayName}
                                     </option>
                                 ))}
                             </Select>
                         </div>}
-                        <div className="w-full sm:w-48">
+                        <div className="w-full sm:w-32">
                             <input
                                 type="date"
                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
