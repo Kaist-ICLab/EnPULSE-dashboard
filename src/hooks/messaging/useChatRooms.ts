@@ -9,27 +9,25 @@ export default function useChatRooms() {
 
     const patchChatRooms = useCallback((newInfo: ChatSession, eventType: 'UPDATE' | 'INSERT' | 'DELETE') => {
         if (eventType === 'UPDATE') {
-            const replaceIndex = chatRooms.findIndex(room => room.id === newInfo.id);
-            if (replaceIndex === -1) return;
-            const email = chatRooms[replaceIndex].email;
-
-            // Use locks when HTTPS context is available
-            // ...Or find out how can we implement atomic operation
-            // navigator.locks.request('chatRooms_update', async () => {
             setChatRooms(prev => {
-                const newChatRooms = structuredClone(prev)
-                newChatRooms.splice(replaceIndex, 1)
-                return [{ ...newInfo, email }, ...newChatRooms]
-            })
-
-            // })
-
+                const replaceIndex = prev.findIndex(room => room.id === newInfo.id);
+                if (replaceIndex === -1) return prev;
+                const email = prev[replaceIndex].email;
+                const newChatRooms = [...prev];
+                newChatRooms.splice(replaceIndex, 1);
+                return [{ ...newInfo, email }, ...newChatRooms];
+            });
         } else if (eventType === 'INSERT') {
             getEmailByUuid(newInfo.uuid).then(email => {
-                setChatRooms(prev => [{ ...newInfo, email }, ...prev]);
-            })
+                setChatRooms(prev => {
+                    // Check if the chat room already exists
+                    const exists = prev.some(room => room.id === newInfo.id);
+                    if (exists) return prev;
+                    return [{ ...newInfo, email }, ...prev];
+                });
+            });
         }
-    }, [chatRooms])
+    }, []);
 
     useEffect(() => {
         async function get() {

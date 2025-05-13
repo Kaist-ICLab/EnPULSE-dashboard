@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { NewCampaignTable } from "@/hooks/create/useNewCampaignTables";
-import { Button, Card, Dropdown, DropdownItem, TextInput } from "flowbite-react";
+import { Accordion, AccordionContent, AccordionPanel, AccordionTitle, Button, Card, Dropdown, DropdownItem, TextInput } from "flowbite-react";
 import CampaignTableCard from "./CampaignTableCard";
 import { CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
 import { templateTable } from "@/hooks/create/sensorTemplate";
@@ -26,19 +26,34 @@ const CampaignSensors: React.FC<{
             <h6 className="text-xl font-medium text-gray-900 mb-2">
                 Campaign sensors
             </h6>
-            {
-                tables.map((table, tableIndex) =>
-                    <CampaignTableCard
-                        key={tableIndex}
-                        table={table}
-                        removeTable={() => removeTable(tableIndex)}
-                        setChangedFields={(id, name, value) => setField(tableIndex, id, name, value)}
-                        addField={field => addField(tableIndex, field,)}
-                        setDailyCountThreshold={v => setDailyCountMax(tableIndex, v)}
-                        dailyCountThreshold={table.daily_count_max}
-                    />
-                )
-            }
+            <Accordion className="[&>*:nth-last-child(2)]:border-b-0">
+                {
+                    tables.map((table, tableIndex) =>
+                        <AccordionPanel key={tableIndex}>
+                            <AccordionTitle>
+                                <div className="flex items-center gap-2">
+                                    <span className="icon-[humbleicons--times] w-5 h-5 cursor-pointer" onClick={() => removeTable(tableIndex)}></span>
+                                    <div>
+                                        <div className="text-lg font-semibold text-gray-900 whitespace-nowrap">{table.name}</div>
+                                        <div className="text-xs text-gray-900 whitespace-nowrap">{table.description}</div>
+                                    </div>
+                                </div>
+                            </AccordionTitle>
+                            <AccordionContent>
+                                <CampaignTableCard
+                                    key={tableIndex}
+                                    table={table}
+                                    setChangedFields={(id, name, value) => setField(tableIndex, id, name, value)}
+                                    addField={field => addField(tableIndex, field,)}
+                                    setDailyCountThreshold={v => setDailyCountMax(tableIndex, v)}
+                                    dailyCountThreshold={table.daily_count_max}
+                                />
+                            </AccordionContent>
+                        </AccordionPanel>
+
+                    )
+                }
+            </Accordion>
             {isSensorInputVisible ? (<Card className="shadow-none bg-gray-50 border-gray-300 rounded-lg">
                 <div className="flex gap-4 items-center">
                     <span className="text-sm font-medium text-gray-900 whitespace-nowrap">Sensor Name</span>
