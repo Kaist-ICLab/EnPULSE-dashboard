@@ -16,7 +16,6 @@ const SensorDropdown: React.FC<{
     const { campaignTables, mergedTabledFields: mergedTableFields } = useCampaign();
     const [selectedSensor, setSelectedSensor] = useState(-1)
 
-
     const dropdownLabel = useMemo(() => {
         const selectedId = Object.keys(selectedFields).filter(key => selectedFields[Number(key)])
         if (!selectedId || selectedId?.length == 0) {
