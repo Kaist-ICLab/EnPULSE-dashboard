@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
 import TimelineChart from '@/components/dashboard/charts/TimelineChart';
 import TimelineXAxis from '@/components/dashboard/charts/TimelineXAxis';
 import { DnDProvider, DnDItem, DragHandle } from '@/components/common/DnDList';
@@ -12,15 +12,17 @@ const ChartContainer: React.FC<{
     setChartParams: (chartType: ChartType, params: ChartParams) => void;
     pinQuery: PinQuery;
     setPinQuery: (pinQuery: PinQuery) => void;
+    timeRange: { start: number, end: number };
+    setTimeRange: Dispatch<SetStateAction<{ start: number, end: number }>>;
     defaultTimeRange: { start: number, end: number };
-}> = ({ timelines, chartType, setChartParams, defaultTimeRange, pinQuery, setPinQuery }) => {
-    const [timeRange, setTimeRange] = useState<{ start: number, end: number }>(defaultTimeRange);
+}> = ({ timelines, chartType, setChartParams, defaultTimeRange, pinQuery, setPinQuery, timeRange, setTimeRange }) => {
+
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
 
     useEffect(() => {
         setTimeRange(defaultTimeRange)
-    }, [defaultTimeRange])
+    }, [setTimeRange, defaultTimeRange])
 
     useEffect(() => {
         setChartOrder(timelines.map((d) => d.id))

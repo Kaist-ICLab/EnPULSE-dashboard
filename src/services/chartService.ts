@@ -67,17 +67,17 @@ export async function getDailyStatCount(campaignId: number) {
     return Math.max(count ?? 1, 1)
 }
 
-export async function getTimelineOverviewData(fields: CampaignTableFieldWithTable[], params: ChartParams) {
+export async function getTimelineOverviewData(fields: CampaignTableFieldWithTable[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
     const { uuid, date } = params;
 
     const data = await mapQuery(fields, v => {
         return supabase.rpc('bucket_numerical_data', {
-            start_time: date.toISOString(),
-            end_time: new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+            start_time: new Date(date.getTime() - 24 * 60 * 60 * 1000).toISOString(),
+            end_time: new Date(date.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
             uuid: uuid,
             table_name: v.tableName,
             column_name: v.name,
-            bucket_unit: '60 seconds',
+            bucket_unit: bucketSize,
         })
         // return supabase
         //     .from(v.tableName)

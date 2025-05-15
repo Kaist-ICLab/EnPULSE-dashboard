@@ -4,8 +4,13 @@ import useTimeline from "@/hooks/charts/useTimeline";
 import useCampaign from "@/hooks/useCampaign";
 import { ChartParams, ChartType, PinQuery } from "@/types/chart";
 import { Card, Select, Spinner } from "flowbite-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import SensorDropdown from "../SensorDropdown";
+
+const defaultTimeRange = {
+    start: new Date(0).setHours(0, 0, 0, 0),
+    end: new Date(0).setHours(23, 59, 59, 999),
+}
 
 const ComparisonChart: React.FC<({
     params: ChartParams;
@@ -14,13 +19,17 @@ const ComparisonChart: React.FC<({
     pinQuery: PinQuery;
     setPinQuery: (pinQuery: PinQuery) => void;
 })> = ({ params, setParams, type, pinQuery, setPinQuery }) => {
-    const { timeline, loading, error } = useTimeline(params, type);
+    const chartRef = useRef<HTMLDivElement>(null);
+    const [timeRange, setTimeRange] = useState<{ start: number, end: number }>(defaultTimeRange);
     const { campaignParticipants, mergedTabledFields } = useCampaign()
 
-    const [selectedFields, setSelectedFields] = useState<{ [key: number]: boolean }>(mergedTabledFields.reduce((acc, field) => {
+    const [isFieldSelected, setIsFieldSelected] = useState<{ [key: number]: boolean }>(mergedTabledFields.reduce((acc, field) => {
         acc[field.id] = false
         return acc
     }, {} as { [key: number]: boolean }))
+    const selectedFields = useMemo(() => mergedTabledFields.filter(v => isFieldSelected[v.id] || type !== ChartType.TimelineOverview), [isFieldSelected, mergedTabledFields, type])
+    const { timeline, loading, error } = useTimeline(params, type, selectedFields, (chartRef.current?.clientWidth || 0) - 100, timeRange);
+
 
     const users = useMemo(() => {
         return Array.from(campaignParticipants.values()).map(v => ({ id: v.uuid, name: v.email }))
@@ -37,10 +46,9 @@ const ComparisonChart: React.FC<({
         }
     })();
 
-    const defaultTimeRange = {
-        start: new Date(0).setHours(0, 0, 0, 0),
-        end: new Date(0).setHours(23, 59, 59, 999),
-    }
+    useEffect(() => {
+        setTimeRange(defaultTimeRange)
+    }, [])
 
     return (
         <Card id={`${type}-comparison-chart`}>
@@ -50,8 +58,8 @@ const ComparisonChart: React.FC<({
                     <div className="flex flex-col sm:flex-row gap-4">
                         {type == ChartType.TimelineOverview &&
                             <SensorDropdown
-                                selectedFields={selectedFields}
-                                setSelectedFields={setSelectedFields}
+                                isFieldSelected={isFieldSelected}
+                                setIsFieldSelected={setIsFieldSelected}
                             />
                         }
                         {type !== ChartType.InterPerson && <div className="w-full sm:w-48">
@@ -92,17 +100,19 @@ const ComparisonChart: React.FC<({
                     </div>
                 </div>
 
-                <div className="w-full rounded-lg py-4 flex flex-col gap-4">
+                <div className="w-full rounded-lg py-4 flex flex-col gap-4" ref={chartRef}>
                     {loading && <Spinner className="w-full" />}
                     {error && (
                         <p className="text-red-500 font-medium">❌ 데이터 로딩 실패: {error.message}</p>
                     )}
                     {timeline.length > 0 && <ChartContainer
-                        timelines={timeline.filter(v => (selectedFields[v.params.fieldId] || type !== ChartType.TimelineOverview))}
+                        timelines={timeline.filter(v => (isFieldSelected[v.params.fieldId] || type !== ChartType.TimelineOverview))}
                         chartType={type}
                         setChartParams={setParams}
                         pinQuery={pinQuery}
                         setPinQuery={setPinQuery}
+                        timeRange={timeRange}
+                        setTimeRange={setTimeRange}
                         defaultTimeRange={defaultTimeRange}
                     />
                     }

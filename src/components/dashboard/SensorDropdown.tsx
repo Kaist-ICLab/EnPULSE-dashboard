@@ -10,14 +10,14 @@ const baseInnerTheme = {
 }
 
 const SensorDropdown: React.FC<{
-    selectedFields: { [key: number]: boolean }
-    setSelectedFields: Dispatch<SetStateAction<{ [key: number]: boolean }>>
-}> = ({ selectedFields, setSelectedFields }) => {
+    isFieldSelected: { [key: number]: boolean }
+    setIsFieldSelected: Dispatch<SetStateAction<{ [key: number]: boolean }>>
+}> = ({ isFieldSelected, setIsFieldSelected }) => {
     const { campaignTables, mergedTabledFields: mergedTableFields } = useCampaign();
     const [selectedSensor, setSelectedSensor] = useState(-1)
 
     const dropdownLabel = useMemo(() => {
-        const selectedId = Object.keys(selectedFields).filter(key => selectedFields[Number(key)])
+        const selectedId = Object.keys(isFieldSelected).filter(key => isFieldSelected[Number(key)])
         if (!selectedId || selectedId?.length == 0) {
             return "Select Sensor"
         }
@@ -27,15 +27,15 @@ const SensorDropdown: React.FC<{
         if (selectedId.length == 1) {
             return mergedTableFields.find(field => field.id == selected)?.displayName
         } else {
-            return `${mergedTableFields.find(field => field.id == selected)?.displayName} + ${Object.values(selectedFields).filter(selected => selected).length - 1} more`
+            return `${mergedTableFields.find(field => field.id == selected)?.displayName} + ${Object.values(isFieldSelected).filter(selected => selected).length - 1} more`
         }
-    }, [selectedFields, mergedTableFields])
+    }, [isFieldSelected, mergedTableFields])
 
     const isAllSelected = useMemo(() => {
         return Array.from(campaignTables.values()).map(table =>
-            mergedTableFields.filter(field => field.campaign_table_id === table.id).every(field => selectedFields[field.id])
+            mergedTableFields.filter(field => field.campaign_table_id === table.id).every(field => isFieldSelected[field.id])
         )
-    }, [selectedFields, mergedTableFields, campaignTables])
+    }, [isFieldSelected, mergedTableFields, campaignTables])
 
     const innerTheme = createTheme(baseInnerTheme)
     const selectedInnerTheme = createTheme({
@@ -68,7 +68,7 @@ const SensorDropdown: React.FC<{
                             {mergedTableFields.filter(field => field.campaign_table_id === table.id)
                                 .map((field) => (
                                     <DropdownItem key={field.id} className="bg-white" onClick={() => {
-                                        setSelectedFields(prev => ({
+                                        setIsFieldSelected(prev => ({
                                             ...prev,
                                             [field.id]: !prev[field.id]
                                         }));
@@ -76,7 +76,7 @@ const SensorDropdown: React.FC<{
                                         <input
                                             type="checkbox"
                                             className="mr-2"
-                                            checked={selectedFields[field.id] || false}
+                                            checked={isFieldSelected[field.id] || false}
                                             onChange={() => { }} // Add empty onChange to make it controlled
                                         />
                                         {field.name}
@@ -84,7 +84,7 @@ const SensorDropdown: React.FC<{
                                 ))}
                             <DropdownDivider />
                             <DropdownItem className="font-bold" onClick={() => {
-                                setSelectedFields(prev => {
+                                setIsFieldSelected(prev => {
                                     const keys = mergedTableFields.filter(field => field.campaign_table_id === table.id).map(field => field.id)
                                     const newSelectedFields = structuredClone(prev)
                                     keys.forEach(key => {
