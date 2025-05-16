@@ -1,22 +1,29 @@
 'use client'
 
+import useSectionState from "@/hooks/charts/useSectionState";
+import { SectionType } from "@/types/chart";
 import { PlotlyRelayoutEvent } from "@/types/plotlyEvent";
 import { createPlot, loadPlotly } from "@/utils/plotlyLoader";
 import { Config, Data, Layout } from "plotly.js-dist-min";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 const TimelineChart: React.FC<{
     id: string;
+    sectionType: SectionType;
     chartType: 'categorical' | 'numerical';
-    timeRange: { start: number, end: number };
-    defaultTimeRange: { start: number, end: number };
     baseTime: number;
     data: { timestamp: number[], value: (string | number)[] };
-    onComplete: (timeRange: { start: number, end: number }) => void;
-}> = ({ id, data, chartType, timeRange, defaultTimeRange, baseTime, onComplete }) => {
+}> = ({ id, sectionType, chartType, baseTime, data }) => {
+    const { timeRange, updateTimeRange, initTimeRange } = useSectionState()
+    const currentTimeRange = useMemo(() => timeRange[sectionType], [timeRange, sectionType])
+
     const chartRef = useRef<HTMLDivElement>(null);
     // Store original colors for each trace
     const colorQueue = useRef<{ traceIndex: number, colorIndex: number }[] | null>(null)
+
+    useEffect(() => {
+        initTimeRange(sectionType)
+    }, [sectionType, initTimeRange])
 
     useEffect(() => {
         const colors = [
@@ -36,7 +43,7 @@ const TimelineChart: React.FC<{
             paper_bgcolor: 'white',
             xaxis: {
                 type: 'date',
-                range: [baseTime + timeRange.start, baseTime + timeRange.end],
+                range: [baseTime + currentTimeRange.start, baseTime + currentTimeRange.end],
                 visible: false
             },
             bargap: 0.01,
@@ -111,10 +118,10 @@ const TimelineChart: React.FC<{
                     if (event["xaxis.range[0]"] && event["xaxis.range[1]"]) {
                         const start = new Date(event["xaxis.range[0]"]).getTime();
                         const end = new Date(event["xaxis.range[1]"]).getTime();
-                        onComplete({ start: start - baseTime, end: end - baseTime });
+                        updateTimeRange(sectionType, { start: start - baseTime, end: end - baseTime });
 
                     } else if (event['xaxis.autorange'] && event['yaxis.autorange']) {
-                        onComplete(defaultTimeRange);
+                        initTimeRange(sectionType)
                     }
                 };
 
@@ -185,7 +192,7 @@ const TimelineChart: React.FC<{
                 }).catch(console.error);
             }
         };
-    }, [data, timeRange, baseTime, id, chartType, onComplete, defaultTimeRange]);
+    }, [data, currentTimeRange, baseTime, id, chartType, sectionType, updateTimeRange, initTimeRange]);
 
     return (
         <div className='w-full flex flex-row justify-center items-center'>

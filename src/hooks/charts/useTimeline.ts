@@ -1,15 +1,21 @@
-import { ChartParams, ChartType, TimelineData } from "@/types/chart";
-import { useEffect, useState } from "react";
+import { SectionType, TimelineData } from "@/types/chart";
+import { useEffect, useMemo, useState } from "react";
 import useCampaign from "../useCampaign";
 import { getInterPersonData, getIntraPersonData, getTimelineOverviewData } from "@/services/chartService";
 import { CampaignTableFieldWithTable } from "@/types/campaign";
+import useSectionState from "./useSectionState";
 
 
-export default function useTimeline(params: ChartParams, type: ChartType, selectedFields: CampaignTableFieldWithTable[], chartWidth: number, timeRange: { start: number, end: number }) {
+export default function useTimeline(type: SectionType, selectedFields: CampaignTableFieldWithTable[], chartWidth: number) {
+    console.log('useTimeline', type)
     const [timeline, setTimeline] = useState<TimelineData[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
     const { selectedCampaignId, campaignParticipants } = useCampaign();
+    const { sectionParams, timeRange } = useSectionState()
+
+    const currentSectionParams = useMemo(() => sectionParams[type], [sectionParams, type])
+    const currentTimeRange = useMemo(() => timeRange[type], [timeRange, type])
 
     function getBucketSize(intervalInSec: number): string {
         // unit: seconds
@@ -33,33 +39,32 @@ export default function useTimeline(params: ChartParams, type: ChartType, select
     }
 
     useEffect(() => {
-        const { uuid, date, fieldId } = params;
+        const { uuid, date, fieldId } = currentSectionParams;
         if (!selectedCampaignId || !uuid || !date || !fieldId) return;
 
-        const intervalInSec = (timeRange.end - timeRange.start) / 1000 / chartWidth; // seconds per pixel
-        const k = 3 // Change this value to change the bucket size
-        const bucketSize = getBucketSize(intervalInSec * k);
+        const intervalInSec = (currentTimeRange.end - currentTimeRange.start) / 1000 / chartWidth; // seconds per pixel
+        const pixelPerBucket = 5 // Change this value to change the bucket size
+        const bucketSize = getBucketSize(intervalInSec * pixelPerBucket);
 
         setLoading(true);
         setError(null);
 
-        // async function fetchData() {
-        //     let data: TimelineData[] = [];
-        //     if (type === ChartType.TimelineOverview) {
-        //         data = await getTimelineOverviewData(selectedFields, params, timeRange, bucketSize);
-        //     } else if (type === ChartType.InterPerson) {
-        //         data = await getInterPersonData(selectedFields, Array.from(campaignParticipants.values()), params);
-        //     } else if (type === ChartType.IntraPerson) {
-        //         data = await getIntraPersonData(selectedFields, params);
-        //     }
+        async function fetchData() {
+            let data: TimelineData[] = [];
+            if (type === SectionType.TimelineOverview) {
+                data = await getTimelineOverviewData(selectedFields, currentSectionParams, currentTimeRange, bucketSize);
+            } else if (type === SectionType.InterPerson) {
+                data = await getInterPersonData(selectedFields, Array.from(campaignParticipants.values()), currentSectionParams);
+            } else if (type === SectionType.IntraPerson) {
+                data = await getIntraPersonData(selectedFields, currentSectionParams);
+            }
 
-        //     setTimeline(data);
-        //     setLoading(false);
-        // }
+            setTimeline(data);
+            setLoading(false);
+        }
 
-        // fetchData();
-        console.log('fetch')
-    }, [selectedCampaignId, params, selectedFields, campaignParticipants, type, timeRange, chartWidth]);
+        fetchData();
+    }, [selectedCampaignId, currentSectionParams, selectedFields, campaignParticipants, type, currentTimeRange, chartWidth]);
 
     return { timeline, loading, error };
 }   

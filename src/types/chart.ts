@@ -1,4 +1,4 @@
-export enum ChartType {
+export enum SectionType {
     TimelineOverview = "timeline-overview",
     IntraPerson = "intra-person",
     InterPerson = "inter-person"
@@ -21,8 +21,10 @@ export type ChartParams = {
     date: Date,
 }
 
-export type PinQuery = {
-    [ChartType.IntraPerson]: { date: Date } | null;
-    [ChartType.InterPerson]: { uuid: string } | null;
-    [ChartType.TimelineOverview]: { fieldId: number } | null;
+export type ChartPinQuery = {
+    [SectionType.IntraPerson]: { date: Date } | null;
+    [SectionType.InterPerson]: { uuid: string } | null;
+    [SectionType.TimelineOverview]: { fieldId: number } | null;
 };
+
+export type ChartPinQueryOption = { date: Date } | { uuid: string } | { fieldId: number } | null

@@ -6,7 +6,8 @@ import { useDailyStatTableCheckedState } from "@/hooks/charts/useDailyStatTableC
 import { usePaging } from "@/hooks/legacy/usePaging";
 import Link from "next/link";
 import { CampaignParticipant } from "@/types/campaign";
-import { ChartParams, ChartType } from "@/types/chart";
+import { SectionType } from "@/types/chart";
+import useSectionState from "@/hooks/charts/useSectionState";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -104,13 +105,12 @@ const ChartTooltipContent: React.FC = () => {
 
 const UserDailyStatTable: React.FC<{
     syncTime: Date | null,
-    timelineOverviewParams: ChartParams,
-    setParams: (type: ChartType, params: ChartParams) => void;
     openMessageModal: (sendTo: CampaignParticipant[]) => void;
-}> = ({ syncTime, timelineOverviewParams, setParams, openMessageModal }) => {
+}> = ({ syncTime, openMessageModal }) => {
     const ref = useRef<HTMLDivElement>(null)
     const [date, setDate] = useState(new Date())
     const [tableHeight, setTableHeight] = useState(500)
+    const { sectionParams, updateSectionParams: setSectionParams } = useSectionState()
 
     const { page, rowsPerPage, totalPage, changePageBy, setRowsPerPage, setTotalPage } = usePaging(5)
     const { data, loading, columns, maxDailyCount: dailyCountThreshold } = useUserDailyStat(date, page, rowsPerPage, setTotalPage, syncTime);
@@ -149,7 +149,7 @@ const UserDailyStatTable: React.FC<{
                             <Link href={`./dashboard/#timeline-overview-comparison-chart`}>
                                 <Button
                                     color="blue" size="md" className="flex flex-row gap-1 text-base px-3"
-                                    onClick={() => setParams(ChartType.TimelineOverview, { ...timelineOverviewParams, date: date, uuid: data[checkedState.findIndex((state) => state)].uuid })}
+                                    onClick={() => setSectionParams(SectionType.TimelineOverview, { ...sectionParams[SectionType.TimelineOverview], date: date, uuid: data[checkedState.findIndex((state) => state)].uuid })}
                                 >
                                     <span>Timeline Overview</span>
                                 </Button>

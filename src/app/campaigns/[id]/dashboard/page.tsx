@@ -3,29 +3,16 @@ import DashboardCard from "@/components/campaign/DashboardCard";
 import { ComparisonChart } from "@/components/dashboard/charts/ComparisonChart";
 import UserDailyStatTable from "@/components/dashboard/UserDailyTable";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
-import useChartParams from "@/hooks/charts/useChartParams";
+import { sectionTypes } from "@/hooks/charts/useSectionState";
 import { CampaignParticipant } from "@/types/campaign";
-import { ChartType, PinQuery } from "@/types/chart";
 import { Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 
-const chartTypes = [
-    ChartType.TimelineOverview,
-    ChartType.IntraPerson,
-    ChartType.InterPerson
-]
-
 const Page = () => {
+    console.log('yeet')
     const [lastLoaded, setLastLoaded] = useState<Date | null>(null)
     const [sendTo, setSendTo] = useState<CampaignParticipant[]>([]);
     const [messageModalVisible, setMessageModalVisible] = useState<boolean>(false);
-
-    const { params, setParams } = useChartParams(chartTypes)
-
-    const [pinQuery, setPinQuery] = useState<PinQuery>(chartTypes.reduce((acc, type) => {
-        acc[type] = null;
-        return acc;
-    }, {} as PinQuery));
 
     useEffect(() => {
         setLastLoaded(new Date())
@@ -48,18 +35,13 @@ const Page = () => {
             </DashboardCard>
             <UserDailyStatTable
                 syncTime={lastLoaded}
-                timelineOverviewParams={params[ChartType.TimelineOverview]}
-                setParams={setParams}
                 openMessageModal={(sendTo: CampaignParticipant[]) => { setSendTo(sendTo); setMessageModalVisible(true); }}
             />
 
-            {chartTypes.map((type) => (
+            {sectionTypes.map((type) => (
                 <ComparisonChart
                     key={type}
-                    params={params[type]}
-                    setParams={setParams} type={type}
-                    pinQuery={pinQuery}
-                    setPinQuery={setPinQuery}
+                    sectionType={type}
                 />
             ))}
 
