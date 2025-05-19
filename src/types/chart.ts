@@ -4,6 +4,8 @@ export enum SectionType {
     InterPerson = "inter-person"
 }
 
+export type ChartType = "numerical" | "categorical"
+
 export interface TimelineNumericalValue {
     avg_value: number;
     min_value: number;
@@ -20,7 +22,7 @@ export interface TimelineData {
     title: string;
     table: string;
     column: string;
-    chartType: 'numerical' | 'categorical';
+    chartType: ChartType;
     params: ChartParams;
     timestamp: number[];
     value: (TimelineNumericalValue | TimelineCategoricalValue)[];

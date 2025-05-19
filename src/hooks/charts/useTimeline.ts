@@ -7,6 +7,7 @@ import useSectionState from "./useSectionState";
 
 
 export default function useTimeline(type: SectionType, selectedFields: CampaignTableFieldWithTable[], chartWidth: number) {
+    console.log(chartWidth)
     const [timeline, setTimeline] = useState<TimelineData[]>([]);
     const [bucketSize, setBucketSize] = useState<number>(10);
     const [loading, setLoading] = useState(false);
@@ -47,7 +48,7 @@ export default function useTimeline(type: SectionType, selectedFields: CampaignT
         if (!selectedCampaignId || !uuid || !date || !fieldId) return;
 
         const intervalInSec = (currentTimeRange.end - currentTimeRange.start) / 1000 / chartWidth; // seconds per pixel
-        const pixelPerBucket = 5 // Change this value to change the bucket size
+        const pixelPerBucket = 20 // Change this value to change the bucket size
         const bucketSize = getBucketSize(intervalInSec * pixelPerBucket);
         const bucketString = getBucketString(bucketSize);
 

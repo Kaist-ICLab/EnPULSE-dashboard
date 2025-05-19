@@ -2,10 +2,11 @@ import { DynamicDataColumn } from '@/hooks/charts/useUserDailyStat';
 import { supabase } from '@/lib/supabase';
 import { mapQuery } from '@/lib/supabaseHelper';
 import { CampaignParticipant, CampaignTableFieldWithTable } from '@/types/campaign';
-import { ChartParams } from '@/types/chart';
+import { ChartParams, ChartType } from '@/types/chart';
 // import { mapQuery } from '@/lib/supabaseHelper';
 
-type BucketData = { bucket: string, avg_value: number, min_value: number, max_value: number }[][]
+type BucketNumericalData = { bucket: string, avg_value: number, min_value: number, max_value: number }
+type BucketCategoricalData = { bucket: string, category: string, count: number }
 
 export async function getCampaignDailySummary(campaignId: number, date: Date, page: number, pageCount: number) {
     const from = (page - 1) * pageCount;
@@ -71,7 +72,7 @@ export async function getTimelineOverviewData(fields: CampaignTableFieldWithTabl
     const { uuid, date } = params;
 
     const data = await mapQuery(fields, v => {
-        return supabase.rpc('bucket_numerical_data', {
+        return supabase.rpc(v.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: new Date(date.getTime() - 24 * 60 * 60 * 1000).toISOString(),
             end_time: new Date(date.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
             uuid: uuid,
@@ -79,28 +80,36 @@ export async function getTimelineOverviewData(fields: CampaignTableFieldWithTabl
             column_name: v.name,
             bucket_unit: bucketSize,
         })
-        // return supabase
-        //     .from(v.tableName)
-        //     .select(`${v.name}, timestamp`)
-        //     .eq('uuid', uuid)
-        //     .gte('timestamp', date.toISOString().split('T')[0])
-        //     .lt('timestamp', new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-    }) as BucketData
+    }) as (BucketNumericalData | BucketCategoricalData)[][]
 
-    const timestamp = data[0]?.map(v => new Date(v.bucket).getTime())
+    return fields.map((v, idx) => {
+        if (v.field_type == "categorical") {
+            const categoricalData = data[idx] as BucketCategoricalData[]
+            return {
+                title: v.displayName,
+                id: `${v.id}`,
+                table: v.tableName,
+                column: v.name,
+                chartType: 'categorical' as ChartType,
+                params: { ...params, fieldId: v.id },
+                timestamp: categoricalData.map(d => new Date(d.bucket).getTime()),
+                value: categoricalData ? categoricalData.map(d => ({ value: d.category, count: d.count })) : []
+            }
 
-    return fields.map((v, idx) => (
-        {
-            title: v.displayName,
-            id: `${v.id}`,
-            table: v.tableName,
-            column: v.name,
-            chartType: (v.field_type === "categorical" ? "categorical" : "numerical") as ("categorical" | "numerical"),
-            params: { ...params, fieldId: v.id },
-            timestamp,
-            value: data[idx] ? data[idx].map(d => ({ avg_value: d.avg_value, min_value: d.min_value, max_value: d.max_value })) : []
+        } else {
+            const numericalData = data[idx] as BucketNumericalData[]
+            return {
+                title: v.displayName,
+                id: `${v.id}`,
+                table: v.tableName,
+                column: v.name,
+                chartType: 'numerical' as ChartType,
+                params: { ...params, fieldId: v.id },
+                timestamp: numericalData.map(d => new Date(d.bucket).getTime()),
+                value: numericalData ? numericalData.map(d => ({ avg_value: d.avg_value, min_value: d.min_value, max_value: d.max_value })) : []
+            }
         }
-    ))
+    })
 }
 
 export async function getInterPersonData(fields: CampaignTableFieldWithTable[], participants: CampaignParticipant[], params: ChartParams, bucketSize: string) {
@@ -112,14 +121,7 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
     const columnName = field.name
 
     const data = await mapQuery(participants, p => {
-        // return supabase
-        //     .from(tableName)
-        //     .select(`${columnName}, timestamp`)
-        //     .eq('uuid', p.uuid)
-        //     .gte('timestamp', date.toISOString().split('T')[0])
-        //     .lt('timestamp', new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-
-        return supabase.rpc('bucket_numerical_data', {
+        return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: date.toISOString(),
             end_time: new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString(),
             uuid: p.uuid,
@@ -127,20 +129,39 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
             column_name: columnName,
             bucket_unit: bucketSize,
         })
-    }) as BucketData
+    }) as (BucketNumericalData | BucketCategoricalData)[][]
 
-    return participants.map((p, idx) => (
-        {
-            title: p.email,
-            id: p.uuid,
-            table: tableName,
-            column: columnName,
-            chartType: (field.field_type === "categorical" ? "categorical" : "numerical") as ("categorical" | "numerical"),
-            params: { ...params, uuid: p.uuid },
-            timestamp: data[idx].map(d => new Date(d.bucket).getTime()),
-            value: data[idx].map(d => ({ avg_value: d.avg_value, min_value: d.min_value, max_value: d.max_value }))
-        }
-    ))
+    console.log(data)
+
+    if (field.field_type == "categorical") {
+        const categoricalData = data as BucketCategoricalData[][]
+        return participants.map((p, idx) => (
+            {
+                title: p.email,
+                id: p.uuid,
+                table: tableName,
+                column: columnName,
+                chartType: "categorical" as ChartType,
+                params: { ...params, uuid: p.uuid },
+                timestamp: categoricalData[idx].map(d => new Date(d.bucket).getTime()),
+                value: categoricalData[idx].map(d => ({ value: d.category, count: d.count }))
+            }
+        ))
+    } else {
+        const numericalData = data as BucketNumericalData[][]
+        return participants.map((p, idx) => (
+            {
+                title: p.email,
+                id: p.uuid,
+                table: tableName,
+                column: columnName,
+                chartType: "numerical" as ChartType,
+                params: { ...params, uuid: p.uuid },
+                timestamp: numericalData[idx].map(d => new Date(d.bucket).getTime()),
+                value: numericalData[idx].map(d => ({ avg_value: d.avg_value, min_value: d.min_value, max_value: d.max_value }))
+            }
+        ))
+    }
 }
 
 export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], params: ChartParams, bucketSize: string) {
@@ -155,7 +176,7 @@ export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], 
     const dates = Array.from({ length: 7 }, (_, i) => new Date(date.getTime() - i * 24 * 60 * 60 * 1000))
 
     const data = await mapQuery(dates, d => {
-        return supabase.rpc('bucket_numerical_data', {
+        return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: d.toISOString(),
             end_time: new Date(d.getTime() + 24 * 60 * 60 * 1000).toISOString(),
             uuid: uuid,
@@ -164,22 +185,34 @@ export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], 
             bucket_unit: bucketSize,
         })
 
-        // return supabase
-        //     .from(tableName)
-        //     .select(`${columnName}, timestamp`)
-        //     .eq('uuid', uuid)
-        //     .gte('timestamp', d.toISOString().split('T')[0])
-        //     .lt('timestamp', new Date(d.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-    }) as BucketData
+    }) as (BucketNumericalData | BucketCategoricalData)[][]
 
-    return dates.map((d, idx) => ({
-        title: d.toISOString().split('T')[0],
-        id: d.toISOString().split('T')[0],
-        table: tableName,
-        column: columnName,
-        chartType: (field.field_type === "categorical" ? "categorical" : "numerical") as ("categorical" | "numerical"),
-        params: { ...params, date: d },
-        timestamp: data[idx].map(v => new Date(v.bucket).getTime()),
-        value: data[idx].map(v => ({ avg_value: v.avg_value, min_value: v.min_value, max_value: v.max_value }))
-    }))
+    if (field.field_type == "categorical") {
+        const categoricalData = data as BucketCategoricalData[][]
+        return dates.map((d, idx) => ({
+            title: d.toISOString().split('T')[0],
+            id: d.toISOString().split('T')[0],
+            table: tableName,
+            column: columnName,
+            chartType: "categorical" as ChartType,
+            params: { ...params, date: d },
+            timestamp: categoricalData[idx].map(d => new Date(d.bucket).getTime()),
+            value: categoricalData[idx].map(d => ({ value: d.category, count: d.count }))
+        }
+        ))
+    } else {
+        const numericalData = data as BucketNumericalData[][]
+        return dates.map((d, idx) => ({
+            title: d.toISOString().split('T')[0],
+            id: d.toISOString().split('T')[0],
+            table: tableName,
+            column: columnName,
+            chartType: "numerical" as ChartType,
+            params: { ...params, date: d },
+            timestamp: numericalData[idx].map(v => new Date(v.bucket).getTime()),
+            value: numericalData[idx].map(v => ({ avg_value: v.avg_value, min_value: v.min_value, max_value: v.max_value }))
+        }))
+    }
+
+
 }

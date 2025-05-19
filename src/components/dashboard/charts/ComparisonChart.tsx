@@ -13,7 +13,7 @@ const ComparisonChart: React.FC<{
 }> = ({ sectionType }) => {
     const chartRef = useRef<HTMLDivElement>(null);
     const { campaignParticipants, mergedTabledFields } = useCampaign()
-    const { sectionParams, updateSectionParams } = useSectionState()
+    const { sectionParams, updateSectionParams, initTimeRange } = useSectionState()
 
     const [isFieldSelected, setIsFieldSelected] = useState<{ [key: number]: boolean }>(mergedTabledFields.reduce((acc, field) => {
         acc[field.id] = false
@@ -21,7 +21,7 @@ const ComparisonChart: React.FC<{
     }, {} as { [key: number]: boolean }))
     const selectedFields = useMemo(() => mergedTabledFields.filter(v => isFieldSelected[v.id] || sectionType !== SectionType.TimelineOverview), [isFieldSelected, mergedTabledFields, sectionType])
     const currentSectionParams = useMemo(() => sectionParams[sectionType], [sectionParams, sectionType])
-    const { timeline, bucketSize, loading, error } = useTimeline(sectionType, selectedFields, (chartRef.current?.clientWidth || 0) - 100);
+    const { timeline, bucketSize, loading, error } = useTimeline(sectionType, selectedFields, (chartRef.current?.clientWidth || 0) - 88);
 
     const users = useMemo(() => {
         return Array.from(campaignParticipants.values()).map(v => ({ id: v.uuid, name: v.email }))
@@ -82,7 +82,10 @@ const ComparisonChart: React.FC<{
                                 type="date"
                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                                 value={currentSectionParams.date.toISOString().split('T')[0]}
-                                onChange={(e) => updateSectionParams(sectionType, { date: new Date(e.target.value) })}
+                                onChange={(e) => {
+                                    updateSectionParams(sectionType, { date: new Date(e.target.value) })
+                                    initTimeRange(sectionType)
+                                }}
                             />
                         </div>
                     </div>
