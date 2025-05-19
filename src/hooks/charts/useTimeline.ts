@@ -8,6 +8,7 @@ import useSectionState from "./useSectionState";
 
 export default function useTimeline(type: SectionType, selectedFields: CampaignTableFieldWithTable[], chartWidth: number) {
     const [timeline, setTimeline] = useState<TimelineData[]>([]);
+    const [bucketSize, setBucketSize] = useState<number>(10);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
     const { selectedCampaignId, campaignParticipants } = useCampaign();
@@ -16,7 +17,7 @@ export default function useTimeline(type: SectionType, selectedFields: CampaignT
     const currentSectionParams = useMemo(() => sectionParams[type], [sectionParams, type])
     const currentTimeRange = useMemo(() => timeRange[type], [timeRange, type])
 
-    function getBucketSize(intervalInSec: number): string {
+    function getBucketSize(intervalInSec: number) {
         // unit: seconds
         const candidates = [
             0.001, 0.002, 0.005,       // 1ms, 2ms, 5ms
@@ -30,11 +31,14 @@ export default function useTimeline(type: SectionType, selectedFields: CampaignT
         ];
 
         const nice = candidates.find(v => v >= intervalInSec) || 86400;
+        return nice;
+    }
 
-        if (nice < 1) return `${Math.round(nice * 1000)} milliseconds`;
-        if (nice < 60) return `${nice} seconds`;
-        if (nice < 3600) return `${nice / 60} minutes`;
-        return `${nice / 3600} hours`;
+    function getBucketString(bucketSize: number) {
+        if (bucketSize < 1) return `${Math.round(bucketSize * 1000)} milliseconds`;
+        if (bucketSize < 60) return `${bucketSize} seconds`;
+        if (bucketSize < 3600) return `${bucketSize / 60} minutes`;
+        return `${bucketSize / 3600} hours`;
     }
 
     useEffect(() => {
@@ -44,6 +48,7 @@ export default function useTimeline(type: SectionType, selectedFields: CampaignT
         const intervalInSec = (currentTimeRange.end - currentTimeRange.start) / 1000 / chartWidth; // seconds per pixel
         const pixelPerBucket = 5 // Change this value to change the bucket size
         const bucketSize = getBucketSize(intervalInSec * pixelPerBucket);
+        const bucketString = getBucketString(bucketSize);
 
         setLoading(true);
         setError(null);
@@ -51,19 +56,20 @@ export default function useTimeline(type: SectionType, selectedFields: CampaignT
         async function fetchData() {
             let data: TimelineData[] = [];
             if (type === SectionType.TimelineOverview) {
-                data = await getTimelineOverviewData(selectedFields, currentSectionParams, currentTimeRange, bucketSize);
+                data = await getTimelineOverviewData(selectedFields, currentSectionParams, currentTimeRange, bucketString);
             } else if (type === SectionType.InterPerson) {
-                data = await getInterPersonData(selectedFields, Array.from(campaignParticipants.values()), currentSectionParams, bucketSize);
+                data = await getInterPersonData(selectedFields, Array.from(campaignParticipants.values()), currentSectionParams, bucketString);
             } else if (type === SectionType.IntraPerson) {
-                data = await getIntraPersonData(selectedFields, currentSectionParams, bucketSize);
+                data = await getIntraPersonData(selectedFields, currentSectionParams, bucketString);
             }
 
             setTimeline(data);
+            setBucketSize(bucketSize * 1000);
             setLoading(false);
         }
 
         fetchData();
     }, [selectedCampaignId, currentSectionParams, selectedFields, campaignParticipants, type, currentTimeRange, chartWidth]);
 
-    return { timeline, loading, error };
+    return { timeline, bucketSize, loading, error };
 }   

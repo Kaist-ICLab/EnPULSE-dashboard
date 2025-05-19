@@ -13,7 +13,8 @@ const TimelineChart: React.FC<{
     chartType: 'categorical' | 'numerical';
     baseTime: number;
     data: { timestamp: number[], value: (TimelineNumericalValue | TimelineCategoricalValue)[] };
-}> = ({ id, sectionType, chartType, baseTime, data }) => {
+    bucketSize: number;
+}> = ({ id, sectionType, chartType, baseTime, data, bucketSize }) => {
     const { timeRange, updateTimeRange, initTimeRange } = useSectionState()
     const currentTimeRange = useMemo(() => timeRange[sectionType], [timeRange, sectionType])
 
@@ -49,6 +50,8 @@ const TimelineChart: React.FC<{
             bargap: 0.1,
             barmode: 'stack',
             dragmode: 'zoom',
+            hovermode: 'x',
+            hoverdistance: 10000,
             showlegend: chartType === 'categorical',
             legend: {
                 x: 0.5,
@@ -95,8 +98,8 @@ const TimelineChart: React.FC<{
                     },
                     hovertemplate: values.map((v, i) =>
                         singleDataMask[i]
-                            ? `Time: ${formatTime(data.timestamp[i])} ~ ${formatTime(data.timestamp[i + 1])}<br>Value: ${v.avg_value.toFixed(2)}<extra></extra>`
-                            : `Time: ${formatTime(data.timestamp[i])} ~ ${formatTime(data.timestamp[i + 1])}<br>Average: ${v.avg_value.toFixed(2)}<br>Min: ${v.min_value.toFixed(2)}<br>Max: ${v.max_value.toFixed(2)}<extra></extra>`
+                            ? `Time: ${formatTime(data.timestamp[i])} ~ ${formatTime(data.timestamp[i] + bucketSize)}<br>Value: ${v.avg_value.toFixed(2)}<extra></extra>`
+                            : `Time: ${formatTime(data.timestamp[i])} ~ ${formatTime(data.timestamp[i] + bucketSize)}<br>Average: ${v.avg_value.toFixed(2)}<br>Min: ${v.min_value.toFixed(2)}<br>Max: ${v.max_value.toFixed(2)}<extra></extra>`
                     )
                 },
                 {

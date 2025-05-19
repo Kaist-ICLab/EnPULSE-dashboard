@@ -10,7 +10,8 @@ import useSectionState from '@/hooks/charts/useSectionState';
 const ChartContainer: React.FC<{
     timelines: TimelineData[];
     sectionType: SectionType;
-}> = ({ timelines, sectionType }) => {
+    bucketSize: number;
+}> = ({ timelines, sectionType, bucketSize }) => {
     const { updateSectionParams, chartPinQuery, updatePinQuery } = useSectionState()
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
@@ -94,7 +95,9 @@ const ChartContainer: React.FC<{
                     pinned={true}
                     onPin={() => setPinnedChart(sectionType, null)}
                     isSelected={selectedChart === timeline.id}
-                    setSelectedChart={(p) => setSelectedChart(p)} />
+                    setSelectedChart={(p) => setSelectedChart(p)}
+                    bucketSize={bucketSize}
+                />
             )}
             <DnDProvider
                 items={chartOrder.filter(id => id !== pinnedChart)}
@@ -107,7 +110,9 @@ const ChartContainer: React.FC<{
                         pinned={pinnedChart === id}
                         onPin={(pinned) => setPinnedChart(sectionType, pinned ? timelines.find(d => d.id === id)!.params : null)}
                         isSelected={selectedChart === id}
-                        setSelectedChart={(p) => setSelectedChart(p)} />
+                        setSelectedChart={(p) => setSelectedChart(p)}
+                        bucketSize={bucketSize}
+                    />
                 ))}
             </DnDProvider>
             <div className='flex flex-row justify-center items-center'>
@@ -128,7 +133,8 @@ const ChartItem: React.FC<{
     onPin: (pinned: boolean) => void;
     isSelected: boolean;
     setSelectedChart: (id: string | null) => void;
-}> = ({ timeline, sectionType, pinned, onPin, isSelected, setSelectedChart }) => {
+    bucketSize: number;
+}> = ({ timeline, sectionType, pinned, onPin, isSelected, setSelectedChart, bucketSize }) => {
     if (!timeline) return
 
     return (
@@ -157,6 +163,7 @@ const ChartItem: React.FC<{
                     chartType={timeline.chartType}
                     baseTime={timeline.params.date.getTime()}
                     data={{ timestamp: timeline.timestamp, value: timeline.value }}
+                    bucketSize={bucketSize}
                 />
             </div>
         </DnDItem>

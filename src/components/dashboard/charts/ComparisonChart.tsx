@@ -22,7 +22,7 @@ const ComparisonChart: React.FC<{
     }, {} as { [key: number]: boolean }))
     const selectedFields = useMemo(() => mergedTabledFields.filter(v => isFieldSelected[v.id] || sectionType !== SectionType.TimelineOverview), [isFieldSelected, mergedTabledFields, sectionType])
     const currentSectionParams = useMemo(() => sectionParams[sectionType], [sectionParams, sectionType])
-    const { timeline, loading, error } = useTimeline(sectionType, selectedFields, (chartRef.current?.clientWidth || 0) - 100);
+    const { timeline, bucketSize, loading, error } = useTimeline(sectionType, selectedFields, (chartRef.current?.clientWidth || 0) - 100);
 
     const users = useMemo(() => {
         return Array.from(campaignParticipants.values()).map(v => ({ id: v.uuid, name: v.email }))
@@ -97,6 +97,7 @@ const ComparisonChart: React.FC<{
                     {timeline.length > 0 && <ChartContainer
                         timelines={timeline.filter(v => (isFieldSelected[v.params.fieldId] || sectionType !== SectionType.TimelineOverview))}
                         sectionType={sectionType}
+                        bucketSize={bucketSize}
                     />
                     }
                 </div>
