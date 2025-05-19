@@ -1,7 +1,7 @@
 'use client'
 
 import useSectionState from "@/hooks/charts/useSectionState";
-import { SectionType } from "@/types/chart";
+import { SectionType, TimelineCategoricalValue, TimelineNumericalValue } from "@/types/chart";
 import { PlotlyRelayoutEvent } from "@/types/plotlyEvent";
 import { createPlot, loadPlotly } from "@/utils/plotlyLoader";
 import { Config, Data, Layout } from "plotly.js-dist-min";
@@ -12,7 +12,7 @@ const TimelineChart: React.FC<{
     sectionType: SectionType;
     chartType: 'categorical' | 'numerical';
     baseTime: number;
-    data: { timestamp: number[], value: (string | number)[] };
+    data: { timestamp: number[], value: (TimelineNumericalValue | TimelineCategoricalValue)[] };
 }> = ({ id, sectionType, chartType, baseTime, data }) => {
     const { timeRange, updateTimeRange, initTimeRange } = useSectionState()
     const currentTimeRange = useMemo(() => timeRange[sectionType], [timeRange, sectionType])
@@ -46,7 +46,8 @@ const TimelineChart: React.FC<{
                 range: [baseTime + currentTimeRange.start, baseTime + currentTimeRange.end],
                 visible: false
             },
-            bargap: 0.01,
+            bargap: 0.1,
+            barmode: 'stack',
             dragmode: 'zoom',
             showlegend: chartType === 'categorical',
             legend: {
@@ -65,19 +66,67 @@ const TimelineChart: React.FC<{
             displaylogo: false,
             scrollZoom: false,
         };
+
         let plotData: Data[] = [];
         if (chartType === 'numerical') {
-            plotData = [{
-                x: data.timestamp,
-                y: data.value,
-                type: 'bar',
-                marker: {
-                    color: '#3b82f6'
+            const values = data.value as TimelineNumericalValue[]
+            const singleDataMask = values.map(v => v.avg_value === v.min_value && v.avg_value === v.max_value)
+
+            const formatTime = (timestamp: number) => {
+                const date = new Date(timestamp);
+                return date.toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                });
+            };
+
+            plotData = [
+                {
+                    x: data.timestamp,
+                    y: values.map(v => v.avg_value),
+                    type: 'bar',
+                    marker: {
+                        color: '#3b82f6'
+                    },
+                    hovertemplate: values.map((v, i) =>
+                        singleDataMask[i]
+                            ? `Time: ${formatTime(data.timestamp[i])} ~ ${formatTime(data.timestamp[i + 1])}<br>Value: ${v.avg_value.toFixed(2)}<extra></extra>`
+                            : `Time: ${formatTime(data.timestamp[i])} ~ ${formatTime(data.timestamp[i + 1])}<br>Average: ${v.avg_value.toFixed(2)}<br>Min: ${v.min_value.toFixed(2)}<br>Max: ${v.max_value.toFixed(2)}<extra></extra>`
+                    )
+                },
+                {
+                    x: data.timestamp.filter((_, i) => !singleDataMask[i]),
+                    y: values.filter((_, i) => !singleDataMask[i]).map(v => v.min_value),
+                    type: 'scatter',
+                    mode: 'markers',
+                    marker: {
+                        color: '#f59e0b',
+                        symbol: 'square',
+                        size: 5,
+                    },
+                    hoverinfo: 'skip'
+                },
+                {
+                    x: data.timestamp.filter((_, i) => !singleDataMask[i]),
+                    y: values.filter((_, i) => !singleDataMask[i]).map(v => v.max_value),
+                    type: 'scatter',
+                    mode: 'markers',
+                    marker: {
+                        color: '#10b981',
+                        symbol: 'square',
+                        size: 5,
+                    },
+                    hoverinfo: 'skip'
                 }
-            }];
+            ];
         } else {
             // Create a map of unique categories to colors
-            const uniqueCategories = [...new Set(data.value as string[])].sort();
+            const uniqueCategories = [...new Set(data.value.map(v => (v as TimelineCategoricalValue).value))].sort();
 
             if (uniqueCategories.length == 0) {
                 colorQueue.current = null
@@ -86,7 +135,7 @@ const TimelineChart: React.FC<{
             }
 
             uniqueCategories.forEach((category, i) => {
-                const x = data.timestamp.filter((_, i) => data.value[i] === category)
+                const x = data.timestamp.filter((_, i) => (data.value[i] as TimelineCategoricalValue).value === category)
                 const colorIndexEntry = colorQueue.current?.filter(item => item.traceIndex === i)[0]
                 const colorIndex = colorIndexEntry?.colorIndex ?? -1
                 plotData.push({

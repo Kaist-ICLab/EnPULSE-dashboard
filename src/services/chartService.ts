@@ -98,12 +98,12 @@ export async function getTimelineOverviewData(fields: CampaignTableFieldWithTabl
             chartType: (v.field_type === "categorical" ? "categorical" : "numerical") as ("categorical" | "numerical"),
             params: { ...params, fieldId: v.id },
             timestamp,
-            value: data[idx] ? data[idx].map(d => d.avg_value) : []
+            value: data[idx] ? data[idx].map(d => ({ avg_value: d.avg_value, min_value: d.min_value, max_value: d.max_value })) : []
         }
     ))
 }
 
-export async function getInterPersonData(fields: CampaignTableFieldWithTable[], participants: CampaignParticipant[], params: ChartParams) {
+export async function getInterPersonData(fields: CampaignTableFieldWithTable[], participants: CampaignParticipant[], params: ChartParams, bucketSize: string) {
     const { date, fieldId } = params;
     const field = fields.find(v => v.id === fieldId)
     if (!field) throw new Error('Field not found');
@@ -125,7 +125,7 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
             uuid: p.uuid,
             table_name: tableName,
             column_name: columnName,
-            bucket_unit: '60 seconds',
+            bucket_unit: bucketSize,
         })
     }) as BucketData
 
@@ -138,12 +138,12 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
             chartType: (field.field_type === "categorical" ? "categorical" : "numerical") as ("categorical" | "numerical"),
             params: { ...params, uuid: p.uuid },
             timestamp: data[idx].map(d => new Date(d.bucket).getTime()),
-            value: data[idx].map(d => d.avg_value)
+            value: data[idx].map(d => ({ avg_value: d.avg_value, min_value: d.min_value, max_value: d.max_value }))
         }
     ))
 }
 
-export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], params: ChartParams) {
+export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], params: ChartParams, bucketSize: string) {
     const { date, fieldId, uuid } = params;
 
     const field = fields.find(v => v.id === fieldId)
@@ -161,7 +161,7 @@ export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], 
             uuid: uuid,
             table_name: tableName,
             column_name: columnName,
-            bucket_unit: '60 seconds',
+            bucket_unit: bucketSize,
         })
 
         // return supabase
@@ -180,6 +180,6 @@ export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], 
         chartType: (field.field_type === "categorical" ? "categorical" : "numerical") as ("categorical" | "numerical"),
         params: { ...params, date: d },
         timestamp: data[idx].map(v => new Date(v.bucket).getTime()),
-        value: data[idx].map(v => v.avg_value)
+        value: data[idx].map(v => ({ avg_value: v.avg_value, min_value: v.min_value, max_value: v.max_value }))
     }))
 }
