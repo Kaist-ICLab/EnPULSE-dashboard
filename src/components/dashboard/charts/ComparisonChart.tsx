@@ -11,7 +11,6 @@ import useSectionState from "@/hooks/charts/useSectionState";
 const ComparisonChart: React.FC<{
     sectionType: SectionType;
 }> = ({ sectionType }) => {
-    console.log('ComparisonChart', sectionType)
     const chartRef = useRef<HTMLDivElement>(null);
     const { campaignParticipants, mergedTabledFields } = useCampaign()
     const { sectionParams, updateSectionParams } = useSectionState()

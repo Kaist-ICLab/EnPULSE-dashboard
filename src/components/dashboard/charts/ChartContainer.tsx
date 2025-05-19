@@ -3,7 +3,7 @@ import TimelineChart from '@/components/dashboard/charts/TimelineChart';
 import TimelineXAxis from '@/components/dashboard/charts/TimelineXAxis';
 import { DnDProvider, DnDItem, DragHandle } from '@/components/common/DnDList';
 import { Button } from 'flowbite-react';
-import { TimelineData, SectionType, ChartParams } from '@/types/chart';
+import { TimelineData, SectionType } from '@/types/chart';
 import Link from 'next/link';
 import useSectionState from '@/hooks/charts/useSectionState';
 
@@ -32,16 +32,6 @@ const ChartContainer: React.FC<{
                 return timelines.find(t => t.params.fieldId === chartPinQuery[SectionType.TimelineOverview]?.fieldId)?.id || null
         }
     }, [sectionType, timelines, chartPinQuery])
-
-    const setPinnedChart = (chartType: SectionType, params: ChartParams | null) => {
-        if (chartType == SectionType.IntraPerson) {
-            updatePinQuery(chartType, params ? { date: params.date } : null)
-        } else if (chartType == SectionType.InterPerson) {
-            updatePinQuery(chartType, params ? { uuid: params.uuid } : null)
-        } else if (chartType == SectionType.TimelineOverview) {
-            updatePinQuery(chartType, params ? { fieldId: params.fieldId } : null)
-        }
-    }
 
     const comparisonName = {
         [SectionType.InterPerson]: "Participants",
@@ -75,7 +65,7 @@ const ChartContainer: React.FC<{
                                             onClick={() => {
                                                 const params = timelines.find(t => t.id === selectedChart)!.params
                                                 updateSectionParams(type as SectionType, params)
-                                                setPinnedChart(type as SectionType, params)
+                                                updatePinQuery(type as SectionType, params)
                                             }}
                                         >
                                             <span>{value}</span>
@@ -93,7 +83,6 @@ const ChartContainer: React.FC<{
                     timeline={timeline}
                     sectionType={sectionType}
                     pinned={true}
-                    onPin={() => setPinnedChart(sectionType, null)}
                     isSelected={selectedChart === timeline.id}
                     setSelectedChart={(p) => setSelectedChart(p)}
                     bucketSize={bucketSize}
@@ -108,7 +97,6 @@ const ChartContainer: React.FC<{
                         timeline={timelines.find(d => d.id === id)!}
                         sectionType={sectionType}
                         pinned={pinnedChart === id}
-                        onPin={(pinned) => setPinnedChart(sectionType, pinned ? timelines.find(d => d.id === id)!.params : null)}
                         isSelected={selectedChart === id}
                         setSelectedChart={(p) => setSelectedChart(p)}
                         bucketSize={bucketSize}
@@ -130,11 +118,12 @@ const ChartItem: React.FC<{
     timeline: TimelineData;
     sectionType: SectionType;
     pinned: boolean;
-    onPin: (pinned: boolean) => void;
     isSelected: boolean;
     setSelectedChart: (id: string | null) => void;
     bucketSize: number;
-}> = ({ timeline, sectionType, pinned, onPin, isSelected, setSelectedChart, bucketSize }) => {
+}> = ({ timeline, sectionType, pinned, isSelected, setSelectedChart, bucketSize }) => {
+    const { updatePinQuery } = useSectionState()
+
     if (!timeline) return
 
     return (
@@ -148,7 +137,7 @@ const ChartItem: React.FC<{
                 <div className='flex flex-col w-12 mr-8'>
                     <div className='text-sm overflow-ellipsis'>{timeline.title}</div>
                     <button className='text-gray-400 w-6 cursor-pointer' onClick={() => {
-                        onPin(!pinned);
+                        updatePinQuery(sectionType, pinned ? null : timeline.params)
                     }}>
                         {pinned ? <span className="w-6 h-6 icon-[mdi--pin-off]" /> : <span className="w-6 h-6 icon-[mdi--pin]" />}
                     </button>

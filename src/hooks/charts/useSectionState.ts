@@ -1,4 +1,4 @@
-import { ChartParams, ChartPinQuery, ChartPinQueryOption, SectionType } from "@/types/chart";
+import { ChartParams, ChartPinQuery, SectionType } from "@/types/chart";
 import { create } from "zustand";
 
 export const sectionTypes = Object.freeze([
@@ -16,7 +16,7 @@ interface SectionState {
     updateTimeRange: (key: string, range: { start: number, end: number }) => void
     initTimeRange: (key: string) => void
     initPinQuery: (key: SectionType) => void
-    updatePinQuery: (key: SectionType, pinQuery: ChartPinQueryOption) => void
+    updatePinQuery: (key: SectionType, params: ChartParams | null) => void
 }
 
 const useSectionState = create<SectionState>((set) => ({
@@ -74,10 +74,20 @@ const useSectionState = create<SectionState>((set) => ({
         }))
     },
 
-    updatePinQuery: (key: SectionType, chartPinQuery: ChartPinQueryOption) => {
-        set(state => ({
-            chartPinQuery: { ...state.chartPinQuery, [key]: chartPinQuery }
-        }))
+    updatePinQuery: (key: SectionType, params: ChartParams | null) => {
+        if (key == SectionType.IntraPerson) {
+            set(state => ({
+                chartPinQuery: { ...state.chartPinQuery, [key]: params }
+            }))
+        } else if (key == SectionType.InterPerson) {
+            set(state => ({
+                chartPinQuery: { ...state.chartPinQuery, [key]: params }
+            }))
+        } else if (key == SectionType.TimelineOverview) {
+            set(state => ({
+                chartPinQuery: { ...state.chartPinQuery, [key]: params }
+            }))
+        }
     }
 }))
 

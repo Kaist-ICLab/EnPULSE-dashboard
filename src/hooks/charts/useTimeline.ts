@@ -11,6 +11,7 @@ export default function useTimeline(type: SectionType, selectedFields: CampaignT
     const [bucketSize, setBucketSize] = useState<number>(10);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
+
     const { selectedCampaignId, campaignParticipants } = useCampaign();
     const { sectionParams, timeRange } = useSectionState()
 
