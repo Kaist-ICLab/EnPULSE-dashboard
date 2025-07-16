@@ -3,13 +3,12 @@
 import { useEffect, useMemo, useRef } from "react";
 import { loadPlotly } from "@/utils/plotlyLoader";
 import { PlotlyRelayoutEvent } from "@/types/plotlyEvent";
-import useSectionState from "@/hooks/charts/useSectionState";
+import useSectionState from "@/hooks/useSectionState";
 import { SectionType } from "@/types/chart";
 
 const TimelineXAxis: React.FC<{
-    id: string;
     sectionType: SectionType;
-}> = ({ id, sectionType }) => {
+}> = ({ sectionType }) => {
     const { timeRange, updateTimeRange } = useSectionState()
 
     const currentTimeRange = useMemo(() => {
@@ -85,7 +84,7 @@ const TimelineXAxis: React.FC<{
                 }).catch(console.error);
             }
         };
-    }, [id, currentTimeRange, sectionType, updateTimeRange]);
+    }, [currentTimeRange, sectionType, updateTimeRange]);
 
     return (
         <div className='w-full flex flex-row justify-center items-center'>

@@ -3,13 +3,13 @@ import DashboardCard from "@/components/campaign/DashboardCard";
 import { ComparisonChart } from "@/components/dashboard/charts/ComparisonChart";
 import UserDailyStatTable from "@/components/dashboard/UserDailyTable";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
-import { sectionTypes } from "@/hooks/charts/useSectionState";
+import { sectionTypes } from "@/hooks/useSectionState";
 import { CampaignParticipant } from "@/types/campaign";
 import { Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 
 const Page = () => {
-    console.log('yeet')
+    console.log('page')
     const [lastLoaded, setLastLoaded] = useState<Date | null>(null)
     const [sendTo, setSendTo] = useState<CampaignParticipant[]>([]);
     const [messageModalVisible, setMessageModalVisible] = useState<boolean>(false);

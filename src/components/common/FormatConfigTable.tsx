@@ -10,8 +10,8 @@ const FormatConfigTable: React.FC<{
     canAddField: boolean | undefined;
     onFieldChange: (fieldId: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void;
     addField: (field: CampaignTableField) => void,
-    setDailyCountThreshold: (threshold: number) => void;
     dailyCountThreshold: number;
+    setDailyCountThreshold: (threshold: number) => void;
 }> = ({ currentTableFields, onFieldChange, addField, setDailyCountThreshold, dailyCountThreshold, canAddField = false }) => {
     const [fieldName, setFieldName] = useState('')
     const [fieldRole, setFieldRole] = useState<FieldRole>('data')

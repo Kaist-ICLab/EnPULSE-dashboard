@@ -1,24 +1,25 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import TimelineChart from '@/components/dashboard/charts/TimelineChart';
 import TimelineXAxis from '@/components/dashboard/charts/TimelineXAxis';
 import { DnDProvider, DnDItem, DragHandle } from '@/components/common/DnDList';
 import { Button } from 'flowbite-react';
 import { TimelineData, SectionType } from '@/types/chart';
 import Link from 'next/link';
-import useSectionState from '@/hooks/charts/useSectionState';
+import useSectionState from '@/hooks/useSectionState';
 
 const ChartContainer: React.FC<{
     timelines: TimelineData[];
     sectionType: SectionType;
     bucketSize: number;
 }> = ({ timelines, sectionType, bucketSize }) => {
+    console.log('ChartContainer', sectionType)
     const { updateSectionParams, chartPinQuery, updatePinQuery } = useSectionState()
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
 
-    useEffect(() => {
-        setChartOrder(timelines.map((d) => d.id))
-    }, [timelines])
+    // useEffect(() => {
+    //     setChartOrder(timelines.map((d) => d.id))
+    // }, [timelines])
 
     const pinnedChart = useMemo(() => {
         if (chartPinQuery[sectionType] == null) return null
@@ -79,7 +80,8 @@ const ChartContainer: React.FC<{
                 </div>
             </div>
             {timelines.filter(d => d.id === pinnedChart).map((timeline) =>
-                <ChartItem key={timeline.id}
+                <ChartItem
+                    key={timeline.id}
                     timeline={timeline}
                     sectionType={sectionType}
                     pinned={true}
@@ -93,7 +95,8 @@ const ChartContainer: React.FC<{
                 onItemsChange={setChartOrder}
             >
                 {chartOrder.filter(id => id !== pinnedChart).map((id) => (
-                    <ChartItem key={id}
+                    <ChartItem
+                        key={id}
                         timeline={timelines.find(d => d.id === id)!}
                         sectionType={sectionType}
                         pinned={pinnedChart === id}
@@ -106,7 +109,6 @@ const ChartContainer: React.FC<{
             <div className='flex flex-row justify-center items-center'>
                 <div className='w-12'></div>
                 <TimelineXAxis
-                    id="xaxis"
                     sectionType={sectionType}
                 />
             </div>
@@ -147,7 +149,6 @@ const ChartItem: React.FC<{
                 className={`grow flex flex-row justify-center items-center cursor-pointer transition-colors`}
             >
                 <TimelineChart
-                    id={timeline.id}
                     sectionType={sectionType}
                     chartType={timeline.chartType}
                     baseTime={timeline.params.date.getTime()}

@@ -1,6 +1,6 @@
 'use client'
 
-import useSectionState from "@/hooks/charts/useSectionState";
+import useSectionState from "@/hooks/useSectionState";
 import { SectionType, TimelineCategoricalValue, TimelineNumericalValue } from "@/types/chart";
 import { PlotlyRelayoutEvent } from "@/types/plotlyEvent";
 import { createPlot, loadPlotly } from "@/utils/plotlyLoader";
@@ -21,13 +21,12 @@ const formatTime = (timestamp: number) => {
 };
 
 const TimelineChart: React.FC<{
-    id: string;
     sectionType: SectionType;
     chartType: 'categorical' | 'numerical';
     baseTime: number;
     data: { timestamp: number[], value: (TimelineNumericalValue | TimelineCategoricalValue)[] };
     bucketSize: number;
-}> = ({ id, sectionType, chartType, baseTime, data, bucketSize }) => {
+}> = ({ sectionType, chartType, baseTime, data, bucketSize }) => {
     const { timeRange, updateTimeRange, initTimeRange } = useSectionState()
     const currentTimeRange = useMemo(() => timeRange[sectionType], [timeRange, sectionType])
 
@@ -251,7 +250,7 @@ const TimelineChart: React.FC<{
                 }).catch(console.error);
             }
         };
-    }, [data, currentTimeRange, baseTime, id, chartType, sectionType, bucketSize, updateTimeRange, initTimeRange]);
+    }, [data, currentTimeRange, baseTime, chartType, sectionType, bucketSize, updateTimeRange, initTimeRange]);
 
     return (
         <div className='w-full flex flex-row justify-center items-center'>

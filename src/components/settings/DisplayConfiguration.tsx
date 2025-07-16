@@ -94,6 +94,7 @@ const DisplayConfiguration: React.FC = () => {
                 </Button>
             </div>
             <FormatConfigTable
+                canAddField={false}
                 currentTableFields={currentTableFields}
                 onFieldChange={(fieldId, fieldName, fieldValue) => {
                     const field = currentTableFields.find(field => field.id == fieldId);

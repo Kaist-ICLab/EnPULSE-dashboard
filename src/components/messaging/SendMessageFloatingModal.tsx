@@ -1,5 +1,5 @@
 import useCampaign from '@/hooks/useCampaign';
-import useSendMessage from '@/hooks/messaging/sendMessage';
+import useSendMessage from '@/hooks/messaging/useSendMessage';
 import React, { useState } from 'react';
 import EmailAutocompleteInput from './EmailAutocompleteInput';
 import { CampaignParticipant } from '@/types/campaign';

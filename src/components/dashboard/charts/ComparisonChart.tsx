@@ -6,11 +6,12 @@ import { SectionType } from "@/types/chart";
 import { Card, Select, Spinner } from "flowbite-react";
 import { useMemo, useRef, useState } from "react";
 import SensorDropdown from "../SensorDropdown";
-import useSectionState from "@/hooks/charts/useSectionState";
+import useSectionState from "@/hooks/useSectionState";
 
 const ComparisonChart: React.FC<{
     sectionType: SectionType;
 }> = ({ sectionType }) => {
+    console.log('ComparisonChart', sectionType)
     const chartRef = useRef<HTMLDivElement>(null);
     const { campaignParticipants, mergedTabledFields } = useCampaign()
     const { sectionParams, updateSectionParams, initTimeRange } = useSectionState()

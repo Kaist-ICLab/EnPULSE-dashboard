@@ -2,16 +2,6 @@ import { supabase } from '@/lib/supabase';
 import { mapQuery } from '@/lib/supabaseHelper';
 import { ChatSession, ChatSessionWithEmail, Message } from '@/types/message';
 
-export const getUuidByEmail = async (email: string[]): Promise<string[]> => {
-    const emails = await mapQuery(email, e => {
-        return supabase.from('profiles')
-            .select(`uuid`)
-            .eq('email', e)
-    })
-
-    return emails.map(v => v?.at(0)?.uuid)
-}
-
 export const getEmailByUuid = async (uuid: string): Promise<string> => {
     const { data, error } = await supabase
         .from('profiles')

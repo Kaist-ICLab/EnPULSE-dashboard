@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import useCampaign from "@/hooks/useCampaign";
-import useSectionState, { sectionTypes } from "@/hooks/charts/useSectionState";
+import useSectionState, { sectionTypes } from "@/hooks/useSectionState";
 
 const SectionStateInitProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { campaignParticipants, campaignTableFields } = useCampaign();

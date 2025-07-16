@@ -3,11 +3,11 @@ import useUserDailyStat, { UserDailyStat } from "@/hooks/charts/useUserDailyStat
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Select, Spinner, Tooltip } from "flowbite-react";
 import { useDailyStatTableCheckedState } from "@/hooks/charts/useDailyStatTableCheckedState";
-import { usePaging } from "@/hooks/legacy/usePaging";
+import { usePaging } from "@/hooks/usePaging";
 import Link from "next/link";
 import { CampaignParticipant } from "@/types/campaign";
 import { SectionType } from "@/types/chart";
-import useSectionState from "@/hooks/charts/useSectionState";
+import useSectionState from "@/hooks/useSectionState";
 
 const getLevelColor = (level: number): string => {
     const levels = [
