@@ -1,21 +1,43 @@
 'use client'
 
+import useSectionState from "@/hooks/charts/useSectionState";
+import { SectionType, TimelineCategoricalValue, TimelineNumericalValue } from "@/types/chart";
 import { PlotlyRelayoutEvent } from "@/types/plotlyEvent";
 import { createPlot, loadPlotly } from "@/utils/plotlyLoader";
 import { Config, Data, Layout } from "plotly.js-dist-min";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
+
+const formatTime = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+};
 
 const TimelineChart: React.FC<{
     id: string;
+    sectionType: SectionType;
     chartType: 'categorical' | 'numerical';
-    timeRange: { start: number, end: number };
-    data: { timestamp: number[], value: (string | number)[] };
-    onComplete: (timeRange: { start: number, end: number }) => void;
-}> = ({ id, data, chartType, timeRange, onComplete }) => {
+    baseTime: number;
+    data: { timestamp: number[], value: (TimelineNumericalValue | TimelineCategoricalValue)[] };
+    bucketSize: number;
+}> = ({ id, sectionType, chartType, baseTime, data, bucketSize }) => {
+    const { timeRange, updateTimeRange, initTimeRange } = useSectionState()
+    const currentTimeRange = useMemo(() => timeRange[sectionType], [timeRange, sectionType])
+
     const chartRef = useRef<HTMLDivElement>(null);
-    const initialTimeRangeRef = useRef<{ start: number, end: number } | null>(null);
     // Store original colors for each trace
     const colorQueue = useRef<{ traceIndex: number, colorIndex: number }[] | null>(null)
+
+    useEffect(() => {
+        initTimeRange(sectionType)
+    }, [sectionType, initTimeRange])
 
     useEffect(() => {
         const colors = [
@@ -35,11 +57,14 @@ const TimelineChart: React.FC<{
             paper_bgcolor: 'white',
             xaxis: {
                 type: 'date',
-                range: [timeRange.start, timeRange.end],
+                range: [baseTime + currentTimeRange.start, baseTime + currentTimeRange.end],
                 visible: false
             },
-            bargap: 0.01,
+            bargap: 0.1,
+            barmode: 'stack',
             dragmode: 'zoom',
+            hovermode: 'x',
+            hoverdistance: 10000,
             showlegend: chartType === 'categorical',
             legend: {
                 x: 0.5,
@@ -57,60 +82,105 @@ const TimelineChart: React.FC<{
             displaylogo: false,
             scrollZoom: false,
         };
+
         let plotData: Data[] = [];
         if (chartType === 'numerical') {
-            plotData = [{
-                x: data.timestamp,
-                y: data.value,
-                type: 'bar',
-                marker: {
-                    color: '#3b82f6'
+            const values = data.value as TimelineNumericalValue[]
+            const singleDataMask = values.map(v => v.avg_value === v.min_value && v.avg_value === v.max_value)
+
+            plotData = [
+                {
+                    x: data.timestamp,
+                    y: values.map(v => v.avg_value),
+                    type: 'bar',
+                    marker: {
+                        color: '#3b82f6'
+                    },
+                    hovertemplate: values.map((v, i) =>
+                        singleDataMask[i]
+                            ? `Time: ${formatTime(data.timestamp[i])} ~ ${formatTime(data.timestamp[i] + bucketSize)}<br>Value: ${v.avg_value.toFixed(2)}<extra></extra>`
+                            : `Time: ${formatTime(data.timestamp[i])} ~ ${formatTime(data.timestamp[i] + bucketSize)}<br>Average: ${v.avg_value.toFixed(2)}<br>Min: ${v.min_value.toFixed(2)}<br>Max: ${v.max_value.toFixed(2)}<extra></extra>`
+                    )
+                },
+                {
+                    x: data.timestamp.filter((_, i) => !singleDataMask[i]),
+                    y: values.filter((_, i) => !singleDataMask[i]).map(v => v.min_value),
+                    type: 'scatter',
+                    mode: 'markers',
+                    marker: {
+                        color: '#f59e0b',
+                        symbol: 'square',
+                        size: 5,
+                    },
+                    hoverinfo: 'skip'
+                },
+                {
+                    x: data.timestamp.filter((_, i) => !singleDataMask[i]),
+                    y: values.filter((_, i) => !singleDataMask[i]).map(v => v.max_value),
+                    type: 'scatter',
+                    mode: 'markers',
+                    marker: {
+                        color: '#10b981',
+                        symbol: 'square',
+                        size: 5,
+                    },
+                    hoverinfo: 'skip'
                 }
-            }];
+            ];
         } else {
             // Create a map of unique categories to colors
-            const uniqueCategories = [...new Set(data.value as string[])].sort();
-            if (colorQueue.current == null) {
+            const values = data.value as TimelineCategoricalValue[]
+            const uniqueCategories = [...new Set(values.map(v => v.value))].sort();
+
+            if (uniqueCategories.length == 0) {
+                colorQueue.current = null
+            } else if (colorQueue.current == null) {
                 colorQueue.current = uniqueCategories.filter((_, i) => i < colors.length).map((_, i) => ({ traceIndex: i, colorIndex: i }))
             }
 
-            uniqueCategories.forEach((category, i) => {
-                const x = data.timestamp.filter((_, i) => data.value[i] === category)
-                const colorIndexEntry = colorQueue.current?.filter(item => item.traceIndex === i)[0]
+            // Sort categories based on colorQueue
+            uniqueCategories.forEach(category => {
+                const x = data.timestamp.filter((_, i) => values[i].value === category)
+                const colorIndexEntry = colorQueue.current?.filter(item => item.traceIndex === uniqueCategories.indexOf(category))[0]
                 const colorIndex = colorIndexEntry?.colorIndex ?? -1
                 plotData.push({
                     x,
-                    y: Array(x.length).fill(1),
+                    y: values.filter((_, i) => values[i].value === category).map(v => v.count),
                     type: 'bar',
                     name: category,
                     marker: {
                         color: colorIndex !== -1 ? colors[colorIndex] : gray
                     },
                     legendgroup: category,
-                    showlegend: true
+                    showlegend: true,
                 })
+            })
+
+            const uniqueTimestamps = [...new Set(data.timestamp)]
+            plotData.push({
+                x: uniqueTimestamps,
+                y: uniqueTimestamps.map(() => 0),
+                type: 'bar',
+                name: 'Total',
+                marker: {
+                    color: 'rgba(0, 0, 0, 0)',
+                    opacity: 0
+                },
+                showlegend: false,
+                hovertemplate: uniqueTimestamps.map(v => `Time: ${formatTime(v)} ~ ${formatTime(v + bucketSize)}<extra></extra>`)
             })
         }
 
         createPlot(chartRef.current, plotData, layout, config)
             .then((plot) => {
-                // Store the initial time range
-                if (!initialTimeRangeRef.current) {
-                    const xaxis = plot._fullLayout.xaxis;
-                    initialTimeRangeRef.current = {
-                        start: new Date(xaxis.range[0]).getTime(),
-                        end: new Date(xaxis.range[1]).getTime()
-                    };
-                }
-
                 const handleRelayout = (event: PlotlyRelayoutEvent) => {
-                    console.log(event);
                     if (event["xaxis.range[0]"] && event["xaxis.range[1]"]) {
                         const start = new Date(event["xaxis.range[0]"]).getTime();
                         const end = new Date(event["xaxis.range[1]"]).getTime();
-                        onComplete({ start, end });
+                        updateTimeRange(sectionType, { start: start - baseTime, end: end - baseTime });
+
                     } else if (event['xaxis.autorange'] && event['yaxis.autorange']) {
-                        onComplete(initialTimeRangeRef.current ?? timeRange);
+                        initTimeRange(sectionType)
                     }
                 };
 
@@ -118,7 +188,6 @@ const TimelineChart: React.FC<{
 
                 // Add event handler for legend clicks
                 plot.on("plotly_legendclick", (event: { curveNumber: number }) => {
-                    console.log('click')
                     if (colorQueue.current == null) return
                     // Get the clicked trace index
                     const traceIndex = event.curveNumber;
@@ -149,8 +218,6 @@ const TimelineChart: React.FC<{
                         const spliceIndex = colorQueue.current.findIndex(item => item.traceIndex === traceIndex)
                         colorQueue.current.splice(spliceIndex, 1)
                     }
-
-                    console.log(traceIndex, colorQueue.current)
 
                     // Update the trace color based on visibility
                     loadPlotly().then(Plotly => {
@@ -184,7 +251,7 @@ const TimelineChart: React.FC<{
                 }).catch(console.error);
             }
         };
-    }, [data, timeRange, id, chartType, onComplete]);
+    }, [data, currentTimeRange, baseTime, id, chartType, sectionType, bucketSize, updateTimeRange, initTimeRange]);
 
     return (
         <div className='w-full flex flex-row justify-center items-center'>

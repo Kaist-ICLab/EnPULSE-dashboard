@@ -9,10 +9,8 @@ const CampaignsPage: React.FC = () => {
     const { campaigns, fetchCampaigns } = useCampaign();
     useEffect(() => {
         fetchCampaigns();
-    }, []);
-    useEffect(() => {
-        console.log(campaigns);
-    }, [campaigns]);
+    }, [fetchCampaigns]);
+
     return (
         <div className="w-full min-h-screen bg-gray-50 flex flex-row ">
             <aside className="min-h-screen w-64 flex flex-col border-r border-gray-200">
@@ -20,7 +18,7 @@ const CampaignsPage: React.FC = () => {
             </aside>
             <div className="flex flex-col w-full p-4">
                 <h1>Campaigns</h1>
-                <div className="flex flex-col justify-between items-center p-4 gap-8">
+                <div className="flex flex-col justify-between items-center p-4 gap-6">
                     {Array.from(campaigns.values()).map((campaign) => (
                         <Card key={`campaign-${campaign.id}`} className="w-[50%]">
                             <Link href={`/campaigns/${campaign.id}`} className="flex flex-col items-center">
@@ -30,7 +28,9 @@ const CampaignsPage: React.FC = () => {
                     ))}
                     <Card className="w-[50%]">
                         <Link href={`/campaigns/create`} className="flex flex-col items-center">
-                            <div>+ Create New Campaign</div>
+                            <div className="flex items-center">
+                                <span className="icon-[tabler--plus] mr-2" />Create New Campaign
+                            </div>
                         </Link>
                     </Card>
                 </div>

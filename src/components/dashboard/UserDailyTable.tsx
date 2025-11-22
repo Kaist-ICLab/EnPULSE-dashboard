@@ -1,11 +1,13 @@
 "use client"
-import useUserDailyStat, { UserDailyStat } from "@/hooks/legacy/useUserDailyStat";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import useUserDailyStat, { UserDailyStat } from "@/hooks/charts/useUserDailyStat";
+import React, { useEffect, useRef, useState } from "react";
 import { Button, Select, Spinner, Tooltip } from "flowbite-react";
-import { useDailyStatTableCheckedState } from "@/hooks/legacy/useDailyStatTableCheckedState";
+import { useDailyStatTableCheckedState } from "@/hooks/charts/useDailyStatTableCheckedState";
 import { usePaging } from "@/hooks/legacy/usePaging";
-import useFormatConfig from "@/hooks/legacy/useFormatConfig";
 import Link from "next/link";
+import { CampaignParticipant } from "@/types/campaign";
+import { SectionType } from "@/types/chart";
+import useSectionState from "@/hooks/charts/useSectionState";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -18,7 +20,7 @@ const getLevelColor = (level: number): string => {
     return levels[Math.max(0, Math.min(4, level))]; // 0~4 범위 고정
 }
 
-const Timeline: React.FC<{ values: number[] }> = ({ values }) => {
+const Timeline: React.FC<{ values: number[], max: number }> = ({ values, max }) => {
     if (values.length !== 8) {
         throw new Error(`Timeline length must be 8. Received: ${values.length}`);
     }
@@ -28,14 +30,13 @@ const Timeline: React.FC<{ values: number[] }> = ({ values }) => {
             {values.map((level, i) => (
                 <Tooltip key={i} content={`${level}`} trigger="hover">
                     <div
-                        className={`w-3 h-[30px] ${getLevelColor(level)}`}
+                        className={`w-3 h-[30px] ${getLevelColor(Math.floor(level / max * 5))}`}
                     />
                 </Tooltip>
             ))}
         </div>
     );
 }
-
 
 const DailyCount: React.FC<{
     value: number;
@@ -62,8 +63,6 @@ const DailyCount: React.FC<{
     );
 }
 
-
-
 const cellStyle = "p-2 border-r border-gray-200"
 const rowStyle = "border-b border-l border-gray-200"
 
@@ -87,7 +86,7 @@ const UserRow: React.FC<{
                     </Tooltip>
                 </td>,
                 <td key={`${key}-timeline`} className={cellStyle}>
-                    <Timeline values={metric.timeline} />
+                    <Timeline values={metric.timeline} max={max[key] / 8} />
                 </td>]
             ))}
         </tr>
@@ -101,31 +100,30 @@ const ChartTooltipContent: React.FC = () => {
             <p className="mb-1">Timeline: # of data collected in a 3 hour window.</p>
             <p>Hover over the components to see the details!</p>
         </>
-
     )
 }
 
 const UserDailyStatTable: React.FC<{
-    setUserId: (userId: string) => void;
-    openMessageModal: (sendTo: string) => void;
-}> = ({ setUserId, openMessageModal }) => {
+    syncTime: Date | null,
+    openMessageModal: (sendTo: CampaignParticipant[]) => void;
+}> = ({ syncTime, openMessageModal }) => {
     const ref = useRef<HTMLDivElement>(null)
     const [date, setDate] = useState(new Date())
     const [tableHeight, setTableHeight] = useState(500)
+    const { sectionParams, updateSectionParams: setSectionParams } = useSectionState()
 
     const { page, rowsPerPage, totalPage, changePageBy, setRowsPerPage, setTotalPage } = usePaging(5)
-    const { loading: configLoading, formatConfig } = useFormatConfig();
-    const { data, columns, maxDailyCount, loading: statLoading } = useUserDailyStat(date, page, rowsPerPage, setTotalPage);
+    const { data, loading, columns, maxDailyCount: dailyCountThreshold } = useUserDailyStat(date, page, rowsPerPage, setTotalPage, syncTime);
     const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } = useDailyStatTableCheckedState(data);
 
-    const loading = statLoading || configLoading;
-    const dailyCountThreshold = useMemo(() => {
-        const result: { [key: string]: number } = {};
-        Object.entries(formatConfig).forEach(([sensorName, config]) => (
-            result[sensorName] = config.thresholdMode == 'max' ? maxDailyCount[sensorName] : config.threshold
-        ))
-        return result;
-    }, [formatConfig, maxDailyCount])
+    // const loading = statLoading || configLoading;
+    // const dailyCountThreshold = useMemo(() => {
+    //     const result: { [key: string]: number } = {};
+    //     Object.entries(formatConfig).forEach(([sensorName, config]) => (
+    //         result[sensorName] = config.thresholdMode == 'max' ? maxDailyCount[sensorName] : config.threshold
+    //     ))
+    //     return result;
+    // }, [formatConfig, maxDailyCount])
 
     useEffect(() => {
         if (ref.current && !loading) {
@@ -149,7 +147,10 @@ const UserDailyStatTable: React.FC<{
                     {
                         checkCount == 1 && (
                             <Link href={`./dashboard/#timeline-overview-comparison-chart`}>
-                                <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => setUserId(data[checkedState.findIndex((state) => state)].id)}>
+                                <Button
+                                    color="blue" size="md" className="flex flex-row gap-1 text-base px-3"
+                                    onClick={() => setSectionParams(SectionType.TimelineOverview, { ...sectionParams[SectionType.TimelineOverview], date: date, uuid: data[checkedState.findIndex((state) => state)].uuid })}
+                                >
                                     <span>Timeline Overview</span>
                                 </Button>
                             </Link>
@@ -157,7 +158,7 @@ const UserDailyStatTable: React.FC<{
                     }
                     {
                         checkCount >= 1 && (
-                            <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => openMessageModal(data.filter((_, i) => checkedState[i]).map(v => v.email).join(', '))}>
+                            <Button color="blue" size="md" className="flex flex-row gap-1 text-base px-3" onClick={() => openMessageModal(data.filter((_, i) => checkedState[i]).map(v => ({ email: v.email, uuid: v.uuid })))}>
                                 <span className="w-5 h-5 mt-0.5 icon-[material-symbols--send]"></span>
                                 <span>Send</span>
                             </Button>
@@ -176,40 +177,48 @@ const UserDailyStatTable: React.FC<{
                     <div className="flex justify-center items-center" style={{ minHeight: `${tableHeight}px` }}  >
                         <Spinner size="xl" />
                     </div>
-                ) : (<table className="table-fixed w-fit" >
-                    <colgroup>
-                        <col className="w-[60px]" />
-                        <col className="w-[200px]" />
-                        <col className="w-[200px]" />
-                        {columns.map((key) => ([
-                            <col key={`${key}-col-dailycount`} className="w-[160px]" />,
-                            <col key={`${key}-col-timeline`} className="w-[160px]" />
-                        ]))}
-                    </colgroup>
-                    <thead className="uppercase text-gray-500 border-t border-gray-200 bg-gray-50 text-xs">
-                        <tr className={[rowStyle, 'h-[25px]'].join(' ')}>
-                            <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>
-                                <input className="w-4 h-4" type="checkbox" checked={isAllChecked} onChange={toggleAllChecked} />
-                            </th>
-                            <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>Email / UID</th>
-                            <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>Contacts</th>
-                            {columns.map((key) => (
-                                <th key={`${key}-th`} className={['py-0', cellStyle, 'text-center'].join(' ')} colSpan={2}>{key.replace(/_/g, " ")}</th>
-                            ))}
-                        </tr>
-                        <tr className={[rowStyle, 'h-[25px]'].join(' ')}>
-                            {columns.map((key) => ([
-                                <th key={`${key}-th-dailycount`} className={['py-0', cellStyle, 'text-center'].join(' ')}>DAILY COUNT</th>,
-                                <th key={`${key}-th-timeline`} className={['py-0', cellStyle, 'text-center'].join(' ')}>DAILY TIMELINE</th>
-                            ]))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.map((row, index) => (
-                            <UserRow key={`row-${row.id}`} row={row} max={dailyCountThreshold} isSelected={checkedState[index]} toggleChecked={() => toggleChecked(index)} />
-                        ))}
-                    </tbody>
-                </table>)}
+                ) : (
+                    data.length > 0 ? (
+                        <table className="table-fixed w-fit" >
+                            <colgroup>
+                                <col className="w-[60px]" />
+                                <col className="w-[200px]" />
+                                <col className="w-[200px]" />
+                                {columns.map((key) => ([
+                                    <col key={`${key}-col-dailycount`} className="w-[160px]" />,
+                                    <col key={`${key}-col-timeline`} className="w-[160px]" />
+                                ]))}
+                            </colgroup>
+                            <thead className="uppercase text-gray-500 border-t border-gray-200 bg-gray-50 text-xs">
+                                <tr className={[rowStyle, 'h-[25px]'].join(' ')}>
+                                    <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>
+                                        <input className="w-4 h-4" type="checkbox" checked={isAllChecked} onChange={toggleAllChecked} />
+                                    </th>
+                                    <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>Email / UID</th>
+                                    <th className={[cellStyle, 'text-left'].join(' ')} rowSpan={2}>Contacts</th>
+                                    {columns.map((key) => (
+                                        <th key={`${key}-th`} className={['py-0', cellStyle, 'text-center'].join(' ')} colSpan={2}>{key.replace(/_/g, " ")}</th>
+                                    ))}
+                                </tr>
+                                <tr className={[rowStyle, 'h-[25px]'].join(' ')}>
+                                    {columns.map((key) => ([
+                                        <th key={`${key}-th-dailycount`} className={['py-0', cellStyle, 'text-center'].join(' ')}>DAILY COUNT</th>,
+                                        <th key={`${key}-th-timeline`} className={['py-0', cellStyle, 'text-center'].join(' ')}>DAILY TIMELINE</th>
+                                    ]))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.map((row, index) => (
+                                    <UserRow key={`row-${row.uuid}`} row={row} max={dailyCountThreshold} isSelected={checkedState[index]} toggleChecked={() => toggleChecked(index)} />
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <div className="flex h-48 justify-center items-center bg-gray-100">
+                            <span className=" text-gray-500">No data</span>
+                        </div>
+                    )
+                )}
             </div>
             <div className="flex items-center justify-between px-2 py-3 w-full">
                 <div className="flex items-center gap-4">

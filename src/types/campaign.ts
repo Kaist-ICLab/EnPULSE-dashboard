@@ -12,6 +12,7 @@ export interface CampaignTable {
     id: number;
     campaign_id: number;
     name: string;
+    description?: string,
     daily_count_max: number;
 }
 
@@ -20,6 +21,19 @@ export interface CampaignTableField {
     campaign_id: number;
     campaign_table_id: number;
     name: string;
+    description?: string,
     field_type: FieldType;
     field_role: FieldRole;
-} 
+}
+
+export interface CampaignParticipant {
+    uuid: string;
+    email: string;
+}
+
+export interface CampaignTableFieldWithTable extends CampaignTableField {
+    tableId: number;
+    tableName: string;
+    displayName: string;
+}
+

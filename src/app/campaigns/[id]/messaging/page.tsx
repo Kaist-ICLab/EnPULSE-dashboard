@@ -3,67 +3,62 @@
 import ChatRoomDetail from "@/components/messaging/ChatRoomDetail";
 import ChatRoomItem from "@/components/messaging/ChatRoomItem";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
-import useChatRooms from "@/hooks/legacy/useChatRooms";
-import useConversation from "@/hooks/legacy/useConversation";
-import { useState } from "react";
+import useChatRooms from "@/hooks/messaging/useChatRooms";
+import useConversation from "@/hooks/messaging/useConversation";
+import { Button, Spinner } from "flowbite-react";
+import { useMemo, useState } from "react";
 
 const Page = () => {
-    const { conversation, setSelectedChatRoom } = useConversation();
-    const { chatRooms, updateReadCount } = useChatRooms();
+    const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
+    const { chatRooms } = useChatRooms();
+    const { announcement, conversation, loading, error } = useConversation(selectedSessionId);
     const [showCompose, setShowCompose] = useState(false);
 
-    const handleSendMessage = () => {
-        // TODO: Implement send message logic here
-        console.log('Sending message...');
-        setShowCompose(false);
-    };
+    const selectedChatRoom = useMemo(() => chatRooms?.find(v => v.id === selectedSessionId), [chatRooms, selectedSessionId]);
 
     return (
-        <div className="w-full h-[calc(100vh-100px)]">
+        <div className="w-full h-full">
             <div className="flex flex-col h-full">
-                {/* Header row */}
-                <div className="p-4 flex justify-between items-center border-b border-gray-200">
-                    <div className="font-semibold text-gray-700">Messages</div>
-                    <button
-                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                        onClick={() => setShowCompose(true)}
-                    >
-                        Send Message
-                    </button>
-                </div>
-
                 {/* Chat panel */}
                 <div className="flex flex-1 min-h-0">
                     {/* 왼쪽 패널 */}
                     <div className="w-full sm:w-1/3 lg:w-1/4 border-r border-gray-200 overflow-y-auto">
-                        <div className="space-y-2 px-4">
-                            {chatRooms?.map((chatRoom) => (
+                        <div className="space-y-2 p-4">
+                            {chatRooms?.map((chatRoom, i) => (
                                 <ChatRoomItem
-                                    key={chatRoom.id}
+                                    key={i}
                                     email={chatRoom.email}
-                                    lastMessage={chatRoom.lastMessage}
-                                    unreadCount={chatRoom.unreadCount}
-                                    isSelected={conversation?.chatRoom.id === chatRoom.id}
+                                    lastMessage={chatRoom.last_message}
+                                    unreadCount={chatRoom.unread_count}
+                                    isSelected={selectedSessionId === chatRoom.id}
                                     onClick={() => {
-                                        setSelectedChatRoom(chatRoom);
-                                        updateReadCount(chatRoom);
+                                        setSelectedSessionId(chatRoom.id);
+                                        // updateReadCount(chatRoom);
                                     }}
                                 />))}
                         </div>
                     </div>
-
-                    {conversation && (
-                        <ChatRoomDetail
-                            conversation={conversation}
-                        />
-                    )}
+                    <div className="w-full sm:w-2/3 lg:w-3/4 flex flex-col h-full">
+                        {/* 수신자 정보 */}
+                        <div className="h-16 flex items-center border-b border-gray-200 px-4 font-medium text-gray-700">
+                            {chatRooms?.find(v => v.id === selectedSessionId)?.email || ''}
+                            <Button className="ml-auto" onClick={() => setShowCompose(true)}>
+                                Send Message
+                            </Button>
+                        </div>
+                        {loading ? <div className="flex flex-1 overflow-y-scroll justify-center items-center"><Spinner className="w-16 h-16" size="xl" /></div> : conversation && (
+                            <ChatRoomDetail
+                                announcement={announcement}
+                                conversation={conversation}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
             {showCompose && (
                 <SendMessageFloatingModal
-                    sendTo={conversation?.chatRoom.email || ''}
+                    initialSendTo={selectedChatRoom ? [selectedChatRoom] : []}
                     onClose={() => setShowCompose(false)}
-                    onSendButtonClick={handleSendMessage}
                 />
             )}
         </div>

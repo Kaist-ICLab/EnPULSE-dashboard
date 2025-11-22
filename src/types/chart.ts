@@ -1,24 +1,43 @@
-
-export enum ChartType {
+export enum SectionType {
     TimelineOverview = "timeline-overview",
     IntraPerson = "intra-person",
     InterPerson = "inter-person"
 }
 
+export type ChartType = "numerical" | "categorical"
+
+export interface TimelineNumericalValue {
+    avg_value: number;
+    min_value: number;
+    max_value: number;
+}
+
+export interface TimelineCategoricalValue {
+    value: string;
+    count: number;
+}
 
 export interface TimelineData {
     id: string;
     title: string;
     table: string;
     column: string;
-    chartType: 'numerical' | 'categorical';
+    chartType: ChartType;
     params: ChartParams;
     timestamp: number[];
-    value: (string | number)[];
+    value: (TimelineNumericalValue | TimelineCategoricalValue)[];
 }
 
 export type ChartParams = {
-    uid: string,
-    sid: string,
+    uuid: string,
+    fieldId: number,
     date: Date,
 }
+
+export type ChartPinQuery = {
+    [SectionType.IntraPerson]: { date: Date } | null;
+    [SectionType.InterPerson]: { uuid: string } | null;
+    [SectionType.TimelineOverview]: { fieldId: number } | null;
+};
+
+export type ChartPinQueryOption = { date: Date } | { uuid: string } | { fieldId: number } | null

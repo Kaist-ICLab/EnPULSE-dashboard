@@ -126,7 +126,6 @@ export const useFormatConfig = () => {
     const updateThreshold = (sensorName: string, value: number, mode: ThresholdMode) => {
         if (!sensorName || !formatConfig) return
 
-        console.log(value)
         const newFormatConfig = structuredClone(formatConfig)
         newFormatConfig[sensorName].threshold = value
         newFormatConfig[sensorName].thresholdMode = mode

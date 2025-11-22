@@ -1,14 +1,20 @@
 'use client'
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { loadPlotly } from "@/utils/plotlyLoader";
 import { PlotlyRelayoutEvent } from "@/types/plotlyEvent";
+import useSectionState from "@/hooks/charts/useSectionState";
+import { SectionType } from "@/types/chart";
 
 const TimelineXAxis: React.FC<{
     id: string;
-    timeRange: { start: number, end: number };
-    onComplete: (timeRange: { start: number, end: number }) => void;
-}> = ({ id, timeRange, onComplete }) => {
+    sectionType: SectionType;
+}> = ({ id, sectionType }) => {
+    const { timeRange, updateTimeRange } = useSectionState()
+
+    const currentTimeRange = useMemo(() => {
+        return timeRange[sectionType]
+    }, [timeRange, sectionType])
     const chartRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -19,7 +25,7 @@ const TimelineXAxis: React.FC<{
                 const Plot = await loadPlotly();
 
                 const data = [{
-                    x: [timeRange.start, timeRange.end],
+                    x: [currentTimeRange.start, currentTimeRange.end],
                     y: [0, 0],
                     type: 'scatter',
                     mode: 'lines',
@@ -33,7 +39,7 @@ const TimelineXAxis: React.FC<{
                         l: 0, r: 0, t: 0, b: 20
                     },
                     xaxis: {
-                        range: [timeRange.start, timeRange.end],
+                        range: [currentTimeRange.start, currentTimeRange.end],
                         type: 'date',
                         showticklabels: true,
                         zeroline: false,
@@ -61,7 +67,7 @@ const TimelineXAxis: React.FC<{
                     if (eventData['xaxis.range[0]'] !== undefined && eventData['xaxis.range[1]'] !== undefined) {
                         const start = new Date(eventData['xaxis.range[0]']).getTime();
                         const end = new Date(eventData['xaxis.range[1]']).getTime();
-                        onComplete({ start, end });
+                        updateTimeRange(sectionType, { start, end });
                     }
                 });
             } catch (error) {
@@ -79,7 +85,7 @@ const TimelineXAxis: React.FC<{
                 }).catch(console.error);
             }
         };
-    }, [id, timeRange, onComplete]);
+    }, [id, currentTimeRange, sectionType, updateTimeRange]);
 
     return (
         <div className='w-full flex flex-row justify-center items-center'>

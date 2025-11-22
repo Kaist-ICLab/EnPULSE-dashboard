@@ -1,27 +1,42 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import TimelineChart from '@/components/dashboard/charts/TimelineChart';
 import TimelineXAxis from '@/components/dashboard/charts/TimelineXAxis';
 import { DnDProvider, DnDItem, DragHandle } from '@/components/common/DnDList';
 import { Button } from 'flowbite-react';
-import { TimelineData, ChartType, ChartParams } from '@/types/chart';
+import { TimelineData, SectionType } from '@/types/chart';
 import Link from 'next/link';
+import useSectionState from '@/hooks/charts/useSectionState';
 
 const ChartContainer: React.FC<{
     timelines: TimelineData[];
-    chartType: ChartType;
-    params: ChartParams;
-    setChartParams: (chartType: ChartType, params: ChartParams) => void;
-    defaultTimeRange: { start: number, end: number };
-}> = ({ timelines, chartType, setChartParams, defaultTimeRange }) => {
-    const [timeRange, setTimeRange] = useState<{ start: number, end: number }>(defaultTimeRange);
-    const [pinnedChart, setPinnedChart] = useState<string | null>(null);
-    const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
+    sectionType: SectionType;
+    bucketSize: number;
+}> = ({ timelines, sectionType, bucketSize }) => {
+    const { updateSectionParams, chartPinQuery, updatePinQuery } = useSectionState()
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
+    const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
+
+    useEffect(() => {
+        setChartOrder(timelines.map((d) => d.id))
+    }, [timelines])
+
+    const pinnedChart = useMemo(() => {
+        if (chartPinQuery[sectionType] == null) return null
+
+        switch (sectionType) {
+            case SectionType.IntraPerson:
+                return timelines.find(t => t.params.date.getTime() === chartPinQuery[SectionType.IntraPerson]?.date?.getTime())?.id || null
+            case SectionType.InterPerson:
+                return timelines.find(t => t.params.uuid === chartPinQuery[SectionType.InterPerson]?.uuid)?.id || null
+            case SectionType.TimelineOverview:
+                return timelines.find(t => t.params.fieldId === chartPinQuery[SectionType.TimelineOverview]?.fieldId)?.id || null
+        }
+    }, [sectionType, timelines, chartPinQuery])
 
     const comparisonName = {
-        [ChartType.InterPerson]: "Participants",
-        [ChartType.TimelineOverview]: "Sensors",
-        [ChartType.IntraPerson]: "Days"
+        [SectionType.InterPerson]: "Participants",
+        [SectionType.TimelineOverview]: "Sensors",
+        [SectionType.IntraPerson]: "Days"
     }
 
     return (
@@ -43,11 +58,15 @@ const ChartContainer: React.FC<{
                             <>
                                 <span className="font-medium text-gray-700">Compare with other:</span>
                                 {Object.entries(comparisonName).map(([type, value]) => (
-                                    chartType !== type && <Link key={type} href={`./dashboard/#${type}-comparison-chart`}>
+                                    sectionType !== type && <Link key={type} href={`./dashboard/#${type}-comparison-chart`}>
                                         <Button
                                             size="md"
                                             className="flex flex-row gap-1 text-base px-3"
-                                            onClick={() => setChartParams(type as ChartType, timelines.find(t => t.id === selectedChart)!.params)}
+                                            onClick={() => {
+                                                const params = timelines.find(t => t.id === selectedChart)!.params
+                                                updateSectionParams(type as SectionType, params)
+                                                updatePinQuery(type as SectionType, params)
+                                            }}
                                         >
                                             <span>{value}</span>
                                         </Button>
@@ -62,12 +81,12 @@ const ChartContainer: React.FC<{
             {timelines.filter(d => d.id === pinnedChart).map((timeline) =>
                 <ChartItem key={timeline.id}
                     timeline={timeline}
+                    sectionType={sectionType}
                     pinned={true}
-                    onPin={() => setPinnedChart(null)}
-                    timeRange={timeRange}
-                    setTimeRange={setTimeRange}
                     isSelected={selectedChart === timeline.id}
-                    setSelectedChart={setSelectedChart} />
+                    setSelectedChart={(p) => setSelectedChart(p)}
+                    bucketSize={bucketSize}
+                />
             )}
             <DnDProvider
                 items={chartOrder.filter(id => id !== pinnedChart)}
@@ -76,20 +95,19 @@ const ChartContainer: React.FC<{
                 {chartOrder.filter(id => id !== pinnedChart).map((id) => (
                     <ChartItem key={id}
                         timeline={timelines.find(d => d.id === id)!}
+                        sectionType={sectionType}
                         pinned={pinnedChart === id}
-                        onPin={(pinned) => setPinnedChart(pinned ? id : null)}
-                        timeRange={timeRange}
-                        setTimeRange={setTimeRange}
                         isSelected={selectedChart === id}
-                        setSelectedChart={setSelectedChart} />
+                        setSelectedChart={(p) => setSelectedChart(p)}
+                        bucketSize={bucketSize}
+                    />
                 ))}
             </DnDProvider>
             <div className='flex flex-row justify-center items-center'>
                 <div className='w-12'></div>
                 <TimelineXAxis
                     id="xaxis"
-                    timeRange={timeRange}
-                    onComplete={setTimeRange}
+                    sectionType={sectionType}
                 />
             </div>
         </div>
@@ -98,18 +116,20 @@ const ChartContainer: React.FC<{
 
 const ChartItem: React.FC<{
     timeline: TimelineData;
+    sectionType: SectionType;
     pinned: boolean;
-    onPin: (pinned: boolean) => void;
-    timeRange: { start: number, end: number };
-    setTimeRange: (timeRange: { start: number, end: number }) => void;
     isSelected: boolean;
     setSelectedChart: (id: string | null) => void;
-}> = ({ timeline, pinned, onPin, timeRange, setTimeRange, isSelected, setSelectedChart }) => {
+    bucketSize: number;
+}> = ({ timeline, sectionType, pinned, isSelected, setSelectedChart, bucketSize }) => {
+    const { updatePinQuery } = useSectionState()
+
+    if (!timeline) return
+
     return (
         <DnDItem id={timeline.id} className={`w-full flex flex-row justify-center items-center p-2 ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}`} >
             <div className='w-18 flex flex-row justify-center items-center' onClick={() => {
                 setSelectedChart(isSelected ? null : timeline.id);
-                console.log("Clicked", timeline.id);
             }} >
                 <DragHandle>
                     <span className='w-6 h-6 ml-4 mr-2 text-gray-300 icon-[mdi--hamburger-menu]' />
@@ -117,7 +137,7 @@ const ChartItem: React.FC<{
                 <div className='flex flex-col w-12 mr-8'>
                     <div className='text-sm overflow-ellipsis'>{timeline.title}</div>
                     <button className='text-gray-400 w-6 cursor-pointer' onClick={() => {
-                        onPin(!pinned);
+                        updatePinQuery(sectionType, pinned ? null : timeline.params)
                     }}>
                         {pinned ? <span className="w-6 h-6 icon-[mdi--pin-off]" /> : <span className="w-6 h-6 icon-[mdi--pin]" />}
                     </button>
@@ -128,10 +148,11 @@ const ChartItem: React.FC<{
             >
                 <TimelineChart
                     id={timeline.id}
+                    sectionType={sectionType}
                     chartType={timeline.chartType}
-                    timeRange={timeRange}
-                    onComplete={setTimeRange}
+                    baseTime={timeline.params.date.getTime()}
                     data={{ timestamp: timeline.timestamp, value: timeline.value }}
+                    bucketSize={bucketSize}
                 />
             </div>
         </DnDItem>
