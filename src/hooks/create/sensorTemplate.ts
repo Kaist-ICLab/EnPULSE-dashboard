@@ -238,7 +238,7 @@ const dataTrafficSensor: NewCampaignTable = {
             campaign_table_id: -1
         },
         {
-            name: "duration",
+            name: "totalRx",
             field_role: "data",
             field_type: "numerical",
             id: 2,
@@ -246,7 +246,7 @@ const dataTrafficSensor: NewCampaignTable = {
             campaign_table_id: -1
         },
         {
-            name: "rx_kilo_bytes",
+            name: "totalTx",
             field_role: "data",
             field_type: "numerical",
             id: 3,
@@ -254,10 +254,18 @@ const dataTrafficSensor: NewCampaignTable = {
             campaign_table_id: -1
         },
         {
-            name: "tx_kilo_bytes",
+            name: "mobileRx",
             field_role: "data",
             field_type: "numerical",
             id: 4,
+            campaign_id: -1,
+            campaign_table_id: -1
+        },
+        {
+            name: "mobileTx",
+            field_role: "data",
+            field_type: "numerical",
+            id: 5,
             campaign_id: -1,
             campaign_table_id: -1
         }
