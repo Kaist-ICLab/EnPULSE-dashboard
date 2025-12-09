@@ -633,8 +633,8 @@ const connectivitySensor: NewCampaignTable = {
 const deviceEventSensor: NewCampaignTable = {
     id: -1,
     campaign_id: -1,
-    name: "device_event_sensor",
-    description: "Device event sensor",
+    name: "device_mode_sensor",
+    description: "Device mode sensor",
     daily_count_max: 0,
     fields: [
         {
@@ -658,6 +658,14 @@ const deviceEventSensor: NewCampaignTable = {
             field_role: "data",
             field_type: "categorical",
             id: 2,
+            campaign_id: -1,
+            campaign_table_id: -1
+        },
+        {
+            name: "value",
+            field_role: "data",
+            field_type: "categorical",
+            id: 3,
             campaign_id: -1,
             campaign_table_id: -1
         }
