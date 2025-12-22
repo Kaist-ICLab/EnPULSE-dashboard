@@ -92,8 +92,8 @@ const ComparisonChart: React.FC<{
                     </div>
                 </div>
 
-                <div className="w-full rounded-lg py-4 flex flex-col gap-4" ref={chartRef}>
-                    {loading && <Spinner className="w-full" />}
+                <div className="w-full rounded-lg py-4 flex flex-col gap-4 items-center justify-center" ref={chartRef}>
+                    {loading && <Spinner className="" />}
                     {error && (
                         <p className="text-red-500 font-medium">❌ 데이터 로딩 실패: {error.message}</p>
                     )}
