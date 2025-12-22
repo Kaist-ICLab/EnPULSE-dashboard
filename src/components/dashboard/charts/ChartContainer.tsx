@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import TimelineChart from '@/components/dashboard/charts/TimelineChart';
 import TimelineXAxis from '@/components/dashboard/charts/TimelineXAxis';
 import { DnDProvider, DnDItem, DragHandle } from '@/components/common/DnDList';
@@ -17,9 +17,11 @@ const ChartContainer: React.FC<{
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
 
-    // useEffect(() => {
-    //     setChartOrder(timelines.map((d) => d.id))
-    // }, [timelines])
+    useEffect(() => {
+        setChartOrder(timelines.map((d) => d.id))
+    }, [timelines])
+
+    console.log(timelines)
 
     const pinnedChart = useMemo(() => {
         if (chartPinQuery[sectionType] == null) return null
