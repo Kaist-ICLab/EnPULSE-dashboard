@@ -1,0 +1,25 @@
+export const formatTime = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+};
+
+export const colors = [
+    '#3b82f6',
+    '#10b981',
+    '#f59e0b',
+    '#ef4444',
+    '#8b5cf6',
+];
+
+export const gray = '#d1d5db';
+
+export const margin = { top: 10, right: 0, bottom: 0, left: 0 };
+

@@ -1,18 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
-import TimelineChart from '@/components/dashboard/charts/TimelineChart';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import TimelineXAxis from '@/components/dashboard/charts/TimelineXAxis';
-import { DnDProvider, DnDItem, DragHandle } from '@/components/common/DnDList';
+import { DnDProvider } from '@/components/common/DnDList';
 import { Button } from 'flowbite-react';
-import { TimelineData, SectionType } from '@/types/chart';
 import Link from 'next/link';
 import useSectionState from '@/hooks/useSectionState';
+import { SectionType, TimelineData } from '@/types/chart';
+import { ChartItem } from './ChartItem';
 
 const ChartContainer: React.FC<{
     timelines: TimelineData[];
     sectionType: SectionType;
     bucketSize: number;
 }> = ({ timelines, sectionType, bucketSize }) => {
-    console.log('ChartContainer', sectionType)
+    const chartContainerRef = useRef<HTMLDivElement>(null);
+
+    const [width, setWidth] = useState(0);
     const { updateSectionParams, chartPinQuery, updatePinQuery } = useSectionState()
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
@@ -21,7 +23,20 @@ const ChartContainer: React.FC<{
         setChartOrder(timelines.map((d) => d.id))
     }, [timelines])
 
-    console.log(timelines)
+    useEffect(() => {
+        if (chartContainerRef.current) {
+            setWidth(chartContainerRef.current.offsetWidth);
+
+            const updateSize = () => {
+                if (chartContainerRef.current) {
+                    setWidth(chartContainerRef.current.offsetWidth);
+                }
+            }
+            updateSize();
+            window.addEventListener('resize', updateSize);
+            return () => window.removeEventListener('resize', updateSize);
+        }
+    }, [chartContainerRef])
 
     const pinnedChart = useMemo(() => {
         if (chartPinQuery[sectionType] == null) return null
@@ -43,7 +58,7 @@ const ChartContainer: React.FC<{
     }
 
     return (
-        <div>
+        <div className="w-full" ref={chartContainerRef}>
             <div className="py-2 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                     <div>
@@ -90,6 +105,7 @@ const ChartContainer: React.FC<{
                     isSelected={selectedChart === timeline.id}
                     setSelectedChart={(p) => setSelectedChart(p)}
                     bucketSize={bucketSize}
+                    width={width - 80}
                 />
             )}
             <DnDProvider
@@ -105,6 +121,7 @@ const ChartContainer: React.FC<{
                         isSelected={selectedChart === id}
                         setSelectedChart={(p) => setSelectedChart(p)}
                         bucketSize={bucketSize}
+                        width={width - 80}
                     />
                 ))}
             </DnDProvider>
@@ -115,50 +132,6 @@ const ChartContainer: React.FC<{
                 />
             </div>
         </div>
-    )
-}
-
-const ChartItem: React.FC<{
-    timeline: TimelineData;
-    sectionType: SectionType;
-    pinned: boolean;
-    isSelected: boolean;
-    setSelectedChart: (id: string | null) => void;
-    bucketSize: number;
-}> = ({ timeline, sectionType, pinned, isSelected, setSelectedChart, bucketSize }) => {
-    const { updatePinQuery } = useSectionState()
-
-    if (!timeline) return
-
-    return (
-        <DnDItem id={timeline.id} className={`w-full flex flex-row justify-center items-center p-2 ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}`} >
-            <div className='w-18 flex flex-row justify-center items-center' onClick={() => {
-                setSelectedChart(isSelected ? null : timeline.id);
-            }} >
-                <DragHandle>
-                    <span className='w-6 h-6 ml-4 mr-2 text-gray-300 icon-[mdi--hamburger-menu]' />
-                </DragHandle>
-                <div className='flex flex-col w-12 mr-8'>
-                    <div className='text-sm overflow-ellipsis'>{timeline.title}</div>
-                    <button className='text-gray-400 w-6 cursor-pointer' onClick={() => {
-                        updatePinQuery(sectionType, pinned ? null : timeline.params)
-                    }}>
-                        {pinned ? <span className="w-6 h-6 icon-[mdi--pin-off]" /> : <span className="w-6 h-6 icon-[mdi--pin]" />}
-                    </button>
-                </div>
-            </div>
-            <div
-                className={`grow flex flex-row justify-center items-center cursor-pointer transition-colors`}
-            >
-                <TimelineChart
-                    sectionType={sectionType}
-                    chartType={timeline.chartType}
-                    baseTime={timeline.params.date.getTime()}
-                    data={{ timestamp: timeline.timestamp, value: timeline.value }}
-                    bucketSize={bucketSize}
-                />
-            </div>
-        </DnDItem>
     )
 }
 

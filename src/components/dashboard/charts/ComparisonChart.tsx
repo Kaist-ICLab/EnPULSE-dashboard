@@ -11,7 +11,6 @@ import useSectionState from "@/hooks/useSectionState";
 const ComparisonChart: React.FC<{
     sectionType: SectionType;
 }> = ({ sectionType }) => {
-    console.log('ComparisonChart', sectionType)
     const chartRef = useRef<HTMLDivElement>(null);
     const { campaignParticipants, mergedTabledFields } = useCampaign()
     const { sectionParams, updateSectionParams, initTimeRange } = useSectionState()
@@ -95,7 +94,7 @@ const ComparisonChart: React.FC<{
                 <div className="w-full rounded-lg py-4 flex flex-col gap-4 items-center justify-center" ref={chartRef}>
                     {loading && <Spinner className="" />}
                     {error && (
-                        <p className="text-red-500 font-medium">❌ 데이터 로딩 실패: {error.message}</p>
+                        <p className="text-red-500 font-medium">Failed to load data: {error.message}</p>
                     )}
                     {timeline.length > 0 && <ChartContainer
                         timelines={timeline.filter(v => (isFieldSelected[v.params.fieldId] || sectionType !== SectionType.TimelineOverview))}

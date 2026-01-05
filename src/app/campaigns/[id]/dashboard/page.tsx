@@ -9,7 +9,6 @@ import { Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 
 const Page = () => {
-    console.log('page')
     const [lastLoaded, setLastLoaded] = useState<Date | null>(null)
     const [sendTo, setSendTo] = useState<CampaignParticipant[]>([]);
     const [messageModalVisible, setMessageModalVisible] = useState<boolean>(false);

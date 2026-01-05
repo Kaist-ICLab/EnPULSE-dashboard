@@ -7,7 +7,6 @@ import useSectionState from "../useSectionState";
 
 
 export default function useTimeline(secitonType: SectionType, selectedFields: CampaignTableFieldWithTable[], chartWidth: number) {
-    console.log('useTimeline Global', secitonType)
     const [timeline, setTimeline] = useState<TimelineData[]>([]);
     const [bucketSize, setBucketSize] = useState<number>(10);
     const [loading, setLoading] = useState(false);
@@ -44,7 +43,6 @@ export default function useTimeline(secitonType: SectionType, selectedFields: Ca
     }
 
     useEffect(() => {
-        console.log('useTimeline', secitonType)
         const { uuid, date, fieldId } = currentSectionParams;
         if (!selectedCampaignId || !uuid || !date || !fieldId) return;
 

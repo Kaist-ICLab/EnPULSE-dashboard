@@ -7,9 +7,9 @@ export enum SectionType {
 export type ChartType = "numerical" | "categorical"
 
 export interface TimelineNumericalValue {
-    avg_value: number;
-    min_value: number;
-    max_value: number;
+    avg: number;
+    min: number;
+    max: number;
 }
 
 export interface TimelineCategoricalValue {
