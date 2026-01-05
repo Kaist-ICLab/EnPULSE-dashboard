@@ -1,4 +1,3 @@
-import uuid
 import csv
 import sys
 from dataclasses import dataclass
@@ -10,10 +9,12 @@ from typing import List
 class BatterySample:
     uuid: str
     timestamp: datetime
+    received: datetime
     level: float
-    plugged: str
-    status: str
+    connected_type: int
+    status: int
     temperature: int
+    device_type: int
 
 
 def generate_daily_battery_profile(
@@ -33,15 +34,13 @@ def generate_daily_battery_profile(
       - 22:00–24:00: plugged, 100% idle
     """
 
+    # Ensure timezone-aware timestamps for PostgreSQL timestamp with time zone
     if day.tzinfo is None:
-        # store timestamps as "naive UTC" (common with `timestamp without time zone`)
-        base = day.replace(hour=0, minute=0, second=0, microsecond=0)
+        # If naive, assume UTC
+        base = day.replace(hour=0, minute=0, second=0, microsecond=0).replace(tzinfo=timezone.utc)
     else:
-        base = (
-            day.astimezone(timezone.utc)
-            .replace(hour=0, minute=0, second=0, microsecond=0)
-            .replace(tzinfo=None)
-        )
+        # Convert to UTC and keep timezone info
+        base = day.astimezone(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
     interval = timedelta(minutes=1440 // samples_per_day)
     samples: List[BatterySample] = []
@@ -50,35 +49,37 @@ def generate_daily_battery_profile(
         ts = base + i * interval
         minute_of_day = ts.hour * 60 + ts.minute
 
-        # Determine plugged + status + target level curve
+        # Determine connected_type + status + target level curve
+        # connected_type: 0 = unplugged, 1-3 = different connection types
+        # status: 0 = discharging, 1 = charging, 2 = full
         if 0 <= minute_of_day < 360:  # 00:00–06:00
-            plugged = "AC"
-            status = "charging" if minute_of_day < 300 else "full"
+            connected_type = 1  # AC power
+            status = 1 if minute_of_day < 300 else 2  # charging or full
             level = 80 + (minute_of_day / 360) * 20  # 80→100
             base_temp = 27
         elif 360 <= minute_of_day < 540:  # 06:00–09:00
-            plugged = "UNPLUGGED"
-            status = "discharging"
+            connected_type = 0  # Unplugged
+            status = 0  # discharging
             level = 100 - ((minute_of_day - 360) / 180) * 30  # 100→70
             base_temp = 32
         elif 540 <= minute_of_day < 720:  # 09:00–12:00
-            plugged = "UNPLUGGED"
-            status = "discharging"
+            connected_type = 0  # Unplugged
+            status = 0  # discharging
             level = 70 - ((minute_of_day - 540) / 180) * 10  # 70→60
             base_temp = 34
         elif 720 <= minute_of_day < 1080:  # 12:00–18:00
-            plugged = "UNPLUGGED"
-            status = "discharging"
+            connected_type = 0  # Unplugged
+            status = 0  # discharging
             level = 60 - ((minute_of_day - 720) / 360) * 40  # 60→20
             base_temp = 38
         elif 1080 <= minute_of_day < 1320:  # 18:00–22:00
-            plugged = "AC"
-            status = "charging"
+            connected_type = 2  # USB power (varied connection type)
+            status = 1  # charging
             level = 20 + ((minute_of_day - 1080) / 240) * 80  # 20→100
             base_temp = 36
         else:  # 22:00–24:00
-            plugged = "AC"
-            status = "full"
+            connected_type = 3  # Wireless charging (varied connection type)
+            status = 2  # full
             level = 100.0
             base_temp = 30
 
@@ -93,10 +94,12 @@ def generate_daily_battery_profile(
             BatterySample(
                 uuid=device_uuid,
                 timestamp=ts,
-                level=float(f"{level:.2f}"),
-                plugged=plugged,
+                received=ts,  # Set received same as timestamp
+                level=int(level),
+                connected_type=connected_type,
                 status=status,
                 temperature=temperature,
+                device_type=0,  # Set device_type to 0
             )
         )
 
@@ -106,16 +109,28 @@ def generate_daily_battery_profile(
 def write_csv(samples: List[BatterySample], fileobj=sys.stdout) -> None:
     writer = csv.writer(fileobj)
     # Header compatible with your table schema
-    writer.writerow(["uuid", "timestamp", "level", "plugged", "status", "temperature"])
+    writer.writerow(["uuid", "timestamp", "received", "level", "connected_type", "status", "temperature", "device_type"])
     for s in samples:
+        # Format timestamps with timezone for PostgreSQL timestamp with time zone
+        # Format: 'YYYY-MM-DD HH:MM:SS+TZ:TZ' (e.g., '2024-01-01 12:00:00+00:00')
+        # Use isoformat() and replace 'T' with space, and ensure timezone format
+        timestamp_iso = s.timestamp.isoformat()
+        timestamp_str = timestamp_iso.replace('T', ' ')
+        # Ensure timezone has colon (isoformat() already includes it for timezone-aware datetimes)
+        
+        received_iso = s.received.isoformat()
+        received_str = received_iso.replace('T', ' ')
+        
         writer.writerow(
             [
                 s.uuid,
-                s.timestamp.isoformat(sep=" "),
-                f"{s.level:.2f}",
-                s.plugged,
+                timestamp_str,
+                received_str,
+                s.level,
+                s.connected_type,
                 s.status,
                 s.temperature,
+                s.device_type,
             ]
         )
 
@@ -134,6 +149,7 @@ def main():
         day=today_utc,
         samples_per_day=1440,
     )
+
     # Use newline='' to avoid blank lines in CSV on Windows
     with open("battery_data.csv", "w", newline="", encoding="utf-8") as f:
         write_csv(samples, fileobj=f)
