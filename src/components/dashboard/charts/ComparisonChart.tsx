@@ -7,6 +7,7 @@ import { Card, Select, Spinner } from "flowbite-react";
 import { useMemo, useRef, useState } from "react";
 import SensorDropdown from "../SensorDropdown";
 import useSectionState from "@/hooks/useSectionState";
+import dayjs from "dayjs";
 
 const ComparisonChart: React.FC<{
     sectionType: SectionType;
@@ -81,9 +82,10 @@ const ComparisonChart: React.FC<{
                             <input
                                 type="date"
                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                                value={currentSectionParams.date.toISOString().split('T')[0]}
+                                value={dayjs(currentSectionParams.date).format('YYYY-MM-DD')}
                                 onChange={(e) => {
-                                    updateSectionParams(sectionType, { date: new Date(e.target.value) })
+                                    const date = new Date(e.target.value);
+                                    updateSectionParams(sectionType, { date })
                                     initTimeRange(sectionType)
                                 }}
                             />

@@ -3,11 +3,14 @@ import { supabase } from '@/lib/supabase';
 import { mapQuery } from '@/lib/supabaseHelper';
 import { CampaignParticipant, CampaignTableFieldWithTable } from '@/types/campaign';
 import { ChartParams, ChartType } from '@/types/chart';
+import dayjs from 'dayjs';
+
 
 type BucketNumericalData = { bucket: string, avg: number, min: number, max: number }
 type BucketCategoricalData = { bucket: string, category: string, count: number }
 
 const DAY = 24 * 60 * 60 * 1000
+const DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ssZ'
 
 export async function getCampaignDailySummary(campaignId: number, date: Date, page: number, pageCount: number) {
     const from = (page - 1) * pageCount;
@@ -17,7 +20,7 @@ export async function getCampaignDailySummary(campaignId: number, date: Date, pa
         .from(`profiles`)
         .select(`uuid, email, campaign_table_user_daily_summary(*), messages(count)`)
         .eq('campaign_id', campaignId)
-        .filter('campaign_table_user_daily_summary.day', 'eq', date.toISOString().split('T')[0])
+        .filter('campaign_table_user_daily_summary.day', 'eq', dayjs(date).format('YYYY-MM-DD'))
         .range(from, to)
 
     if (error) throw new Error(error.message);
@@ -74,8 +77,8 @@ export async function getTimelineOverviewData(fields: CampaignTableFieldWithTabl
 
     const data = await mapQuery(fields, v => {
         return supabase.rpc(v.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
-            start_time: new Date(date.getTime() - DAY).toISOString(),
-            end_time: new Date(date.getTime() + 2 * DAY).toISOString(),
+            start_time: dayjs(date.getTime() - DAY).format(DATE_FORMAT),
+            end_time: dayjs(date.getTime() + 2 * DAY).format(DATE_FORMAT),
             uuid: uuid,
             table_name: v.tableName,
             column_name: v.name,
@@ -123,8 +126,8 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
 
     const data = await mapQuery(participants, p => {
         return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
-            start_time: date.toISOString(),
-            end_time: new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+            start_time: dayjs(date).format(DATE_FORMAT),
+            end_time: dayjs(date).add(1, 'day').format(DATE_FORMAT),
             uuid: p.uuid,
             table_name: tableName,
             column_name: columnName,
@@ -171,13 +174,14 @@ export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], 
 
     const tableName = field.tableName
     const columnName = field.name
+    date.setHours(0, 0, 0, 0);
 
     const dates = Array.from({ length: 7 }, (_, i) => new Date(date.getTime() - i * 24 * 60 * 60 * 1000))
 
     const data = await mapQuery(dates, d => {
         return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
-            start_time: d.toISOString(),
-            end_time: new Date(d.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+            start_time: dayjs(d).format(DATE_FORMAT),
+            end_time: dayjs(d).add(1, 'day').format(DATE_FORMAT),
             uuid: uuid,
             table_name: tableName,
             column_name: columnName,
@@ -189,8 +193,8 @@ export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], 
     if (field.field_type == "categorical") {
         const categoricalData = data as BucketCategoricalData[][]
         return dates.map((d, idx) => ({
-            title: d.toISOString().split('T')[0],
-            id: d.toISOString().split('T')[0],
+            title: dayjs(d).format('YYYY-MM-DD'),
+            id: dayjs(d).format('YYYY-MM-DD'),
             table: tableName,
             column: columnName,
             chartType: "categorical" as ChartType,
@@ -202,8 +206,8 @@ export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], 
     } else {
         const numericalData = data as BucketNumericalData[][]
         return dates.map((d, idx) => ({
-            title: d.toISOString().split('T')[0],
-            id: d.toISOString().split('T')[0],
+            title: dayjs(d).format('YYYY-MM-DD'),
+            id: dayjs(d).format('YYYY-MM-DD'),
             table: tableName,
             column: columnName,
             chartType: "numerical" as ChartType,

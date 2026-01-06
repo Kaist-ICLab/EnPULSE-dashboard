@@ -1,6 +1,16 @@
 import { ChartParams, ChartPinQuery, SectionType } from "@/types/chart";
 import { create } from "zustand";
 
+const DAY = 24 * 60 * 60 * 1000;
+
+function getLocalDay() {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    console.log('now:', now);
+    return now;
+}
+
 export const sectionTypes = Object.freeze([
     SectionType.TimelineOverview,
     SectionType.IntraPerson,
@@ -23,7 +33,7 @@ const useSectionState = create<SectionState>((set) => ({
     sectionParams: sectionTypes.reduce((acc, type) => {
         acc[type] = {
             uuid: '',
-            date: new Date(),
+            date: getLocalDay(),
             fieldId: 0,
         }
         return acc
@@ -31,8 +41,8 @@ const useSectionState = create<SectionState>((set) => ({
 
     timeRange: sectionTypes.reduce((acc, type) => {
         acc[type] = {
-            start: new Date(0).setHours(0, 0, 0, 0),
-            end: new Date(0).setHours(23, 59, 59, 999),
+            start: 0,
+            end: DAY - 1,
         }
         return acc
     }, {} as { [key: string]: { start: number, end: number } }),
@@ -58,7 +68,7 @@ const useSectionState = create<SectionState>((set) => ({
 
     initTimeRange: (key: string) => {
         set(state => ({
-            timeRange: { ...state.timeRange, [key]: { start: new Date(0).setHours(0, 0, 0, 0), end: new Date(0).setHours(23, 59, 59, 999) } }
+            timeRange: { ...state.timeRange, [key]: { start: 0, end: DAY - 1 } }
         }))
     },
 

@@ -185,14 +185,6 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
         });
     }, [chartData, timeScale, bucketSize, hideTooltip, showTooltip]);
 
-    const handleDoubleClick = useCallback(() => {
-        const offset = new Date().getTimezoneOffset() * 60 * 1000;
-        updateTimeRange(sectionType, {
-            start: offset,
-            end: 86400 * 1000 + offset
-        });
-    }, [sectionType, updateTimeRange]);
-
     if (width === 0 || height === 0) {
         return (
             <div ref={containerRef} className='w-full flex flex-row justify-center items-center' style={{ height: '100px' }} />
@@ -214,7 +206,7 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
                     onMouseMove={handleMouseMove}
                     onMouseLeave={hideTooltip}
                 >
-                    <Group left={margin.left} top={margin.top} onDoubleClick={handleDoubleClick}>
+                    <Group left={margin.left} top={margin.top} onDoubleClick={() => initTimeRange(sectionType)}>
                         {valueScale && (
                             <>
                                 {chartData.map((d, i) => {

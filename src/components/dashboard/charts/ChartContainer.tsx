@@ -12,24 +12,26 @@ const ChartContainer: React.FC<{
     sectionType: SectionType;
     bucketSize: number;
 }> = ({ timelines, sectionType, bucketSize }) => {
+    const widthReduction = 80;
     const chartContainerRef = useRef<HTMLDivElement>(null);
 
-    const [width, setWidth] = useState(0);
+    const [chartWidth, setChartWidth] = useState(0);
     const { updateSectionParams, chartPinQuery, updatePinQuery } = useSectionState()
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
 
+    // TODO: Currently it is bugged, should prevent update when it is dragged
     useEffect(() => {
         setChartOrder(timelines.map((d) => d.id))
     }, [timelines])
 
     useEffect(() => {
         if (chartContainerRef.current) {
-            setWidth(chartContainerRef.current.offsetWidth);
+            setChartWidth(chartContainerRef.current.offsetWidth - widthReduction);
 
             const updateSize = () => {
                 if (chartContainerRef.current) {
-                    setWidth(chartContainerRef.current.offsetWidth);
+                    setChartWidth(chartContainerRef.current.offsetWidth - widthReduction);
                 }
             }
             updateSize();
@@ -105,7 +107,7 @@ const ChartContainer: React.FC<{
                     isSelected={selectedChart === timeline.id}
                     setSelectedChart={(p) => setSelectedChart(p)}
                     bucketSize={bucketSize}
-                    width={width - 80}
+                    width={Math.max(chartWidth - 160, 0)}
                 />
             )}
             <DnDProvider
@@ -121,14 +123,14 @@ const ChartContainer: React.FC<{
                         isSelected={selectedChart === id}
                         setSelectedChart={(p) => setSelectedChart(p)}
                         bucketSize={bucketSize}
-                        width={width - 80}
+                        width={chartWidth}
                     />
                 ))}
             </DnDProvider>
-            <div className='flex flex-row justify-center items-center'>
-                <div className='w-12'></div>
+            <div className='flex flex-row justify-end items-end'>
                 <TimelineXAxis
                     sectionType={sectionType}
+                    width={chartWidth}
                 />
             </div>
         </div>
