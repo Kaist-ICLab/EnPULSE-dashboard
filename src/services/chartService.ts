@@ -3,7 +3,6 @@ import { supabase } from '@/lib/supabase';
 import { mapQuery } from '@/lib/supabaseHelper';
 import { CampaignParticipant, CampaignTableFieldWithTable } from '@/types/campaign';
 import { ChartParams, ChartType } from '@/types/chart';
-// import { mapQuery } from '@/lib/supabaseHelper';
 
 type BucketNumericalData = { bucket: string, avg: number, min: number, max: number }
 type BucketCategoricalData = { bucket: string, category: string, count: number }
@@ -83,8 +82,6 @@ export async function getTimelineOverviewData(fields: CampaignTableFieldWithTabl
             bucket_unit: bucketSize,
         })
     }) as (BucketNumericalData | BucketCategoricalData)[][]
-
-    console.log(data)
 
     return fields.map((v, idx) => {
         if (v.field_type == "categorical") {

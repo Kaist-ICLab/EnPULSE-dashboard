@@ -8,7 +8,7 @@ import { Group } from '@visx/group';
 import { Brush } from '@visx/brush';
 import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import { useMemo, useRef, useEffect, useCallback } from "react";
-import { extent, max } from 'd3-array';
+import { max } from 'd3-array';
 import { formatTime, colors, margin } from './shared/timelineUtils';
 
 type NumericalDataPoint = {
@@ -79,22 +79,6 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
 
     // Time scale
     const timeScale = useMemo(() => {
-        if (chartData.length === 0) {
-            return scaleTime({
-                domain: [baseTime + currentTimeRange.start, baseTime + currentTimeRange.end],
-                range: [0, innerWidth],
-            });
-        }
-
-        const timestamps = chartData.map(d => d.timestamp);
-        const timeExtent = extent(timestamps);
-        if (!timeExtent[0] || !timeExtent[1]) {
-            return scaleTime({
-                domain: [baseTime + currentTimeRange.start, baseTime + currentTimeRange.end],
-                range: [0, innerWidth],
-            });
-        }
-
         const rangeStart = baseTime + currentTimeRange.start;
         const rangeEnd = baseTime + currentTimeRange.end;
 
@@ -102,7 +86,7 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
             domain: [rangeStart, rangeEnd],
             range: [0, innerWidth],
         });
-    }, [chartData, baseTime, currentTimeRange, innerWidth]);
+    }, [baseTime, currentTimeRange, innerWidth]);
 
     // Value scale
     const valueScale = useMemo(() => {
@@ -112,13 +96,7 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
                 range: [innerHeight || 1, 0],
             });
         }
-        const maxValue = max(chartData, d => d.max !== undefined && !isNaN(d.max) ? d.max : 0) || 0;
-        if (maxValue <= 0 || isNaN(maxValue)) {
-            return scaleLinear({
-                domain: [0, 1],
-                range: [innerHeight, 0],
-            });
-        }
+        const maxValue = max(chartData, d => d.max) || 0;
         return scaleLinear({
             domain: [0, maxValue * 1.1],
             range: [innerHeight, 0],
@@ -129,27 +107,25 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
     // Bar width calculation
     const barWidth = useMemo(() => {
         if (chartData.length === 0) return 0;
-        const bucketWidth = (bucketSize / (timeRange[sectionType].end - timeRange[sectionType].start)) * innerWidth;
 
-        console.log('bucketWidth', bucketWidth);
-        return Math.max(2, Math.min(bucketWidth * 0.9, innerWidth / chartData.length));
+        const bucketCount = (timeRange[sectionType].end - timeRange[sectionType].start) / bucketSize;
+        const bucketWidth = innerWidth / bucketCount;
+
+        return bucketWidth;
     }, [chartData, bucketSize, innerWidth, timeRange, sectionType]);
 
     // Handle brush end (zoom)
-    const handleBrushChange = useCallback((bounds: unknown) => {
-        const brushBounds = bounds as { start?: { x: number, y: number }, end?: { x: number, y: number } } | null;
-        if (!brushBounds || !brushBounds.start || !brushBounds.end) return;
+    const handleBrushChange = useCallback((bounds: { x0: number, x1: number } | null) => {
+        if (bounds === null) return;
 
-        const startTime = timeScale.invert(brushBounds.start.x);
-        const endTime = timeScale.invert(brushBounds.end.x);
+        const brushStart = bounds.x0
+        const brushEnd = bounds.x1;
 
-        if (startTime && endTime) {
-            updateTimeRange(sectionType, {
-                start: startTime.getTime() - baseTime,
-                end: endTime.getTime() - baseTime,
-            });
-        }
-    }, [timeScale, sectionType, baseTime, updateTimeRange]);
+        updateTimeRange(sectionType, {
+            start: brushStart - baseTime,
+            end: brushEnd - baseTime,
+        });
+    }, [sectionType, baseTime, updateTimeRange]);
 
     // Handle mouse move for tooltip
     const handleMouseMove = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
@@ -209,6 +185,14 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
         });
     }, [chartData, timeScale, bucketSize, hideTooltip, showTooltip]);
 
+    const handleDoubleClick = useCallback(() => {
+        const offset = new Date().getTimezoneOffset() * 60 * 1000;
+        updateTimeRange(sectionType, {
+            start: offset,
+            end: 86400 * 1000 + offset
+        });
+    }, [sectionType, updateTimeRange]);
+
     if (width === 0 || height === 0) {
         return (
             <div ref={containerRef} className='w-full flex flex-row justify-center items-center' style={{ height: '100px' }} />
@@ -230,7 +214,7 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
                     onMouseMove={handleMouseMove}
                     onMouseLeave={hideTooltip}
                 >
-                    <Group left={margin.left} top={margin.top}>
+                    <Group left={margin.left} top={margin.top} onDoubleClick={handleDoubleClick}>
                         {valueScale && (
                             <>
                                 {chartData.map((d, i) => {
@@ -258,13 +242,13 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
                                     return (
                                         <g key={`min-max-${i}`}>
                                             <circle
-                                                cx={x}
+                                                cx={x - barWidth / 2}
                                                 cy={minY}
                                                 r={2.5}
                                                 fill={colors[2]}
                                             />
                                             <circle
-                                                cx={x}
+                                                cx={x - barWidth / 2}
                                                 cy={maxY}
                                                 r={2.5}
                                                 fill={colors[1]}
@@ -281,9 +265,9 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
                             height={innerHeight}
                             margin={margin}
                             handleSize={8}
-                            resizeTriggerAreas={['left', 'right']}
                             brushDirection="horizontal"
                             onBrushEnd={handleBrushChange}
+                            resetOnEnd={true}
                         />
                     </Group>
                 </svg>
