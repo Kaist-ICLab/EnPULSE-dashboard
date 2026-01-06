@@ -226,9 +226,9 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
                                     return (
                                         <Bar
                                             key={`bar-${i}`}
-                                            x={x - barWidth}
+                                            x={x - barWidth * 0.95}
                                             y={yValue}
-                                            width={barWidth}
+                                            width={barWidth * 0.9}
                                             height={barHeight}
                                             fill={colors[0]}
                                         />
