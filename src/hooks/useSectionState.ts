@@ -42,7 +42,7 @@ const useSectionState = create<SectionState>((set) => ({
     timeRange: sectionTypes.reduce((acc, type) => {
         acc[type] = {
             start: 0,
-            end: DAY - 1,
+            end: DAY,
         }
         return acc
     }, {} as { [key: string]: { start: number, end: number } }),
@@ -68,7 +68,7 @@ const useSectionState = create<SectionState>((set) => ({
 
     initTimeRange: (key: string) => {
         set(state => ({
-            timeRange: { ...state.timeRange, [key]: { start: 0, end: DAY - 1 } }
+            timeRange: { ...state.timeRange, [key]: { start: 0, end: DAY } }
         }))
     },
 

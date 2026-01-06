@@ -118,14 +118,14 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
     const handleBrushChange = useCallback((bounds: { x0: number, x1: number } | null) => {
         if (bounds === null) return;
 
-        const brushStart = bounds.x0
-        const brushEnd = bounds.x1;
+        const brushStart = Math.floor(bounds.x0 / bucketSize) * bucketSize;
+        const brushEnd = Math.ceil(bounds.x1 / bucketSize) * bucketSize;
 
         updateTimeRange(sectionType, {
             start: brushStart - baseTime,
             end: brushEnd - baseTime,
         });
-    }, [sectionType, baseTime, updateTimeRange]);
+    }, [sectionType, baseTime, updateTimeRange, bucketSize]);
 
     // Handle mouse move for tooltip
     const handleMouseMove = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
@@ -139,15 +139,14 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
 
         const timeMs = time.getTime();
         let closestData: NumericalDataPoint | null = null;
-        let minDistance = Infinity;
 
-        chartData.forEach(d => {
-            const distance = Math.abs(d.timestamp - timeMs);
-            if (distance < minDistance && distance < bucketSize) {
-                minDistance = distance;
+
+        for (const d of chartData) {
+            if (timeMs >= d.timestamp && timeMs <= d.timestamp + bucketSize) {
                 closestData = d;
+                break;
             }
-        });
+        }
 
         if (closestData == null) {
             hideTooltip();
@@ -218,7 +217,7 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
                                     return (
                                         <Bar
                                             key={`bar-${i}`}
-                                            x={x - barWidth * 0.95}
+                                            x={x + barWidth * 0.05}
                                             y={yValue}
                                             width={barWidth * 0.9}
                                             height={barHeight}
@@ -234,13 +233,13 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
                                     return (
                                         <g key={`min-max-${i}`}>
                                             <circle
-                                                cx={x - barWidth / 2}
+                                                cx={x + barWidth / 2}
                                                 cy={minY}
                                                 r={2.5}
                                                 fill={colors[2]}
                                             />
                                             <circle
-                                                cx={x - barWidth / 2}
+                                                cx={x + barWidth / 2}
                                                 cy={maxY}
                                                 r={2.5}
                                                 fill={colors[1]}
