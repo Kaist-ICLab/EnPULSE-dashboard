@@ -25,6 +25,7 @@ const ComparisonChart: React.FC<{
     const currentSectionParams = useMemo(() => sectionParams[sectionType], [sectionParams, sectionType])
     const { timeline, bucketSize, loading, error } = useTimeline(sectionType, selectedFields, (chartRef.current?.clientWidth || 0) - 88);
 
+
     const users = useMemo(() => {
         return Array.from(campaignParticipants.values()).map(v => ({ id: v.uuid, name: v.email }))
     }, [campaignParticipants])

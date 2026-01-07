@@ -12,10 +12,10 @@ const TimelineXAxis: React.FC<{
     sectionType: SectionType;
     width: number;
 }> = ({ sectionType, width }) => {
-    const { timeRange, updateTimeRange } = useSectionState();
+    const { timeRange, draggedTime, updateDraggedTime, updateTimeRangeAfterDrag } = useSectionState();
     const currentTimeRange = useMemo(() => {
-        return timeRange[sectionType];
-    }, [timeRange, sectionType]);
+        return { start: timeRange[sectionType].start + draggedTime[sectionType], end: timeRange[sectionType].end + draggedTime[sectionType] };
+    }, [timeRange, sectionType, draggedTime]);
 
     const height = 20;
     const containerRef = useRef<HTMLDivElement>(null);
@@ -37,15 +37,52 @@ const TimelineXAxis: React.FC<{
     const [isDragging, setIsDragging] = useState(false);
     const dragStartRef = useRef<{ x: number; startTime: number; endTime: number } | null>(null);
 
+    // Throttle store updates with requestAnimationFrame so we don't
+    // push draggedTime on every mousemove and hit maximum update depth.
+    const latestDeltaRef = useRef(0);
+    const rafIdRef = useRef<number | null>(null);
+    const lastSentTimeRef = useRef(0);
+
+    const startRafLoop = useCallback(() => {
+        if (rafIdRef.current != null) return;
+
+        const loop = () => {
+            const now = performance.now();
+            const minInterval = 50; // ms -> ~20 updates per second
+
+            if (now - lastSentTimeRef.current >= minInterval) {
+                updateDraggedTime(sectionType, latestDeltaRef.current);
+                lastSentTimeRef.current = now;
+            }
+
+            rafIdRef.current = window.requestAnimationFrame(loop);
+        };
+
+        rafIdRef.current = window.requestAnimationFrame(loop);
+    }, [sectionType, updateDraggedTime]);
+
+    const stopRafLoop = useCallback(() => {
+        if (rafIdRef.current != null) {
+            window.cancelAnimationFrame(rafIdRef.current);
+            rafIdRef.current = null;
+        }
+    }, []);
+
     const handleMouseDown = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
         if (event.button !== 0) return; // Only handle left mouse button
+
+        // Prevent text/tick selection while dragging
+        event.preventDefault();
+
         setIsDragging(true);
         dragStartRef.current = {
             x: event.clientX,
             startTime: currentTimeRange.start,
             endTime: currentTimeRange.end,
         };
-    }, [currentTimeRange]);
+        latestDeltaRef.current = 0;
+        startRafLoop();
+    }, [currentTimeRange, startRafLoop]);
 
     const handleMouseMove = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
         if (!isDragging || !dragStartRef.current) return;
@@ -55,30 +92,36 @@ const TimelineXAxis: React.FC<{
         const pixelToTimeRatio = currentRange / innerWidth;
         const deltaTime = -deltaX * pixelToTimeRatio; // Negative because dragging right should move forward in time
 
-        const newStart = dragStartRef.current.startTime + deltaTime;
-        const newEnd = dragStartRef.current.endTime + deltaTime;
-
-        updateTimeRange(sectionType, {
-            start: newStart,
-            end: newEnd,
-        });
-    }, [isDragging, innerWidth, sectionType, updateTimeRange]);
+        // Only update the ref here; the RAF loop will push to the store
+        latestDeltaRef.current = deltaTime;
+    }, [isDragging, innerWidth]);
 
     const handleMouseUp = useCallback(() => {
         setIsDragging(false);
+        stopRafLoop();
         dragStartRef.current = null;
-    }, []);
+        updateTimeRangeAfterDrag(sectionType);
+        latestDeltaRef.current = 0;
+    }, [sectionType, stopRafLoop, updateTimeRangeAfterDrag]);
 
+    // Handle global mouseup so dragging stops even if the cursor leaves the SVG.
     useEffect(() => {
-        if (isDragging) {
-            const handleGlobalMouseUp = () => {
-                setIsDragging(false);
-                dragStartRef.current = null;
-            };
-            window.addEventListener('mouseup', handleGlobalMouseUp);
-            return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
-        }
-    }, [isDragging]);
+        if (!isDragging) return;
+
+        const handleGlobalMouseUp = () => {
+            handleMouseUp();
+        };
+
+        window.addEventListener('mouseup', handleGlobalMouseUp);
+        return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+    }, [isDragging, handleMouseUp]);
+
+    // Cleanup RAF on unmount just in case.
+    useEffect(() => {
+        return () => {
+            stopRafLoop();
+        };
+    }, [stopRafLoop]);
 
     // Format tick values for date display
     const formatTickValue = useCallback((value: Date | { valueOf(): number }) => {

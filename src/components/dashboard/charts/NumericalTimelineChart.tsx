@@ -36,8 +36,10 @@ const NumericalTimelineChart: React.FC<NumericalTimelineChartProps> = ({
     width,
     height
 }) => {
-    const { timeRange, updateTimeRange, initTimeRange } = useSectionState();
-    const currentTimeRange = useMemo(() => timeRange[sectionType], [timeRange, sectionType]);
+    const { timeRange, draggedTime, updateTimeRange, initTimeRange } = useSectionState();
+    const currentTimeRange = useMemo(() => {
+        return { start: timeRange[sectionType].start + draggedTime[sectionType], end: timeRange[sectionType].end + draggedTime[sectionType] };
+    }, [timeRange, sectionType, draggedTime]);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);

@@ -17,10 +17,13 @@ export const sectionTypes = Object.freeze([
 interface SectionState {
     sectionParams: { [key: string]: ChartParams }
     timeRange: { [key: string]: { start: number, end: number } }
+    draggedTime: { [key: string]: number }
     chartPinQuery: ChartPinQuery
     setSectionParams: (uuid: string, fieldId: number, date: Date) => void
     updateSectionParams: (key: string, params: Partial<ChartParams>) => void
+    updateDraggedTime: (key: string, time: number) => void
     updateTimeRange: (key: string, range: { start: number, end: number }) => void
+    updateTimeRangeAfterDrag: (key: string) => void
     initTimeRange: (key: string) => void
     initPinQuery: (key: SectionType) => void
     updatePinQuery: (key: SectionType, params: ChartParams | null) => void
@@ -49,6 +52,11 @@ const useSectionState = create<SectionState>((set) => ({
         return acc
     }, {} as ChartPinQuery),
 
+    draggedTime: sectionTypes.reduce((acc, type) => {
+        acc[type] = 0
+        return acc
+    }, {} as { [key: string]: number }),
+
     setSectionParams: (uuid: string, fieldId: number, date: Date) => {
         sectionTypes.forEach(type => {
             set(state => ({
@@ -60,6 +68,25 @@ const useSectionState = create<SectionState>((set) => ({
     updateSectionParams: (key: string, params: Partial<ChartParams>) => {
         set(state => ({
             sectionParams: { ...state.sectionParams, [key]: { ...state.sectionParams[key], ...params } }
+        }))
+    },
+
+    initDraggedTime: (key: string) => {
+        set(state => ({
+            draggedTime: { ...state.draggedTime, [key]: 0 }
+        }))
+    },
+
+    updateDraggedTime: (key: string, time: number) => {
+        set(state => ({
+            draggedTime: { ...state.draggedTime, [key]: time }
+        }))
+    },
+
+    updateTimeRangeAfterDrag: (key: string) => {
+        set(state => ({
+            timeRange: { ...state.timeRange, [key]: { start: state.timeRange[key].start + state.draggedTime[key], end: state.timeRange[key].end + state.draggedTime[key] } },
+            draggedTime: { ...state.draggedTime, [key]: 0 }
         }))
     },
 

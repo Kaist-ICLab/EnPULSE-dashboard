@@ -165,7 +165,6 @@ const CategoricalTimelineChart: React.FC<CategoricalTimelineChartProps> = ({
         const timeRange = timeExtent[1] - timeExtent[0];
         const bucketWidth = (bucketSize / timeRange) * innerWidth;
 
-        console.log('bucketWidth', bucketWidth);
         return Math.max(2, Math.min(bucketWidth * 0.9, innerWidth / chartData.length));
     }, [chartData, bucketSize, innerWidth]);
 

@@ -74,8 +74,6 @@ export async function getDailyStatCount(campaignId: number) {
 export async function getTimelineOverviewData(fields: CampaignTableFieldWithTable[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
     const { uuid, date } = params;
 
-    console.log(date)
-
     const data = await mapQuery(fields, v => {
         return supabase.rpc(v.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: dayjs(date).format(DATE_FORMAT),
@@ -121,8 +119,6 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
     const { date, fieldId } = params;
     const field = fields.find(v => v.id === fieldId)
     if (!field) throw new Error('Field not found');
-
-    console.log(date)
 
     const tableName = field.tableName
     const columnName = field.name
