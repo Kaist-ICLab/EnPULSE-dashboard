@@ -9,7 +9,6 @@ import dayjs from 'dayjs';
 type BucketNumericalData = { bucket: string, avg: number, min: number, max: number }
 type BucketCategoricalData = { bucket: string, category: string, count: number }
 
-const DAY = 24 * 60 * 60 * 1000
 const DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ssZ'
 
 export async function getCampaignDailySummary(campaignId: number, date: Date, page: number, pageCount: number) {
@@ -75,10 +74,12 @@ export async function getDailyStatCount(campaignId: number) {
 export async function getTimelineOverviewData(fields: CampaignTableFieldWithTable[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
     const { uuid, date } = params;
 
+    console.log(date)
+
     const data = await mapQuery(fields, v => {
         return supabase.rpc(v.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
-            start_time: dayjs(date.getTime() - DAY).format(DATE_FORMAT),
-            end_time: dayjs(date.getTime() + 2 * DAY).format(DATE_FORMAT),
+            start_time: dayjs(date).format(DATE_FORMAT),
+            end_time: dayjs(date).add(1, 'day').format(DATE_FORMAT),
             uuid: uuid,
             table_name: v.tableName,
             column_name: v.name,
@@ -120,6 +121,8 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
     const { date, fieldId } = params;
     const field = fields.find(v => v.id === fieldId)
     if (!field) throw new Error('Field not found');
+
+    console.log(date)
 
     const tableName = field.tableName
     const columnName = field.name

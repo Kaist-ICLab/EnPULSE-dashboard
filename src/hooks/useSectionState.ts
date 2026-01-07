@@ -1,14 +1,11 @@
 import { ChartParams, ChartPinQuery, SectionType } from "@/types/chart";
 import { create } from "zustand";
+import dayjs from "dayjs";
 
 const DAY = 24 * 60 * 60 * 1000;
 
 function getLocalDay() {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-
-    console.log('now:', now);
-    return now;
+    return dayjs().startOf('day').toDate()
 }
 
 export const sectionTypes = Object.freeze([

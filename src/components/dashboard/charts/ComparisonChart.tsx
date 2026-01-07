@@ -20,6 +20,7 @@ const ComparisonChart: React.FC<{
         acc[field.id] = false
         return acc
     }, {} as { [key: number]: boolean }))
+
     const selectedFields = useMemo(() => mergedTabledFields.filter(v => isFieldSelected[v.id] || sectionType !== SectionType.TimelineOverview), [isFieldSelected, mergedTabledFields, sectionType])
     const currentSectionParams = useMemo(() => sectionParams[sectionType], [sectionParams, sectionType])
     const { timeline, bucketSize, loading, error } = useTimeline(sectionType, selectedFields, (chartRef.current?.clientWidth || 0) - 88);
@@ -84,7 +85,7 @@ const ComparisonChart: React.FC<{
                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                                 value={dayjs(currentSectionParams.date).format('YYYY-MM-DD')}
                                 onChange={(e) => {
-                                    const date = new Date(e.target.value);
+                                    const date = dayjs(e.target.value).startOf('day').toDate();
                                     updateSectionParams(sectionType, { date })
                                     initTimeRange(sectionType)
                                 }}
