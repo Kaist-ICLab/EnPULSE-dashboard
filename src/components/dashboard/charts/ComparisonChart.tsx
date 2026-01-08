@@ -95,8 +95,11 @@ const ComparisonChart: React.FC<{
                     </div>
                 </div>
 
-                <div className="w-full rounded-lg py-4 flex flex-col gap-4 items-center justify-center" ref={chartRef}>
-                    {loading && <Spinner className="" />}
+                <div className="w-full rounded-lg py-4 flex flex-col gap-4 items-center justify-center relative" ref={chartRef}>
+                    {loading && <div className="w-full h-full flex items-center justify-center absolute top-0 left-0 bg-white/50 backdrop-blur-sm rounded-lg">
+                        <Spinner className="" />
+                    </div>
+                    }
                     {error && (
                         <p className="text-red-500 font-medium">Failed to load data: {error.message}</p>
                     )}

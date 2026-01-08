@@ -84,10 +84,25 @@ const useSectionState = create<SectionState>((set) => ({
     },
 
     updateTimeRangeAfterDrag: (key: string) => {
-        set(state => ({
-            timeRange: { ...state.timeRange, [key]: { start: state.timeRange[key].start + state.draggedTime[key], end: state.timeRange[key].end + state.draggedTime[key] } },
-            draggedTime: { ...state.draggedTime, [key]: 0 }
-        }))
+        set(state => {
+            const prevRange = state.timeRange[key];
+            const dragged = state.draggedTime[key];
+
+            const currentDate = dayjs(state.sectionParams[key].date)
+            const draggedMidpointDate = dayjs(state.sectionParams[key].date).add((state.timeRange[key].start + state.timeRange[key].end) / 2, 'ms').add(dragged, 'ms').startOf('day')
+            const rangeTimeDelta = draggedMidpointDate.diff(currentDate, 'ms')
+
+            const newRange = {
+                start: prevRange.start - rangeTimeDelta + dragged,
+                end: prevRange.end - rangeTimeDelta + dragged,
+            }
+
+            return {
+                timeRange: { ...state.timeRange, [key]: newRange },
+                draggedTime: { ...state.draggedTime, [key]: 0 },
+                sectionParams: { ...state.sectionParams, [key]: { ...state.sectionParams[key], date: draggedMidpointDate.toDate() } },
+            };
+        });
     },
 
     initTimeRange: (key: string) => {

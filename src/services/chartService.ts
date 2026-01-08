@@ -73,11 +73,12 @@ export async function getDailyStatCount(campaignId: number) {
 
 export async function getTimelineOverviewData(fields: CampaignTableFieldWithTable[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
     const { uuid, date } = params;
+    const timeGap = timeRange.end - timeRange.start;
 
     const data = await mapQuery(fields, v => {
         return supabase.rpc(v.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
-            start_time: dayjs(date).format(DATE_FORMAT),
-            end_time: dayjs(date).add(1, 'day').format(DATE_FORMAT),
+            start_time: dayjs(date).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
+            end_time: dayjs(date).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid: uuid,
             table_name: v.tableName,
             column_name: v.name,
@@ -115,8 +116,9 @@ export async function getTimelineOverviewData(fields: CampaignTableFieldWithTabl
     })
 }
 
-export async function getInterPersonData(fields: CampaignTableFieldWithTable[], participants: CampaignParticipant[], params: ChartParams, bucketSize: string) {
+export async function getInterPersonData(fields: CampaignTableFieldWithTable[], participants: CampaignParticipant[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
     const { date, fieldId } = params;
+    const timeGap = timeRange.end - timeRange.start;
     const field = fields.find(v => v.id === fieldId)
     if (!field) throw new Error('Field not found');
 
@@ -125,8 +127,8 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
 
     const data = await mapQuery(participants, p => {
         return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
-            start_time: dayjs(date).format(DATE_FORMAT),
-            end_time: dayjs(date).add(1, 'day').format(DATE_FORMAT),
+            start_time: dayjs(date).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
+            end_time: dayjs(date).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid: p.uuid,
             table_name: tableName,
             column_name: columnName,
@@ -165,22 +167,21 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
     }
 }
 
-export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], params: ChartParams, bucketSize: string) {
+export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
     const { date, fieldId, uuid } = params;
-
+    const timeGap = timeRange.end - timeRange.start;
     const field = fields.find(v => v.id === fieldId)
     if (!field) throw new Error('Field not found');
 
     const tableName = field.tableName
     const columnName = field.name
-    date.setHours(0, 0, 0, 0);
 
     const dates = Array.from({ length: 7 }, (_, i) => new Date(date.getTime() - i * 24 * 60 * 60 * 1000))
 
     const data = await mapQuery(dates, d => {
         return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
-            start_time: dayjs(d).format(DATE_FORMAT),
-            end_time: dayjs(d).add(1, 'day').format(DATE_FORMAT),
+            start_time: dayjs(d).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
+            end_time: dayjs(d).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid: uuid,
             table_name: tableName,
             column_name: columnName,

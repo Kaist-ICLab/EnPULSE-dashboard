@@ -58,9 +58,9 @@ export default function useTimeline(secitonType: SectionType, selectedFields: Ca
             if (secitonType === SectionType.TimelineOverview) {
                 data = await getTimelineOverviewData(selectedFields, { uuid, date, fieldId }, currentTimeRange, bucketString);
             } else if (secitonType === SectionType.InterPerson) {
-                data = await getInterPersonData(selectedFields, Array.from(campaignParticipants.values()), { uuid, date, fieldId }, bucketString);
+                data = await getInterPersonData(selectedFields, Array.from(campaignParticipants.values()), { uuid, date, fieldId }, currentTimeRange, bucketString);
             } else if (secitonType === SectionType.IntraPerson) {
-                data = await getIntraPersonData(selectedFields, { uuid, date, fieldId }, bucketString);
+                data = await getIntraPersonData(selectedFields, { uuid, date, fieldId }, currentTimeRange, bucketString);
             }
 
             setTimeline(data);
