@@ -88,7 +88,7 @@ const useSectionState = create<SectionState>((set) => ({
             const prevRange = state.timeRange[key];
             const dragged = state.draggedTime[key];
 
-            const currentDate = dayjs(state.sectionParams[key].date)
+            const currentDate = dayjs(state.sectionParams[key].date).startOf('day')
             const draggedMidpointDate = dayjs(state.sectionParams[key].date).add((state.timeRange[key].start + state.timeRange[key].end) / 2, 'ms').add(dragged, 'ms').startOf('day')
             const rangeTimeDelta = draggedMidpointDate.diff(currentDate, 'ms')
 

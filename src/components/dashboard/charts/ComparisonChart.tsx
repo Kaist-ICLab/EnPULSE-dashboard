@@ -9,6 +9,17 @@ import SensorDropdown from "../SensorDropdown";
 import useSectionState from "@/hooks/useSectionState";
 import dayjs from "dayjs";
 
+function getChartName(sectionType: SectionType) {
+    switch (sectionType) {
+        case SectionType.IntraPerson:
+            return "Intra-Person Comparison";
+        case SectionType.InterPerson:
+            return "Inter-Person Comparison";
+        default:
+            return "Timeline Overview";
+    }
+}
+
 const ComparisonChart: React.FC<{
     sectionType: SectionType;
 }> = ({ sectionType }) => {
@@ -25,27 +36,15 @@ const ComparisonChart: React.FC<{
     const currentSectionParams = useMemo(() => sectionParams[sectionType], [sectionParams, sectionType])
     const { timeline, bucketSize, loading, error } = useTimeline(sectionType, selectedFields, (chartRef.current?.clientWidth || 0) - 88);
 
-
     const users = useMemo(() => {
         return Array.from(campaignParticipants.values()).map(v => ({ id: v.uuid, name: v.email }))
     }, [campaignParticipants])
-
-    const chartName = (() => {
-        switch (sectionType) {
-            case SectionType.IntraPerson:
-                return "Intra-Person Comparison";
-            case SectionType.InterPerson:
-                return "Inter-Person Comparison";
-            default:
-                return "Timeline Overview";
-        }
-    })();
 
     return (
         <Card id={`${sectionType}-comparison-chart`}>
             <div className="w-full">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <h2 className="text-xl font-semibold">{chartName}</h2>
+                    <h2 className="text-xl font-semibold">{getChartName(sectionType)}</h2>
                     <div className="flex flex-col sm:flex-row gap-4">
                         {sectionType == SectionType.TimelineOverview &&
                             <SensorDropdown

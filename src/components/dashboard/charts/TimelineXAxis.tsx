@@ -48,7 +48,7 @@ const TimelineXAxis: React.FC<{
 
         const loop = () => {
             const now = performance.now();
-            const minInterval = 50; // ms -> ~20 updates per second
+            const minInterval = 1000 / 30; // ms -> ~20 updates per second
 
             if (now - lastSentTimeRef.current >= minInterval) {
                 updateDraggedTime(sectionType, latestDeltaRef.current);
@@ -100,8 +100,8 @@ const TimelineXAxis: React.FC<{
         setIsDragging(false);
         stopRafLoop();
         dragStartRef.current = null;
-        updateTimeRangeAfterDrag(sectionType);
         latestDeltaRef.current = 0;
+        updateTimeRangeAfterDrag(sectionType);
     }, [sectionType, stopRafLoop, updateTimeRangeAfterDrag]);
 
     // Handle global mouseup so dragging stops even if the cursor leaves the SVG.

@@ -1,3 +1,5 @@
+import { ScaleLinear, ScaleTime } from "@visx/vendor/d3-scale";
+
 export enum SectionType {
     TimelineOverview = "timeline-overview",
     IntraPerson = "intra-person",
@@ -6,16 +8,19 @@ export enum SectionType {
 
 export type ChartType = "numerical" | "categorical"
 
-export interface TimelineNumericalValue {
+export interface TimelineNumericalPoint {
+    timestamp: number;
     avg: number;
     min: number;
     max: number;
 }
 
-export interface TimelineCategoricalValue {
-    value: string;
-    count: number;
+export interface TimelineCategoricalPoint {
+    timestamp: number;
+    value: { category: number, count: number }[];
 }
+
+export type TimelineDataPoint = TimelineNumericalPoint | TimelineCategoricalPoint;
 
 export interface TimelineData {
     id: string;
@@ -24,8 +29,16 @@ export interface TimelineData {
     column: string;
     chartType: ChartType;
     params: ChartParams;
-    timestamp: number[];
-    value: (TimelineNumericalValue | TimelineCategoricalValue)[];
+    value: (TimelineNumericalPoint | TimelineCategoricalPoint)[];
+}
+
+export interface TimelineChartGraphProps<T extends TimelineDataPoint> {
+    data: T[];
+    height: number;
+    timeScale: ScaleTime<number, number, never>;
+    valueScale: ScaleLinear<number, number, never>;
+    barWidth: number;
+    getCategoryColor?: (categoryIndex: number) => string;
 }
 
 export type ChartParams = {
@@ -41,3 +54,5 @@ export type ChartPinQuery = {
 };
 
 export type ChartPinQueryOption = { date: Date } | { uuid: string } | { fieldId: number } | null
+
+export type TooltipData = { label: string, value: string }[] | null

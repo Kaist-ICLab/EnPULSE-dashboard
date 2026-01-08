@@ -41,7 +41,7 @@ export const ChartItem: React.FC<{
                     sectionType={sectionType}
                     chartType={timeline.chartType}
                     baseTime={timeline.params.date.getTime()}
-                    data={{ timestamp: timeline.timestamp, value: timeline.value }}
+                    data={timeline.value}
                     bucketSize={bucketSize}
                     width={width}
                     height={100}

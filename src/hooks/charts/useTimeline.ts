@@ -46,7 +46,7 @@ export default function useTimeline(secitonType: SectionType, selectedFields: Ca
         if (!selectedCampaignId || !uuid || !date || !fieldId) return;
 
         const intervalInSec = (currentTimeRange.end - currentTimeRange.start) / 1000 / chartWidth; // seconds per pixel
-        const pixelPerBucket = 20 // Change this value to change the bucket size
+        const pixelPerBucket = 10 // Change this value to change the bucket size
         const bucketSize = getBucketSize(intervalInSec * pixelPerBucket);
         const bucketString = getBucketString(bucketSize);
 

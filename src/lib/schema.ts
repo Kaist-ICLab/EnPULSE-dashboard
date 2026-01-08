@@ -941,7 +941,7 @@ export type Database = {
             }
             notification_sensor: {
                 Row: {
-                    category: string
+                    category: number
                     created_at: string
                     device_type: number
                     event_type: string
@@ -954,7 +954,7 @@ export type Database = {
                     visibility: number
                 }
                 Insert: {
-                    category: string
+                    category: number
                     created_at?: string
                     device_type: number
                     event_type: string
@@ -967,7 +967,7 @@ export type Database = {
                     visibility: number
                 }
                 Update: {
-                    category?: string
+                    category?: number
                     created_at?: string
                     device_type?: number
                     event_type?: string
@@ -1414,7 +1414,7 @@ export type Database = {
                 }
                 Returns: {
                     bucket: string
-                    category: string
+                    category: number
                     count: number
                 }[]
             }
