@@ -6,17 +6,17 @@ import { NewCampaignTable } from "@/hooks/create/useNewCampaignTables";
 import { Accordion, AccordionContent, AccordionPanel, AccordionTitle, Button, Card, Dropdown, DropdownItem, TextInput } from "flowbite-react";
 import CampaignTableCard from "./CampaignTableCard";
 import { CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
-import { templateTable } from "@/hooks/create/sensorTemplate";
 
 const CampaignSensors: React.FC<{
     tables: NewCampaignTable[],
+    availableTemplateTables: NewCampaignTable[],
     addTable: (name: string, description: string) => void,
     removeTable: (index: number) => void,
     addNewTemplateTable: (idx: number) => void,
     setDailyCountMax: (index: number, value: number) => void,
     addField: (tableIndex: number, field: CampaignTableField) => void
     setField: (tableIndex: number, fieldIdx: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void,
-}> = ({ tables, addTable, removeTable, addNewTemplateTable, setDailyCountMax, addField, setField }) => {
+}> = ({ tables, availableTemplateTables, addTable, removeTable, addNewTemplateTable, setDailyCountMax, addField, setField }) => {
     const [isSensorInputVisible, setIsSensorInputVisible] = useState(false);
     const [sensorName, setSensorName] = useState("");
     const [sensorDescription, setSensorDescription] = useState("");
@@ -89,7 +89,7 @@ const CampaignSensors: React.FC<{
                 <div className="flex gap-4 items-center mt-3">
                     <Dropdown className="flex-1/2" label="Add sensors from template" size="lg">
                         {
-                            templateTable.map((table, idx) => (
+                            availableTemplateTables.map((table, idx) => (
                                 <DropdownItem key={idx} onClick={() => addNewTemplateTable(idx)}>{table.name}</DropdownItem>
                             ))
                         }
