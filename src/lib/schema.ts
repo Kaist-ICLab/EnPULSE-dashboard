@@ -36,212 +36,165 @@ export type Database = {
         Tables: {
             accelerometer_sensor: {
                 Row: {
-                    created_at: string
+                    created_at: string | null
                     device_type: number
-                    received: number
-                    timestamp: number
+                    received: string
+                    timestamp: string
                     uuid: string
                     x: number
                     y: number
                     z: number
                 }
                 Insert: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
-                    received: number
-                    timestamp: number
-                    uuid?: string
+                    received: string
+                    timestamp: string
+                    uuid: string
                     x: number
                     y: number
                     z: number
                 }
                 Update: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
-                    received?: number
-                    timestamp?: number
+                    received?: string
+                    timestamp?: string
                     uuid?: string
                     x?: number
                     y?: number
                     z?: number
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "accelerometer_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             ambient_light_sensor: {
                 Row: {
                     accuracy: number
-                    created_at: string
+                    created_at: string | null
                     device_type: number
-                    received: number
-                    timestamp: number
+                    received: string
+                    timestamp: string
                     uuid: string
                     value: number
                 }
                 Insert: {
                     accuracy: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
-                    received: number
-                    timestamp: number
-                    uuid?: string
+                    received: string
+                    timestamp: string
+                    uuid: string
                     value: number
                 }
                 Update: {
                     accuracy?: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
-                    received?: number
-                    timestamp?: number
+                    received?: string
+                    timestamp?: string
                     uuid?: string
                     value?: number
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "ambient_light_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             app_list_change_sensor: {
                 Row: {
-                    app_list: Json[] | null
-                    changed_app: Json
-                    created_at: string
+                    app_list: Json | null
+                    changed_app: Json[]
+                    created_at: string | null
                     device_type: number
-                    received: number
-                    timestamp: number
+                    received: string
+                    timestamp: string
                     uuid: string
                 }
                 Insert: {
-                    app_list?: Json[] | null
-                    changed_app: Json
-                    created_at?: string
+                    app_list?: Json | null
+                    changed_app: Json[]
+                    created_at?: string | null
                     device_type: number
-                    received: number
-                    timestamp: number
-                    uuid?: string
+                    received: string
+                    timestamp: string
+                    uuid: string
                 }
                 Update: {
-                    app_list?: Json[] | null
-                    changed_app?: Json
-                    created_at?: string
+                    app_list?: Json | null
+                    changed_app?: Json[]
+                    created_at?: string | null
                     device_type?: number
-                    received?: number
-                    timestamp?: number
+                    received?: string
+                    timestamp?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "app_list_change_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             app_usage_log_sensor: {
                 Row: {
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     event_type: number
                     installed_by: string
                     package_name: string
-                    received: number
-                    timestamp: number
+                    received: string
+                    timestamp: string
                     uuid: string
                 }
                 Insert: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     event_type: number
                     installed_by: string
                     package_name: string
-                    received: number
-                    timestamp: number
-                    uuid?: string
+                    received: string
+                    timestamp: string
+                    uuid: string
                 }
                 Update: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     event_type?: number
                     installed_by?: string
                     package_name?: string
-                    received?: number
-                    timestamp?: number
+                    received?: string
+                    timestamp?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "app_usage_log_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             battery_sensor: {
                 Row: {
                     connected_type: number
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     level: number
-                    received: number
+                    received: string
                     status: number
                     temperature: number
-                    timestamp: number
+                    timestamp: string
                     uuid: string
                 }
                 Insert: {
                     connected_type: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     level: number
-                    received: number
+                    received: string
                     status: number
                     temperature: number
-                    timestamp: number
-                    uuid?: string
+                    timestamp: string
+                    uuid: string
                 }
                 Update: {
                     connected_type?: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     level?: number
-                    received?: number
+                    received?: string
                     status?: number
                     temperature?: number
-                    timestamp?: number
+                    timestamp?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "battery_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                    {
-                        foreignKeyName: "battery_sensor_uuid_fkey1"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             bluetooth_scan_sensor: {
                 Row: {
@@ -250,13 +203,13 @@ export type Database = {
                     bond_state: number
                     class_type: number
                     connection_type: number
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     is_le: boolean
                     name: string
-                    received: number
+                    received: string
                     rssi: number
-                    timestamp: number
+                    timestamp: string
                     uuid: string
                 }
                 Insert: {
@@ -265,14 +218,14 @@ export type Database = {
                     bond_state: number
                     class_type: number
                     connection_type: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     is_le: boolean
                     name: string
-                    received: number
+                    received: string
                     rssi: number
-                    timestamp: number
-                    uuid?: string
+                    timestamp: string
+                    uuid: string
                 }
                 Update: {
                     address?: string
@@ -280,65 +233,49 @@ export type Database = {
                     bond_state?: number
                     class_type?: number
                     connection_type?: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     is_le?: boolean
                     name?: string
-                    received?: number
+                    received?: string
                     rssi?: number
-                    timestamp?: number
+                    timestamp?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "bluetooth_scan_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             call_log_sensor: {
                 Row: {
                     call_type: number
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     duration: number
                     number: string
-                    received: number
-                    timestamp: number
+                    received: string
+                    timestamp: string
                     uuid: string
                 }
                 Insert: {
                     call_type: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     duration: number
                     number: string
-                    received: number
-                    timestamp: number
-                    uuid?: string
+                    received: string
+                    timestamp: string
+                    uuid: string
                 }
                 Update: {
                     call_type?: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     duration?: number
                     number?: string
-                    received?: number
-                    timestamp?: number
+                    received?: string
+                    timestamp?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "call_log_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             campaign_table: {
                 Row: {
@@ -535,262 +472,214 @@ export type Database = {
             }
             connectivity_sensor: {
                 Row: {
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     has_internet: boolean
                     is_connected: boolean
                     network_type: string
-                    received: number
-                    timestamp: number
+                    received: string
+                    timestamp: string
                     transport_types: string[]
                     uuid: string
                 }
                 Insert: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     has_internet: boolean
                     is_connected: boolean
                     network_type: string
-                    received: number
-                    timestamp: number
+                    received: string
+                    timestamp: string
                     transport_types: string[]
-                    uuid?: string
+                    uuid: string
                 }
                 Update: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     has_internet?: boolean
                     is_connected?: boolean
                     network_type?: string
-                    received?: number
-                    timestamp?: number
+                    received?: string
+                    timestamp?: string
                     transport_types?: string[]
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "connectivity_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             data_traffic_sensor: {
                 Row: {
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     mobile_rx: number
                     mobile_tx: number
-                    received: number
-                    timestamp: number
+                    received: string
+                    timestamp: string
                     total_rx: number
                     total_tx: number
                     uuid: string
                 }
                 Insert: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     mobile_rx: number
                     mobile_tx: number
-                    received: number
-                    timestamp: number
+                    received: string
+                    timestamp: string
                     total_rx: number
                     total_tx: number
-                    uuid?: string
+                    uuid: string
                 }
                 Update: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     mobile_rx?: number
                     mobile_tx?: number
-                    received?: number
-                    timestamp?: number
+                    received?: string
+                    timestamp?: string
                     total_rx?: number
                     total_tx?: number
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "data_traffic_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             device_mode_sensor: {
                 Row: {
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     event_type: string
-                    received: number
-                    timestamp: number
+                    received: string
+                    timestamp: string
                     uuid: string
                     value: string
                 }
                 Insert: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     event_type: string
-                    received: number
-                    timestamp: number
-                    uuid?: string
+                    received: string
+                    timestamp: string
+                    uuid: string
                     value: string
                 }
                 Update: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     event_type?: string
-                    received?: number
-                    timestamp?: number
+                    received?: string
+                    timestamp?: string
                     uuid?: string
                     value?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "device_mode_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             eda_sensor: {
                 Row: {
-                    created_at: string
+                    created_at: string | null
                     device_type: number
-                    received: number
+                    received: string
                     skin_conductance: number
                     status: number
-                    timestamp: number
+                    timestamp: string
                     uuid: string
                 }
                 Insert: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
-                    received: number
+                    received: string
                     skin_conductance: number
                     status: number
-                    timestamp: number
-                    uuid?: string
+                    timestamp: string
+                    uuid: string
                 }
                 Update: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
-                    received?: number
+                    received?: string
                     skin_conductance?: number
                     status?: number
-                    timestamp?: number
+                    timestamp?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "eda_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             heart_rate_sensor: {
                 Row: {
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     hr: number
                     hr_status: number
                     ibi: number[]
                     ibi_status: number[]
-                    received: number
-                    timestamp: number
+                    received: string
+                    timestamp: string
                     uuid: string
                 }
                 Insert: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     hr: number
                     hr_status: number
                     ibi: number[]
                     ibi_status: number[]
-                    received: number
-                    timestamp: number
-                    uuid?: string
+                    received: string
+                    timestamp: string
+                    uuid: string
                 }
                 Update: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     hr?: number
                     hr_status?: number
                     ibi?: number[]
                     ibi_status?: number[]
-                    received?: number
-                    timestamp?: number
+                    received?: string
+                    timestamp?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "heart_rate_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             location_sensor: {
                 Row: {
                     accuracy: number
                     altitude: number
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     latitude: number
                     longitude: number
-                    received: number
+                    received: string
                     speed: number
-                    timestamp: number
+                    timestamp: string
                     uuid: string
                 }
                 Insert: {
                     accuracy: number
                     altitude: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     latitude: number
                     longitude: number
-                    received: number
+                    received: string
                     speed: number
-                    timestamp: number
-                    uuid?: string
+                    timestamp: string
+                    uuid: string
                 }
                 Update: {
                     accuracy?: number
                     altitude?: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     latitude?: number
                     longitude?: number
-                    received?: number
+                    received?: string
                     speed?: number
-                    timestamp?: number
+                    timestamp?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "location_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             media_sensor: {
                 Row: {
-                    created_at: string
+                    created_at: string | null
                     date_added: number | null
                     date_modified: number | null
                     device_type: number
@@ -798,15 +687,15 @@ export type Database = {
                     media_type: string
                     mime_type: string | null
                     operation: string
-                    received: number
+                    received: string
                     size: number | null
                     storage_type: string
-                    timestamp: number
+                    timestamp: string
                     uri: string
                     uuid: string
                 }
                 Insert: {
-                    created_at?: string
+                    created_at?: string | null
                     date_added?: number | null
                     date_modified?: number | null
                     device_type: number
@@ -814,15 +703,15 @@ export type Database = {
                     media_type: string
                     mime_type?: string | null
                     operation: string
-                    received: number
+                    received: string
                     size?: number | null
                     storage_type: string
-                    timestamp: number
+                    timestamp: string
                     uri: string
-                    uuid?: string
+                    uuid: string
                 }
                 Update: {
-                    created_at?: string
+                    created_at?: string | null
                     date_added?: number | null
                     date_modified?: number | null
                     device_type?: number
@@ -830,63 +719,47 @@ export type Database = {
                     media_type?: string
                     mime_type?: string | null
                     operation?: string
-                    received?: number
+                    received?: string
                     size?: number | null
                     storage_type?: string
-                    timestamp?: number
+                    timestamp?: string
                     uri?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "media_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             message_log_sensor: {
                 Row: {
                     contact_type: number
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     message_type: string
                     number: string
-                    received: number
-                    timestamp: number
+                    received: string
+                    timestamp: string
                     uuid: string
                 }
                 Insert: {
                     contact_type: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     message_type: string
                     number: string
-                    received: number
-                    timestamp: number
-                    uuid?: string
+                    received: string
+                    timestamp: string
+                    uuid: string
                 }
                 Update: {
                     contact_type?: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     message_type?: string
                     number?: string
-                    received?: number
-                    timestamp?: number
+                    received?: string
+                    timestamp?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "message_log_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             messages: {
                 Row: {
@@ -942,102 +815,86 @@ export type Database = {
             notification_sensor: {
                 Row: {
                     category: number
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     event_type: string
                     package_name: string
-                    received: number
+                    received: string
                     text: string
-                    timestamp: number
+                    timestamp: string
                     title: string
                     uuid: string
                     visibility: number
                 }
                 Insert: {
                     category: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     event_type: string
                     package_name: string
-                    received: number
+                    received: string
                     text: string
-                    timestamp: number
+                    timestamp: string
                     title: string
-                    uuid?: string
+                    uuid: string
                     visibility: number
                 }
                 Update: {
                     category?: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     event_type?: string
                     package_name?: string
-                    received?: number
+                    received?: string
                     text?: string
-                    timestamp?: number
+                    timestamp?: string
                     title?: string
                     uuid?: string
                     visibility?: number
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "notification_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             ppg_sensor: {
                 Row: {
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     green: number
                     green_status: number
                     ir: number
                     ir_status: number
-                    received: number
+                    received: string
                     red: number
                     red_status: number
-                    timestamp: number
+                    timestamp: string
                     uuid: string
                 }
                 Insert: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     green: number
                     green_status: number
                     ir: number
                     ir_status: number
-                    received: number
+                    received: string
                     red: number
                     red_status: number
-                    timestamp: number
-                    uuid?: string
+                    timestamp: string
+                    uuid: string
                 }
                 Update: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     green?: number
                     green_status?: number
                     ir?: number
                     ir_status?: number
-                    received?: number
+                    received?: string
                     red?: number
                     red_status?: number
-                    timestamp?: number
+                    timestamp?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "ppg_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             profiles: {
                 Row: {
@@ -1067,208 +924,168 @@ export type Database = {
             }
             screen_sensor: {
                 Row: {
-                    created_at: string
+                    created_at: string | null
                     device_type: number
-                    received: number
-                    timestamp: number
+                    received: string
+                    timestamp: string
                     type: string
                     uuid: string
                 }
                 Insert: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
-                    received: number
-                    timestamp: number
+                    received: string
+                    timestamp: string
                     type: string
-                    uuid?: string
+                    uuid: string
                 }
                 Update: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
-                    received?: number
-                    timestamp?: number
+                    received?: string
+                    timestamp?: string
                     type?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "screen_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             skin_temperature_sensor: {
                 Row: {
                     ambient_temperature: number
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     object_temperature: number
-                    received: number
+                    received: string
                     status: number
-                    timestamp: number
+                    timestamp: string
                     uuid: string
                 }
                 Insert: {
                     ambient_temperature: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     object_temperature: number
-                    received: number
+                    received: string
                     status: number
-                    timestamp: number
-                    uuid?: string
+                    timestamp: string
+                    uuid: string
                 }
                 Update: {
                     ambient_temperature?: number
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     object_temperature?: number
-                    received?: number
+                    received?: string
                     status?: number
-                    timestamp?: number
+                    timestamp?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "skin_temperature_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             step_sensor: {
                 Row: {
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     end_time: number
-                    received: number
+                    received: string
                     start_time: number
                     steps: number
-                    timestamp: number
+                    timestamp: string
                     uuid: string
                 }
                 Insert: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     end_time: number
-                    received: number
+                    received: string
                     start_time: number
                     steps: number
-                    timestamp: number
-                    uuid?: string
+                    timestamp: string
+                    uuid: string
                 }
                 Update: {
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     end_time?: number
-                    received?: number
+                    received?: string
                     start_time?: number
                     steps?: number
-                    timestamp?: number
+                    timestamp?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "step_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             user_interaction_sensor: {
                 Row: {
                     class_name: string
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     event_type: number
                     package_name: string
-                    received: number
+                    received: string
                     text: string
-                    timestamp: number
+                    timestamp: string
                     uuid: string
                 }
                 Insert: {
                     class_name: string
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     event_type: number
                     package_name: string
-                    received: number
+                    received: string
                     text: string
-                    timestamp: number
-                    uuid?: string
+                    timestamp: string
+                    uuid: string
                 }
                 Update: {
                     class_name?: string
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     event_type?: number
                     package_name?: string
-                    received?: number
+                    received?: string
                     text?: string
-                    timestamp?: number
+                    timestamp?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "user_interaction_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
             wifi_scan_sensor: {
                 Row: {
                     bssid: string
-                    created_at: string
+                    created_at: string | null
                     device_type: number
                     frequency: number
                     level: number
-                    received: number
+                    received: string
                     ssid: string
-                    timestamp: number
+                    timestamp: string
                     uuid: string
                 }
                 Insert: {
                     bssid: string
-                    created_at?: string
+                    created_at?: string | null
                     device_type: number
                     frequency: number
                     level: number
-                    received: number
+                    received: string
                     ssid: string
-                    timestamp: number
-                    uuid?: string
+                    timestamp: string
+                    uuid: string
                 }
                 Update: {
                     bssid?: string
-                    created_at?: string
+                    created_at?: string | null
                     device_type?: number
                     frequency?: number
                     level?: number
-                    received?: number
+                    received?: string
                     ssid?: string
-                    timestamp?: number
+                    timestamp?: string
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "wifi_scan_sensor_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
+                Relationships: []
             }
         }
         Views: {
@@ -1278,11 +1095,11 @@ export type Database = {
             add_compression_policy: {
                 Args: {
                     compress_after?: unknown
-                    compress_created_before?: unknown
+                    compress_created_before?: string
                     hypertable: unknown
                     if_not_exists?: boolean
                     initial_start?: string
-                    schedule_interval?: unknown
+                    schedule_interval?: string
                     timezone?: string
                 }
                 Returns: number
@@ -1293,7 +1110,7 @@ export type Database = {
                     end_offset: unknown
                     if_not_exists?: boolean
                     initial_start?: string
-                    schedule_interval: unknown
+                    schedule_interval: string
                     start_offset: unknown
                     timezone?: string
                 }
@@ -1335,7 +1152,7 @@ export type Database = {
                     fixed_schedule?: boolean
                     initial_start?: string
                     proc: unknown
-                    schedule_interval: unknown
+                    schedule_interval: string
                     scheduled?: boolean
                     timezone?: string
                 }
@@ -1354,11 +1171,11 @@ export type Database = {
             add_retention_policy: {
                 Args: {
                     drop_after?: unknown
-                    drop_created_before?: unknown
+                    drop_created_before?: string
                     if_not_exists?: boolean
                     initial_start?: string
                     relation: unknown
-                    schedule_interval?: unknown
+                    schedule_interval?: string
                     timezone?: string
                 }
                 Returns: number
@@ -1372,10 +1189,10 @@ export type Database = {
                     initial_start?: string
                     job_id: number
                     max_retries?: number
-                    max_runtime?: unknown
+                    max_runtime?: string
                     next_start?: string
-                    retry_period?: unknown
-                    schedule_interval?: unknown
+                    retry_period?: string
+                    schedule_interval?: string
                     scheduled?: boolean
                     timezone?: string
                 }
@@ -1386,10 +1203,10 @@ export type Database = {
                     initial_start: string
                     job_id: number
                     max_retries: number
-                    max_runtime: unknown
+                    max_runtime: string
                     next_start: string
-                    retry_period: unknown
-                    schedule_interval: unknown
+                    retry_period: string
+                    schedule_interval: string
                     scheduled: boolean
                     timezone: string
                 }[]
@@ -1414,7 +1231,7 @@ export type Database = {
                 }
                 Returns: {
                     bucket: string
-                    category: number
+                    category: string
                     count: number
                 }[]
             }
@@ -1760,41 +1577,41 @@ export type Database = {
                 Args: { bucket_width: number; offset: number; ts: number }
                 Returns: number
             }
-            | { Args: { bucket_width: unknown; ts: string }; Returns: string }
+            | { Args: { bucket_width: string; ts: string }; Returns: string }
             | {
-                Args: { bucket_width: unknown; offset: unknown; ts: string }
+                Args: { bucket_width: string; offset: string; ts: string }
                 Returns: string
             }
             | {
-                Args: { bucket_width: unknown; origin: string; ts: string }
+                Args: { bucket_width: string; origin: string; ts: string }
                 Returns: string
             }
-            | { Args: { bucket_width: unknown; ts: string }; Returns: string }
+            | { Args: { bucket_width: string; ts: string }; Returns: string }
             | {
-                Args: { bucket_width: unknown; offset: unknown; ts: string }
+                Args: { bucket_width: string; offset: string; ts: string }
                 Returns: string
             }
             | {
-                Args: { bucket_width: unknown; origin: string; ts: string }
+                Args: { bucket_width: string; origin: string; ts: string }
                 Returns: string
             }
             | {
                 Args: {
-                    bucket_width: unknown
-                    offset?: unknown
+                    bucket_width: string
+                    offset?: string
                     origin?: string
                     timezone: string
                     ts: string
                 }
                 Returns: string
             }
-            | { Args: { bucket_width: unknown; ts: string }; Returns: string }
+            | { Args: { bucket_width: string; ts: string }; Returns: string }
             | {
-                Args: { bucket_width: unknown; offset: unknown; ts: string }
+                Args: { bucket_width: string; offset: string; ts: string }
                 Returns: string
             }
             | {
-                Args: { bucket_width: unknown; origin: string; ts: string }
+                Args: { bucket_width: string; origin: string; ts: string }
                 Returns: string
             }
             | { Args: { bucket_width: number; ts: number }; Returns: number }
@@ -1823,7 +1640,7 @@ export type Database = {
             }
             | {
                 Args: {
-                    bucket_width: unknown
+                    bucket_width: string
                     finish?: string
                     start?: string
                     ts: string
@@ -1832,7 +1649,7 @@ export type Database = {
             }
             | {
                 Args: {
-                    bucket_width: unknown
+                    bucket_width: string
                     finish?: string
                     start?: string
                     ts: string
@@ -1841,7 +1658,7 @@ export type Database = {
             }
             | {
                 Args: {
-                    bucket_width: unknown
+                    bucket_width: string
                     finish?: string
                     start?: string
                     timezone: string
@@ -1851,7 +1668,7 @@ export type Database = {
             }
             | {
                 Args: {
-                    bucket_width: unknown
+                    bucket_width: string
                     finish?: string
                     start?: string
                     ts: string
