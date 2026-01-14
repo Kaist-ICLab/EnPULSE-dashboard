@@ -26,7 +26,7 @@ const DashboardSidebar: React.FC = () => {
         <Sidebar className="h-screen border-r-1 border-gray-300 bg-white" collapsed={collapsed}>
             <SidebarItems>
                 <SidebarItemGroup>
-                    <SidebarItem key={`menu-collapse`} onClick={() => setCollapsed(!collapsed)} icon={SidebarIcon({ icon: collapsed ? "icon-[pajamas--expand-left]" : "icon-[pajamas--expand-right]" })} className={`text-sm`}>
+                    <SidebarItem key={`menu-collapse`} onClick={() => setCollapsed(!collapsed)} icon={SidebarIcon({ icon: collapsed ? "icon-[pajamas--expand-left]" : "icon-[pajamas--expand-right]" })} className={`text-sm cursor-pointer`}>
                         <span className="mr-1 align-baseline">{collapsed ? "Expand" : "Hide Sidebar"}</span>
                     </SidebarItem>
                 </SidebarItemGroup>
