@@ -38,6 +38,7 @@ export type Database = {
                 Row: {
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     received: string
                     timestamp: string
                     uuid: string
@@ -48,6 +49,7 @@ export type Database = {
                 Insert: {
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     received: string
                     timestamp: string
                     uuid: string
@@ -58,6 +60,7 @@ export type Database = {
                 Update: {
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     received?: string
                     timestamp?: string
                     uuid?: string
@@ -72,6 +75,7 @@ export type Database = {
                     accuracy: number
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     received: string
                     timestamp: string
                     uuid: string
@@ -81,6 +85,7 @@ export type Database = {
                     accuracy: number
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     received: string
                     timestamp: string
                     uuid: string
@@ -90,6 +95,7 @@ export type Database = {
                     accuracy?: number
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     received?: string
                     timestamp?: string
                     uuid?: string
@@ -103,6 +109,7 @@ export type Database = {
                     changed_app: Json[]
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     received: string
                     timestamp: string
                     uuid: string
@@ -112,6 +119,7 @@ export type Database = {
                     changed_app: Json[]
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     received: string
                     timestamp: string
                     uuid: string
@@ -121,6 +129,7 @@ export type Database = {
                     changed_app?: Json[]
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     received?: string
                     timestamp?: string
                     uuid?: string
@@ -131,6 +140,7 @@ export type Database = {
                 Row: {
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     event_type: number
                     installed_by: string
                     package_name: string
@@ -141,6 +151,7 @@ export type Database = {
                 Insert: {
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     event_type: number
                     installed_by: string
                     package_name: string
@@ -151,6 +162,7 @@ export type Database = {
                 Update: {
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     event_type?: number
                     installed_by?: string
                     package_name?: string
@@ -165,6 +177,7 @@ export type Database = {
                     connected_type: number
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     level: number
                     received: string
                     status: number
@@ -176,6 +189,7 @@ export type Database = {
                     connected_type: number
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     level: number
                     received: string
                     status: number
@@ -187,6 +201,7 @@ export type Database = {
                     connected_type?: number
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     level?: number
                     received?: string
                     status?: number
@@ -205,6 +220,7 @@ export type Database = {
                     connection_type: number
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     is_le: boolean
                     name: string
                     received: string
@@ -220,6 +236,7 @@ export type Database = {
                     connection_type: number
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     is_le: boolean
                     name: string
                     received: string
@@ -235,6 +252,7 @@ export type Database = {
                     connection_type?: number
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     is_le?: boolean
                     name?: string
                     received?: string
@@ -250,6 +268,7 @@ export type Database = {
                     created_at: string | null
                     device_type: number
                     duration: number
+                    event_id: string
                     number: string
                     received: string
                     timestamp: string
@@ -260,6 +279,7 @@ export type Database = {
                     created_at?: string | null
                     device_type: number
                     duration: number
+                    event_id: string
                     number: string
                     received: string
                     timestamp: string
@@ -270,6 +290,7 @@ export type Database = {
                     created_at?: string | null
                     device_type?: number
                     duration?: number
+                    event_id?: string
                     number?: string
                     received?: string
                     timestamp?: string
@@ -338,6 +359,13 @@ export type Database = {
                     name?: string
                 }
                 Relationships: [
+                    {
+                        foreignKeyName: "campaign_table_field_campaign_id_fkey"
+                        columns: ["campaign_id"]
+                        isOneToOne: false
+                        referencedRelation: "campaigns"
+                        referencedColumns: ["id"]
+                    },
                     {
                         foreignKeyName: "campaign_table_field_campaign_table_id_fkey"
                         columns: ["campaign_table_id"]
@@ -474,6 +502,7 @@ export type Database = {
                 Row: {
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     has_internet: boolean
                     is_connected: boolean
                     network_type: string
@@ -485,6 +514,7 @@ export type Database = {
                 Insert: {
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     has_internet: boolean
                     is_connected: boolean
                     network_type: string
@@ -496,6 +526,7 @@ export type Database = {
                 Update: {
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     has_internet?: boolean
                     is_connected?: boolean
                     network_type?: string
@@ -510,6 +541,7 @@ export type Database = {
                 Row: {
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     mobile_rx: number
                     mobile_tx: number
                     received: string
@@ -521,6 +553,7 @@ export type Database = {
                 Insert: {
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     mobile_rx: number
                     mobile_tx: number
                     received: string
@@ -532,6 +565,7 @@ export type Database = {
                 Update: {
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     mobile_rx?: number
                     mobile_tx?: number
                     received?: string
@@ -546,6 +580,7 @@ export type Database = {
                 Row: {
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     event_type: string
                     received: string
                     timestamp: string
@@ -555,6 +590,7 @@ export type Database = {
                 Insert: {
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     event_type: string
                     received: string
                     timestamp: string
@@ -564,6 +600,7 @@ export type Database = {
                 Update: {
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     event_type?: string
                     received?: string
                     timestamp?: string
@@ -576,6 +613,7 @@ export type Database = {
                 Row: {
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     received: string
                     skin_conductance: number
                     status: number
@@ -585,6 +623,7 @@ export type Database = {
                 Insert: {
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     received: string
                     skin_conductance: number
                     status: number
@@ -594,6 +633,7 @@ export type Database = {
                 Update: {
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     received?: string
                     skin_conductance?: number
                     status?: number
@@ -606,6 +646,7 @@ export type Database = {
                 Row: {
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     hr: number
                     hr_status: number
                     ibi: number[]
@@ -617,6 +658,7 @@ export type Database = {
                 Insert: {
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     hr: number
                     hr_status: number
                     ibi: number[]
@@ -628,6 +670,7 @@ export type Database = {
                 Update: {
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     hr?: number
                     hr_status?: number
                     ibi?: number[]
@@ -644,6 +687,7 @@ export type Database = {
                     altitude: number
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     latitude: number
                     longitude: number
                     received: string
@@ -656,6 +700,7 @@ export type Database = {
                     altitude: number
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     latitude: number
                     longitude: number
                     received: string
@@ -668,6 +713,7 @@ export type Database = {
                     altitude?: number
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     latitude?: number
                     longitude?: number
                     received?: string
@@ -683,6 +729,7 @@ export type Database = {
                     date_added: number | null
                     date_modified: number | null
                     device_type: number
+                    event_id: string
                     file_name: string | null
                     media_type: string
                     mime_type: string | null
@@ -699,6 +746,7 @@ export type Database = {
                     date_added?: number | null
                     date_modified?: number | null
                     device_type: number
+                    event_id: string
                     file_name?: string | null
                     media_type: string
                     mime_type?: string | null
@@ -715,6 +763,7 @@ export type Database = {
                     date_added?: number | null
                     date_modified?: number | null
                     device_type?: number
+                    event_id?: string
                     file_name?: string | null
                     media_type?: string
                     mime_type?: string | null
@@ -733,6 +782,7 @@ export type Database = {
                     contact_type: number
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     message_type: string
                     number: string
                     received: string
@@ -743,6 +793,7 @@ export type Database = {
                     contact_type: number
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     message_type: string
                     number: string
                     received: string
@@ -753,6 +804,7 @@ export type Database = {
                     contact_type?: number
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     message_type?: string
                     number?: string
                     received?: string
@@ -817,6 +869,7 @@ export type Database = {
                     category: number
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     event_type: string
                     package_name: string
                     received: string
@@ -830,6 +883,7 @@ export type Database = {
                     category: number
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     event_type: string
                     package_name: string
                     received: string
@@ -843,6 +897,7 @@ export type Database = {
                     category?: number
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     event_type?: string
                     package_name?: string
                     received?: string
@@ -858,6 +913,7 @@ export type Database = {
                 Row: {
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     green: number
                     green_status: number
                     ir: number
@@ -871,6 +927,7 @@ export type Database = {
                 Insert: {
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     green: number
                     green_status: number
                     ir: number
@@ -884,6 +941,7 @@ export type Database = {
                 Update: {
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     green?: number
                     green_status?: number
                     ir?: number
@@ -922,10 +980,62 @@ export type Database = {
                     },
                 ]
             }
+            question_response: {
+                Row: {
+                    actual_trigger_time: string
+                    created_at: string
+                    id: number
+                    question_id: number
+                    response: string[]
+                    response_submission_time: string
+                    survey_start_time: string
+                    trigger_time: string
+                    uuid: string
+                }
+                Insert: {
+                    actual_trigger_time: string
+                    created_at?: string
+                    id?: number
+                    question_id: number
+                    response: string[]
+                    response_submission_time: string
+                    survey_start_time: string
+                    trigger_time: string
+                    uuid: string
+                }
+                Update: {
+                    actual_trigger_time?: string
+                    created_at?: string
+                    id?: number
+                    question_id?: number
+                    response?: string[]
+                    response_submission_time?: string
+                    survey_start_time?: string
+                    trigger_time?: string
+                    uuid?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "question_response_question_id_fkey"
+                        columns: ["question_id"]
+                        isOneToOne: false
+                        referencedRelation: "survey_question"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "question_response_uuid_fkey"
+                        columns: ["uuid"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["uuid"]
+                    },
+                ]
+            }
             screen_sensor: {
                 Row: {
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     received: string
                     timestamp: string
                     type: string
@@ -934,6 +1044,7 @@ export type Database = {
                 Insert: {
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     received: string
                     timestamp: string
                     type: string
@@ -942,6 +1053,7 @@ export type Database = {
                 Update: {
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     received?: string
                     timestamp?: string
                     type?: string
@@ -954,6 +1066,7 @@ export type Database = {
                     ambient_temperature: number
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     object_temperature: number
                     received: string
                     status: number
@@ -964,6 +1077,7 @@ export type Database = {
                     ambient_temperature: number
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     object_temperature: number
                     received: string
                     status: number
@@ -974,6 +1088,7 @@ export type Database = {
                     ambient_temperature?: number
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     object_temperature?: number
                     received?: string
                     status?: number
@@ -987,6 +1102,7 @@ export type Database = {
                     created_at: string | null
                     device_type: number
                     end_time: number
+                    event_id: string
                     received: string
                     start_time: number
                     steps: number
@@ -997,6 +1113,7 @@ export type Database = {
                     created_at?: string | null
                     device_type: number
                     end_time: number
+                    event_id: string
                     received: string
                     start_time: number
                     steps: number
@@ -1007,6 +1124,7 @@ export type Database = {
                     created_at?: string | null
                     device_type?: number
                     end_time?: number
+                    event_id?: string
                     received?: string
                     start_time?: number
                     steps?: number
@@ -1015,11 +1133,133 @@ export type Database = {
                 }
                 Relationships: []
             }
+            survey: {
+                Row: {
+                    campaign_id: number
+                    created_at: string
+                    description: string
+                    id: number
+                    schedule_method: Json | null
+                    title: string
+                }
+                Insert: {
+                    campaign_id: number
+                    created_at?: string
+                    description: string
+                    id?: number
+                    schedule_method?: Json | null
+                    title: string
+                }
+                Update: {
+                    campaign_id?: number
+                    created_at?: string
+                    description?: string
+                    id?: number
+                    schedule_method?: Json | null
+                    title?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "survey_campaign_id_fkey"
+                        columns: ["campaign_id"]
+                        isOneToOne: false
+                        referencedRelation: "campaigns"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            survey_question: {
+                Row: {
+                    answer_type: number | null
+                    campaign_id: number
+                    created_at: string
+                    id: number
+                    is_free_answer_allowed: boolean | null
+                    is_mandatory: boolean | null
+                    is_multiple_choice_question: boolean | null
+                    question: string
+                    survey_id: number
+                    trigger: Json | null
+                }
+                Insert: {
+                    answer_type?: number | null
+                    campaign_id: number
+                    created_at?: string
+                    id?: number
+                    is_free_answer_allowed?: boolean | null
+                    is_mandatory?: boolean | null
+                    is_multiple_choice_question?: boolean | null
+                    question: string
+                    survey_id: number
+                    trigger?: Json | null
+                }
+                Update: {
+                    answer_type?: number | null
+                    campaign_id?: number
+                    created_at?: string
+                    id?: number
+                    is_free_answer_allowed?: boolean | null
+                    is_mandatory?: boolean | null
+                    is_multiple_choice_question?: boolean | null
+                    question?: string
+                    survey_id?: number
+                    trigger?: Json | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "survey_question_campaign_id_fkey"
+                        columns: ["campaign_id"]
+                        isOneToOne: false
+                        referencedRelation: "campaigns"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "survey_question_survey_id_fkey"
+                        columns: ["survey_id"]
+                        isOneToOne: false
+                        referencedRelation: "survey"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            survey_question_option: {
+                Row: {
+                    created_at: string
+                    display: string | null
+                    id: number
+                    question_id: number | null
+                    value: string | null
+                }
+                Insert: {
+                    created_at?: string
+                    display?: string | null
+                    id?: number
+                    question_id?: number | null
+                    value?: string | null
+                }
+                Update: {
+                    created_at?: string
+                    display?: string | null
+                    id?: number
+                    question_id?: number | null
+                    value?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "survey_question_option_question_id_fkey"
+                        columns: ["question_id"]
+                        isOneToOne: false
+                        referencedRelation: "survey_question"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
             user_interaction_sensor: {
                 Row: {
                     class_name: string
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     event_type: number
                     package_name: string
                     received: string
@@ -1031,6 +1271,7 @@ export type Database = {
                     class_name: string
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     event_type: number
                     package_name: string
                     received: string
@@ -1042,6 +1283,7 @@ export type Database = {
                     class_name?: string
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     event_type?: number
                     package_name?: string
                     received?: string
@@ -1056,6 +1298,7 @@ export type Database = {
                     bssid: string
                     created_at: string | null
                     device_type: number
+                    event_id: string
                     frequency: number
                     level: number
                     received: string
@@ -1067,6 +1310,7 @@ export type Database = {
                     bssid: string
                     created_at?: string | null
                     device_type: number
+                    event_id: string
                     frequency: number
                     level: number
                     received: string
@@ -1078,6 +1322,7 @@ export type Database = {
                     bssid?: string
                     created_at?: string | null
                     device_type?: number
+                    event_id?: string
                     frequency?: number
                     level?: number
                     received?: string
@@ -1245,10 +1490,10 @@ export type Database = {
                     uuid: string
                 }
                 Returns: {
-                    avg_value: number
+                    avg: number
                     bucket: string
-                    max_value: number
-                    min_value: number
+                    max: number
+                    min: number
                 }[]
             }
             by_hash: {

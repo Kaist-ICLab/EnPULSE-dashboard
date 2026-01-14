@@ -81,12 +81,12 @@ export async function getTimelineOverviewData(fields: CampaignTableFieldWithTabl
             column_name: v.name,
             bucket_unit: bucketSize,
         })
-    }) as (BucketNumericalData | BucketCategoricalData)[][]
+    }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
 
     return fields.map((v, idx) => {
         if (v.field_type == "categorical") {
             // Group data by timestamp
-            const rawCategoricalData = data[idx] as BucketCategoricalData[];
+            const rawCategoricalData = data[idx] as (BucketCategoricalData[] | null);
             const groupedData = groupByTimestamp(rawCategoricalData);
 
             return {
@@ -120,6 +120,9 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
     const field = fields.find(v => v.id === fieldId)
     if (!field) throw new Error('Field not found');
 
+    console.log(timeRange)
+    console.log(date)
+
     const tableName = field.tableName
     const columnName = field.name
 
@@ -132,10 +135,10 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
             column_name: columnName,
             bucket_unit: bucketSize,
         })
-    }) as (BucketNumericalData | BucketCategoricalData)[][]
+    }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
 
     if (field.field_type == "categorical") {
-        const rawCategoricalData = data as BucketCategoricalData[][]
+        const rawCategoricalData = data as (BucketCategoricalData[] | null)[]
         return participants.map((p, idx) => (
             {
                 title: p.email,
@@ -148,7 +151,7 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
             }
         ))
     } else {
-        const numericalData = data as BucketNumericalData[][]
+        const numericalData = data as (BucketNumericalData[] | null)[]
         return participants.map((p, idx) => (
             {
                 title: p.email,
@@ -157,8 +160,8 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
                 column: columnName,
                 chartType: "numerical" as ChartType,
                 params: { ...params, uuid: p.uuid },
-                timestamp: numericalData[idx].map(d => new Date(d.bucket).getTime()),
-                value: numericalData[idx].map(d => ({ timestamp: new Date(d.bucket).getTime(), avg: d.avg, min: d.min, max: d.max }))
+                timestamp: numericalData[idx]?.map(d => new Date(d.bucket).getTime()) ?? [],
+                value: numericalData[idx]?.map(d => ({ timestamp: new Date(d.bucket).getTime(), avg: d.avg, min: d.min, max: d.max })) ?? []
             }
         ))
     }
@@ -185,10 +188,10 @@ export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], 
             bucket_unit: bucketSize,
         })
 
-    }) as (BucketNumericalData | BucketCategoricalData)[][]
+    }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
 
     if (field.field_type == "categorical") {
-        const categoricalData = data as BucketCategoricalData[][]
+        const categoricalData = data as (BucketCategoricalData[] | null)[]
         return dates.map((d, idx) => ({
             title: dayjs(d).format('YYYY-MM-DD'),
             id: dayjs(d).format('YYYY-MM-DD'),
@@ -196,11 +199,11 @@ export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], 
             column: columnName,
             chartType: "categorical" as ChartType,
             params: { ...params, date: d },
-            value: groupByTimestamp(categoricalData[idx])
+            value: groupByTimestamp(categoricalData[idx] ?? [])
         }
         ))
     } else {
-        const numericalData = data as BucketNumericalData[][]
+        const numericalData = data as (BucketNumericalData[] | null)[]
         return dates.map((d, idx) => ({
             title: dayjs(d).format('YYYY-MM-DD'),
             id: dayjs(d).format('YYYY-MM-DD'),
@@ -208,7 +211,7 @@ export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], 
             column: columnName,
             chartType: "numerical" as ChartType,
             params: { ...params, date: d },
-            value: numericalData[idx].map(v => ({ timestamp: new Date(v.bucket).getTime(), avg: v.avg, min: v.min, max: v.max }))
+            value: numericalData[idx]?.map(v => ({ timestamp: new Date(v.bucket).getTime(), avg: v.avg, min: v.min, max: v.max })) ?? []
         }))
     }
 }
