@@ -5,7 +5,6 @@ import { SectionType, TimelineCategoricalPoint, TimelineNumericalPoint } from "@
 import { TimelineGraph } from "./graphs/TimelineGraph";
 import { TooltipWithBounds, defaultStyles } from "@visx/tooltip";
 import { Group } from '@visx/group';
-import { margin } from "./shared/timelineUtils";
 import { Brush } from "@visx/brush";
 import { useChartState } from "@/hooks/charts/useChartState";
 import { CategoricalTimelineLegend } from "./legends/CategoricalTimelineLegend";
@@ -29,27 +28,22 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
     width,
     height,
 }) => {
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-
-    const containerRef = useRef<HTMLDivElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
-
-    const { timeScale, valueScale, barWidth, handleMouseMove, handleDoubleClick, handleBrushChange, tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hideTooltip, getCategoryColor, uniqueCategories, handleLegendClick } = useChartState(data, chartType, sectionType, bucketSize, baseTime, svgRef, containerRef, innerWidth, innerHeight);
+    const { timeScale, valueScale, barWidth, handleMouseMove, handleDoubleClick, handleBrushChange, tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hideTooltip, getCategoryColor, uniqueCategories, handleLegendClick } = useChartState(data, chartType, sectionType, bucketSize, baseTime, svgRef, width, height);
 
     if (width === 0 || height === 0) {
         return (
-            <div ref={containerRef} className='w-full flex flex-row justify-center items-center' style={{ height: '100px' }} />
+            <div className='w-full flex flex-row justify-center items-center' />
         );
     }
 
     return (
-        <div className="w-full flex flex-col justify-center items-center" ref={containerRef}>
+        <div className="w-full flex flex-col justify-center items-center">
+            {chartType === 'categorical' && <CategoricalTimelineLegend uniqueCategories={uniqueCategories} getCategoryColor={getCategoryColor} handleLegendClick={handleLegendClick} />}
             <div
-                className="w-full flex flex-col justify-center items-center relative"
+                className="w-full flex flex-col justify-center items-center relative border-1 border-gray-200"
                 style={{ height: `${height}px` }}
             >
-                {chartType === 'categorical' && <CategoricalTimelineLegend uniqueCategories={uniqueCategories} getCategoryColor={getCategoryColor} handleLegendClick={handleLegendClick} />}
                 <svg
                     ref={svgRef}
                     width={width}
@@ -57,14 +51,13 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
                     onMouseMove={handleMouseMove}
                     onMouseLeave={hideTooltip}
                 >
-                    <Group left={margin.left} top={margin.top} onDoubleClick={handleDoubleClick}>
+                    <Group onDoubleClick={handleDoubleClick}>
                         <TimelineGraph chartType={chartType} data={data} height={height} timeScale={timeScale} valueScale={valueScale} barWidth={barWidth} getCategoryColor={getCategoryColor} />
                         <Brush
                             xScale={timeScale}
                             yScale={valueScale}
-                            width={width - margin.left - margin.right}
-                            height={height - margin.top - margin.bottom}
-                            margin={margin}
+                            width={width}
+                            height={height}
                             handleSize={8}
                             brushDirection="horizontal"
                             onBrushEnd={handleBrushChange}

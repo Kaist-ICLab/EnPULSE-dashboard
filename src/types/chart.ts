@@ -17,7 +17,7 @@ export interface TimelineNumericalPoint {
 
 export interface TimelineCategoricalPoint {
     timestamp: number;
-    value: { category: string, count: number }[];
+    value: { category: string, count: number, aggregated: number }[];
 }
 
 export type TimelineDataPoint = TimelineNumericalPoint | TimelineCategoricalPoint;

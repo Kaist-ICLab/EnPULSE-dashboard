@@ -1,5 +1,4 @@
 import { useMemo, useCallback } from "react";
-import { max } from "d3-array";
 import { formatTime } from "@/components/dashboard/charts/shared/timelineUtils";
 import { TimelineCategoricalPoint } from "@/types/chart";
 
@@ -7,15 +6,10 @@ export function useCategoricalChartState(data: TimelineCategoricalPoint[], bucke
     // Calculate max stack value (sum of all counts for a timestamp)
     const maxValue = useMemo(() => {
         // For each timestamp, sum all counts from the value array
-        const timestampMap = new Map<number, number>();
-        data.forEach((d) => {
-            const totalCount = d.value.reduce((sum, item) => sum + item.count, 0);
-            const current = timestampMap.get(d.timestamp) || 0;
-            timestampMap.set(d.timestamp, current + totalCount);
-        });
+        if (data.length === 0) return 0;
 
-        const stackSums = Array.from(timestampMap.values());
-        return max(stackSums) || 0;
+        const maxAgg = Math.max(...data.map(d => Math.max(...d.value.map(v => v.aggregated))))
+        return maxAgg || 0;
     }, [data]);
 
     const getTooltipData = useCallback((timeMs: number) => {
@@ -27,7 +21,7 @@ export function useCategoricalChartState(data: TimelineCategoricalPoint[], bucke
         if (pointsAtTime.length === 0) return null;
 
         // Group by category and sum counts from all points at this time
-        const categoryMap = new Map<number, number>();
+        const categoryMap = new Map<string, number>();
         pointsAtTime.forEach(d => {
             d.value.forEach(item => {
                 const current = categoryMap.get(item.category) || 0;

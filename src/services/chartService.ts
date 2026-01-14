@@ -120,9 +120,6 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
     const field = fields.find(v => v.id === fieldId)
     if (!field) throw new Error('Field not found');
 
-    console.log(timeRange)
-    console.log(date)
-
     const tableName = field.tableName
     const columnName = field.name
 

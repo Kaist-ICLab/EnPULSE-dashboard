@@ -3,7 +3,7 @@
 import { Bar } from '@visx/shape';
 
 import { useMemo } from "react";
-import { colors, margin } from '../shared/timelineUtils';
+import { colors } from '../shared/timelineUtils';
 import { TimelineChartGraphProps, TimelineNumericalPoint } from "@/types/chart";
 
 export const NumericalTimelineGraph: React.FC<TimelineChartGraphProps<TimelineNumericalPoint>> = ({
@@ -13,8 +13,6 @@ export const NumericalTimelineGraph: React.FC<TimelineChartGraphProps<TimelineNu
     data,
     height
 }) => {
-    const innerHeight = height - margin.top - margin.bottom;
-
     // Prepare data
     const chartData = useMemo(() => {
         return data.map(d => ({
@@ -34,7 +32,7 @@ export const NumericalTimelineGraph: React.FC<TimelineChartGraphProps<TimelineNu
                     const x = timeScale(d.timestamp);
                     const yValue = valueScale(d.avg);
                     if (isNaN(yValue) || yValue === undefined) return null;
-                    const barHeight = Math.max(0, innerHeight - yValue);
+                    const barHeight = Math.max(0, height - yValue);
                     return (
                         <Bar
                             key={`bar-${i}`}

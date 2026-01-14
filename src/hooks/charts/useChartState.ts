@@ -4,7 +4,6 @@ import { SectionType, TimelineCategoricalPoint, TimelineNumericalPoint } from "@
 import { ChartType } from "@/types/chart";
 import { useTooltip } from "@visx/tooltip";
 import { scaleTime } from "@visx/scale";
-import { margin } from "@/components/dashboard/charts/shared/timelineUtils";
 import { scaleLinear } from "@visx/scale";
 import { TooltipData } from "@/types/chart";
 import { useVaryingChartState } from "./useVaryingChartState";
@@ -16,9 +15,8 @@ export function useChartState(
     bucketSize: number,
     baseTime: number,
     svgRef: React.RefObject<SVGSVGElement | null>,
-    containerRef: React.RefObject<HTMLDivElement | null>,
-    innerWidth: number,
-    innerHeight: number,
+    width: number,
+    height: number,
 ) {
     const { timeRange, draggedTime, updateTimeRange, initTimeRange } = useSectionState();
     const { maxValue, getTooltipData, getCategoryColor, uniqueCategories, handleLegendClick } = useVaryingChartState(data, chartType, bucketSize);
@@ -46,34 +44,35 @@ export function useChartState(
 
         return scaleTime({
             domain: [rangeStart, rangeEnd],
-            range: [0, innerWidth],
+            range: [0, width],
         });
-    }, [baseTime, currentTimeRange, innerWidth]);
+    }, [baseTime, currentTimeRange, width]);
 
     // Value scale
     const valueScale = useMemo(() => {
-        if (data.length === 0 || innerHeight <= 0) {
+        if (data.length === 0 || height <= 0) {
             return scaleLinear({
                 domain: [0, 1],
-                range: [innerHeight || 1, 0],
+                range: [height || 1, 0],
             });
         }
+
         return scaleLinear({
             domain: [0, maxValue],
-            range: [innerHeight, 0],
+            range: [height, 0],
             nice: true,
         });
-    }, [data.length, maxValue, innerHeight]);
+    }, [data.length, maxValue, height]);
 
     // Bar width calculation
     const barWidth = useMemo(() => {
         if (data.length === 0) return 0;
 
         const bucketCount = (currentTimeRange.end - currentTimeRange.start) / bucketSize;
-        const bucketWidth = innerWidth / bucketCount;
+        const bucketWidth = width / bucketCount;
 
         return bucketWidth;
-    }, [data.length, bucketSize, innerWidth, currentTimeRange]);
+    }, [data.length, bucketSize, width, currentTimeRange]);
 
     // Handle brush end (zoom)
     const handleBrushChange = useCallback((bounds: { x0: number, x1: number } | null) => {
@@ -90,11 +89,10 @@ export function useChartState(
 
     // Handle mouse move for tooltip
     const handleMouseMove = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
-        if (!svgRef.current || !containerRef.current || data.length === 0) return;
+        if (!svgRef.current || data.length === 0) return;
 
         const svgRect = svgRef.current.getBoundingClientRect();
-        const containerRect = containerRef.current.getBoundingClientRect();
-        const x = event.clientX - svgRect.left - margin.left;
+        const x = event.clientX - svgRect.left;
         const time = timeScale.invert(x);
         if (!time) return;
 
@@ -115,27 +113,27 @@ export function useChartState(
         let tooltipTop = event.clientY;
 
         // Constrain horizontally
-        if (tooltipLeft + tooltipWidth > containerRect.right - padding) {
-            tooltipLeft = containerRect.right - tooltipWidth - padding;
+        if (tooltipLeft + tooltipWidth > svgRect.right - padding) {
+            tooltipLeft = svgRect.right - tooltipWidth - padding;
         }
-        if (tooltipLeft < containerRect.left + padding) {
-            tooltipLeft = containerRect.left + padding;
+        if (tooltipLeft < svgRect.left + padding) {
+            tooltipLeft = svgRect.left + padding;
         }
 
         // Constrain vertically
-        if (tooltipTop + tooltipHeight > containerRect.bottom - padding) {
-            tooltipTop = containerRect.bottom - tooltipHeight - padding;
+        if (tooltipTop + tooltipHeight > svgRect.bottom - padding) {
+            tooltipTop = svgRect.bottom - tooltipHeight - padding;
         }
-        if (tooltipTop < containerRect.top + padding) {
-            tooltipTop = containerRect.top + padding;
+        if (tooltipTop < svgRect.top + padding) {
+            tooltipTop = svgRect.top + padding;
         }
 
         showTooltip({
-            tooltipLeft: tooltipLeft - containerRect.left,
-            tooltipTop: tooltipTop - containerRect.top,
+            tooltipLeft: tooltipLeft - svgRect.left,
+            tooltipTop: tooltipTop - svgRect.top,
             tooltipData
         });
-    }, [getTooltipData, timeScale, hideTooltip, showTooltip, containerRef, data.length, svgRef]);
+    }, [getTooltipData, timeScale, hideTooltip, showTooltip, data.length, svgRef]);
 
     const handleDoubleClick = useCallback(() => {
         initTimeRange(sectionType);

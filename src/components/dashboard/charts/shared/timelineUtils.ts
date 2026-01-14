@@ -20,6 +20,3 @@ export const colors = [
 ];
 
 export const gray = '#d1d5db';
-
-export const margin = { top: 10, right: 0, bottom: 0, left: 0 };
-

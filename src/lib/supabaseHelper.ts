@@ -35,11 +35,22 @@ export function groupByTimestamp(data: BucketCategoricalData[] | null) {
         grouped[timestamp][item.category] = item.count;
     });
 
-    return Object.entries(grouped).map(([timestampStr, categories]) => ({
+    const groupedData = Object.entries(grouped).map(([timestampStr, categories]) => ({
         timestamp: Number(timestampStr),
         value: Object.entries(categories).map(([category, count]) => ({
             category: category,
-            count
+            count,
+            aggregated: 0
         }))
     }));
+
+    groupedData.forEach(d => {
+        let aggregated = 0;
+        d.value.forEach(v => {
+            aggregated += v.count;
+            v.aggregated = aggregated;
+        });
+    });
+
+    return groupedData;
 }
