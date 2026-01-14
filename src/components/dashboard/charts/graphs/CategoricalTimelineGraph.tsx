@@ -8,7 +8,7 @@ import { TimelineChartGraphProps, TimelineCategoricalPoint } from "@/types/chart
 type CategoricalDataPoint = {
     timestamp: number;
     categories: Array<{
-        category: number;
+        category: string;
         count: number;
         index: number;
     }>;
@@ -27,7 +27,7 @@ export const CategoricalTimelineGraph: React.FC<TimelineChartGraphProps<Timeline
     // Prepare data - data is already grouped by timestamp
     const chartData = useMemo(() => {
         // Extract all unique categories
-        const categorySet = new Set<number>();
+        const categorySet = new Set<string>();
         data.forEach(d => {
             d.value.forEach(item => {
                 categorySet.add(item.category);
@@ -38,7 +38,7 @@ export const CategoricalTimelineGraph: React.FC<TimelineChartGraphProps<Timeline
         // Map each data point (already grouped by timestamp) to chart data format
         return data.map((d) => {
             // Create a map for quick lookup of counts by category
-            const categoryCountMap = new Map<number, number>();
+            const categoryCountMap = new Map<string, number>();
             d.value.forEach(item => {
                 categoryCountMap.set(item.category, item.count);
             });

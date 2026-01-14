@@ -3,13 +3,13 @@ import { LegendItem, LegendLabel, LegendOrdinal } from '@visx/legend';
 import { scaleOrdinal } from '@visx/scale';
 
 export const CategoricalTimelineLegend: React.FC<{
-    uniqueCategories: number[],
-    getCategoryColor: (categoryIndex: number) => string,
-    handleLegendClick: (categoryIndex: number) => void
+    uniqueCategories: string[],
+    getCategoryColor: (category: string) => string,
+    handleLegendClick: (category: string) => void
 }> = ({ uniqueCategories, getCategoryColor, handleLegendClick }) => {
-    const ordinalScale = scaleOrdinal<number, string>({
+    const ordinalScale = scaleOrdinal<string, string>({
         domain: uniqueCategories,
-        range: uniqueCategories.map((_, idx) => getCategoryColor(idx)),
+        range: uniqueCategories.map((category) => getCategoryColor(category)),
     });
 
     if (uniqueCategories.length === 0) return null;
@@ -25,15 +25,14 @@ export const CategoricalTimelineLegend: React.FC<{
                 {(labels) => (
                     <div className="flex flex-row flex-wrap justify-center gap-2">
                         {labels.map((label, i) => {
-                            const categoryIndex = uniqueCategories.indexOf(Number(label.text));
                             return (
                                 <LegendItem
                                     key={`legend-${i}`}
-                                    onClick={() => handleLegendClick(categoryIndex)}
+                                    onClick={() => handleLegendClick(label.text)}
                                     className="flex flex-row items-center cursor-pointer"
                                 >
                                     <svg width={12} height={12} className="mr-1">
-                                        <rect width={12} height={12} fill={getCategoryColor(categoryIndex)} />
+                                        <rect width={12} height={12} fill={getCategoryColor(label.text)} />
                                     </svg>
                                     <LegendLabel align="left">
                                         {label.text}

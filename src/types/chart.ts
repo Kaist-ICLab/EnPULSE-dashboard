@@ -17,7 +17,7 @@ export interface TimelineNumericalPoint {
 
 export interface TimelineCategoricalPoint {
     timestamp: number;
-    value: { category: number, count: number }[];
+    value: { category: string, count: number }[];
 }
 
 export type TimelineDataPoint = TimelineNumericalPoint | TimelineCategoricalPoint;
@@ -38,7 +38,7 @@ export interface TimelineChartGraphProps<T extends TimelineDataPoint> {
     timeScale: ScaleTime<number, number, never>;
     valueScale: ScaleLinear<number, number, never>;
     barWidth: number;
-    getCategoryColor?: (categoryIndex: number) => string;
+    getCategoryColor?: (category: string) => string;
 }
 
 export type ChartParams = {
