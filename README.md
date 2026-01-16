@@ -1,4 +1,4 @@
-# Tracker Dashboard
+# EnPULSE Dashboard
 ## Tehcnical Stacks
 
 - [Next.js](https://nextjs.org) - Framework supporting Folder structure-based routing and starting template of our dashboard 
@@ -28,8 +28,6 @@ Campaigns
 %아래 내용은 Campaign Import/Create에서만 지원
 - updateDBUrl(campaignId, url): Status & Message -
 - updateDBwithFile(campaignId, ) - 
-
-
 
 - getCampaignTableSchmea(campaignTableId): Column[]
 - updateCampaignTableDailyCountThreshold(campaignTableId, ): 
