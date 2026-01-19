@@ -21,7 +21,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" className="overflow-hidden">
             <body
                 className={`${roboto.className} antialiased relative min-h-screen w-full m-auto `}
                 suppressHydrationWarning

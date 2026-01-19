@@ -7,11 +7,22 @@ import { Card, Select, Spinner } from "flowbite-react";
 import { useMemo, useRef, useState } from "react";
 import SensorDropdown from "../SensorDropdown";
 import useSectionState from "@/hooks/useSectionState";
+import dayjs from "dayjs";
+
+function getChartName(sectionType: SectionType) {
+    switch (sectionType) {
+        case SectionType.IntraPerson:
+            return "Intra-Person Comparison";
+        case SectionType.InterPerson:
+            return "Inter-Person Comparison";
+        default:
+            return "Timeline Overview";
+    }
+}
 
 const ComparisonChart: React.FC<{
     sectionType: SectionType;
 }> = ({ sectionType }) => {
-    console.log('ComparisonChart', sectionType)
     const chartRef = useRef<HTMLDivElement>(null);
     const { campaignParticipants, mergedTabledFields } = useCampaign()
     const { sectionParams, updateSectionParams, initTimeRange } = useSectionState()
@@ -20,6 +31,7 @@ const ComparisonChart: React.FC<{
         acc[field.id] = false
         return acc
     }, {} as { [key: number]: boolean }))
+
     const selectedFields = useMemo(() => mergedTabledFields.filter(v => isFieldSelected[v.id] || sectionType !== SectionType.TimelineOverview), [isFieldSelected, mergedTabledFields, sectionType])
     const currentSectionParams = useMemo(() => sectionParams[sectionType], [sectionParams, sectionType])
     const { timeline, bucketSize, loading, error } = useTimeline(sectionType, selectedFields, (chartRef.current?.clientWidth || 0) - 88);
@@ -28,22 +40,11 @@ const ComparisonChart: React.FC<{
         return Array.from(campaignParticipants.values()).map(v => ({ id: v.uuid, name: v.email }))
     }, [campaignParticipants])
 
-    const chartName = (() => {
-        switch (sectionType) {
-            case SectionType.IntraPerson:
-                return "Intra-Person Comparison";
-            case SectionType.InterPerson:
-                return "Inter-Person Comparison";
-            default:
-                return "Timeline Overview";
-        }
-    })();
-
     return (
         <Card id={`${sectionType}-comparison-chart`}>
             <div className="w-full">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <h2 className="text-xl font-semibold">{chartName}</h2>
+                    <h2 className="text-xl font-semibold">{getChartName(sectionType)}</h2>
                     <div className="flex flex-col sm:flex-row gap-4">
                         {sectionType == SectionType.TimelineOverview &&
                             <SensorDropdown
@@ -82,9 +83,10 @@ const ComparisonChart: React.FC<{
                             <input
                                 type="date"
                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                                value={currentSectionParams.date.toISOString().split('T')[0]}
+                                value={dayjs(currentSectionParams.date).format('YYYY-MM-DD')}
                                 onChange={(e) => {
-                                    updateSectionParams(sectionType, { date: new Date(e.target.value) })
+                                    const date = dayjs(e.target.value).startOf('day').toDate();
+                                    updateSectionParams(sectionType, { date })
                                     initTimeRange(sectionType)
                                 }}
                             />
@@ -92,10 +94,13 @@ const ComparisonChart: React.FC<{
                     </div>
                 </div>
 
-                <div className="w-full rounded-lg py-4 flex flex-col gap-4" ref={chartRef}>
-                    {loading && <Spinner className="w-full" />}
+                <div className="w-full rounded-lg py-4 flex flex-col gap-4 items-center justify-center relative" ref={chartRef}>
+                    {loading && <div className="w-full h-full flex items-center justify-center absolute top-0 left-0 bg-white/50 backdrop-blur-sm rounded-lg">
+                        <Spinner className="" />
+                    </div>
+                    }
                     {error && (
-                        <p className="text-red-500 font-medium">❌ 데이터 로딩 실패: {error.message}</p>
+                        <p className="text-red-500 font-medium">Failed to load data: {error.message}</p>
                     )}
                     {timeline.length > 0 && <ChartContainer
                         timelines={timeline.filter(v => (isFieldSelected[v.params.fieldId] || sectionType !== SectionType.TimelineOverview))}

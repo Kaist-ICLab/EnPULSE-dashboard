@@ -1,5 +1,5 @@
 import { CampaignTable, CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { templateTable } from "./sensorTemplate";
 
 export interface NewCampaignTable extends CampaignTable {
@@ -10,6 +10,9 @@ export interface NewCampaignTable extends CampaignTable {
 
 export default function useNewCampainTables() {
     const [tables, setTables] = useState<NewCampaignTable[]>([]);
+    const availableTemplateTables = useMemo(() => {
+        return templateTable.filter(t => !tables.some(t2 => t2.name == t.name))
+    }, [tables])
 
     const setDailyCountMax = (index: number, value: number) => {
         setTables(tables => {
@@ -19,12 +22,12 @@ export default function useNewCampainTables() {
         })
     }
 
-    const addTable = (name: string, description: string, fields: CampaignTableField[] = [], isCustom: boolean = true) => {
-        setTables([...tables, { id: -1, campaign_id: -1, name, description, daily_count_max: 0, fields, isCustom }]);
+    const addTable = (name: string, description: string, fields: CampaignTableField[] = []) => {
+        setTables([...tables, { id: -1, campaign_id: -1, name, description, daily_count_max: 0, fields, isCustom: true }]);
     }
 
     const addNewTemplateTable = (idx: number) => {
-        setTables([...tables, structuredClone(templateTable[idx])])
+        setTables([...tables, structuredClone(availableTemplateTables[idx])])
     }
 
     const removeTable = (index: number) => {
@@ -61,6 +64,7 @@ export default function useNewCampainTables() {
 
     return {
         tables,
+        availableTemplateTables,
         addTable,
         addNewTemplateTable,
         removeTable,

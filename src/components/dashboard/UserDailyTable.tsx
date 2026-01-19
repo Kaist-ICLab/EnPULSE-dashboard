@@ -8,6 +8,7 @@ import Link from "next/link";
 import { CampaignParticipant } from "@/types/campaign";
 import { SectionType } from "@/types/chart";
 import useSectionState from "@/hooks/useSectionState";
+import dayjs from "dayjs";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -139,7 +140,7 @@ const UserDailyStatTable: React.FC<{
                     <input
                         type="date"
                         className="border border-gray-200 bg-gray-50 text-gray-500 rounded px-4 py-3 text-sm"
-                        value={date.toISOString().split('T')[0]}
+                        value={dayjs(date).format('YYYY-MM-DD')}
                         onChange={(e) => { changePageBy(-page); setDate(new Date(e.target.value)) }}
                     />
                 </div>

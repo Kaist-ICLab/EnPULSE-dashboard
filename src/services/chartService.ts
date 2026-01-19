@@ -3,10 +3,10 @@ import { supabase } from '@/lib/supabase';
 import { mapQuery } from '@/lib/supabaseHelper';
 import { CampaignParticipant, CampaignTableFieldWithTable } from '@/types/campaign';
 import { ChartParams, ChartType } from '@/types/chart';
-// import { mapQuery } from '@/lib/supabaseHelper';
+import { BucketCategoricalData, BucketNumericalData, groupByTimestamp } from '@/lib/supabaseHelper';
+import dayjs from 'dayjs';
 
-type BucketNumericalData = { bucket: string, avg_value: number, min_value: number, max_value: number }
-type BucketCategoricalData = { bucket: string, category: string, count: number }
+const DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ssZ'
 
 export async function getCampaignDailySummary(campaignId: number, date: Date, page: number, pageCount: number) {
     const from = (page - 1) * pageCount;
@@ -16,7 +16,7 @@ export async function getCampaignDailySummary(campaignId: number, date: Date, pa
         .from(`profiles`)
         .select(`uuid, email, campaign_table_user_daily_summary(*), messages(count)`)
         .eq('campaign_id', campaignId)
-        .filter('campaign_table_user_daily_summary.day', 'eq', date.toISOString().split('T')[0])
+        .filter('campaign_table_user_daily_summary.day', 'eq', dayjs(date).format('YYYY-MM-DD'))
         .range(from, to)
 
     if (error) throw new Error(error.message);
@@ -70,21 +70,25 @@ export async function getDailyStatCount(campaignId: number) {
 
 export async function getTimelineOverviewData(fields: CampaignTableFieldWithTable[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
     const { uuid, date } = params;
+    const timeGap = timeRange.end - timeRange.start;
 
     const data = await mapQuery(fields, v => {
         return supabase.rpc(v.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
-            start_time: new Date(date.getTime() - 24 * 60 * 60 * 1000).toISOString(),
-            end_time: new Date(date.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+            start_time: dayjs(date).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
+            end_time: dayjs(date).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid: uuid,
             table_name: v.tableName,
             column_name: v.name,
             bucket_unit: bucketSize,
         })
-    }) as (BucketNumericalData | BucketCategoricalData)[][]
+    }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
 
     return fields.map((v, idx) => {
         if (v.field_type == "categorical") {
-            const categoricalData = data[idx] as BucketCategoricalData[]
+            // Group data by timestamp
+            const rawCategoricalData = data[idx] as (BucketCategoricalData[] | null);
+            const groupedData = groupByTimestamp(rawCategoricalData);
+
             return {
                 title: v.displayName,
                 id: `${v.id}`,
@@ -92,8 +96,7 @@ export async function getTimelineOverviewData(fields: CampaignTableFieldWithTabl
                 column: v.name,
                 chartType: 'categorical' as ChartType,
                 params: { ...params, fieldId: v.id },
-                timestamp: categoricalData.map(d => new Date(d.bucket).getTime()),
-                value: categoricalData ? categoricalData.map(d => ({ value: d.category, count: d.count })) : []
+                value: groupedData ?? []
             }
 
         } else {
@@ -105,15 +108,15 @@ export async function getTimelineOverviewData(fields: CampaignTableFieldWithTabl
                 column: v.name,
                 chartType: 'numerical' as ChartType,
                 params: { ...params, fieldId: v.id },
-                timestamp: numericalData.map(d => new Date(d.bucket).getTime()),
-                value: numericalData ? numericalData.map(d => ({ avg_value: d.avg_value, min_value: d.min_value, max_value: d.max_value })) : []
+                value: numericalData ? numericalData.map(d => ({ timestamp: new Date(d.bucket).getTime(), avg: d.avg, min: d.min, max: d.max })) : []
             }
         }
     })
 }
 
-export async function getInterPersonData(fields: CampaignTableFieldWithTable[], participants: CampaignParticipant[], params: ChartParams, bucketSize: string) {
+export async function getInterPersonData(fields: CampaignTableFieldWithTable[], participants: CampaignParticipant[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
     const { date, fieldId } = params;
+    const timeGap = timeRange.end - timeRange.start;
     const field = fields.find(v => v.id === fieldId)
     if (!field) throw new Error('Field not found');
 
@@ -122,19 +125,17 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
 
     const data = await mapQuery(participants, p => {
         return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
-            start_time: date.toISOString(),
-            end_time: new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+            start_time: dayjs(date).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
+            end_time: dayjs(date).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid: p.uuid,
             table_name: tableName,
             column_name: columnName,
             bucket_unit: bucketSize,
         })
-    }) as (BucketNumericalData | BucketCategoricalData)[][]
-
-    console.log(data)
+    }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
 
     if (field.field_type == "categorical") {
-        const categoricalData = data as BucketCategoricalData[][]
+        const rawCategoricalData = data as (BucketCategoricalData[] | null)[]
         return participants.map((p, idx) => (
             {
                 title: p.email,
@@ -143,12 +144,11 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
                 column: columnName,
                 chartType: "categorical" as ChartType,
                 params: { ...params, uuid: p.uuid },
-                timestamp: categoricalData[idx].map(d => new Date(d.bucket).getTime()),
-                value: categoricalData[idx].map(d => ({ value: d.category, count: d.count }))
+                value: groupByTimestamp(rawCategoricalData[idx])
             }
         ))
     } else {
-        const numericalData = data as BucketNumericalData[][]
+        const numericalData = data as (BucketNumericalData[] | null)[]
         return participants.map((p, idx) => (
             {
                 title: p.email,
@@ -157,16 +157,16 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
                 column: columnName,
                 chartType: "numerical" as ChartType,
                 params: { ...params, uuid: p.uuid },
-                timestamp: numericalData[idx].map(d => new Date(d.bucket).getTime()),
-                value: numericalData[idx].map(d => ({ avg_value: d.avg_value, min_value: d.min_value, max_value: d.max_value }))
+                timestamp: numericalData[idx]?.map(d => new Date(d.bucket).getTime()) ?? [],
+                value: numericalData[idx]?.map(d => ({ timestamp: new Date(d.bucket).getTime(), avg: d.avg, min: d.min, max: d.max })) ?? []
             }
         ))
     }
 }
 
-export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], params: ChartParams, bucketSize: string) {
+export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
     const { date, fieldId, uuid } = params;
-
+    const timeGap = timeRange.end - timeRange.start;
     const field = fields.find(v => v.id === fieldId)
     if (!field) throw new Error('Field not found');
 
@@ -177,42 +177,38 @@ export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], 
 
     const data = await mapQuery(dates, d => {
         return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
-            start_time: d.toISOString(),
-            end_time: new Date(d.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+            start_time: dayjs(d).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
+            end_time: dayjs(d).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid: uuid,
             table_name: tableName,
             column_name: columnName,
             bucket_unit: bucketSize,
         })
 
-    }) as (BucketNumericalData | BucketCategoricalData)[][]
+    }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
 
     if (field.field_type == "categorical") {
-        const categoricalData = data as BucketCategoricalData[][]
+        const categoricalData = data as (BucketCategoricalData[] | null)[]
         return dates.map((d, idx) => ({
-            title: d.toISOString().split('T')[0],
-            id: d.toISOString().split('T')[0],
+            title: dayjs(d).format('YYYY-MM-DD'),
+            id: dayjs(d).format('YYYY-MM-DD'),
             table: tableName,
             column: columnName,
             chartType: "categorical" as ChartType,
             params: { ...params, date: d },
-            timestamp: categoricalData[idx].map(d => new Date(d.bucket).getTime()),
-            value: categoricalData[idx].map(d => ({ value: d.category, count: d.count }))
+            value: groupByTimestamp(categoricalData[idx] ?? [])
         }
         ))
     } else {
-        const numericalData = data as BucketNumericalData[][]
+        const numericalData = data as (BucketNumericalData[] | null)[]
         return dates.map((d, idx) => ({
-            title: d.toISOString().split('T')[0],
-            id: d.toISOString().split('T')[0],
+            title: dayjs(d).format('YYYY-MM-DD'),
+            id: dayjs(d).format('YYYY-MM-DD'),
             table: tableName,
             column: columnName,
             chartType: "numerical" as ChartType,
             params: { ...params, date: d },
-            timestamp: numericalData[idx].map(v => new Date(v.bucket).getTime()),
-            value: numericalData[idx].map(v => ({ avg_value: v.avg_value, min_value: v.min_value, max_value: v.max_value }))
+            value: numericalData[idx]?.map(v => ({ timestamp: new Date(v.bucket).getTime(), avg: v.avg, min: v.min, max: v.max })) ?? []
         }))
     }
-
-
 }
