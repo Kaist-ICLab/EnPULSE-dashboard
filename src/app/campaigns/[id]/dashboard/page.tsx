@@ -2,7 +2,6 @@
 import { ComparisonChart } from "@/components/dashboard/charts/ComparisonChart";
 import UserDailyStatTable from "@/components/dashboard/UserDailyTable";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
-import { sectionTypes } from "@/hooks/useSectionState";
 import { CampaignParticipant } from "@/types/campaign";
 import { useEffect, useState } from "react";
 
@@ -22,12 +21,7 @@ const Page = () => {
                 openMessageModal={(sendTo: CampaignParticipant[]) => { setSendTo(sendTo); setMessageModalVisible(true); }}
             />
 
-            {sectionTypes.map((type) => (
-                <ComparisonChart
-                    key={type}
-                    sectionType={type}
-                />
-            ))}
+            <ComparisonChart />
 
             {
                 messageModalVisible && <SendMessageFloatingModal

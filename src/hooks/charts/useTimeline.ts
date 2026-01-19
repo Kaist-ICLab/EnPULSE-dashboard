@@ -1,5 +1,5 @@
 import { SectionType, TimelineData } from "@/types/chart";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import useCampaign from "../useCampaign";
 import { getInterPersonData, getIntraPersonData, getTimelineOverviewData } from "@/services/chartService";
 import { CampaignTableFieldWithTable } from "@/types/campaign";
@@ -13,10 +13,7 @@ export default function useTimeline(secitonType: SectionType, selectedFields: Ca
     const [error, setError] = useState<Error | null>(null);
 
     const { selectedCampaignId, campaignParticipants } = useCampaign();
-    const { sectionParams, timeRange } = useSectionState()
-
-    const currentTimeRange = useMemo(() => timeRange[secitonType], [timeRange, secitonType])
-    const { uuid, date, fieldId } = useMemo(() => sectionParams[secitonType], [sectionParams, secitonType])
+    const { timelineParams, timeRange } = useSectionState()
 
     function getBucketSize(intervalInSec: number) {
         // unit: seconds
@@ -43,9 +40,9 @@ export default function useTimeline(secitonType: SectionType, selectedFields: Ca
     }
 
     useEffect(() => {
-        if (!selectedCampaignId || !uuid || !date || !fieldId) return;
+        if (!selectedCampaignId || !timelineParams.uuid || !timelineParams.date || !timelineParams.fieldId) return;
 
-        const intervalInSec = (currentTimeRange.end - currentTimeRange.start) / 1000 / chartWidth; // seconds per pixel
+        const intervalInSec = (timeRange.end - timeRange.start) / 1000 / chartWidth; // seconds per pixel
         const pixelPerBucket = 10 // Change this value to change the bucket size
         const bucketSize = getBucketSize(intervalInSec * pixelPerBucket);
         const bucketString = getBucketString(bucketSize);
@@ -56,11 +53,11 @@ export default function useTimeline(secitonType: SectionType, selectedFields: Ca
         async function fetchData() {
             let data: TimelineData[] = [];
             if (secitonType === SectionType.TimelineOverview) {
-                data = await getTimelineOverviewData(selectedFields, { uuid, date, fieldId }, currentTimeRange, bucketString);
+                data = await getTimelineOverviewData(selectedFields, timelineParams, timeRange, bucketString);
             } else if (secitonType === SectionType.InterPerson) {
-                data = await getInterPersonData(selectedFields, Array.from(campaignParticipants.values()), { uuid, date, fieldId }, currentTimeRange, bucketString);
+                data = await getInterPersonData(selectedFields, Array.from(campaignParticipants.values()), timelineParams, timeRange, bucketString);
             } else if (secitonType === SectionType.IntraPerson) {
-                data = await getIntraPersonData(selectedFields, { uuid, date, fieldId }, currentTimeRange, bucketString);
+                data = await getIntraPersonData(selectedFields, timelineParams, timeRange, bucketString);
             }
 
             setTimeline(data);
@@ -69,7 +66,7 @@ export default function useTimeline(secitonType: SectionType, selectedFields: Ca
         }
 
         fetchData();
-    }, [selectedCampaignId, uuid, date, fieldId, currentTimeRange, chartWidth, selectedFields, campaignParticipants, secitonType]);
+    }, [selectedCampaignId, timelineParams, timeRange, chartWidth, selectedFields, campaignParticipants, secitonType]);
 
     return { timeline, bucketSize, loading, error };
 }   

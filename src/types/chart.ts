@@ -28,7 +28,7 @@ export interface TimelineData {
     table: string;
     column: string;
     chartType: ChartType;
-    params: ChartParams;
+    params: TimelineParams;
     value: (TimelineNumericalPoint | TimelineCategoricalPoint)[];
 }
 
@@ -41,16 +41,16 @@ export interface TimelineChartGraphProps<T extends TimelineDataPoint> {
     getCategoryColor?: (category: string) => string;
 }
 
-export type ChartParams = {
+export type TimelineParams = {
     uuid: string,
     fieldId: number,
     date: Date,
 }
 
 export type ChartPinQuery = {
-    [SectionType.IntraPerson]: { date: Date } | null;
-    [SectionType.InterPerson]: { uuid: string } | null;
-    [SectionType.TimelineOverview]: { fieldId: number } | null;
+    date: Date | null,
+    uuid: string | null,
+    fieldId: number | null,
 };
 
 export type ChartPinQueryOption = { date: Date } | { uuid: string } | { fieldId: number } | null

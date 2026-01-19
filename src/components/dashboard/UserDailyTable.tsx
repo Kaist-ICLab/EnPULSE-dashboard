@@ -6,9 +6,7 @@ import { useDailyStatTableCheckedState } from "@/hooks/charts/useDailyStatTableC
 import { usePaging } from "@/hooks/usePaging";
 import Link from "next/link";
 import { CampaignParticipant } from "@/types/campaign";
-import { SectionType } from "@/types/chart";
 import useSectionState from "@/hooks/useSectionState";
-import dayjs from "dayjs";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -109,12 +107,11 @@ const UserDailyStatTable: React.FC<{
     openMessageModal: (sendTo: CampaignParticipant[]) => void;
 }> = ({ syncTime, openMessageModal }) => {
     const ref = useRef<HTMLDivElement>(null)
-    const [date, setDate] = useState(new Date())
     const [tableHeight, setTableHeight] = useState(500)
-    const { sectionParams, updateSectionParams: setSectionParams } = useSectionState()
+    const { timelineParams, updateTimelineParams } = useSectionState()
 
     const { page, rowsPerPage, totalPage, changePageBy, setRowsPerPage, setTotalPage } = usePaging(5)
-    const { data, loading, columns, maxDailyCount: dailyCountThreshold } = useUserDailyStat(date, page, rowsPerPage, setTotalPage, syncTime);
+    const { data, loading, columns, maxDailyCount: dailyCountThreshold } = useUserDailyStat(timelineParams.date, page, rowsPerPage, setTotalPage, syncTime);
     const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } = useDailyStatTableCheckedState(data);
 
     // const loading = statLoading || configLoading;
@@ -132,17 +129,15 @@ const UserDailyStatTable: React.FC<{
         }
     }, [ref, loading])
 
+    useEffect(() => {
+        changePageBy(-page);
+    }, [timelineParams.date, changePageBy])
+
     return (
         <div className="bg-white rounded-xl shadow-md p-3 w-full overflow-hidden flex flex-col items-center justify-center">
             <div className="flex items-center justify-between px-2 py-3 w-full">
                 <div className="flex items-center gap-4">
                     <h2 className="text-2xl font-semibold">Daily Overview</h2>
-                    <input
-                        type="date"
-                        className="border border-gray-200 bg-gray-50 text-gray-500 rounded px-4 py-3 text-sm"
-                        value={dayjs(date).format('YYYY-MM-DD')}
-                        onChange={(e) => { changePageBy(-page); setDate(new Date(e.target.value)) }}
-                    />
                 </div>
                 <div className="flex items-center gap-3">
                     {
@@ -150,7 +145,7 @@ const UserDailyStatTable: React.FC<{
                             <Link href={`./dashboard/#timeline-overview-comparison-chart`}>
                                 <Button
                                     color="blue" size="md" className="flex flex-row gap-1 text-base px-3"
-                                    onClick={() => setSectionParams(SectionType.TimelineOverview, { ...sectionParams[SectionType.TimelineOverview], date: date, uuid: data[checkedState.findIndex((state) => state)].uuid })}
+                                    onClick={() => updateTimelineParams({ uuid: data[checkedState.findIndex((state) => state)].uuid })}
                                 >
                                     <span>Timeline Overview</span>
                                 </Button>

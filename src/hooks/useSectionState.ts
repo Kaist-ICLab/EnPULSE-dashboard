@@ -1,12 +1,9 @@
-import { ChartParams, ChartPinQuery, SectionType } from "@/types/chart";
+import { TimelineParams as TimelineParams, ChartPinQuery, SectionType } from "@/types/chart";
 import { create } from "zustand";
 import dayjs from "dayjs";
+import { getLocalDay } from "@/utils/date";
 
 const DAY = 24 * 60 * 60 * 1000;
-
-function getLocalDay() {
-    return dayjs().startOf('day').toDate()
-}
 
 export const sectionTypes = Object.freeze([
     SectionType.TimelineOverview,
@@ -15,128 +12,91 @@ export const sectionTypes = Object.freeze([
 ] as const)
 
 interface SectionState {
-    sectionParams: { [key: string]: ChartParams }
-    timeRange: { [key: string]: { start: number, end: number } }
-    draggedTime: { [key: string]: number }
+    selectedSection: SectionType,
+    timelineParams: TimelineParams,
+    timeRange: { start: number, end: number }
+    draggedTime: number
     chartPinQuery: ChartPinQuery
-    setSectionParams: (uuid: string, fieldId: number, date: Date) => void
-    updateSectionParams: (key: string, params: Partial<ChartParams>) => void
-    updateDraggedTime: (key: string, time: number) => void
-    updateTimeRange: (key: string, range: { start: number, end: number }) => void
-    updateTimeRangeAfterDrag: (key: string) => void
-    initTimeRange: (key: string) => void
-    initPinQuery: (key: SectionType) => void
-    updatePinQuery: (key: SectionType, params: ChartParams | null) => void
+    updateSelectedSection: (section: SectionType) => void
+    updateTimelineParams: (params: Partial<TimelineParams>) => void
+    updateDraggedTime: (time: number) => void
+    initTimeRange: () => void
+    updateTimeRange: (range: { start: number, end: number }) => void
+    updateTimeRangeAfterDrag: () => void
+    initPinQuery: () => void
+    updatePinQuery: (params: ChartPinQuery) => void
 }
 
 const useSectionState = create<SectionState>((set) => ({
-    sectionParams: sectionTypes.reduce((acc, type) => {
-        acc[type] = {
-            uuid: '',
-            date: getLocalDay(),
-            fieldId: 0,
-        }
-        return acc
-    }, {} as { [key: string]: ChartParams }),
+    selectedSection: SectionType.TimelineOverview,
+    timelineParams: { date: getLocalDay(), uuid: '', fieldId: 0 },
+    timeRange: { start: 0, end: DAY },
+    chartPinQuery: { date: null, uuid: null, fieldId: null },
+    draggedTime: 0,
 
-    timeRange: sectionTypes.reduce((acc, type) => {
-        acc[type] = {
-            start: 0,
-            end: DAY,
-        }
-        return acc
-    }, {} as { [key: string]: { start: number, end: number } }),
-
-    chartPinQuery: sectionTypes.reduce((acc, type) => {
-        acc[type] = null
-        return acc
-    }, {} as ChartPinQuery),
-
-    draggedTime: sectionTypes.reduce((acc, type) => {
-        acc[type] = 0
-        return acc
-    }, {} as { [key: string]: number }),
-
-    setSectionParams: (uuid: string, fieldId: number, date: Date) => {
-        sectionTypes.forEach(type => {
-            set(state => ({
-                sectionParams: { ...state.sectionParams, [type]: { uuid, fieldId, date } }
-            }))
-        })
-    },
-
-    updateSectionParams: (key: string, params: Partial<ChartParams>) => {
-        set(state => ({
-            sectionParams: { ...state.sectionParams, [key]: { ...state.sectionParams[key], ...params } }
+    updateSelectedSection: (section: SectionType) => {
+        set(() => ({
+            selectedSection: section
         }))
     },
 
-    initDraggedTime: (key: string) => {
-        set(state => ({
-            draggedTime: { ...state.draggedTime, [key]: 0 }
+    updateTimelineParams: (params: Partial<TimelineParams>) => {
+        set((state) => ({
+            timelineParams: { ...state.timelineParams, ...params }
         }))
     },
 
-    updateDraggedTime: (key: string, time: number) => {
-        set(state => ({
-            draggedTime: { ...state.draggedTime, [key]: time }
+    updateDraggedTime: (time: number) => {
+        set(() => ({
+            draggedTime: time
         }))
     },
 
-    updateTimeRangeAfterDrag: (key: string) => {
+    updateTimeRangeAfterDrag: () => {
         set(state => {
-            const prevRange = state.timeRange[key];
-            const dragged = state.draggedTime[key];
+            const prevRange = state.timeRange;
+            const dragged = state.draggedTime;
+            const date = state.timelineParams.date;
 
-            const currentDate = dayjs(state.sectionParams[key].date).startOf('day')
-            const draggedMidpointDate = dayjs(state.sectionParams[key].date).add((state.timeRange[key].start + state.timeRange[key].end) / 2, 'ms').add(dragged, 'ms').startOf('day')
+            const currentDate = dayjs(date).startOf('day')
+            const draggedMidpointDate = dayjs(date).add((state.timeRange.start + state.timeRange.end) / 2, 'ms').add(dragged, 'ms').startOf('day')
             const rangeTimeDelta = draggedMidpointDate.diff(currentDate, 'ms')
 
             const newRange = {
                 start: prevRange.start - rangeTimeDelta + dragged,
-                end: prevRange.end - rangeTimeDelta + dragged,
+                end: prevRange.end - rangeTimeDelta + dragged
             }
 
             return {
-                timeRange: { ...state.timeRange, [key]: newRange },
-                draggedTime: { ...state.draggedTime, [key]: 0 },
-                sectionParams: { ...state.sectionParams, [key]: { ...state.sectionParams[key], date: draggedMidpointDate.toDate() } },
+                timeRange: newRange,
+                draggedTime: 0,
+                timelineParams: { ...state.timelineParams, date: draggedMidpointDate.toDate() },
             };
         });
     },
 
-    initTimeRange: (key: string) => {
-        set(state => ({
-            timeRange: { ...state.timeRange, [key]: { start: 0, end: DAY } }
+    initTimeRange: () => {
+        set(() => ({
+            timeRange: { start: 0, end: DAY }
         }))
     },
 
-    updateTimeRange: (key: string, range: { start: number, end: number }) => {
-        set(state => ({
-            timeRange: { ...state.timeRange, [key]: range }
+    updateTimeRange: (range: { start: number, end: number }) => {
+        set(() => ({
+            timeRange: range
         }))
     },
 
-    initPinQuery: (key: SectionType) => {
-        set((state) => ({
-            chartPinQuery: { ...state.chartPinQuery, [key]: null }
+    initPinQuery: () => {
+        set(() => ({
+            chartPinQuery: { date: null, uuid: null, fieldId: null }
         }))
     },
 
-    updatePinQuery: (key: SectionType, params: ChartParams | null) => {
-        if (key == SectionType.IntraPerson) {
-            set(state => ({
-                chartPinQuery: { ...state.chartPinQuery, [key]: params }
-            }))
-        } else if (key == SectionType.InterPerson) {
-            set(state => ({
-                chartPinQuery: { ...state.chartPinQuery, [key]: params }
-            }))
-        } else if (key == SectionType.TimelineOverview) {
-            set(state => ({
-                chartPinQuery: { ...state.chartPinQuery, [key]: params }
-            }))
-        }
+    updatePinQuery: (params: ChartPinQuery) => {
+        set(() => ({
+            chartPinQuery: params
+        }))
     }
 }))
 

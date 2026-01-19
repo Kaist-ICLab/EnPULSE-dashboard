@@ -9,14 +9,13 @@ import { ChartItem } from './ChartItem';
 
 const ChartContainer: React.FC<{
     timelines: TimelineData[];
-    sectionType: SectionType;
     bucketSize: number;
-}> = ({ timelines, sectionType, bucketSize }) => {
+}> = ({ timelines, bucketSize }) => {
     const widthReduction = 80;
     const chartContainerRef = useRef<HTMLDivElement>(null);
 
     const [chartWidth, setChartWidth] = useState(0);
-    const { updateSectionParams, chartPinQuery, updatePinQuery } = useSectionState()
+    const { updateTimelineParams, chartPinQuery, updatePinQuery, selectedSection, updateSelectedSection } = useSectionState()
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
 
@@ -41,17 +40,17 @@ const ChartContainer: React.FC<{
     }, [chartContainerRef])
 
     const pinnedChart = useMemo(() => {
-        if (chartPinQuery[sectionType] == null) return null
-
-        switch (sectionType) {
+        switch (selectedSection) {
             case SectionType.IntraPerson:
-                return timelines.find(t => t.params.date.getTime() === chartPinQuery[SectionType.IntraPerson]?.date?.getTime())?.id || null
+                return timelines.find(t => t.params.date.getTime() === chartPinQuery.date?.getTime())?.id || null
             case SectionType.InterPerson:
-                return timelines.find(t => t.params.uuid === chartPinQuery[SectionType.InterPerson]?.uuid)?.id || null
+                return timelines.find(t => t.params.uuid === chartPinQuery.uuid)?.id || null
             case SectionType.TimelineOverview:
-                return timelines.find(t => t.params.fieldId === chartPinQuery[SectionType.TimelineOverview]?.fieldId)?.id || null
+                return timelines.find(t => t.params.fieldId === chartPinQuery.fieldId)?.id || null
+            default:
+                return null
         }
-    }, [sectionType, timelines, chartPinQuery])
+    }, [selectedSection, timelines, chartPinQuery])
 
     const comparisonName = {
         [SectionType.InterPerson]: "Participants",
@@ -78,14 +77,15 @@ const ChartContainer: React.FC<{
                             <>
                                 <span className="font-medium text-gray-700">Compare with other:</span>
                                 {Object.entries(comparisonName).map(([type, value]) => (
-                                    sectionType !== type && <Link key={type} href={`./dashboard/#${type}-comparison-chart`}>
+                                    selectedSection !== type && <Link key={type} href={`./dashboard/#${type}-comparison-chart`}>
                                         <Button
                                             size="md"
                                             className="flex flex-row gap-1 text-base px-3"
                                             onClick={() => {
                                                 const params = timelines.find(t => t.id === selectedChart)!.params
-                                                updateSectionParams(type as SectionType, params)
-                                                updatePinQuery(type as SectionType, params)
+                                                updateTimelineParams(params)
+                                                updatePinQuery(params)
+                                                updateSelectedSection(type as SectionType)
                                             }}
                                         >
                                             <span>{value}</span>
@@ -102,7 +102,6 @@ const ChartContainer: React.FC<{
                 <ChartItem
                     key={timeline.id}
                     timeline={timeline}
-                    sectionType={sectionType}
                     pinned={true}
                     isSelected={selectedChart === timeline.id}
                     setSelectedChart={(p) => setSelectedChart(p)}
@@ -118,7 +117,6 @@ const ChartContainer: React.FC<{
                     <ChartItem
                         key={id}
                         timeline={timelines.find(d => d.id === id)!}
-                        sectionType={sectionType}
                         pinned={pinnedChart === id}
                         isSelected={selectedChart === id}
                         setSelectedChart={(p) => setSelectedChart(p)}
@@ -129,7 +127,6 @@ const ChartContainer: React.FC<{
             </DnDProvider>
             <div className='flex flex-row justify-end items-end'>
                 <TimelineXAxis
-                    sectionType={sectionType}
                     width={chartWidth}
                 />
             </div>

@@ -23,20 +23,39 @@ const SensorDropdown: React.FC<{
             dismissOnClick={false}
             onMouseUp={() => setSelectedSensor(-1)}
         >
-            <div className="max-h-64 flex flex-row py-2 gap-2">
-                <div className="overflow-y-auto scrollbar-thin">
-                    {Array.from(campaignTables.values()).map((table) => (
-                        <DropdownItem
-                            key={table.id}
-                            className={`font-medium ${selectedSensor === table.id ? 'text-blue-600 bg-gray-100' : 'text-gray-700'}`}
-                            onClick={() => { setSelectedSensor(selectedSensor === table.id ? -1 : table.id) }}
-                        >
-                            {table.name}
-                        </DropdownItem>
-                    ))}
+            <div className="max-h-64 flex flex-row px-1 py-2 gap-2">
+                <div className="min-w-56 flex flex-col">
+                    <div className="overflow-y-auto grow scrollbar-thin">
+                        {Array.from(campaignTables.values()).map((table) => (
+                            <DropdownItem
+                                key={table.id}
+                                className={`font-medium ${selectedSensor === table.id ? 'text-blue-600 bg-gray-100' : 'text-gray-700'}`}
+                                onClick={() => { setSelectedSensor(selectedSensor === table.id ? -1 : table.id) }}
+                            >
+                                {table.name}
+                            </DropdownItem>
+                        ))}
+                    </div>
+                    <DropdownDivider />
+                    <DropdownItem className="font-bold" onClick={() => {
+                        setIsFieldSelected(prev => {
+                            const keys = mergedTableFields.filter(field => field.campaign_table_id === selectedSensor).map(field => field.id)
+                            const newSelectedFields = structuredClone(prev)
+                            keys.forEach(key => {
+                                newSelectedFields[key] = !(isAllSelected.get(selectedSensor) ?? false)
+                            })
+                            return newSelectedFields
+                        });
+                    }}>
+                        <span className="text-red-500">Deselect all</span>
+                    </DropdownItem>
                 </div>
-                {selectedSensor !== -1 && (
-                    <div className="min-w-48 flex flex-col">
+                {selectedSensor === -1 ? (
+                    <div className="min-w-40 flex items-center justify-center bg-gray-50 rounded-sm">
+                        <span className="text-gray-400 text-sm ">Select Sensor</span>
+                    </div>
+                ) : (
+                    <div className="min-w-40 flex flex-col">
                         <div className="overflow-y-auto grow scrollbar-thin">
                             {mergedTableFields.filter(field => field.campaign_table_id === selectedSensor)
                                 .map((field) => (
@@ -69,8 +88,8 @@ const SensorDropdown: React.FC<{
                         }}>
                             {
                                 (isAllSelected.get(selectedSensor) ?? false) ?
-                                    "Deselect all" :
-                                    "Select all"
+                                    "Deselect all fields" :
+                                    "Select all fields"
                             }
                         </DropdownItem>
                     </div>

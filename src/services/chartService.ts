@@ -2,7 +2,7 @@ import { DynamicDataColumn } from '@/hooks/charts/useUserDailyStat';
 import { supabase } from '@/lib/supabase';
 import { mapQuery } from '@/lib/supabaseHelper';
 import { CampaignParticipant, CampaignTableFieldWithTable } from '@/types/campaign';
-import { ChartParams, ChartType } from '@/types/chart';
+import { TimelineParams, ChartType } from '@/types/chart';
 import { BucketCategoricalData, BucketNumericalData, groupByTimestamp } from '@/lib/supabaseHelper';
 import dayjs from 'dayjs';
 
@@ -68,7 +68,7 @@ export async function getDailyStatCount(campaignId: number) {
     return Math.max(count ?? 1, 1)
 }
 
-export async function getTimelineOverviewData(fields: CampaignTableFieldWithTable[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
+export async function getTimelineOverviewData(fields: CampaignTableFieldWithTable[], params: TimelineParams, timeRange: { start: number, end: number }, bucketSize: string) {
     const { uuid, date } = params;
     const timeGap = timeRange.end - timeRange.start;
 
@@ -114,7 +114,7 @@ export async function getTimelineOverviewData(fields: CampaignTableFieldWithTabl
     })
 }
 
-export async function getInterPersonData(fields: CampaignTableFieldWithTable[], participants: CampaignParticipant[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
+export async function getInterPersonData(fields: CampaignTableFieldWithTable[], participants: CampaignParticipant[], params: TimelineParams, timeRange: { start: number, end: number }, bucketSize: string) {
     const { date, fieldId } = params;
     const timeGap = timeRange.end - timeRange.start;
     const field = fields.find(v => v.id === fieldId)
@@ -164,7 +164,7 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
     }
 }
 
-export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
+export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], params: TimelineParams, timeRange: { start: number, end: number }, bucketSize: string) {
     const { date, fieldId, uuid } = params;
     const timeGap = timeRange.end - timeRange.start;
     const field = fields.find(v => v.id === fieldId)

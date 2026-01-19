@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef } from "react";
-import { SectionType, TimelineCategoricalPoint, TimelineNumericalPoint } from "@/types/chart";
+import { TimelineCategoricalPoint, TimelineNumericalPoint } from "@/types/chart";
 import { TimelineGraph } from "./graphs/TimelineGraph";
 import { TooltipWithBounds, defaultStyles } from "@visx/tooltip";
 import { Group } from '@visx/group';
@@ -10,7 +10,6 @@ import { useChartState } from "@/hooks/charts/useChartState";
 import { CategoricalTimelineLegend } from "./legends/CategoricalTimelineLegend";
 
 interface TimelineChartProps {
-    sectionType: SectionType;
     chartType: 'categorical' | 'numerical';
     baseTime: number;
     data: (TimelineNumericalPoint | TimelineCategoricalPoint)[];
@@ -20,7 +19,6 @@ interface TimelineChartProps {
 }
 
 const TimelineChart: React.FC<TimelineChartProps> = ({
-    sectionType,
     chartType,
     baseTime,
     data,
@@ -29,7 +27,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
     height,
 }) => {
     const svgRef = useRef<SVGSVGElement>(null);
-    const { timeScale, valueScale, barWidth, handleMouseMove, handleDoubleClick, handleBrushChange, tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hideTooltip, getCategoryColor, uniqueCategories, handleLegendClick } = useChartState(data, chartType, sectionType, bucketSize, baseTime, svgRef, width, height);
+    const { timeScale, valueScale, barWidth, handleMouseMove, handleDoubleClick, handleBrushChange, tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hideTooltip, getCategoryColor, uniqueCategories, handleLegendClick } = useChartState(data, chartType, bucketSize, baseTime, svgRef, width, height);
 
     if (width === 0 || height === 0) {
         return (

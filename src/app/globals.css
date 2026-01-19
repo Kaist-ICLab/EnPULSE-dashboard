@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @plugin "@iconify/tailwind4";
 @plugin "flowbite-react/plugin/tailwindcss";
-/* TODO: 왜썼나 확인 필요 */
 @source "../../.flowbite-react/class-list.json";
 
 /* Custom thin scrollbar without arrows */

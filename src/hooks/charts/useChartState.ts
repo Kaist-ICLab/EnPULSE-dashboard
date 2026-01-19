@@ -1,6 +1,6 @@
 import useSectionState from "../useSectionState";
 import { useMemo, useEffect, useCallback } from "react";
-import { SectionType, TimelineCategoricalPoint, TimelineNumericalPoint } from "@/types/chart";
+import { TimelineCategoricalPoint, TimelineNumericalPoint } from "@/types/chart";
 import { ChartType } from "@/types/chart";
 import { useTooltip } from "@visx/tooltip";
 import { scaleTime } from "@visx/scale";
@@ -11,7 +11,6 @@ import { useVaryingChartState } from "./useVaryingChartState";
 export function useChartState(
     data: (TimelineNumericalPoint | TimelineCategoricalPoint)[],
     chartType: ChartType,
-    sectionType: SectionType,
     bucketSize: number,
     baseTime: number,
     svgRef: React.RefObject<SVGSVGElement | null>,
@@ -21,8 +20,8 @@ export function useChartState(
     const { timeRange, draggedTime, updateTimeRange, initTimeRange } = useSectionState();
     const { maxValue, getTooltipData, getCategoryColor, uniqueCategories, handleLegendClick } = useVaryingChartState(data, chartType, bucketSize);
     const currentTimeRange = useMemo(() => {
-        return { start: timeRange[sectionType].start + draggedTime[sectionType], end: timeRange[sectionType].end + draggedTime[sectionType] };
-    }, [timeRange, sectionType, draggedTime]);
+        return { start: timeRange.start + draggedTime, end: timeRange.end + draggedTime };
+    }, [timeRange, draggedTime]);
 
     const {
         tooltipData,
@@ -34,8 +33,8 @@ export function useChartState(
     } = useTooltip<TooltipData>();
 
     useEffect(() => {
-        initTimeRange(sectionType);
-    }, [sectionType, initTimeRange]);
+        initTimeRange();
+    }, [initTimeRange]);
 
     // Time scale
     const timeScale = useMemo(() => {
@@ -81,11 +80,11 @@ export function useChartState(
         const brushStart = Math.floor(bounds.x0 / bucketSize) * bucketSize;
         const brushEnd = Math.ceil(bounds.x1 / bucketSize) * bucketSize;
 
-        updateTimeRange(sectionType, {
+        updateTimeRange({
             start: brushStart - baseTime,
             end: brushEnd - baseTime,
         });
-    }, [sectionType, baseTime, updateTimeRange, bucketSize]);
+    }, [baseTime, updateTimeRange, bucketSize]);
 
     // Handle mouse move for tooltip
     const handleMouseMove = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
@@ -136,8 +135,8 @@ export function useChartState(
     }, [getTooltipData, timeScale, hideTooltip, showTooltip, data.length, svgRef]);
 
     const handleDoubleClick = useCallback(() => {
-        initTimeRange(sectionType);
-    }, [sectionType, initTimeRange]);
+        initTimeRange();
+    }, [initTimeRange]);
 
     return {
         tooltipData,

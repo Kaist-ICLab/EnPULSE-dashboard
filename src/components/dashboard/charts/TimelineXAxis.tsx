@@ -2,20 +2,18 @@
 
 import { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import useSectionState from "@/hooks/useSectionState";
-import { SectionType } from "@/types/chart";
 import { scaleTime } from '@visx/scale';
 import { AxisBottom } from '@visx/axis';
 import { Group } from '@visx/group';
 import dayjs from "dayjs";
 
 const TimelineXAxis: React.FC<{
-    sectionType: SectionType;
     width: number;
-}> = ({ sectionType, width }) => {
+}> = ({ width }) => {
     const { timeRange, draggedTime, updateDraggedTime, updateTimeRangeAfterDrag } = useSectionState();
     const currentTimeRange = useMemo(() => {
-        return { start: timeRange[sectionType].start + draggedTime[sectionType], end: timeRange[sectionType].end + draggedTime[sectionType] };
-    }, [timeRange, sectionType, draggedTime]);
+        return { start: timeRange.start + draggedTime, end: timeRange.end + draggedTime };
+    }, [timeRange, draggedTime]);
 
     const height = 20;
     const containerRef = useRef<HTMLDivElement>(null);
@@ -51,7 +49,7 @@ const TimelineXAxis: React.FC<{
             const minInterval = 1000 / 30; // ms -> ~20 updates per second
 
             if (now - lastSentTimeRef.current >= minInterval) {
-                updateDraggedTime(sectionType, latestDeltaRef.current);
+                updateDraggedTime(latestDeltaRef.current);
                 lastSentTimeRef.current = now;
             }
 
@@ -59,7 +57,7 @@ const TimelineXAxis: React.FC<{
         };
 
         rafIdRef.current = window.requestAnimationFrame(loop);
-    }, [sectionType, updateDraggedTime]);
+    }, [updateDraggedTime]);
 
     const stopRafLoop = useCallback(() => {
         if (rafIdRef.current != null) {
@@ -101,8 +99,8 @@ const TimelineXAxis: React.FC<{
         stopRafLoop();
         dragStartRef.current = null;
         latestDeltaRef.current = 0;
-        updateTimeRangeAfterDrag(sectionType);
-    }, [sectionType, stopRafLoop, updateTimeRangeAfterDrag]);
+        updateTimeRangeAfterDrag();
+    }, [stopRafLoop, updateTimeRangeAfterDrag]);
 
     // Handle global mouseup so dragging stops even if the cursor leaves the SVG.
     useEffect(() => {
