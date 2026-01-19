@@ -50,6 +50,7 @@ const ComparisonChart: React.FC<{
                             <SensorDropdown
                                 isFieldSelected={isFieldSelected}
                                 setIsFieldSelected={setIsFieldSelected}
+                                isMultipleSelection={true}
                             />
                         }
                         {sectionType !== SectionType.InterPerson && <div className="w-full sm:w-48">

@@ -61,7 +61,7 @@ export const getCampaignTables = async (campaignId: number): Promise<CampaignTab
             name,
             daily_count_max`)
         .eq('campaign_id', campaignId)
-        .order('id', { ascending: true })
+        .order('name', { ascending: true })
 
     if (error) throw new Error(error.message);
     return data;
@@ -98,7 +98,7 @@ export const getCampaignTableFields = async (campaignId: number, campaignTableId
         .order('id', { ascending: true })
 
     if (error) throw new Error(error.message);
-    return data;
+    return data as CampaignTableField[];
 }
 
 export const createCampaignTableFields = async (campainTableFields: CampaignTableField[]): Promise<boolean> => {

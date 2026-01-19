@@ -3,3 +3,34 @@
 @plugin "flowbite-react/plugin/tailwindcss";
 /* TODO: 왜썼나 확인 필요 */
 @source "../../.flowbite-react/class-list.json";
+
+/* Custom thin scrollbar without arrows */
+@layer utilities {
+    .scrollbar-thin {
+        scrollbar-width: thin;
+        scrollbar-color: oklch(70.7% 0.022 261.325) transparent;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background-color: oklch(70.7% 0.022 261.325);
+        border-radius: 3px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background-color: oklch(70.7% 0.022 261.325);
+    }
+
+    /* Remove scrollbar buttons (arrows) */
+    .scrollbar-thin::-webkit-scrollbar-button {
+        display: none;
+    }
+}
