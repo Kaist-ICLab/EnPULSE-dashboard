@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from "react";
 import { min, max } from "d3-array";
-import { formatTime } from "@/components/dashboard/charts/shared/timelineUtils";
+import { formatTime } from "@/utils/timelineUtils";
 import { TimelineNumericalPoint } from "@/types/chart";
 
 export function useNumericalChartState(data: TimelineNumericalPoint[], bucketSize: number) {

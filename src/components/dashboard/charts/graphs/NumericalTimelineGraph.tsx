@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from "react";
-import { colors, gray } from '../shared/timelineUtils';
+import { colors, gray } from '../../../../utils/timelineUtils';
 import { TimelineChartGraphProps, TimelineNumericalPoint } from "@/types/chart";
 
 export const NumericalTimelineGraph: React.FC<TimelineChartGraphProps<TimelineNumericalPoint>> = ({

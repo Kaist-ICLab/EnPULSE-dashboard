@@ -1,5 +1,5 @@
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
-import { colors, gray } from "@/components/dashboard/charts/shared/timelineUtils";
+import { colors, gray } from "@/utils/timelineUtils";
 import { TimelineCategoricalPoint } from "@/types/chart";
 
 export function useCategoricalChartLegend(data: TimelineCategoricalPoint[]) {

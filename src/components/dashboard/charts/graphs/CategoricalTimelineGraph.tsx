@@ -1,7 +1,7 @@
 'use client'
 
 import { Bar } from '@visx/shape';
-import { gray } from '../shared/timelineUtils';
+import { gray } from '../../../../utils/timelineUtils';
 import { TimelineChartGraphProps, TimelineCategoricalPoint } from "@/types/chart";
 
 export const CategoricalTimelineGraph: React.FC<TimelineChartGraphProps<TimelineCategoricalPoint>> = ({

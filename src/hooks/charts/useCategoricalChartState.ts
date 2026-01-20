@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from "react";
-import { formatTime } from "@/components/dashboard/charts/shared/timelineUtils";
+import { formatTime } from "@/utils/timelineUtils";
 import { TimelineCategoricalPoint } from "@/types/chart";
 
 export function useCategoricalChartState(data: TimelineCategoricalPoint[], bucketSize: number) {

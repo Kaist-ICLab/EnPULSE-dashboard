@@ -2,7 +2,7 @@ import { ChartType, TimelineCategoricalPoint, TimelineNumericalPoint } from "@/t
 import { useNumericalChartState } from "./useNumericalChartState";
 import { useCategoricalChartState } from "./useCategoricalChartState";
 import { useCategoricalChartLegend } from "./useCategoricalChartLegend";
-import { gray } from "@/components/dashboard/charts/shared/timelineUtils";
+import { gray } from "@/utils/timelineUtils";
 
 export function useVaryingChartState(
     data: (TimelineNumericalPoint | TimelineCategoricalPoint)[],
