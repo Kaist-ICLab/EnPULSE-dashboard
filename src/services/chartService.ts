@@ -193,7 +193,7 @@ export async function getDaysComparisonData(date: Date, participant: CampaignPar
             table: tableName,
             column: columnName,
             chartType: "categorical" as ChartType,
-            params: { date, uuid, fieldId: field.id },
+            params: { date: d, uuid, fieldId: field.id },
             value: groupByTimestamp(categoricalData[idx] ?? [])
         }
         ))
@@ -205,7 +205,7 @@ export async function getDaysComparisonData(date: Date, participant: CampaignPar
             table: tableName,
             column: columnName,
             chartType: "numerical" as ChartType,
-            params: { date, uuid, fieldId: field.id },
+            params: { date: d, uuid, fieldId: field.id },
             value: numericalData[idx]?.map(v => ({ timestamp: new Date(v.bucket).getTime(), avg: v.avg, min: v.min, max: v.max })) ?? []
         }))
     }
