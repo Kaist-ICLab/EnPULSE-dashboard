@@ -47,14 +47,15 @@ export function useCategoricalChartLegend(data: TimelineCategoricalPoint[]) {
     const handleLegendClick = useCallback((category: string) => {
         if (colorQueue.current == null) return;
 
+
         const isVisible = visibleCategories.has(category);
         const newVisibleCategories = new Set(visibleCategories);
+        console.log('handleLegendClick', category, isVisible);
 
         if (!isVisible) {
             if (colorQueue.current.length === colors.length) {
-                const { category: removedCategory } = colorQueue.current.splice(0, 1)[0];
-                const colorIndex = colorQueue.current[colorQueue.current.length - 1]?.colorIndex ?? 0;
-                colorQueue.current.push({ category, colorIndex });
+                const { category: removedCategory, colorIndex: removedColorIndex } = colorQueue.current.splice(0, 1)[0];
+                colorQueue.current.push({ category, colorIndex: removedColorIndex });
                 newVisibleCategories.delete(removedCategory);
             } else {
                 const existingIndex = colorQueue.current.map(item => item.colorIndex);
