@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 
 
 const Header: React.FC = () => {
-    const { timelineParams, updateTimelineParams } = useSectionState();
+    const { timelineParams, updateTimelineParams, initTimeRange } = useSectionState();
 
     return (
         <div className="w-full min-h-12 flex justify-between items-center border-b border-gray-200 px-4">
@@ -24,6 +24,7 @@ const Header: React.FC = () => {
                     onClick={() => {
                         const date = dayjs(timelineParams.date).subtract(1, "day").startOf("day").toDate();
                         updateTimelineParams({ date });
+                        initTimeRange();
                     }}
                 >
                     <span className="icon-[eva--chevron-left-fill] w-4 h-4"></span>
@@ -35,6 +36,7 @@ const Header: React.FC = () => {
                     onChange={(e) => {
                         const date = dayjs(e.target.value).startOf('day').toDate();
                         updateTimelineParams({ date: date });
+                        initTimeRange();
                     }}
                 />
                 <Button
@@ -44,6 +46,7 @@ const Header: React.FC = () => {
                     onClick={() => {
                         const date = dayjs(timelineParams.date).add(1, "day").startOf("day").toDate();
                         updateTimelineParams({ date });
+                        initTimeRange();
                     }}
                 >
                     <span className="icon-[eva--chevron-right-fill] w-4 h-4"></span>

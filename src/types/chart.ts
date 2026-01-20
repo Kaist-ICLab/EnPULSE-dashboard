@@ -1,9 +1,9 @@
 import { ScaleLinear, ScaleTime } from "@visx/vendor/d3-scale";
 
-export enum SectionType {
-    TimelineOverview = "timeline-overview",
-    IntraPerson = "intra-person",
-    InterPerson = "inter-person"
+export enum ComparisonType {
+    Sensors = "sensors",
+    Days = "days",
+    Participants = "participants"
 }
 
 export type ChartType = "numerical" | "categorical"

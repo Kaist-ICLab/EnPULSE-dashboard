@@ -1,4 +1,4 @@
-import { SectionType, TimelineData } from "@/types/chart";
+import { ComparisonType, TimelineData } from "@/types/chart";
 import { useEffect, useState } from "react";
 import useCampaign from "../useCampaign";
 import { getInterPersonData, getIntraPersonData, getTimelineOverviewData } from "@/services/chartService";
@@ -6,7 +6,7 @@ import { CampaignTableFieldWithTable } from "@/types/campaign";
 import useSectionState from "../useSectionState";
 
 
-export default function useTimeline(secitonType: SectionType, selectedFields: CampaignTableFieldWithTable[], chartWidth: number) {
+export default function useTimeline(secitonType: ComparisonType, selectedFields: CampaignTableFieldWithTable[], chartWidth: number) {
     const [timeline, setTimeline] = useState<TimelineData[]>([]);
     const [bucketSize, setBucketSize] = useState<number>(10);
     const [loading, setLoading] = useState(false);
@@ -52,11 +52,11 @@ export default function useTimeline(secitonType: SectionType, selectedFields: Ca
 
         async function fetchData() {
             let data: TimelineData[] = [];
-            if (secitonType === SectionType.TimelineOverview) {
+            if (secitonType === ComparisonType.Sensors) {
                 data = await getTimelineOverviewData(selectedFields, timelineParams, timeRange, bucketString);
-            } else if (secitonType === SectionType.InterPerson) {
+            } else if (secitonType === ComparisonType.Participants) {
                 data = await getInterPersonData(selectedFields, Array.from(campaignParticipants.values()), timelineParams, timeRange, bucketString);
-            } else if (secitonType === SectionType.IntraPerson) {
+            } else if (secitonType === ComparisonType.Days) {
                 data = await getIntraPersonData(selectedFields, timelineParams, timeRange, bucketString);
             }
 

@@ -4,7 +4,7 @@ import { DnDProvider } from '@/components/common/DnDList';
 import { Button } from 'flowbite-react';
 import Link from 'next/link';
 import useSectionState from '@/hooks/useSectionState';
-import { SectionType, TimelineData } from '@/types/chart';
+import { ComparisonType, TimelineData } from '@/types/chart';
 import { ChartItem } from './ChartItem';
 
 const ChartContainer: React.FC<{
@@ -41,11 +41,11 @@ const ChartContainer: React.FC<{
 
     const pinnedChart = useMemo(() => {
         switch (selectedSection) {
-            case SectionType.IntraPerson:
+            case ComparisonType.Days:
                 return timelines.find(t => t.params.date.getTime() === chartPinQuery.date?.getTime())?.id || null
-            case SectionType.InterPerson:
+            case ComparisonType.Participants:
                 return timelines.find(t => t.params.uuid === chartPinQuery.uuid)?.id || null
-            case SectionType.TimelineOverview:
+            case ComparisonType.Sensors:
                 return timelines.find(t => t.params.fieldId === chartPinQuery.fieldId)?.id || null
             default:
                 return null
@@ -53,9 +53,9 @@ const ChartContainer: React.FC<{
     }, [selectedSection, timelines, chartPinQuery])
 
     const comparisonName = {
-        [SectionType.InterPerson]: "Participants",
-        [SectionType.TimelineOverview]: "Sensors",
-        [SectionType.IntraPerson]: "Days"
+        [ComparisonType.Participants]: "Participants",
+        [ComparisonType.Sensors]: "Sensors",
+        [ComparisonType.Days]: "Days"
     }
 
     return (
@@ -85,7 +85,7 @@ const ChartContainer: React.FC<{
                                                 const params = timelines.find(t => t.id === selectedChart)!.params
                                                 updateTimelineParams(params)
                                                 updatePinQuery(params)
-                                                updateSelectedSection(type as SectionType)
+                                                updateSelectedSection(type as ComparisonType)
                                             }}
                                         >
                                             <span>{value}</span>

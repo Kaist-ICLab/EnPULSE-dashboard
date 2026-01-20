@@ -102,7 +102,7 @@ const ChartTooltipContent: React.FC = () => {
     )
 }
 
-const UserDailyStatTable: React.FC<{
+const DailyOverviewTable: React.FC<{
     syncTime: Date | null,
     openMessageModal: (sendTo: CampaignParticipant[]) => void;
 }> = ({ syncTime, openMessageModal }) => {
@@ -110,7 +110,7 @@ const UserDailyStatTable: React.FC<{
     const [tableHeight, setTableHeight] = useState(500)
     const { timelineParams, updateTimelineParams } = useSectionState()
 
-    const { page, rowsPerPage, totalPage, changePageBy, setRowsPerPage, setTotalPage } = usePaging(5)
+    const { page, rowsPerPage, totalPage, changePageBy, setRowsPerPage, setTotalPage, setPage } = usePaging(5)
     const { data, loading, columns, maxDailyCount: dailyCountThreshold } = useUserDailyStat(timelineParams.date, page, rowsPerPage, setTotalPage, syncTime);
     const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } = useDailyStatTableCheckedState(data);
 
@@ -130,8 +130,8 @@ const UserDailyStatTable: React.FC<{
     }, [ref, loading])
 
     useEffect(() => {
-        changePageBy(-page);
-    }, [timelineParams.date, changePageBy])
+        setPage(1);
+    }, [timelineParams.date, setPage])
 
     return (
         <div className="bg-white rounded-xl shadow-md p-3 w-full overflow-hidden flex flex-col items-center justify-center">
@@ -241,4 +241,4 @@ const UserDailyStatTable: React.FC<{
     );
 }
 
-export default UserDailyStatTable
+export default DailyOverviewTable

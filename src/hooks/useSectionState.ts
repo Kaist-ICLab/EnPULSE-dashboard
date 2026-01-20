@@ -1,4 +1,4 @@
-import { TimelineParams as TimelineParams, ChartPinQuery, SectionType } from "@/types/chart";
+import { TimelineParams as TimelineParams, ChartPinQuery, ComparisonType } from "@/types/chart";
 import { create } from "zustand";
 import dayjs from "dayjs";
 import { getLocalDay } from "@/utils/date";
@@ -6,18 +6,18 @@ import { getLocalDay } from "@/utils/date";
 const DAY = 24 * 60 * 60 * 1000;
 
 export const sectionTypes = Object.freeze([
-    SectionType.TimelineOverview,
-    SectionType.IntraPerson,
-    SectionType.InterPerson
+    ComparisonType.Sensors,
+    ComparisonType.Days,
+    ComparisonType.Participants
 ] as const)
 
 interface SectionState {
-    selectedSection: SectionType,
+    selectedSection: ComparisonType,
     timelineParams: TimelineParams,
     timeRange: { start: number, end: number }
     draggedTime: number
     chartPinQuery: ChartPinQuery
-    updateSelectedSection: (section: SectionType) => void
+    updateSelectedSection: (section: ComparisonType) => void
     updateTimelineParams: (params: Partial<TimelineParams>) => void
     updateDraggedTime: (time: number) => void
     initTimeRange: () => void
@@ -28,13 +28,13 @@ interface SectionState {
 }
 
 const useSectionState = create<SectionState>((set) => ({
-    selectedSection: SectionType.TimelineOverview,
+    selectedSection: ComparisonType.Sensors,
     timelineParams: { date: getLocalDay(), uuid: '', fieldId: 0 },
     timeRange: { start: 0, end: DAY },
     chartPinQuery: { date: null, uuid: null, fieldId: null },
     draggedTime: 0,
 
-    updateSelectedSection: (section: SectionType) => {
+    updateSelectedSection: (section: ComparisonType) => {
         set(() => ({
             selectedSection: section
         }))

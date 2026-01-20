@@ -2,12 +2,12 @@
 import ChartContainer from "@/components/dashboard/charts/ChartContainer";
 import useTimeline from "@/hooks/charts/useTimeline";
 import useCampaign from "@/hooks/useCampaign";
-import { SectionType } from "@/types/chart";
+import { ComparisonType } from "@/types/chart";
 import { Card, Select, Spinner } from "flowbite-react";
 import { useMemo, useRef, useState } from "react";
 import SensorDropdown from "../SensorDropdown";
 import useSectionState from "@/hooks/useSectionState";
-import TimelineOverviewTabButton from "../TimelineOverviewTabButton";
+import SectionTypeSelect from "../SectionTypeSelect";
 
 const ComparisonChart: React.FC = () => {
     const chartRef = useRef<HTMLDivElement>(null);
@@ -19,51 +19,41 @@ const ComparisonChart: React.FC = () => {
         return acc
     }, {} as { [key: number]: boolean }))
 
-    const selectedFields = useMemo(() => mergedTabledFields.filter(v => isFieldSelected[v.id] || selectedSection !== SectionType.TimelineOverview), [isFieldSelected, mergedTabledFields, selectedSection])
+    const selectedFields = useMemo(() => mergedTabledFields.filter(v => isFieldSelected[v.id] || selectedSection !== ComparisonType.Sensors), [isFieldSelected, mergedTabledFields, selectedSection])
     const { timeline, bucketSize, loading, error } = useTimeline(selectedSection, selectedFields, (chartRef.current?.clientWidth || 0) - 88);
-
-    const users = useMemo(() => {
-        return Array.from(campaignParticipants.values()).map(v => ({ id: v.uuid, name: v.email }))
-    }, [campaignParticipants])
 
     return (
         <Card>
             <div className="w-full flex flex-row items-center">
-                <div className="flex flex-row items-center">
-                    Comparison between
-                    <div className="w-2" />
-                    <TimelineOverviewTabButton isSelected={selectedSection === SectionType.TimelineOverview} onClick={() => updateSelectedSection(SectionType.TimelineOverview)}>
-                        <span className="icon-[material-symbols--sensors-rounded] mr-2"></span> Sensors
-                    </TimelineOverviewTabButton>
-                    <TimelineOverviewTabButton isSelected={selectedSection === SectionType.InterPerson} onClick={() => updateSelectedSection(SectionType.InterPerson)}>
-                        <span className="icon-[material-symbols--sensors-rounded] mr-2"></span> Participants
-                    </TimelineOverviewTabButton>
-                    <TimelineOverviewTabButton isSelected={selectedSection === SectionType.IntraPerson} onClick={() => updateSelectedSection(SectionType.IntraPerson)}>
-                        <span className="icon-[material-symbols--sensors-rounded] mr-2"></span> Days
-                    </TimelineOverviewTabButton>
+                <div className="flex flex-row items-center gap-2">
+                    <h2 className="text-2xl font-semibold">Comparison between</h2>
+                    <SectionTypeSelect
+                        selectedSection={selectedSection}
+                        updateSelectedSection={updateSelectedSection}
+                    />
                 </div>
                 <div className="flex flex-row ml-auto gap-2">
-                    {selectedSection == SectionType.TimelineOverview &&
+                    {selectedSection == ComparisonType.Sensors &&
                         <SensorDropdown
                             isFieldSelected={isFieldSelected}
                             setIsFieldSelected={setIsFieldSelected}
                             isMultipleSelection={true}
                         />
                     }
-                    {selectedSection !== SectionType.InterPerson && <div className="w-full sm:w-48">
+                    {selectedSection !== ComparisonType.Participants && <div className="w-full sm:w-48">
                         <Select
                             value={timelineParams.uuid}
                             onChange={(e) => updateTimelineParams({ uuid: e.target.value })}
                         >
                             <option value="">Select User</option>
-                            {users.map((user) => (
-                                <option key={user.id} value={user.id}>
-                                    {user.name}
+                            {Array.from(campaignParticipants.values()).map((user) => (
+                                <option key={user.uuid} value={user.uuid}>
+                                    {user.email}
                                 </option>
                             ))}
                         </Select>
                     </div>}
-                    {selectedSection !== SectionType.TimelineOverview && <div className="w-full sm:w-48">
+                    {selectedSection !== ComparisonType.Sensors && <div className="w-full sm:w-48">
                         <Select
                             icon={() => <span className="icon-[material-symbols--sensors-rounded]"></span>}
                             value={timelineParams.fieldId}
