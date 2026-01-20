@@ -47,6 +47,8 @@ export type TimelineParams = {
     date: Date,
 }
 
+export type ComparisonParams = { uuid: string[], fieldId: number[] }
+
 export type ChartPinQuery = {
     date: Date | null,
     uuid: string | null,

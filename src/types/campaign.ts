@@ -32,8 +32,8 @@ export interface CampaignParticipant {
 }
 
 export interface CampaignTableFieldWithTable extends CampaignTableField {
-    tableId: number;
-    tableName: string;
-    displayName: string;
+    table_id: number;
+    table_name: string;
+    display_name: string;
 }
 

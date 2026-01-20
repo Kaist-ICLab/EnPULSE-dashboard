@@ -13,7 +13,7 @@ interface CampaignState {
     campaignTables: Map<number, CampaignTable>;
     campaignTableFields: Map<number, CampaignTableField>;
     campaignParticipants: Map<string, CampaignParticipant>;
-    mergedTabledFields: Array<CampaignTableFieldWithTable>;
+    mergedTableFields: Array<CampaignTableFieldWithTable>;
     selectedCampaignId: number | null;
     responses: {
         fetchCampaigns: Response,
@@ -34,7 +34,7 @@ const useCampaign = create<CampaignState>((set, get) => ({
     campaignTables: new Map(),
     campaignTableFields: new Map(),
     campaignParticipants: new Map(),
-    mergedTabledFields: [],
+    mergedTableFields: [],
     selectedCampaignId: null,
     responses: {
         fetchCampaigns: {
@@ -79,21 +79,21 @@ const useCampaign = create<CampaignState>((set, get) => ({
             const tablesMap = new Map(campaignTables.map(campaignTable => [campaignTable.id, campaignTable]));
             const fieldsMap = new Map(campaignTableFields.map(campaignTableField => [campaignTableField.id, campaignTableField]));
 
-            const mergedTabledFields = Array.from(tablesMap.entries()).map(([, table]) =>
+            const mergedTableFields = Array.from(tablesMap.entries()).map(([, table]) =>
                 Array.from(fieldsMap.values())
                     .filter(field => field.campaign_table_id === table.id)
                     .map(field => ({
                         ...field,
-                        tableId: table.id,
-                        tableName: table.name,
-                        displayName: `${table.name.replace('_', ' ')} - ${field.name}`
+                        table_id: table.id,
+                        table_name: table.name,
+                        display_name: `${table.name.replace('_', ' ')} - ${field.name}`
                     }))
             ).flat().filter(field => field.field_role === "data");
 
             set({
                 campaignTables: tablesMap,
                 campaignTableFields: fieldsMap,
-                mergedTabledFields,
+                mergedTableFields,
                 selectedCampaignId: campaignId,
                 campaignParticipants: new Map(campaignParticipants.map(campaignParticipant => [campaignParticipant.uuid, campaignParticipant])),
                 responses: { ...get().responses, selectCampaign: { status: 'ok', message: "Campaign selected" } }

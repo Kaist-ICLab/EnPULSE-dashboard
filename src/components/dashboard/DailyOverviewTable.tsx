@@ -7,6 +7,7 @@ import { usePaging } from "@/hooks/usePaging";
 import Link from "next/link";
 import { CampaignParticipant } from "@/types/campaign";
 import useSectionState from "@/hooks/useSectionState";
+import { ComparisonType } from "@/types/chart";
 
 const getLevelColor = (level: number): string => {
     const levels = [
@@ -108,10 +109,10 @@ const DailyOverviewTable: React.FC<{
 }> = ({ syncTime, openMessageModal }) => {
     const ref = useRef<HTMLDivElement>(null)
     const [tableHeight, setTableHeight] = useState(500)
-    const { timelineParams, updateTimelineParams } = useSectionState()
+    const { date, updateComparisonParams } = useSectionState()
 
     const { page, rowsPerPage, totalPage, changePageBy, setRowsPerPage, setTotalPage, setPage } = usePaging(5)
-    const { data, loading, columns, maxDailyCount: dailyCountThreshold } = useUserDailyStat(timelineParams.date, page, rowsPerPage, setTotalPage, syncTime);
+    const { data, loading, columns, maxDailyCount: dailyCountThreshold } = useUserDailyStat(date, page, rowsPerPage, setTotalPage, syncTime);
     const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } = useDailyStatTableCheckedState(data);
 
     // const loading = statLoading || configLoading;
@@ -131,7 +132,7 @@ const DailyOverviewTable: React.FC<{
 
     useEffect(() => {
         setPage(1);
-    }, [timelineParams.date, setPage])
+    }, [date, setPage])
 
     return (
         <div className="bg-white rounded-xl shadow-md p-3 w-full overflow-hidden flex flex-col items-center justify-center">
@@ -145,7 +146,7 @@ const DailyOverviewTable: React.FC<{
                             <Link href={`./dashboard/#timeline-overview-comparison-chart`}>
                                 <Button
                                     color="blue" size="md" className="flex flex-row gap-1 text-base px-3"
-                                    onClick={() => updateTimelineParams({ uuid: data[checkedState.findIndex((state) => state)].uuid })}
+                                    onClick={() => updateComparisonParams(ComparisonType.Sensors, { uuid: [data[checkedState.findIndex((state) => state)].uuid] })}
                                 >
                                     <span>Timeline Overview</span>
                                 </Button>

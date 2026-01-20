@@ -1,19 +1,23 @@
 import { ComparisonType, TimelineData } from "@/types/chart";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import useCampaign from "../useCampaign";
-import { getInterPersonData, getIntraPersonData, getTimelineOverviewData } from "@/services/chartService";
+import { getPersonComparisonData, getDaysComparisonData, getSensorComparisonData } from "@/services/chartService";
 import { CampaignTableFieldWithTable } from "@/types/campaign";
 import useSectionState from "../useSectionState";
 
 
-export default function useTimeline(secitonType: ComparisonType, selectedFields: CampaignTableFieldWithTable[], chartWidth: number) {
+export default function useTimeline(secitonType: ComparisonType, tableFields: CampaignTableFieldWithTable[], chartWidth: number) {
     const [timeline, setTimeline] = useState<TimelineData[]>([]);
     const [bucketSize, setBucketSize] = useState<number>(10);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
 
     const { selectedCampaignId, campaignParticipants } = useCampaign();
-    const { timelineParams, timeRange } = useSectionState()
+    const { date, comparisonParams, timeRange } = useSectionState()
+
+    const currentComparisonParams = useMemo(() => comparisonParams[secitonType], [comparisonParams, secitonType])
+    const selectedFields = useMemo(() => tableFields.filter(v => currentComparisonParams.fieldId.includes(v.id)), [tableFields, currentComparisonParams])
+    const selectedUuids = useMemo(() => currentComparisonParams.uuid.map(v => campaignParticipants.get(v)).filter(v => v !== undefined), [currentComparisonParams, campaignParticipants])
 
     function getBucketSize(intervalInSec: number) {
         // unit: seconds
@@ -40,7 +44,7 @@ export default function useTimeline(secitonType: ComparisonType, selectedFields:
     }
 
     useEffect(() => {
-        if (!selectedCampaignId || !timelineParams.uuid || !timelineParams.date || !timelineParams.fieldId) return;
+        if (!selectedCampaignId || !currentComparisonParams.uuid || !date || !currentComparisonParams.fieldId) return;
 
         const intervalInSec = (timeRange.end - timeRange.start) / 1000 / chartWidth; // seconds per pixel
         const pixelPerBucket = 10 // Change this value to change the bucket size
@@ -53,11 +57,11 @@ export default function useTimeline(secitonType: ComparisonType, selectedFields:
         async function fetchData() {
             let data: TimelineData[] = [];
             if (secitonType === ComparisonType.Sensors) {
-                data = await getTimelineOverviewData(selectedFields, timelineParams, timeRange, bucketString);
+                data = await getSensorComparisonData(date, selectedUuids[0], selectedFields, timeRange, bucketString);
             } else if (secitonType === ComparisonType.Participants) {
-                data = await getInterPersonData(selectedFields, Array.from(campaignParticipants.values()), timelineParams, timeRange, bucketString);
+                data = await getPersonComparisonData(date, selectedUuids, selectedFields[0], timeRange, bucketString);
             } else if (secitonType === ComparisonType.Days) {
-                data = await getIntraPersonData(selectedFields, timelineParams, timeRange, bucketString);
+                data = await getDaysComparisonData(date, selectedUuids[0], selectedFields[0], timeRange, bucketString);
             }
 
             setTimeline(data);
@@ -66,7 +70,7 @@ export default function useTimeline(secitonType: ComparisonType, selectedFields:
         }
 
         fetchData();
-    }, [selectedCampaignId, timelineParams, timeRange, chartWidth, selectedFields, campaignParticipants, secitonType]);
+    }, [selectedCampaignId, currentComparisonParams, timeRange, selectedFields, selectedUuids, secitonType, chartWidth, date]);
 
     return { timeline, bucketSize, loading, error };
 }   

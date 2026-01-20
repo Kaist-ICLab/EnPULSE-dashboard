@@ -23,7 +23,7 @@ const SectionTypeSelect: React.FC<{
         theme={{
             field: {
                 select: {
-                    base: "block w-full disabled:opacity-50 !text-lg font-semibold w-48 !py-1",
+                    base: "block w-full disabled:opacity-50 !text-lg font-semibold w-48 !py-1.25",
                 }
             }
         }}

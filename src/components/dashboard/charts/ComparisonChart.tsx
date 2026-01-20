@@ -3,24 +3,19 @@ import ChartContainer from "@/components/dashboard/charts/ChartContainer";
 import useTimeline from "@/hooks/charts/useTimeline";
 import useCampaign from "@/hooks/useCampaign";
 import { ComparisonType } from "@/types/chart";
-import { Card, Select, Spinner } from "flowbite-react";
-import { useMemo, useRef, useState } from "react";
+import { Card, Spinner } from "flowbite-react";
+import { useMemo, useRef } from "react";
 import SensorDropdown from "../SensorDropdown";
 import useSectionState from "@/hooks/useSectionState";
 import SectionTypeSelect from "../SectionTypeSelect";
+import ParticipantDropdown from "../ParticipantDropdown";
 
 const ComparisonChart: React.FC = () => {
     const chartRef = useRef<HTMLDivElement>(null);
-    const { campaignParticipants, mergedTabledFields } = useCampaign()
-    const { timelineParams, updateTimelineParams, selectedSection, updateSelectedSection } = useSectionState()
-
-    const [isFieldSelected, setIsFieldSelected] = useState<{ [key: number]: boolean }>(mergedTabledFields.reduce((acc, field) => {
-        acc[field.id] = false
-        return acc
-    }, {} as { [key: number]: boolean }))
-
-    const selectedFields = useMemo(() => mergedTabledFields.filter(v => isFieldSelected[v.id] || selectedSection !== ComparisonType.Sensors), [isFieldSelected, mergedTabledFields, selectedSection])
-    const { timeline, bucketSize, loading, error } = useTimeline(selectedSection, selectedFields, (chartRef.current?.clientWidth || 0) - 88);
+    const { mergedTableFields } = useCampaign()
+    const { comparisonParams, updateComparisonParams, selectedSection, updateSelectedSection } = useSectionState()
+    const currentComparisonParams = useMemo(() => comparisonParams[selectedSection], [comparisonParams, selectedSection])
+    const { timeline, bucketSize, loading, error } = useTimeline(selectedSection, mergedTableFields, (chartRef.current?.clientWidth || 0) - 88);
 
     return (
         <Card>
@@ -33,40 +28,16 @@ const ComparisonChart: React.FC = () => {
                     />
                 </div>
                 <div className="flex flex-row ml-auto gap-2">
-                    {selectedSection == ComparisonType.Sensors &&
-                        <SensorDropdown
-                            isFieldSelected={isFieldSelected}
-                            setIsFieldSelected={setIsFieldSelected}
-                            isMultipleSelection={true}
-                        />
-                    }
-                    {selectedSection !== ComparisonType.Participants && <div className="w-full sm:w-48">
-                        <Select
-                            value={timelineParams.uuid}
-                            onChange={(e) => updateTimelineParams({ uuid: e.target.value })}
-                        >
-                            <option value="">Select User</option>
-                            {Array.from(campaignParticipants.values()).map((user) => (
-                                <option key={user.uuid} value={user.uuid}>
-                                    {user.email}
-                                </option>
-                            ))}
-                        </Select>
-                    </div>}
-                    {selectedSection !== ComparisonType.Sensors && <div className="w-full sm:w-48">
-                        <Select
-                            icon={() => <span className="icon-[material-symbols--sensors-rounded]"></span>}
-                            value={timelineParams.fieldId}
-                            onChange={(e) => updateTimelineParams({ fieldId: parseInt(e.target.value) })}
-                        >
-                            <option value="">Select Sensor</option>
-                            {Object.values(mergedTabledFields).flat().map((sensor) => (
-                                <option key={sensor.id} value={sensor.id}>
-                                    {sensor.displayName}
-                                </option>
-                            ))}
-                        </Select>
-                    </div>}
+                    <SensorDropdown
+                        selectedFieldIds={currentComparisonParams.fieldId}
+                        setSelectedFieldIds={(fieldId: number[]) => updateComparisonParams(selectedSection, { fieldId })}
+                        isMultipleSelection={selectedSection === ComparisonType.Sensors}
+                    />
+                    <ParticipantDropdown
+                        selectedParticipantIds={currentComparisonParams.uuid}
+                        setSelectedParticipantIds={(uuid: string[]) => updateComparisonParams(selectedSection, { uuid })}
+                        isMultipleSelection={selectedSection === ComparisonType.Participants}
+                    />
                     {/* <div className="w-full sm:w-32">
                             <input
                                 type="date"

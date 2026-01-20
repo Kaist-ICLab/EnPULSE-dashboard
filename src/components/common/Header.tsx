@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 
 
 const Header: React.FC = () => {
-    const { timelineParams, updateTimelineParams, initTimeRange } = useSectionState();
+    const { date, updateDate: setDate, addDaysToDate, initTimeRange } = useSectionState();
 
     return (
         <div className="w-full min-h-12 flex justify-between items-center border-b border-gray-200 px-4">
@@ -22,8 +22,7 @@ const Header: React.FC = () => {
                     color="light"
                     aria-label="Previous day"
                     onClick={() => {
-                        const date = dayjs(timelineParams.date).subtract(1, "day").startOf("day").toDate();
-                        updateTimelineParams({ date });
+                        addDaysToDate(-1);
                         initTimeRange();
                     }}
                 >
@@ -32,10 +31,10 @@ const Header: React.FC = () => {
                 <input
                     type="date"
                     className="h-8 bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2 py-1"
-                    value={dayjs(timelineParams.date).format('YYYY-MM-DD')}
+                    value={dayjs(date).format('YYYY-MM-DD')}
                     onChange={(e) => {
                         const date = dayjs(e.target.value).startOf('day').toDate();
-                        updateTimelineParams({ date: date });
+                        setDate(date);
                         initTimeRange();
                     }}
                 />
@@ -44,8 +43,7 @@ const Header: React.FC = () => {
                     color="light"
                     aria-label="Next day"
                     onClick={() => {
-                        const date = dayjs(timelineParams.date).add(1, "day").startOf("day").toDate();
-                        updateTimelineParams({ date });
+                        addDaysToDate(1);
                         initTimeRange();
                     }}
                 >

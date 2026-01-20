@@ -2,7 +2,7 @@ import { DynamicDataColumn } from '@/hooks/charts/useUserDailyStat';
 import { supabase } from '@/lib/supabase';
 import { mapQuery } from '@/lib/supabaseHelper';
 import { CampaignParticipant, CampaignTableFieldWithTable } from '@/types/campaign';
-import { TimelineParams, ChartType } from '@/types/chart';
+import { ChartType } from '@/types/chart';
 import { BucketCategoricalData, BucketNumericalData, groupByTimestamp } from '@/lib/supabaseHelper';
 import dayjs from 'dayjs';
 
@@ -68,59 +68,60 @@ export async function getDailyStatCount(campaignId: number) {
     return Math.max(count ?? 1, 1)
 }
 
-export async function getTimelineOverviewData(fields: CampaignTableFieldWithTable[], params: TimelineParams, timeRange: { start: number, end: number }, bucketSize: string) {
-    const { uuid, date } = params;
-    const timeGap = timeRange.end - timeRange.start;
+export async function getSensorComparisonData(date: Date, participant: CampaignParticipant | undefined, fields: CampaignTableFieldWithTable[], timeRange: { start: number, end: number }, bucketSize: string) {
+    if (participant == undefined || fields.length == 0) return [];
 
-    const data = await mapQuery(fields, v => {
-        return supabase.rpc(v.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
+    const timeGap = timeRange.end - timeRange.start;
+    const uuid = participant.uuid;
+
+    const data = await mapQuery(fields, field => {
+        return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: dayjs(date).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
             end_time: dayjs(date).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid: uuid,
-            table_name: v.tableName,
-            column_name: v.name,
+            table_name: field.table_name,
+            column_name: field.name,
             bucket_unit: bucketSize,
         })
     }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
 
-    return fields.map((v, idx) => {
-        if (v.field_type == "categorical") {
+    return fields.map((field, idx) => {
+        if (field.field_type == "categorical") {
             // Group data by timestamp
             const rawCategoricalData = data[idx] as (BucketCategoricalData[] | null);
             const groupedData = groupByTimestamp(rawCategoricalData);
 
             return {
-                title: v.displayName,
-                id: `${v.id}`,
-                table: v.tableName,
-                column: v.name,
+                title: field.display_name,
+                id: `${field.id}`,
+                table: field.table_name,
+                column: field.name,
                 chartType: 'categorical' as ChartType,
-                params: { ...params, fieldId: v.id },
+                params: { date, uuid, fieldId: field.id },
                 value: groupedData ?? []
             }
 
         } else {
             const numericalData = data[idx] as BucketNumericalData[]
             return {
-                title: v.displayName,
-                id: `${v.id}`,
-                table: v.tableName,
-                column: v.name,
+                title: field.display_name,
+                id: `${field.id}`,
+                table: field.table_name,
+                column: field.name,
                 chartType: 'numerical' as ChartType,
-                params: { ...params, fieldId: v.id },
+                params: { date, uuid, fieldId: field.id },
                 value: numericalData ? numericalData.map(d => ({ timestamp: new Date(d.bucket).getTime(), avg: d.avg, min: d.min, max: d.max })) : []
             }
         }
     })
 }
 
-export async function getInterPersonData(fields: CampaignTableFieldWithTable[], participants: CampaignParticipant[], params: TimelineParams, timeRange: { start: number, end: number }, bucketSize: string) {
-    const { date, fieldId } = params;
-    const timeGap = timeRange.end - timeRange.start;
-    const field = fields.find(v => v.id === fieldId)
-    if (!field) throw new Error('Field not found');
+export async function getPersonComparisonData(date: Date, participants: CampaignParticipant[], field: CampaignTableFieldWithTable | undefined, timeRange: { start: number, end: number }, bucketSize: string) {
+    if (participants.length == 0 || field == undefined) return [];
 
-    const tableName = field.tableName
+    const timeGap = timeRange.end - timeRange.start;
+
+    const tableName = field.table_name
     const columnName = field.name
 
     const data = await mapQuery(participants, p => {
@@ -143,7 +144,7 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
                 table: tableName,
                 column: columnName,
                 chartType: "categorical" as ChartType,
-                params: { ...params, uuid: p.uuid },
+                params: { date, uuid: p.uuid, fieldId: field.id },
                 value: groupByTimestamp(rawCategoricalData[idx])
             }
         ))
@@ -156,30 +157,27 @@ export async function getInterPersonData(fields: CampaignTableFieldWithTable[], 
                 table: tableName,
                 column: columnName,
                 chartType: "numerical" as ChartType,
-                params: { ...params, uuid: p.uuid },
-                timestamp: numericalData[idx]?.map(d => new Date(d.bucket).getTime()) ?? [],
+                params: { date, uuid: p.uuid, fieldId: field.id },
                 value: numericalData[idx]?.map(d => ({ timestamp: new Date(d.bucket).getTime(), avg: d.avg, min: d.min, max: d.max })) ?? []
             }
         ))
     }
 }
 
-export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], params: TimelineParams, timeRange: { start: number, end: number }, bucketSize: string) {
-    const { date, fieldId, uuid } = params;
+export async function getDaysComparisonData(date: Date, participant: CampaignParticipant | undefined, field: CampaignTableFieldWithTable | undefined, timeRange: { start: number, end: number }, bucketSize: string) {
+    if (participant == undefined || field == undefined) return [];
     const timeGap = timeRange.end - timeRange.start;
-    const field = fields.find(v => v.id === fieldId)
-    if (!field) throw new Error('Field not found');
-
-    const tableName = field.tableName
+    const tableName = field.table_name
     const columnName = field.name
+    const uuid = participant.uuid;
 
-    const dates = Array.from({ length: 7 }, (_, i) => new Date(date.getTime() - i * 24 * 60 * 60 * 1000))
+    const dates = Array.from({ length: 7 }, (_, i) => dayjs(date).subtract(i, 'day').toDate())
 
     const data = await mapQuery(dates, d => {
         return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: dayjs(d).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
             end_time: dayjs(d).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
-            uuid: uuid,
+            uuid,
             table_name: tableName,
             column_name: columnName,
             bucket_unit: bucketSize,
@@ -195,7 +193,7 @@ export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], 
             table: tableName,
             column: columnName,
             chartType: "categorical" as ChartType,
-            params: { ...params, date: d },
+            params: { date, uuid, fieldId: field.id },
             value: groupByTimestamp(categoricalData[idx] ?? [])
         }
         ))
@@ -207,7 +205,7 @@ export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], 
             table: tableName,
             column: columnName,
             chartType: "numerical" as ChartType,
-            params: { ...params, date: d },
+            params: { date, uuid, fieldId: field.id },
             value: numericalData[idx]?.map(v => ({ timestamp: new Date(v.bucket).getTime(), avg: v.avg, min: v.min, max: v.max })) ?? []
         }))
     }

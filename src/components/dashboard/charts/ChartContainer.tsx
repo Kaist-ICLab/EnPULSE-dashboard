@@ -15,7 +15,7 @@ const ChartContainer: React.FC<{
     const chartContainerRef = useRef<HTMLDivElement>(null);
 
     const [chartWidth, setChartWidth] = useState(0);
-    const { updateTimelineParams, chartPinQuery, updatePinQuery, selectedSection, updateSelectedSection } = useSectionState()
+    const { updateComparisonParams, chartPinQuery, updatePinQuery, selectedSection, updateSelectedSection, updateDate } = useSectionState()
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
 
@@ -83,7 +83,8 @@ const ChartContainer: React.FC<{
                                             className="flex flex-row gap-1 text-base px-3"
                                             onClick={() => {
                                                 const params = timelines.find(t => t.id === selectedChart)!.params
-                                                updateTimelineParams(params)
+                                                updateComparisonParams(type as ComparisonType, { uuid: [params.uuid], fieldId: [params.fieldId] })
+                                                updateDate(params.date)
                                                 updatePinQuery(params)
                                                 updateSelectedSection(type as ComparisonType)
                                             }}

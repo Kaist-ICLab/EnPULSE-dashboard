@@ -1,20 +1,21 @@
 import { Dropdown, DropdownDivider, DropdownItem } from "flowbite-react";
-import { Dispatch, SetStateAction } from "react";
 import useCampaign from "@/hooks/useCampaign";
 import useSensorDropdownState from "@/hooks/dashboard/useSensorDropdownState";
 
 const SensorDropdown: React.FC<{
-    isFieldSelected: { [key: number]: boolean }
-    setIsFieldSelected: Dispatch<SetStateAction<{ [key: number]: boolean }>>,
+    selectedFieldIds: number[]
+    setSelectedFieldIds: (fieldId: number[]) => void,
     isMultipleSelection: boolean,
-}> = ({ isFieldSelected, setIsFieldSelected }) => {
-    const { campaignTables, mergedTabledFields: mergedTableFields } = useCampaign();
+}> = ({ selectedFieldIds, setSelectedFieldIds, isMultipleSelection }) => {
+    const { campaignTables, mergedTableFields } = useCampaign();
     const {
         selectedSensor,
         setSelectedSensor,
         dropdownLabel,
         isAllSelected,
-    } = useSensorDropdownState(isFieldSelected, campaignTables, mergedTableFields);
+        toggleFieldSelection,
+        toggleAllFieldsSelection,
+    } = useSensorDropdownState(selectedFieldIds, campaignTables, mergedTableFields, setSelectedFieldIds, isMultipleSelection);
 
     return (
         <Dropdown
@@ -37,17 +38,8 @@ const SensorDropdown: React.FC<{
                         ))}
                     </div>
                     <DropdownDivider />
-                    <DropdownItem className="font-bold" onClick={() => {
-                        setIsFieldSelected(prev => {
-                            const keys = mergedTableFields.filter(field => field.campaign_table_id === selectedSensor).map(field => field.id)
-                            const newSelectedFields = structuredClone(prev)
-                            keys.forEach(key => {
-                                newSelectedFields[key] = !(isAllSelected.get(selectedSensor) ?? false)
-                            })
-                            return newSelectedFields
-                        });
-                    }}>
-                        <span className="text-red-500">Deselect all</span>
+                    <DropdownItem className="font-bold" onClick={() => setSelectedFieldIds([])}>
+                        <span className="text-red-500">{isMultipleSelection ? "Deselect all" : "Deselect"}</span>
                     </DropdownItem>
                 </div>
                 {selectedSensor === -1 ? (
@@ -60,15 +52,12 @@ const SensorDropdown: React.FC<{
                             {mergedTableFields.filter(field => field.campaign_table_id === selectedSensor)
                                 .map((field) => (
                                     <DropdownItem key={field.id} className="bg-white" onClick={() => {
-                                        setIsFieldSelected(prev => ({
-                                            ...prev,
-                                            [field.id]: !prev[field.id]
-                                        }));
+                                        toggleFieldSelection(field.id);
                                     }}>
                                         <input
                                             type="checkbox"
                                             className="mr-2"
-                                            checked={isFieldSelected[field.id] || false}
+                                            checked={selectedFieldIds.includes(field.id)}
                                             onChange={() => { }} // Add empty onChange to make it controlled
                                         />
                                         {field.name}
@@ -76,22 +65,15 @@ const SensorDropdown: React.FC<{
                                 ))}
                         </div>
                         <DropdownDivider />
-                        <DropdownItem className="font-bold" onClick={() => {
-                            setIsFieldSelected(prev => {
-                                const keys = mergedTableFields.filter(field => field.campaign_table_id === selectedSensor).map(field => field.id)
-                                const newSelectedFields = structuredClone(prev)
-                                keys.forEach(key => {
-                                    newSelectedFields[key] = !(isAllSelected.get(selectedSensor) ?? false)
-                                })
-                                return newSelectedFields
-                            });
-                        }}>
-                            {
-                                (isAllSelected.get(selectedSensor) ?? false) ?
-                                    "Deselect all fields" :
-                                    "Select all fields"
-                            }
-                        </DropdownItem>
+                        {isMultipleSelection && (
+                            <DropdownItem className="font-bold" onClick={() => toggleAllFieldsSelection(selectedSensor)}>
+                                {
+                                    (isAllSelected.get(selectedSensor) ?? false) ?
+                                        "Deselect all fields" :
+                                        "Select all fields"
+                                }
+                            </DropdownItem>
+                        )}
                     </div>
                 )}
             </div>

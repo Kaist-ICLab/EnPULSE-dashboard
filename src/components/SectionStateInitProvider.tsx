@@ -2,18 +2,20 @@
 
 import { useEffect } from "react";
 import useCampaign from "@/hooks/useCampaign";
-import useSectionState from "@/hooks/useSectionState";
+import useSectionState, { comparisonTypes } from "@/hooks/useSectionState";
 
 const SectionStateInitProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { campaignParticipants, campaignTableFields } = useCampaign();
-    const { updateTimelineParams, initTimeRange } = useSectionState();
+    const { updateComparisonParams, initTimeRange } = useSectionState();
 
     useEffect(() => {
-        updateTimelineParams({
-            uuid: Array.from(campaignParticipants.values()).map(v => v.uuid)[0],
-            fieldId: Array.from(campaignTableFields.values()).filter(v => v.field_role === 'data').map(v => v.id)[0],
+        comparisonTypes.forEach(type => {
+            updateComparisonParams(type, {
+                uuid: Array.from(campaignParticipants.values()).map(v => v.uuid).splice(0, 1),
+                fieldId: [],
+            })
         })
-    }, [campaignParticipants, campaignTableFields, updateTimelineParams])
+    }, [campaignParticipants, campaignTableFields, updateComparisonParams])
 
     useEffect(() => {
         initTimeRange()
