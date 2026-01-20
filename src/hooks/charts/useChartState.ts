@@ -18,7 +18,7 @@ export function useChartState(
     height: number,
 ) {
     const { timeRange, draggedTime, updateTimeRange, initTimeRange } = useSectionState();
-    const { maxValue, getTooltipData, getCategoryColor, uniqueCategories, handleLegendClick } = useVaryingChartState(data, chartType, bucketSize);
+    const { minValue, maxValue, getTooltipData, getCategoryColor, uniqueCategories, handleLegendClick } = useVaryingChartState(data, chartType, bucketSize);
     const currentTimeRange = useMemo(() => {
         return { start: timeRange.start + draggedTime, end: timeRange.end + draggedTime };
     }, [timeRange, draggedTime]);
@@ -57,11 +57,11 @@ export function useChartState(
         }
 
         return scaleLinear({
-            domain: [0, maxValue],
-            range: [height, 0],
+            domain: [minValue, maxValue],
+            range: [height * 0.95, chartType === 'numerical' ? height * 0.05 : 0],
             nice: true,
         });
-    }, [data.length, maxValue, height]);
+    }, [data.length, minValue, maxValue, height, chartType]);
 
     // Bar width calculation
     const barWidth = useMemo(() => {

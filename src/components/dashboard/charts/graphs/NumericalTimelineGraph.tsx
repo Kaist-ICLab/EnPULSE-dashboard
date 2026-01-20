@@ -1,9 +1,7 @@
 'use client'
 
-import { Bar } from '@visx/shape';
-
 import { useMemo } from "react";
-import { colors } from '../shared/timelineUtils';
+import { colors, gray } from '../shared/timelineUtils';
 import { TimelineChartGraphProps, TimelineNumericalPoint } from "@/types/chart";
 
 export const NumericalTimelineGraph: React.FC<TimelineChartGraphProps<TimelineNumericalPoint>> = ({
@@ -11,7 +9,6 @@ export const NumericalTimelineGraph: React.FC<TimelineChartGraphProps<TimelineNu
     valueScale,
     barWidth,
     data,
-    height
 }) => {
     // Prepare data
     const chartData = useMemo(() => {
@@ -32,15 +29,17 @@ export const NumericalTimelineGraph: React.FC<TimelineChartGraphProps<TimelineNu
                     const x = timeScale(d.timestamp);
                     const yValue = valueScale(d.avg);
                     if (isNaN(yValue) || yValue === undefined) return null;
-                    const barHeight = Math.max(0, height - yValue);
+                    const lineStartX = x + barWidth * 0.05;
+                    const lineEndX = x + barWidth * 0.95;
                     return (
-                        <Bar
-                            key={`bar-${i}`}
-                            x={x + barWidth * 0.05}
-                            y={yValue}
-                            width={barWidth * 0.9}
-                            height={barHeight}
-                            fill={colors[0]}
+                        <line
+                            key={`avg-line-${i}`}
+                            x1={lineStartX}
+                            y1={yValue}
+                            x2={lineEndX}
+                            y2={yValue}
+                            stroke={colors[0]}
+                            strokeWidth={3}
                         />
                     );
                 })}
@@ -49,16 +48,26 @@ export const NumericalTimelineGraph: React.FC<TimelineChartGraphProps<TimelineNu
                     const minY = valueScale(d.min);
                     const maxY = valueScale(d.max);
                     if (isNaN(minY) || isNaN(maxY) || minY === undefined || maxY === undefined) return null;
+                    const centerX = x + barWidth / 2;
                     return (
                         <g key={`min-max-${i}`}>
+                            <line
+                                x1={centerX}
+                                y1={minY}
+                                x2={centerX}
+                                y2={maxY}
+                                stroke={gray}
+                                strokeWidth={1.5}
+                                strokeDasharray="3,3"
+                            />
                             <circle
-                                cx={x + barWidth / 2}
+                                cx={centerX}
                                 cy={minY}
                                 r={2.5}
                                 fill={colors[2]}
                             />
                             <circle
-                                cx={x + barWidth / 2}
+                                cx={centerX}
                                 cy={maxY}
                                 r={2.5}
                                 fill={colors[1]}
