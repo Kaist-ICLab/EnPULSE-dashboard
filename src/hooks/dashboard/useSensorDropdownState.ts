@@ -35,6 +35,16 @@ const useSensorDropdownState = (
         );
     }, [selectedFieldIds, mergedTableFields, campaignTables]);
 
+    const selectedCountByTable = useMemo(() => {
+        const counts = new Map<number, number>();
+        mergedTableFields.forEach((field) => {
+            if (selectedFieldIds.includes(field.id)) {
+                counts.set(field.campaign_table_id, (counts.get(field.campaign_table_id) || 0) + 1);
+            }
+        });
+        return counts;
+    }, [mergedTableFields, selectedFieldIds]);
+
     const toggleFieldSelection = useCallback((fieldId: number) => {
         if (isMultipleSelection) {
             if (selectedFieldIds.includes(fieldId)) {
@@ -68,6 +78,7 @@ const useSensorDropdownState = (
         isAllSelected,
         toggleFieldSelection,
         toggleAllFieldsSelection,
+        selectedCountByTable,
     };
 };
 

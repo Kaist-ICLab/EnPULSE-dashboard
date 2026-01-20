@@ -15,6 +15,7 @@ const SensorDropdown: React.FC<{
         isAllSelected,
         toggleFieldSelection,
         toggleAllFieldsSelection,
+        selectedCountByTable,
     } = useSensorDropdownState(selectedFieldIds, campaignTables, mergedTableFields, setSelectedFieldIds, isMultipleSelection);
 
     return (
@@ -33,7 +34,20 @@ const SensorDropdown: React.FC<{
                                 className={`font-medium ${selectedSensor === table.id ? 'text-blue-600 bg-gray-100' : 'text-gray-700'}`}
                                 onClick={() => { setSelectedSensor(selectedSensor === table.id ? -1 : table.id) }}
                             >
-                                {table.name}
+                                <span className="flex items-center">
+                                    <span>{table.name}</span>
+                                    {isMultipleSelection ? (
+                                        (selectedCountByTable.get(table.id) || 0) > 0 && (
+                                            <span className="ml-2 inline-flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-xs w-5 h-5">
+                                                {selectedCountByTable.get(table.id)}
+                                            </span>
+                                        )
+                                    ) : (
+                                        (selectedCountByTable.get(table.id) || 0) > 0 && (
+                                            <span className="ml-2 inline-flex w-2 h-2 rounded-full bg-blue-500" />
+                                        )
+                                    )}
+                                </span>
                             </DropdownItem>
                         ))}
                     </div>
