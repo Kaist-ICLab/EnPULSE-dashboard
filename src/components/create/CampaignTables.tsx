@@ -23,9 +23,6 @@ const CampaignSensors: React.FC<{
 
     return (
         <div role="campaign-sensors">
-            <h6 className="text-xl font-medium text-gray-900 mb-2">
-                Campaign sensors
-            </h6>
             <Accordion className="[&>*:nth-last-child(2)]:border-b-0">
                 {
                     tables.map((table, tableIndex) =>

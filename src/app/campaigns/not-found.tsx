@@ -11,7 +11,7 @@ export default function NotFound() {
                     href="/campaigns"
                     className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
                 >
-                    View All Campaigns
+                    Back to Campaigns
                 </Link>
             </div>
         </div>
