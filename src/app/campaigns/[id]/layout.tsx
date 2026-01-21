@@ -24,13 +24,15 @@ export default async function CampaignLayout({
             campaignId={campaignId}
             campaigns={campaigns}
         >
-            <div className="w-full h-screen bg-gray-50 flex flex-col">
-                <Header />
-                <div className="flex flex-row grow w-full overflow-hidden">
-                    <Sidebar />
-                    <main className="flex flex-col w-full items-stretch gap-4 grow overflow-auto">
-                        {children}
-                    </main>
+            <div className="w-full h-screen bg-gray-50 flex flex-row">
+                <Sidebar />
+                <div className="flex flex-col w-full items-stretch gap-4 grow overflow-auto">
+                    <Header />
+                    <div className="flex flex-row grow w-full overflow-hidden">
+                        <main className="flex flex-col w-full items-stretch gap-4 grow overflow-auto">
+                            {children}
+                        </main>
+                    </div>
                 </div>
             </div>
         </CampaignInitProvider >

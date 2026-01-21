@@ -16,9 +16,10 @@ const Header: React.FC = () => {
                     <CampaignDropdown />
                 </div>
             </div>
-            <div className="flex items-center gap-1 ml-auto mr-auto">
+            <div className="flex items-center gap-1 ml-auto mr-6">
                 <Button
                     color="light"
+                    className="px-1"
                     aria-label="Previous day"
                     onClick={() => {
                         addDaysToDate(-1);
@@ -39,6 +40,7 @@ const Header: React.FC = () => {
                 />
                 <Button
                     color="light"
+                    className="px-1"
                     aria-label="Next day"
                     disabled={dayjs(date).isAfter(dayjs().startOf('day').subtract(1, 'second'))}
                     onClick={() => {
