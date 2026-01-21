@@ -27,7 +27,7 @@ const CampaignsPage: React.FC = () => {
                         </Card>
                     ))}
                     <Card className="w-[50%]">
-                        <Link href={`/campaigns/create`} className="flex flex-col items-center">
+                        <Link href={`/create`} className="flex flex-col items-center">
                             <div className="flex items-center">
                                 <span className="icon-[tabler--plus] mr-2" />Create New Campaign
                             </div>
