@@ -11,7 +11,7 @@ export default function AddSensorButtons() {
 
     return (
         <div className="flex gap-4 items-center">
-            <Dropdown label="Add sensors from template" size="lg">
+            <Dropdown label="Add sensors from template">
                 <div className="max-h-64 overflow-y-auto scrollbar-thin">
                     {availableTemplateTables.map((table, idx) => (
                         <DropdownItem key={idx} onClick={() => addNewTemplateTable(idx)}>{table.name}</DropdownItem>
@@ -21,7 +21,6 @@ export default function AddSensorButtons() {
             <Button
                 className="border-gray-300 border-2 hover:bg-gray-100"
                 color="white"
-                size="lg"
                 onClick={() => { setIsSensorInputVisible(true); setSensorName(""); setSensorDescription("") }}
             >
                 <span className="icon-[tabler--plus] mr-2"></span> Add custom sensor

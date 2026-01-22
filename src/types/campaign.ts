@@ -6,6 +6,8 @@ export const FieldTypeOption: FieldType[] = ['categorical', 'numerical', 'dateti
 export interface Campaign {
     id: number;
     name: string;
+    start_time_of_day?: number;
+    end_time_of_day?: number;
 }
 
 export interface CampaignTable {

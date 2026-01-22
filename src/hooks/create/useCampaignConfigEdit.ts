@@ -1,10 +1,18 @@
 import { CampaignTableField, FieldRole, FieldType, NewCampaignTable } from "@/types/campaign";
+import { NewSurvey, ScheduleMethod, SurveyQuestion } from "@/types/survey";
 import { create } from "zustand";
 import { templateTable } from "./sensorTemplate";
+
+interface PassiveSensingConfig {
+    startTime: number; // milliseconds since midnight
+    endTime: number; // milliseconds since midnight
+}
 
 interface CampaignConfigEditState {
     tables: NewCampaignTable[];
     availableTemplateTables: NewCampaignTable[];
+    passiveSensingConfig: PassiveSensingConfig;
+    surveys: NewSurvey[];
     setDailyCountMax: (index: number, value: number) => void;
     addTable: (name: string, description: string, fields?: CampaignTableField[]) => void;
     addNewTemplateTable: (idx: number) => void;
@@ -13,12 +21,28 @@ interface CampaignConfigEditState {
     removeField: (tableIndex: number, fieldIdx: number) => void;
     setField: (tableIndex: number, fieldIdx: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void;
     setFieldMapping: (tableIndex: number, fieldIdx: number, mapping: { value: string, display: string }[]) => void;
+    setPassiveSensingStartTime: (timeMs: number) => void;
+    setPassiveSensingEndTime: (timeMs: number) => void;
+    addSurvey: () => void;
+    removeSurvey: (index: number) => void;
+    updateSurveyTitle: (index: number, title: string) => void;
+    updateSurveyDescription: (index: number, description: string) => void;
+    updateSurveyScheduleMethod: (index: number, scheduleMethod: ScheduleMethod) => void;
+    addSurveyQuestion: (surveyIndex: number) => void;
+    removeSurveyQuestion: (surveyIndex: number, questionIndex: number) => void;
+    updateSurveyQuestion: (surveyIndex: number, questionIndex: number, updates: Partial<SurveyQuestion>) => void;
+    reorderSurveyQuestion: (surveyIndex: number, questionIndex: number, direction: 'up' | 'down') => void;
     reset: () => void;
 }
 
 const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     tables: [],
     availableTemplateTables: templateTable,
+    passiveSensingConfig: {
+        startTime: 0, // 00:00 in milliseconds
+        endTime: 23 * 60 * 60 * 1000 + 59 * 60 * 1000, // 23:59 in milliseconds
+    },
+    surveys: [],
 
     setDailyCountMax: (index: number, value: number) => {
         set((state) => {
@@ -116,10 +140,145 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         });
     },
 
+    setPassiveSensingStartTime: (timeMs: number) => {
+        set((state) => ({
+            passiveSensingConfig: {
+                ...state.passiveSensingConfig,
+                startTime: timeMs,
+            }
+        }));
+    },
+
+    setPassiveSensingEndTime: (timeMs: number) => {
+        set((state) => ({
+            passiveSensingConfig: {
+                ...state.passiveSensingConfig,
+                endTime: timeMs,
+            }
+        }));
+    },
+
+    addSurvey: () => {
+        set((state) => {
+            const newSurvey: NewSurvey = {
+                id: -1,
+                campaign_id: -1,
+                title: `Survey ${state.surveys.length + 1}`,
+                description: "",
+                schedule_method: null,
+                questions: [],
+            };
+            return {
+                surveys: [...state.surveys, newSurvey]
+            };
+        });
+    },
+
+    removeSurvey: (index: number) => {
+        set((state) => {
+            const newSurveys = [...state.surveys];
+            newSurveys.splice(index, 1);
+            return { surveys: newSurveys };
+        });
+    },
+
+    updateSurveyTitle: (index: number, title: string) => {
+        set((state) => {
+            const newSurveys = [...state.surveys];
+            newSurveys[index] = { ...newSurveys[index], title };
+            return { surveys: newSurveys };
+        });
+    },
+
+    updateSurveyDescription: (index: number, description: string) => {
+        set((state) => {
+            const newSurveys = [...state.surveys];
+            newSurveys[index] = { ...newSurveys[index], description };
+            return { surveys: newSurveys };
+        });
+    },
+
+    updateSurveyScheduleMethod: (index: number, scheduleMethod: ScheduleMethod) => {
+        set((state) => {
+            const newSurveys = [...state.surveys];
+            newSurveys[index] = { ...newSurveys[index], schedule_method: scheduleMethod };
+            return { surveys: newSurveys };
+        });
+    },
+
+    addSurveyQuestion: (surveyIndex: number) => {
+        set((state) => {
+            const newSurveys = [...state.surveys];
+            const newQuestion: SurveyQuestion = {
+                id: -1, // Temporary ID
+                survey_id: -1, // Temporary ID
+                campaign_id: -1, // Temporary ID
+                question: `Question ${newSurveys[surveyIndex].questions.length + 1}`,
+                answer_type: 'text',
+                is_mandatory: false,
+            };
+            newSurveys[surveyIndex] = {
+                ...newSurveys[surveyIndex],
+                questions: [...newSurveys[surveyIndex].questions, newQuestion],
+            };
+            return { surveys: newSurveys };
+        });
+    },
+
+    removeSurveyQuestion: (surveyIndex: number, questionIndex: number) => {
+        set((state) => {
+            const newSurveys = [...state.surveys];
+            newSurveys[surveyIndex] = {
+                ...newSurveys[surveyIndex],
+                questions: newSurveys[surveyIndex].questions.filter((_, i) => i !== questionIndex),
+            };
+            return { surveys: newSurveys };
+        });
+    },
+
+    updateSurveyQuestion: (surveyIndex: number, questionIndex: number, updates: Partial<SurveyQuestion>) => {
+        set((state) => {
+            const newSurveys = [...state.surveys];
+            const newQuestions = [...newSurveys[surveyIndex].questions];
+            newQuestions[questionIndex] = { ...newQuestions[questionIndex], ...updates };
+            newSurveys[surveyIndex] = {
+                ...newSurveys[surveyIndex],
+                questions: newQuestions,
+            };
+            return { surveys: newSurveys };
+        });
+    },
+
+    reorderSurveyQuestion: (surveyIndex: number, questionIndex: number, direction: 'up' | 'down') => {
+        set((state) => {
+            const newSurveys = [...state.surveys];
+            const questions = [...newSurveys[surveyIndex].questions];
+            const newIndex = direction === 'up' ? questionIndex - 1 : questionIndex + 1;
+
+            if (newIndex < 0 || newIndex >= questions.length) {
+                return state; // Can't move beyond boundaries
+            }
+
+            // Swap questions
+            [questions[questionIndex], questions[newIndex]] = [questions[newIndex], questions[questionIndex]];
+
+            newSurveys[surveyIndex] = {
+                ...newSurveys[surveyIndex],
+                questions: questions,
+            };
+            return { surveys: newSurveys };
+        });
+    },
+
     reset: () => {
         set({
             tables: [],
-            availableTemplateTables: templateTable
+            availableTemplateTables: templateTable,
+            passiveSensingConfig: {
+                startTime: 0,
+                endTime: 23 * 60 * 60 * 1000 + 59 * 60 * 1000,
+            },
+            surveys: [],
         });
     }
 }));
