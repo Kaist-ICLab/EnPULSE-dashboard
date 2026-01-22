@@ -1,7 +1,7 @@
-export type FieldType = 'categorical' | 'numerical' | 'timedelta' | 'datetime';
+export type FieldType = 'categorical' | 'numerical' | 'datetime';
 export type FieldRole = 'uid' | 'timestamp' | 'data' | 'ignore';
 export const FieldRoleOption: FieldRole[] = ['uid', 'timestamp', 'data', 'ignore'];
-export const FieldTypeOption: FieldType[] = ['categorical', 'numerical', 'timedelta', 'datetime'];
+export const FieldTypeOption: FieldType[] = ['categorical', 'numerical', 'datetime'];
 
 export interface Campaign {
     id: number;
@@ -24,6 +24,7 @@ export interface CampaignTableField {
     description?: string,
     field_type: FieldType;
     field_role: FieldRole;
+    mapping?: { value: string, display: string }[];
 }
 
 export interface CampaignParticipant {
@@ -35,5 +36,10 @@ export interface CampaignTableFieldWithTable extends CampaignTableField {
     table_id: number;
     table_name: string;
     display_name: string;
+}
+
+export interface NewCampaignTable extends CampaignTable {
+    fields: CampaignTableField[];
+    isCustom?: boolean;
 }
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { NewCampaignTable } from "@/hooks/create/useNewCampaignTables";
+import { NewCampaignTable } from "@/types/campaign";
 import { Accordion, AccordionContent, AccordionPanel, AccordionTitle, Button, Card, Dropdown, DropdownItem, TextInput } from "flowbite-react";
 import CampaignTableCard from "./CampaignTableCard";
 import { CampaignTableField, FieldRole, FieldType } from "@/types/campaign";

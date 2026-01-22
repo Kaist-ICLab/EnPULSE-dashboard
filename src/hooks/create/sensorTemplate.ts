@@ -1,4 +1,4 @@
-import { NewCampaignTable } from "./useNewCampaignTables";
+import { NewCampaignTable } from "@/types/campaign";
 
 const accelerometerSensor: NewCampaignTable = {
     id: -1,
@@ -12,7 +12,7 @@ const accelerometerSensor: NewCampaignTable = {
         { name: "y", field_role: "data", field_type: "numerical", id: 2, campaign_id: -1, campaign_table_id: -1 },
         { name: "z", field_role: "data", field_type: "numerical", id: 3, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 4, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 5, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 5, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -27,7 +27,7 @@ const ambientLightSensor: NewCampaignTable = {
         { name: "value", field_role: "data", field_type: "numerical", id: 1, campaign_id: -1, campaign_table_id: -1 },
         { name: "accuracy", field_role: "data", field_type: "numerical", id: 2, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 3, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 4, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 4, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -42,7 +42,7 @@ const appListChangeSensor: NewCampaignTable = {
         { name: "changed_app", field_role: "data", field_type: "categorical", id: 1, campaign_id: -1, campaign_table_id: -1 },
         { name: "app_list", field_role: "ignore", field_type: "categorical", id: 2, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 3, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 4, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 4, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -58,7 +58,7 @@ const appUsageLogSensor: NewCampaignTable = {
         { name: "installed_by", field_role: "data", field_type: "categorical", id: 2, campaign_id: -1, campaign_table_id: -1 },
         { name: "event_type", field_role: "data", field_type: "numerical", id: 3, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 4, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 5, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 5, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -75,7 +75,7 @@ const batterySensor: NewCampaignTable = {
         { name: "status", field_role: "data", field_type: "numerical", id: 3, campaign_id: -1, campaign_table_id: -1 },
         { name: "temperature", field_role: "data", field_type: "numerical", id: 4, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 5, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 6, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 6, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -96,7 +96,7 @@ const bluetoothScanSensor: NewCampaignTable = {
         { name: "is_le", field_role: "data", field_type: "categorical", id: 7, campaign_id: -1, campaign_table_id: -1 },
         { name: "rssi", field_role: "data", field_type: "numerical", id: 8, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 9, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 10, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 10, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -112,7 +112,7 @@ const callLogSensor: NewCampaignTable = {
         { name: "call_type", field_role: "data", field_type: "numerical", id: 2, campaign_id: -1, campaign_table_id: -1 },
         { name: "duration", field_role: "data", field_type: "numerical", id: 3, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 4, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 5, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 5, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -129,7 +129,7 @@ const connectivitySensor: NewCampaignTable = {
         { name: "network_type", field_role: "data", field_type: "categorical", id: 3, campaign_id: -1, campaign_table_id: -1 },
         { name: "transport_types", field_role: "ignore", field_type: "categorical", id: 4, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 5, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 6, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 6, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -146,7 +146,7 @@ const dataTrafficSensor: NewCampaignTable = {
         { name: "mobile_rx", field_role: "data", field_type: "numerical", id: 3, campaign_id: -1, campaign_table_id: -1 },
         { name: "mobile_tx", field_role: "data", field_type: "numerical", id: 4, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 5, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 6, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 6, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -161,7 +161,7 @@ const deviceModeSensor: NewCampaignTable = {
         { name: "event_type", field_role: "data", field_type: "categorical", id: 1, campaign_id: -1, campaign_table_id: -1 },
         { name: "value", field_role: "data", field_type: "categorical", id: 2, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 3, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 4, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 4, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -176,7 +176,7 @@ const edaSensor: NewCampaignTable = {
         { name: "skin_conductance", field_role: "data", field_type: "numerical", id: 1, campaign_id: -1, campaign_table_id: -1 },
         { name: "status", field_role: "data", field_type: "numerical", id: 2, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 3, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 4, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 4, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -193,7 +193,7 @@ const heartRateSensor: NewCampaignTable = {
         { name: "ibi", field_role: "ignore", field_type: "categorical", id: 3, campaign_id: -1, campaign_table_id: -1 },
         { name: "ibi_status", field_role: "ignore", field_type: "categorical", id: 4, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 5, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 6, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 6, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -211,7 +211,7 @@ const locationSensor: NewCampaignTable = {
         { name: "accuracy", field_role: "data", field_type: "numerical", id: 4, campaign_id: -1, campaign_table_id: -1 },
         { name: "speed", field_role: "data", field_type: "numerical", id: 5, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 6, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 7, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 7, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -233,7 +233,7 @@ const mediaSensor: NewCampaignTable = {
         { name: "date_modified", field_role: "data", field_type: "datetime", id: 8, campaign_id: -1, campaign_table_id: -1 },
         { name: "size", field_role: "data", field_type: "numerical", id: 9, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 10, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 11, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 11, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -249,7 +249,7 @@ const messageLogSensor: NewCampaignTable = {
         { name: "message_type", field_role: "data", field_type: "categorical", id: 2, campaign_id: -1, campaign_table_id: -1 },
         { name: "contact_type", field_role: "data", field_type: "numerical", id: 3, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 4, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 5, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 5, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -268,7 +268,7 @@ const notificationSensor: NewCampaignTable = {
         { name: "package_name", field_role: "data", field_type: "categorical", id: 5, campaign_id: -1, campaign_table_id: -1 },
         { name: "visibility", field_role: "data", field_type: "numerical", id: 6, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 7, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 8, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 8, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -281,13 +281,13 @@ const ppgSensor: NewCampaignTable = {
     fields: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime", id: 0, campaign_id: -1, campaign_table_id: -1 },
         { name: "red", field_role: "data", field_type: "numerical", id: 1, campaign_id: -1, campaign_table_id: -1 },
-        { name: "red_status", field_role: "data", field_type: "numerical", id: 2, campaign_id: -1, campaign_table_id: -1 },
+        { name: "red_status", field_role: "data", field_type: "categorical", id: 2, campaign_id: -1, campaign_table_id: -1 },
         { name: "green", field_role: "data", field_type: "numerical", id: 3, campaign_id: -1, campaign_table_id: -1 },
-        { name: "green_status", field_role: "data", field_type: "numerical", id: 4, campaign_id: -1, campaign_table_id: -1 },
+        { name: "green_status", field_role: "data", field_type: "categorical", id: 4, campaign_id: -1, campaign_table_id: -1 },
         { name: "ir", field_role: "data", field_type: "numerical", id: 5, campaign_id: -1, campaign_table_id: -1 },
-        { name: "ir_status", field_role: "data", field_type: "numerical", id: 6, campaign_id: -1, campaign_table_id: -1 },
+        { name: "ir_status", field_role: "data", field_type: "categorical", id: 6, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 7, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 8, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 8, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -301,7 +301,7 @@ const screenSensor: NewCampaignTable = {
         { name: "timestamp", field_role: "timestamp", field_type: "datetime", id: 0, campaign_id: -1, campaign_table_id: -1 },
         { name: "type", field_role: "data", field_type: "categorical", id: 1, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 2, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 3, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 3, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -317,7 +317,7 @@ const skinTemperatureSensor: NewCampaignTable = {
         { name: "object_temperature", field_role: "data", field_type: "numerical", id: 2, campaign_id: -1, campaign_table_id: -1 },
         { name: "status", field_role: "data", field_type: "numerical", id: 3, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 4, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 5, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 5, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -333,7 +333,7 @@ const stepSensor: NewCampaignTable = {
         { name: "start_time", field_role: "data", field_type: "datetime", id: 2, campaign_id: -1, campaign_table_id: -1 },
         { name: "end_time", field_role: "data", field_type: "datetime", id: 3, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 4, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 5, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 5, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -350,7 +350,7 @@ const userInteractionSensor: NewCampaignTable = {
         { name: "text", field_role: "data", field_type: "categorical", id: 3, campaign_id: -1, campaign_table_id: -1 },
         { name: "event_type", field_role: "data", field_type: "numerical", id: 4, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 5, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 6, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 6, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -367,7 +367,7 @@ const wifiScanSensor: NewCampaignTable = {
         { name: "frequency", field_role: "data", field_type: "numerical", id: 3, campaign_id: -1, campaign_table_id: -1 },
         { name: "level", field_role: "data", field_type: "numerical", id: 4, campaign_id: -1, campaign_table_id: -1 },
         { name: "device_type", field_role: "ignore", field_type: "categorical", id: 5, campaign_id: -1, campaign_table_id: -1 },
-        { name: "received", field_role: "data", field_type: "numerical", id: 6, campaign_id: -1, campaign_table_id: -1 },
+        { name: "received", field_role: "ignore", field_type: "datetime", id: 6, campaign_id: -1, campaign_table_id: -1 },
     ],
 };
 
@@ -394,5 +394,5 @@ export const templateTable: NewCampaignTable[] = [
     stepSensor,
     userInteractionSensor,
     wifiScanSensor,
-];
+].sort((a, b) => a.name.localeCompare(b.name));
 

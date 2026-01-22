@@ -18,7 +18,7 @@ const Page: React.FC = () => {
                     setIsValidName={setIsValidName}
                 />
             </Card>
-            <div className="w-full gap-4 flex mt-2">
+            <div className="w-full gap-4 flex my-5">
                 <Button className="grow" size="lg" color="gray" onClick={() => router.push("/campaigns")}>
                     Cancel
                 </Button>

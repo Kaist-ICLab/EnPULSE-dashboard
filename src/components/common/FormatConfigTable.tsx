@@ -3,6 +3,7 @@
 import { CampaignTableField, FieldRole, FieldRoleOption, FieldType, FieldTypeOption } from "@/types/campaign";
 import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { useEffect, useRef, useState } from "react";
+import FieldMappingEditor from "./FieldMappingEditor";
 
 const FormatConfigTable: React.FC<{
     currentTableFields: CampaignTableField[];
@@ -10,13 +11,16 @@ const FormatConfigTable: React.FC<{
     canAddField: boolean | undefined;
     onFieldChange: (fieldId: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void;
     addField: (field: CampaignTableField) => void,
+    removeField?: (fieldIdx: number) => void;
+    onMappingChange?: (fieldIdx: number, mapping: { value: string, display: string }[]) => void;
     dailyCountThreshold: number;
     setDailyCountThreshold: (threshold: number) => void;
-}> = ({ currentTableFields, onFieldChange, addField, setDailyCountThreshold, dailyCountThreshold, canAddField = false }) => {
+}> = ({ currentTableFields, onFieldChange, addField, removeField, onMappingChange, setDailyCountThreshold, dailyCountThreshold, canAddField = false }) => {
     const [fieldName, setFieldName] = useState('')
     const [fieldRole, setFieldRole] = useState<FieldRole>('data')
     const [fieldType, setFieldType] = useState<FieldType>('numerical')
     const [isFieldInputShown, setIsFieldInputShown] = useState(false)
+    const [editingFieldIdx, setEditingFieldIdx] = useState<number | null>(null)
 
     const inputRef = useRef<HTMLInputElement | null>(null)
 
@@ -33,10 +37,11 @@ const FormatConfigTable: React.FC<{
                             {["field name", "field role", "field type"].map((header) => (
                                 <TableHeadCell key={header} className="bg-gray-200">{header}</TableHeadCell>
                             ))}
+                            <TableHeadCell className="bg-gray-200"></TableHeadCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {currentTableFields.map((field) => (
+                        {currentTableFields.map((field, fieldIdx) => (
                             <TableRow key={field.id} className="bg-white text-gray-900">
                                 <TableCell>{field.name}</TableCell>
                                 <TableCell>
@@ -57,15 +62,6 @@ const FormatConfigTable: React.FC<{
                                         className="w-[120px] bg-transparent focus:outline-none shadow-none"
                                         defaultValue={field.field_type}
                                         onChange={(e) => {
-                                            // if (e.target.value !== field.field_type) {
-                                            //     setChangedFields(prev => new Map(prev.set("field_type-" + field.id.toString(), e.target.value)));
-                                            // } else {
-                                            //     setChangedFields(prev => {
-                                            //         const newMap = new Map(prev);
-                                            //         newMap.delete("field_type-" + field.id.toString());
-                                            //         return newMap;
-                                            //     });
-                                            // }
                                             onFieldChange(field.id, 'type', e.target.value as FieldType)
                                         }}
                                     >
@@ -75,6 +71,19 @@ const FormatConfigTable: React.FC<{
                                             </option>
                                         ))}
                                     </select>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex gap-2 items-center">
+                                        {canAddField && removeField && (
+                                            <span className="icon-[humbleicons--times] w-4 h-4 text-gray-500 hover:text-red-500 cursor-pointer" onClick={() => removeField?.(fieldIdx)}></span>
+                                        )}
+                                        {field.field_type === 'categorical' && field.field_role === 'data' && (
+                                            <span
+                                                className="icon-[material-symbols--settings] w-4 h-4 text-gray-500 hover:text-gray-700 cursor-pointer"
+                                                onClick={() => setEditingFieldIdx(fieldIdx)}
+                                            ></span>
+                                        )}
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -118,6 +127,7 @@ const FormatConfigTable: React.FC<{
                                         ))}
                                     </select>
                                 </TableCell>
+                                <TableCell></TableCell>
                             </TableRow>
 
                         }
@@ -154,6 +164,18 @@ const FormatConfigTable: React.FC<{
 
                 </div>
             </div>
+
+            {editingFieldIdx !== null && (
+                <FieldMappingEditor
+                    fieldName={currentTableFields[editingFieldIdx]?.name || ''}
+                    initialMapping={currentTableFields[editingFieldIdx]?.mapping || []}
+                    isOpen={editingFieldIdx !== null}
+                    onClose={() => setEditingFieldIdx(null)}
+                    onSave={(mapping) => {
+                        onMappingChange?.(editingFieldIdx, mapping);
+                    }}
+                />
+            )}
         </div>
     )
 };

@@ -1,5 +1,5 @@
 "use client"
-import { Button, Card } from "flowbite-react";
+import { Button } from "flowbite-react";
 import ActiveSensingForm from "@/components/create/Form/ActiveSensingForm";
 import { useRouter } from "next/navigation";
 
@@ -7,10 +7,8 @@ const Page: React.FC = () => {
     const router = useRouter();
     return (
         <>
-            <Card>
-                <ActiveSensingForm />
-            </Card>
-            <div className="w-full gap-4 flex mt-5">
+            <ActiveSensingForm />
+            <div className="w-full gap-4 flex my-5 pb-5">
                 <Button className="grow" size="lg" color="gray" onClick={() => router.push("/create/name")}>
                     Previous
                 </Button>
