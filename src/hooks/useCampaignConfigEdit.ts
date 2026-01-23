@@ -1,7 +1,7 @@
 import { CampaignTableField, FieldRole, FieldType, NewCampaignTable } from "@/types/campaign";
 import { NewSurvey, ScheduleMethod, SurveyQuestion, SurveyQuestionOption } from "@/types/survey";
 import { create } from "zustand";
-import { templateTable } from "./sensorTemplate";
+import { templateTable } from "./create/sensorTemplate";
 
 interface PassiveSensingConfig {
     startTime: number; // milliseconds since midnight
@@ -35,6 +35,7 @@ interface CampaignConfigEditState {
     addSurveyQuestionOption: (surveyIndex: number, questionIndex: number) => void;
     removeSurveyQuestionOption: (surveyIndex: number, questionIndex: number, optionIndex: number) => void;
     updateSurveyQuestionOption: (surveyIndex: number, questionIndex: number, optionIndex: number, updates: Partial<SurveyQuestionOption>) => void;
+    reorderSurveyQuestionOption: (surveyIndex: number, questionIndex: number, optionIndex: number, direction: 'up' | 'down') => void;
     reset: () => void;
 }
 
@@ -60,7 +61,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
 
     addTable: (name: string, description: string, fields: CampaignTableField[] = []) => {
         set((state) => {
-            const newTables = [...state.tables, { id: -1, campaign_id: -1, name, description, daily_count_max: 0, fields, isCustom: true }];
+            const newTables = [...state.tables, { id: -1, campaign_id: -1, name, description, daily_count_max: 0, fields, is_custom: true }];
             return {
                 tables: newTables,
                 availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
@@ -74,7 +75,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             const newTables = [...state.tables, structuredClone(availableTables[idx])];
             return {
                 tables: newTables,
-                availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
+                availableTemplateTables: availableTables
             };
         });
     },
@@ -310,6 +311,29 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             if (question.options && question.options[optionIndex]) {
                 question.options[optionIndex] = { ...question.options[optionIndex], ...updates };
             }
+            return { surveys: newSurveys };
+        });
+    },
+
+    reorderSurveyQuestionOption: (surveyIndex: number, questionIndex: number, optionIndex: number, direction: 'up' | 'down') => {
+        set((state) => {
+            const newSurveys = structuredClone(state.surveys);
+            const question = newSurveys[surveyIndex].questions[questionIndex];
+            if (!question.options) {
+                return state;
+            }
+
+            const options = [...question.options];
+            const newIndex = direction === 'up' ? optionIndex - 1 : optionIndex + 1;
+
+            if (newIndex < 0 || newIndex >= options.length) {
+                return state; // Can't move beyond boundaries
+            }
+
+            // Swap options
+            [options[optionIndex], options[newIndex]] = [options[newIndex], options[optionIndex]];
+
+            question.options = options;
             return { surveys: newSurveys };
         });
     },

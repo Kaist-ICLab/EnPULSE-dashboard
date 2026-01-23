@@ -19,14 +19,12 @@ const Page: React.FC = () => {
                     setIsValidName={setIsValidName}
                 />
             </Card>
-            <div className="w-full gap-4 flex my-5">
-                <PrevNextNavigation
-                    onPrevClick={() => router.push("/campaigns")}
-                    onNextClick={() => router.push("/create/active-sensing")}
-                    nextLabel="Next"
-                    disabled={!isValidName}
-                />
-            </div>
+            <PrevNextNavigation
+                onPrevClick={() => router.push("/campaigns")}
+                onNextClick={() => router.push("/create/active-sensing")}
+                nextLabel="Next"
+                disabled={!isValidName}
+            />
         </>
     );
 }

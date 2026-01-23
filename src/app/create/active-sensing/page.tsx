@@ -8,12 +8,10 @@ const Page: React.FC = () => {
     return (
         <>
             <ActiveSensingForm />
-            <div className="w-full gap-4 flex my-5 pb-5">
-                <PrevNextNavigation
-                    onPrevClick={() => router.push("/create/name")}
-                    onNextClick={() => router.push("/create/passive-sensing")}
-                />
-            </div>
+            <PrevNextNavigation
+                onPrevClick={() => router.push("/create/name")}
+                onNextClick={() => router.push("/create/passive-sensing")}
+            />
         </>
     );
 }

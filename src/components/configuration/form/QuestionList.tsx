@@ -3,7 +3,7 @@
 import { Card, Select, Checkbox, Button } from "flowbite-react";
 import { AnswerType, SurveyQuestion, SurveyQuestionOption } from "@/types/survey";
 
-import useCampaignConfigEdit from "@/hooks/create/useCampaignConfigEdit";
+import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import SwitchingTextInput from "./SwitchingTextInput";
 
 interface QuestionListProps {
@@ -11,7 +11,7 @@ interface QuestionListProps {
 }
 
 const QuestionList: React.FC<QuestionListProps> = ({ surveyIndex }) => {
-    const { surveys, removeSurveyQuestion, updateSurveyQuestion, reorderSurveyQuestion, addSurveyQuestionOption, removeSurveyQuestionOption, updateSurveyQuestionOption } = useCampaignConfigEdit();
+    const { surveys, removeSurveyQuestion, updateSurveyQuestion, reorderSurveyQuestion, addSurveyQuestionOption, removeSurveyQuestionOption, updateSurveyQuestionOption, reorderSurveyQuestionOption } = useCampaignConfigEdit();
     const survey = surveys[surveyIndex];
 
     if (!survey) {
@@ -44,6 +44,8 @@ const QuestionList: React.FC<QuestionListProps> = ({ surveyIndex }) => {
                     onAddOption={() => addSurveyQuestionOption(surveyIndex, questionIndex)}
                     onRemoveOption={(optionIndex) => removeSurveyQuestionOption(surveyIndex, questionIndex, optionIndex)}
                     onUpdateOption={(optionIndex, updates) => updateSurveyQuestionOption(surveyIndex, questionIndex, optionIndex, updates)}
+                    onMoveOptionUp={(optionIndex) => reorderSurveyQuestionOption(surveyIndex, questionIndex, optionIndex, 'up')}
+                    onMoveOptionDown={(optionIndex) => reorderSurveyQuestionOption(surveyIndex, questionIndex, optionIndex, 'down')}
                 />
             ))}
         </div>
@@ -62,9 +64,11 @@ interface QuestionCardProps {
     onAddOption: () => void;
     onRemoveOption: (optionIndex: number) => void;
     onUpdateOption: (optionIndex: number, updates: Partial<SurveyQuestionOption>) => void;
+    onMoveOptionUp: (optionIndex: number) => void;
+    onMoveOptionDown: (optionIndex: number) => void;
 }
 
-const QuestionCard: React.FC<QuestionCardProps> = ({ question, questionIndex, totalQuestions, onRemove, onUpdate, onMoveUp, onMoveDown, onAddOption, onRemoveOption, onUpdateOption }) => {
+const QuestionCard: React.FC<QuestionCardProps> = ({ question, questionIndex, totalQuestions, onRemove, onUpdate, onMoveUp, onMoveDown, onAddOption, onRemoveOption, onUpdateOption, onMoveOptionUp, onMoveOptionDown }) => {
     const answerTypeOptions: { value: AnswerType; label: string }[] = [
         { value: 'text', label: 'Text' },
         { value: 'number', label: 'Number' },
@@ -180,7 +184,24 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question, questionIndex, to
                                         value={option.display}
                                         onChange={(value: string) => onUpdateOption(optionIndex, { display: value })}
                                         sizing="sm"
+                                        className="flex-1"
                                     />
+                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                        {optionIndex > 0 && (
+                                            <span
+                                                className="icon-[material-symbols--arrow-upward] w-4 h-4 cursor-pointer text-gray-500 hover:text-blue-500"
+                                                onClick={() => onMoveOptionUp(optionIndex)}
+                                                title="Move up"
+                                            ></span>
+                                        )}
+                                        {optionIndex < options.length - 1 && (
+                                            <span
+                                                className="icon-[material-symbols--arrow-downward] w-4 h-4 cursor-pointer text-gray-500 hover:text-blue-500"
+                                                onClick={() => onMoveOptionDown(optionIndex)}
+                                                title="Move down"
+                                            ></span>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>

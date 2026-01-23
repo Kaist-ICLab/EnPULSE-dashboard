@@ -1,7 +1,7 @@
 'use client'
 import { useState } from "react";
 import { Button, Card, Dropdown, DropdownItem, TextInput } from "flowbite-react";
-import useNewCampainTables from "@/hooks/create/useCampaignConfigEdit";
+import useNewCampainTables from "@/hooks/useCampaignConfigEdit";
 
 export default function AddSensorButtons() {
     const { addTable, addNewTemplateTable, availableTemplateTables } = useNewCampainTables();

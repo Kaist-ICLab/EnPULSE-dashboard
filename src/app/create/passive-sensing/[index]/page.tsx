@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "flowbite-react";
-import useCampaignConfigEdit from "@/hooks/create/useCampaignConfigEdit";
+import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import QuestionList from "@/components/configuration/form/QuestionList";
 
 export default function SurveyQuestionsPage() {

@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import useCampaignConfigEdit from "./useCampaignConfigEdit";
+import useCampaignConfigEdit from "../useCampaignConfigEdit";
 
 const millisecondsToTimeString = (ms: number): string => {
     const totalMinutes = Math.floor(ms / (1000 * 60));

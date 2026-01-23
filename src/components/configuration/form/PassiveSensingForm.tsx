@@ -3,7 +3,7 @@
 import { Card, Label, TextInput } from "flowbite-react";
 import { usePassiveSensingTime } from "@/hooks/create/usePassiveSensingTime";
 import SurveyList from "./SurveyList";
-import useCampaignConfigEdit from "@/hooks/create/useCampaignConfigEdit";
+import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 
 const PassiveSensingForm: React.FC = () => {
     const { startTimeString, endTimeString, endTimeNextDay, setStartTime, setEndTime } = usePassiveSensingTime();

@@ -1,6 +1,6 @@
 'use client';
 
-import useNewCampaignTables from "@/hooks/create/useCampaignConfigEdit";
+import useNewCampaignTables from "@/hooks/useCampaignConfigEdit";
 import { useEffect } from "react";
 
 const NewCampaignInitProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

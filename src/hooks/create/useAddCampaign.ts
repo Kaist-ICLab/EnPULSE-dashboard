@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { NewCampaignTable } from "./useCampaignConfigEdit";
+import { NewCampaignTable } from "../useCampaignConfigEdit";
 import { CampaignTableField } from "@/types/campaign";
 import { createCampaign, createCampaignTable, createCampaignTableFields } from "@/services/campaignService";
 import { useRouter } from "next/navigation";

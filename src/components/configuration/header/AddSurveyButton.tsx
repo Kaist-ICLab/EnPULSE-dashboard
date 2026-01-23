@@ -1,6 +1,6 @@
 'use client'
 import { Button } from "flowbite-react";
-import useCampaignConfigEdit from "@/hooks/create/useCampaignConfigEdit";
+import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 
 export default function AddSurveyButton() {
     const { addSurvey } = useCampaignConfigEdit();

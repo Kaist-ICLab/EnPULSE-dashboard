@@ -1,6 +1,6 @@
 'use client'
 import { Card } from "flowbite-react";
-import useNewCampainTables from "@/hooks/create/useCampaignConfigEdit";
+import useNewCampainTables from "@/hooks/useCampaignConfigEdit";
 import CampaignTableCard from "../CampaignTableCard";
 import RemoveIconButton from "../RemoveIconButton";
 

@@ -16,6 +16,7 @@ export interface CampaignTable {
     name: string;
     description?: string,
     daily_count_max: number;
+    is_custom: boolean;
 }
 
 export interface CampaignTableField {
@@ -42,6 +43,5 @@ export interface CampaignTableFieldWithTable extends CampaignTableField {
 
 export interface NewCampaignTable extends CampaignTable {
     fields: CampaignTableField[];
-    isCustom?: boolean;
 }
 

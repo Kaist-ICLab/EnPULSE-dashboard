@@ -4,7 +4,7 @@ import { Card, Button } from "flowbite-react";
 import { useRouter } from "next/navigation";
 import { ScheduleMethod, SurveyQuestion } from "@/types/survey";
 
-import useCampaignConfigEdit from "@/hooks/create/useCampaignConfigEdit";
+import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import ScheduleMethodConfig from "./ScheduleMethodConfig";
 import SwitchingTextInput from "./SwitchingTextInput";
 
