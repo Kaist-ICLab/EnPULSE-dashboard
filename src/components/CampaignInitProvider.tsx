@@ -8,7 +8,7 @@ const CampaignInitProvider: React.FC<{ campaignId: number, campaigns: { id: numb
     useEffect(() => {
         setCampaigns(new Map(campaigns.map(campaign => [campaign.id, campaign.name])));
         selectCampaign(campaignId);
-    }, []);
+    }, [campaignId, campaigns, selectCampaign, setCampaigns]);
     return <>{children}</>;
 }
 

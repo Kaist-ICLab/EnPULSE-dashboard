@@ -9,12 +9,14 @@ const DashboardSidebar: React.FC = () => {
         { name: "Campaign Information", href: `/create/name` },
         { name: "Active Sensing", href: `/create/active-sensing` },
         { name: "Passive Sensing", href: `/create/passive-sensing` },
+        { name: "Confirm Configuration", href: `/create/confirm` },
     ];
 
     const getCurrentStepIndex = () => {
         if (pathname.includes('/name')) return 0;
         if (pathname.includes('/active-sensing')) return 1;
         if (pathname.includes('/passive-sensing')) return 2;
+        if (pathname.includes('/confirm')) return 3;
         return 0;
     };
 
@@ -25,7 +27,7 @@ const DashboardSidebar: React.FC = () => {
             <h2 className="text-lg font-semibold text-gray-800 mb-8">Create Campaign</h2>
             <div className="flex flex-col relative">
                 {/* Progress bar line */}
-                <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-gray-200">
+                <div className="absolute left-4 top-8 bottom-16 w-0.5 bg-gray-200">
                     <div
                         className="absolute top-0 left-0 w-full bg-blue-600 transition-all duration-300"
                         style={{ height: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}

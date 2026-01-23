@@ -2,6 +2,7 @@
 import { Button, TextInput } from "flowbite-react";
 import { checkCampaignNameValidity } from "@/services/campaignService";
 import { Dispatch, SetStateAction, useState } from "react";
+import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 
 const stateColorMap = {
     "loading": "text-gray-500",
@@ -20,6 +21,7 @@ const CampaignNameForm: React.FC<{
     setCampaignName: Dispatch<SetStateAction<string>>,
     setIsValidName: Dispatch<SetStateAction<boolean>>,
 }> = ({ campaignName, setCampaignName, setIsValidName }) => {
+    const { setCampaignName: setCampaignNameInHook } = useCampaignConfigEdit();
     const [status, setStatus] = useState<"loading" | "ok" | "error" | null>(null);
     const [isChanged, setIsChanged] = useState(false);
 
@@ -44,6 +46,9 @@ const CampaignNameForm: React.FC<{
                             setStatus(isValid ? "ok" : "error");
                             setIsValidName(isValid)
                             setIsChanged(false);
+                            if (isValid) {
+                                setCampaignNameInHook(campaignName);
+                            }
                         })
                     }}
                     className="text-gray-900 font-medium bg-gray-50 border border-gray-300 hover:bg-gray-100"

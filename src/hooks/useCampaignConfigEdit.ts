@@ -9,10 +9,12 @@ interface PassiveSensingConfig {
 }
 
 interface CampaignConfigEditState {
+    campaignName: string;
     tables: CampaignTable[];
     availableTemplateTables: CampaignTable[];
     passiveSensingConfig: PassiveSensingConfig;
     surveys: NewSurvey[];
+    setCampaignName: (name: string) => void;
     setDailyCountMax: (index: number, value: number) => void;
     addTable: (name: string, description: string, fields?: CampaignTableField[]) => void;
     addNewTemplateTable: (idx: number) => void;
@@ -40,6 +42,7 @@ interface CampaignConfigEditState {
 }
 
 const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
+    campaignName: "",
     tables: [],
     availableTemplateTables: templateTable,
     passiveSensingConfig: {
@@ -47,6 +50,10 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         endTime: 23 * 60 * 60 * 1000 + 59 * 60 * 1000, // 23:59 in milliseconds
     },
     surveys: [],
+
+    setCampaignName: (name: string) => {
+        set({ campaignName: name });
+    },
 
     setDailyCountMax: (index: number, value: number) => {
         set((state) => {
@@ -340,6 +347,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
 
     reset: () => {
         set({
+            campaignName: "",
             tables: [],
             availableTemplateTables: templateTable,
             passiveSensingConfig: {

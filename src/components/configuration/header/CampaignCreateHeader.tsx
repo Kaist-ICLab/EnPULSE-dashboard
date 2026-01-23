@@ -9,15 +9,16 @@ const CampaignCreateHeader: React.FC = () => {
     const pathname = usePathname();
 
     const getPageTitle = () => {
-        if (pathname.includes('/name')) return "Campaign Information";
+        if (pathname.includes('/name')) return "Configure Campaign Information";
         if (pathname.includes('/active-sensing')) return "Active Sensing";
         if (pathname.includes('/passive-sensing')) {
             // Check if we're on a question editing page
             if (pathname.match(/\/passive-sensing\/\d+$/)) {
-                return "Questions for";
+                return "Configure Questions for";
             }
-            return "Passive Sensing";
+            return "Configure Passive Sensing";
         }
+        if (pathname.includes('/confirm')) return "Confirm Configuration";
         return "Create Campaign";
     };
 
@@ -27,7 +28,7 @@ const CampaignCreateHeader: React.FC = () => {
 
     return (
         <div className="w-full min-h-16 flex items-center border-b border-gray-200 px-6 relative">
-            <h2 className="text-xl font-bold text-gray-900 mr-4">Configure {getPageTitle()}</h2>
+            <h2 className="text-xl font-bold text-gray-900 mr-4">{getPageTitle()}</h2>
             <div className="grow flex justify-end">
                 {isActiveSensingPage && <AddSensorButtons />}
                 {isPassiveSensingPage && !isQuestionPage && <AddSurveyButton />}

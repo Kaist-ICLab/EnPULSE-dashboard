@@ -11,7 +11,7 @@ const Page: React.FC = () => {
             <PassiveSensingForm />
             <PrevNextNavigation
                 onPrevClick={() => router.push("/create/active-sensing")}
-                onNextClick={() => router.push("/campaigns")}
+                onNextClick={() => router.push("/create/confirm")}
             />
         </>
     );
