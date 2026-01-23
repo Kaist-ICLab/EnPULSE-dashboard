@@ -6,8 +6,11 @@ export const FieldTypeOption: FieldType[] = ['categorical', 'numerical', 'dateti
 export interface Campaign {
     id: number;
     name: string;
-    start_time_of_day?: number;
-    end_time_of_day?: number;
+    description?: string,
+    start_time_of_day: number;
+    end_time_of_day: number;
+    profiles: CampaignParticipant[];
+    campaign_table: CampaignTable[];
 }
 
 export interface CampaignTable {
@@ -17,6 +20,7 @@ export interface CampaignTable {
     description?: string,
     daily_count_max: number;
     is_custom: boolean;
+    campaign_table_field: CampaignTableField[];
 }
 
 export interface CampaignTableField {
@@ -40,8 +44,3 @@ export interface CampaignTableFieldWithTable extends CampaignTableField {
     table_name: string;
     display_name: string;
 }
-
-export interface NewCampaignTable extends CampaignTable {
-    fields: CampaignTableField[];
-}
-

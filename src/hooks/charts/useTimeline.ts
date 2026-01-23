@@ -2,21 +2,25 @@ import { ComparisonType, TimelineData } from "@/types/chart";
 import { useEffect, useState, useMemo } from "react";
 import useCampaign from "../useCampaign";
 import { getPersonComparisonData, getDaysComparisonData, getSensorComparisonData } from "@/services/chartService";
-import { CampaignTableFieldWithTable } from "@/types/campaign";
 import useSectionState from "../useSectionState";
 
 
-export default function useTimeline(secitonType: ComparisonType, tableFields: CampaignTableFieldWithTable[], chartWidth: number) {
+export default function useTimeline(secitonType: ComparisonType, chartWidth: number) {
     const [timeline, setTimeline] = useState<TimelineData[]>([]);
     const [bucketSize, setBucketSize] = useState<number>(10);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
 
-    const { selectedCampaignId, campaignParticipants } = useCampaign();
+    const { selectedCampaignId, campaignParticipants, campaignTables } = useCampaign();
     const { date, comparisonParams, timeRange } = useSectionState()
 
     const currentComparisonParams = useMemo(() => comparisonParams[secitonType], [comparisonParams, secitonType])
-    const selectedFields = useMemo(() => tableFields.filter(v => currentComparisonParams.fieldId.includes(v.id)), [tableFields, currentComparisonParams])
+    const selectedFields = useMemo(() => {
+        return Array.from(campaignTables.values().map(table => ({
+            ...table,
+            campaign_table_field: table.campaign_table_field.filter(field => currentComparisonParams.fieldId.includes(field.id))
+        }))).filter(table => table.campaign_table_field.length > 0)
+    }, [currentComparisonParams, campaignTables])
     const selectedUuids = useMemo(() => currentComparisonParams.uuid.map(v => campaignParticipants.get(v)).filter(v => v !== undefined), [currentComparisonParams, campaignParticipants])
 
     function getBucketSize(intervalInSec: number) {

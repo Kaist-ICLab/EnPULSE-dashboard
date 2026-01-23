@@ -302,22 +302,25 @@ export type Database = {
                 Row: {
                     campaign_id: number
                     daily_count_max: number
-                    description: string | null
+                    description: string
                     id: number
+                    is_custom: boolean
                     name: string
                 }
                 Insert: {
                     campaign_id: number
                     daily_count_max: number
-                    description?: string | null
+                    description?: string
                     id?: number
+                    is_custom?: boolean
                     name: string
                 }
                 Update: {
                     campaign_id?: number
                     daily_count_max?: number
-                    description?: string | null
+                    description?: string
                     id?: number
+                    is_custom?: boolean
                     name?: string
                 }
                 Relationships: [
@@ -334,27 +337,27 @@ export type Database = {
                 Row: {
                     campaign_id: number
                     campaign_table_id: number
-                    description: string | null
-                    field_role: string
-                    field_type: string
+                    description: string
+                    field_role: Database["public"]["Enums"]["field_role"]
+                    field_type: Database["public"]["Enums"]["field_type"]
                     id: number
                     name: string
                 }
                 Insert: {
                     campaign_id: number
                     campaign_table_id: number
-                    description?: string | null
-                    field_role: string
-                    field_type: string
+                    description?: string
+                    field_role: Database["public"]["Enums"]["field_role"]
+                    field_type: Database["public"]["Enums"]["field_type"]
                     id?: number
                     name: string
                 }
                 Update: {
                     campaign_id?: number
                     campaign_table_id?: number
-                    description?: string | null
-                    field_role?: string
-                    field_type?: string
+                    description?: string
+                    field_role?: Database["public"]["Enums"]["field_role"]
+                    field_type?: Database["public"]["Enums"]["field_type"]
                     id?: number
                     name?: string
                 }
@@ -371,6 +374,35 @@ export type Database = {
                         columns: ["campaign_table_id"]
                         isOneToOne: false
                         referencedRelation: "campaign_table"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            campaign_table_field_mapping: {
+                Row: {
+                    display: string
+                    field_id: number
+                    id: number
+                    value: string
+                }
+                Insert: {
+                    display: string
+                    field_id: number
+                    id?: number
+                    value: string
+                }
+                Update: {
+                    display?: string
+                    field_id?: number
+                    id?: number
+                    value?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "campaign_table_field_mapping_field_id_fkey"
+                        columns: ["field_id"]
+                        isOneToOne: false
+                        referencedRelation: "campaign_table_field"
                         referencedColumns: ["id"]
                     },
                 ]
@@ -438,18 +470,24 @@ export type Database = {
             campaigns: {
                 Row: {
                     created_at: string | null
+                    end_time_of_day: number
                     id: number
                     name: string
+                    start_time_of_day: number
                 }
                 Insert: {
                     created_at?: string | null
+                    end_time_of_day?: number
                     id?: number
                     name: string
+                    start_time_of_day: number
                 }
                 Update: {
                     created_at?: string | null
+                    end_time_of_day?: number
                     id?: number
                     name?: string
+                    start_time_of_day?: number
                 }
                 Relationships: []
             }
@@ -1170,37 +1208,31 @@ export type Database = {
             }
             survey_question: {
                 Row: {
-                    answer_type: number | null
+                    answer_type: Database["public"]["Enums"]["survey_question_type"]
                     campaign_id: number
                     created_at: string
                     id: number
-                    is_free_answer_allowed: boolean | null
-                    is_mandatory: boolean | null
-                    is_multiple_choice_question: boolean | null
+                    is_mandatory: boolean
                     question: string
                     survey_id: number
                     trigger: Json | null
                 }
                 Insert: {
-                    answer_type?: number | null
+                    answer_type: Database["public"]["Enums"]["survey_question_type"]
                     campaign_id: number
                     created_at?: string
                     id?: number
-                    is_free_answer_allowed?: boolean | null
-                    is_mandatory?: boolean | null
-                    is_multiple_choice_question?: boolean | null
+                    is_mandatory: boolean
                     question: string
                     survey_id: number
                     trigger?: Json | null
                 }
                 Update: {
-                    answer_type?: number | null
+                    answer_type?: Database["public"]["Enums"]["survey_question_type"]
                     campaign_id?: number
                     created_at?: string
                     id?: number
-                    is_free_answer_allowed?: boolean | null
-                    is_mandatory?: boolean | null
-                    is_multiple_choice_question?: boolean | null
+                    is_mandatory?: boolean
                     question?: string
                     survey_id?: number
                     trigger?: Json | null
@@ -1224,6 +1256,7 @@ export type Database = {
             }
             survey_question_option: {
                 Row: {
+                    allow_free_response: boolean
                     created_at: string
                     display: string | null
                     id: number
@@ -1231,6 +1264,7 @@ export type Database = {
                     value: string | null
                 }
                 Insert: {
+                    allow_free_response?: boolean
                     created_at?: string
                     display?: string | null
                     id?: number
@@ -1238,6 +1272,7 @@ export type Database = {
                     value?: string | null
                 }
                 Update: {
+                    allow_free_response?: boolean
                     created_at?: string
                     display?: string | null
                     id?: number
@@ -1933,7 +1968,9 @@ export type Database = {
             timescaledb_pre_restore: { Args: never; Returns: boolean }
         }
         Enums: {
-            [_ in never]: never
+            field_role: "uid" | "timestamp" | "data" | "ignore"
+            field_type: "categorical" | "numerical" | "datetime"
+            survey_question_type: "checkbox" | "radio" | "text" | "number"
         }
         CompositeTypes: {
             [_ in never]: never
@@ -2063,7 +2100,11 @@ export const Constants = {
         Enums: {},
     },
     public: {
-        Enums: {},
+        Enums: {
+            field_role: ["uid", "timestamp", "data", "ignore"],
+            field_type: ["categorical", "numerical", "datetime"],
+            survey_question_type: ["checkbox", "radio", "text", "number"],
+        },
     },
 } as const
 

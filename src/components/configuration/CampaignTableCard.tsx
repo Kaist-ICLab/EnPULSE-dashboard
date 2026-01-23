@@ -1,9 +1,9 @@
 import { CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
 import FormatConfigTable from "../common/FormatConfigTable";
-import { NewCampaignTable } from "@/types/campaign";
+import { CampaignTable } from "@/types/campaign";
 
 const CampaignTableCard: React.FC<{
-    table: NewCampaignTable;
+    table: CampaignTable;
     setChangedFields: (fieldId: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void;
     addField: (field: CampaignTableField) => void
     removeField?: (fieldIdx: number) => void;
@@ -13,14 +13,14 @@ const CampaignTableCard: React.FC<{
 }> = ({ table, setChangedFields, addField, removeField, setFieldMapping, setDailyCountThreshold, dailyCountThreshold }) => {
     return (
         <FormatConfigTable
-            currentTableFields={table.fields}
+            currentTableFields={table.campaign_table_field}
             onFieldChange={setChangedFields}
             addField={addField}
             removeField={removeField}
             onMappingChange={setFieldMapping}
             setDailyCountThreshold={setDailyCountThreshold}
             dailyCountThreshold={dailyCountThreshold}
-            canAddField={table.isCustom}
+            canAddField={table.is_custom}
         />
     )
 }

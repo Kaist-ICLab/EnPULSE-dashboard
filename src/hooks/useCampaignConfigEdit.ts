@@ -1,4 +1,4 @@
-import { CampaignTableField, FieldRole, FieldType, NewCampaignTable } from "@/types/campaign";
+import { CampaignTable, CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
 import { NewSurvey, ScheduleMethod, SurveyQuestion, SurveyQuestionOption } from "@/types/survey";
 import { create } from "zustand";
 import { templateTable } from "./create/sensorTemplate";
@@ -9,8 +9,8 @@ interface PassiveSensingConfig {
 }
 
 interface CampaignConfigEditState {
-    tables: NewCampaignTable[];
-    availableTemplateTables: NewCampaignTable[];
+    tables: CampaignTable[];
+    availableTemplateTables: CampaignTable[];
     passiveSensingConfig: PassiveSensingConfig;
     surveys: NewSurvey[];
     setDailyCountMax: (index: number, value: number) => void;
@@ -61,7 +61,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
 
     addTable: (name: string, description: string, fields: CampaignTableField[] = []) => {
         set((state) => {
-            const newTables = [...state.tables, { id: -1, campaign_id: -1, name, description, daily_count_max: 0, fields, is_custom: true }];
+            const newTables = [...state.tables, { id: -1, campaign_id: -1, name, description, daily_count_max: 0, campaign_table_field: fields, is_custom: true }];
             return {
                 tables: newTables,
                 availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
@@ -95,9 +95,9 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         set((state) => {
             const newTables = structuredClone(state.tables);
             const table = newTables[tableIndex];
-            table.fields.forEach((v, i) => { v.id = i });
-            field.id = table.fields.length;
-            newTables[tableIndex].fields.push(field);
+            table.campaign_table_field.forEach((v, i) => { v.id = i });
+            field.id = table.campaign_table_field.length;
+            newTables[tableIndex].campaign_table_field.push(field);
             return {
                 tables: newTables,
                 availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
@@ -108,8 +108,8 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     removeField: (tableIndex: number, fieldIdx: number) => {
         set((state) => {
             const newTables = structuredClone(state.tables);
-            newTables[tableIndex].fields.splice(fieldIdx, 1);
-            newTables[tableIndex].fields.forEach((v, i) => { v.id = i });
+            newTables[tableIndex].campaign_table_field.splice(fieldIdx, 1);
+            newTables[tableIndex].campaign_table_field.forEach((v, i) => { v.id = i });
             return {
                 tables: newTables,
                 availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
@@ -120,11 +120,11 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     setField: (tableIndex: number, fieldIdx: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => {
         set((state) => {
             const newTables = structuredClone(state.tables);
-            const field = newTables[tableIndex].fields[fieldIdx];
+            const field = newTables[tableIndex].campaign_table_field[fieldIdx];
             if (fieldName == 'role') {
-                newTables[tableIndex].fields[fieldIdx] = { ...field, field_role: fieldValue as FieldRole };
+                newTables[tableIndex].campaign_table_field[fieldIdx] = { ...field, field_role: fieldValue as FieldRole };
             } else {
-                newTables[tableIndex].fields[fieldIdx] = { ...field, field_type: fieldValue as FieldType };
+                newTables[tableIndex].campaign_table_field[fieldIdx] = { ...field, field_type: fieldValue as FieldType };
             }
             return {
                 tables: newTables,
@@ -136,7 +136,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     setFieldMapping: (tableIndex: number, fieldIdx: number, mapping: { value: string, display: string }[]) => {
         set((state) => {
             const newTables = structuredClone(state.tables);
-            newTables[tableIndex].fields[fieldIdx] = { ...newTables[tableIndex].fields[fieldIdx], mapping };
+            newTables[tableIndex].campaign_table_field[fieldIdx] = { ...newTables[tableIndex].campaign_table_field[fieldIdx], mapping };
             return {
                 tables: newTables,
                 availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))

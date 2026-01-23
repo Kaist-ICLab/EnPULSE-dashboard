@@ -1,15 +1,13 @@
 'use client'
-
 import { useState } from "react";
 
-import { NewCampaignTable } from "@/types/campaign";
+import { CampaignTable, CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
 import { Accordion, AccordionContent, AccordionPanel, AccordionTitle, Button, Card, Dropdown, DropdownItem, TextInput } from "flowbite-react";
 import CampaignTableCard from "./CampaignTableCard";
-import { CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
 
 const CampaignSensors: React.FC<{
-    tables: NewCampaignTable[],
-    availableTemplateTables: NewCampaignTable[],
+    tables: CampaignTable[],
+    availableTemplateTables: CampaignTable[],
     addTable: (name: string, description: string) => void,
     removeTable: (index: number) => void,
     addNewTemplateTable: (idx: number) => void,

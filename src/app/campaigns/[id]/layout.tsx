@@ -1,7 +1,7 @@
 import Sidebar from "@/components/common/Sidebar";
 import Header from "@/components/common/Header";
 import { notFound } from "next/navigation";
-import { getCampaigns } from "@/services/campaignService";
+import { getCampaignList } from "@/services/campaignService";
 import CampaignInitProvider from "@/components/CampaignInitProvider";
 
 export default async function CampaignLayout({
@@ -12,7 +12,7 @@ export default async function CampaignLayout({
     children: React.ReactNode;
 }>) {
     const { id } = await params;
-    const campaigns = await getCampaigns();
+    const campaigns = await getCampaignList();
     const campaignId = parseInt(id);
     const currentCampaign = campaigns.find((campaign) => campaign.id === campaignId);
     if (!currentCampaign) {

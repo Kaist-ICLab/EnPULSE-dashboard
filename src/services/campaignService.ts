@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
-import { Campaign, CampaignParticipant, CampaignTable, CampaignTableField } from '@/types/campaign';
+import { Campaign, CampaignTable, CampaignTableField } from '@/types/campaign';
 
-export const getCampaigns = async (): Promise<Campaign[]> => {
+export const getCampaignList = async (): Promise<{ id: number, name: string }[]> => {
     const { data, error } = await supabase
         .from('campaigns')
         .select(`id, name`)
@@ -40,7 +40,6 @@ export const updateCampaignField = async (fieldId: number, changes: Partial<Camp
     return true;
 }
 
-
 export const createCampaign = async (campaign: Omit<Campaign, 'id'>): Promise<number> => {
     const { data, error } = await supabase
         .from('campaigns')
@@ -49,19 +48,14 @@ export const createCampaign = async (campaign: Omit<Campaign, 'id'>): Promise<nu
 
     if (error) throw new Error(error.message);
     return data[0].id
-    // return true
 }
 
-export const getCampaignTables = async (campaignId: number): Promise<CampaignTable[]> => {
+export const getCampaignInfo = async (campaignId: number): Promise<Campaign> => {
     const { data, error } = await supabase
-        .from('campaign_table')
-        .select(`
-            id,
-            campaign_id,
-            name,
-            daily_count_max`)
-        .eq('campaign_id', campaignId)
-        .order('name', { ascending: true })
+        .from('campaigns')
+        .select(`*, profiles(*), campaign_table(*, campaign_table_field(*, campaign_table_field_mapping(*)))`)
+        .eq('id', campaignId)
+        .single()
 
     if (error) throw new Error(error.message);
     return data;
@@ -86,19 +80,7 @@ export const createCampaignTable = async (campainTables: Omit<CampaignTable, 'id
 
     return results
         .filter(result => result.status === 'fulfilled')
-        .map(result => result.value.data?.at(0).id as number);
-}
-
-export const getCampaignTableFields = async (campaignId: number, campaignTableId: number): Promise<CampaignTableField[]> => {
-    const { data, error } = await supabase
-        .from('campaign_table_field')
-        .select(`id, campaign_id, campaign_table_id, name, field_type, field_role`)
-        .eq('campaign_id', campaignId)
-        .eq('campaign_table_id', campaignTableId)
-        .order('id', { ascending: true })
-
-    if (error) throw new Error(error.message);
-    return data as CampaignTableField[];
+        .map(result => result.value.data?.at(0)?.id as number);
 }
 
 export const createCampaignTableFields = async (campainTableFields: CampaignTableField[]): Promise<boolean> => {
@@ -124,6 +106,7 @@ export const createCampaignTableFields = async (campainTableFields: CampaignTabl
 
 export const updateCampaignTableFields = async (changes: Partial<CampaignTableField>[]): Promise<boolean> => {
     const promises = changes.map(({ id, ...change }) => {
+        if (!id) throw new Error('Field id is required');
         return supabase.from('campaign_table_field').update(
             change
         ).eq('id', id)
@@ -153,15 +136,4 @@ export const checkCampaignNameValidity = async (campaignName: string): Promise<b
     if (error) throw new Error(error.message);
     if (data && data.length > 0) return false
     return true
-}
-
-export async function getCampaignParticipants(campaignId: number): Promise<CampaignParticipant[]> {
-    const { data, error } = await supabase
-        .from('profiles')
-        .select('uuid, email')
-        .eq('campaign_id', campaignId)
-
-    if (error) throw new Error(error.message);
-
-    return data
 }

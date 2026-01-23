@@ -1,7 +1,6 @@
 "use client"
 import ChartContainer from "@/components/dashboard/charts/ChartContainer";
 import useTimeline from "@/hooks/charts/useTimeline";
-import useCampaign from "@/hooks/useCampaign";
 import { ComparisonType } from "@/types/chart";
 import { Card, Spinner } from "flowbite-react";
 import { useMemo, useRef } from "react";
@@ -12,10 +11,9 @@ import ParticipantDropdown from "../ParticipantDropdown";
 
 const ComparisonChart: React.FC = () => {
     const chartRef = useRef<HTMLDivElement>(null);
-    const { mergedTableFields } = useCampaign()
     const { comparisonParams, updateComparisonParams, selectedSection, updateSelectedSection } = useSectionState()
     const currentComparisonParams = useMemo(() => comparisonParams[selectedSection], [comparisonParams, selectedSection])
-    const { timeline, bucketSize, loading, error } = useTimeline(selectedSection, mergedTableFields, (chartRef.current?.clientWidth || 0) - 88);
+    const { timeline, bucketSize, loading, error } = useTimeline(selectedSection, (chartRef.current?.clientWidth || 0) - 88);
 
     return (
         <Card>

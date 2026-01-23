@@ -1,49 +1,57 @@
 import { useMemo, useState, useCallback } from "react";
-import { CampaignTable, CampaignTableFieldWithTable } from "@/types/campaign";
+import { CampaignTable, CampaignTableField } from "@/types/campaign";
 
 const useSensorDropdownState = (
     selectedFieldIds: number[],
     campaignTables: Map<number, CampaignTable>,
-    mergedTableFields: CampaignTableFieldWithTable[],
+    tableFields: CampaignTableField[],
     setSelectedFieldIds: (fieldIds: number[]) => void,
     isMultipleSelection: boolean,
 ) => {
     const [selectedSensor, setSelectedSensor] = useState(-1);
 
-    const selectedFields = useMemo(() => mergedTableFields.filter(field => selectedFieldIds.includes(field.id)), [selectedFieldIds, mergedTableFields]);
+    const selectedFields = useMemo(() => tableFields.filter(field => selectedFieldIds.includes(field.id)), [selectedFieldIds, tableFields]);
 
     const dropdownLabel = useMemo(() => {
         if (selectedFieldIds.length == 0) {
             return "Select Sensor";
         }
 
-        if (selectedFieldIds.length == 1) {
-            return mergedTableFields.find(field => field.id == selectedFieldIds[0])?.display_name;
-        } else {
-            return `${mergedTableFields.find(field => field.id == selectedFieldIds[0])?.display_name} + ${selectedFieldIds.length - 1} more`;
+        const displayedField = tableFields.find(field => field.id == selectedFieldIds[0]);
+
+        if (displayedField == undefined) {
+            return "Select Sensor";
         }
-    }, [selectedFieldIds, mergedTableFields]);
+
+        const tableName = campaignTables.get(displayedField?.campaign_table_id)?.name;
+
+        if (selectedFieldIds.length == 1) {
+            return `${tableName} - ${displayedField?.name}`;
+        } else {
+            return `${tableName} - ${displayedField?.name} + ${selectedFieldIds.length - 1} more`;
+        }
+    }, [selectedFieldIds, tableFields, campaignTables]);
 
     const isAllSelected = useMemo(() => {
         return new Map<number, boolean>(
             Array.from(campaignTables.values()).map((table) => {
-                const allSelected = mergedTableFields
-                    .filter((field) => field.campaign_table_id === table.id)
-                    .every((field) => selectedFieldIds.includes(field.id));
+                const allSelected = tableFields
+                    .filter(field => field.campaign_table_id === table.id)
+                    .every(field => selectedFieldIds.includes(field.id));
                 return [table.id, allSelected];
             })
         );
-    }, [selectedFieldIds, mergedTableFields, campaignTables]);
+    }, [selectedFieldIds, tableFields, campaignTables]);
 
     const selectedCountByTable = useMemo(() => {
         const counts = new Map<number, number>();
-        mergedTableFields.forEach((field) => {
+        tableFields.forEach(field => {
             if (selectedFieldIds.includes(field.id)) {
                 counts.set(field.campaign_table_id, (counts.get(field.campaign_table_id) || 0) + 1);
             }
         });
         return counts;
-    }, [mergedTableFields, selectedFieldIds]);
+    }, [tableFields, selectedFieldIds]);
 
     const toggleFieldSelection = useCallback((fieldId: number) => {
         if (isMultipleSelection) {
@@ -62,13 +70,13 @@ const useSensorDropdownState = (
     }, [selectedFieldIds, isMultipleSelection, setSelectedFieldIds]);
 
     const toggleAllFieldsSelection = useCallback((campaignTableId: number) => {
-        const fieldIds = mergedTableFields.filter(field => field.campaign_table_id === campaignTableId).map(field => field.id);
+        const fieldIds = tableFields.filter(field => field.campaign_table_id === campaignTableId).map(field => field.id);
         if (isAllSelected.get(campaignTableId) ?? false) {
             setSelectedFieldIds(selectedFieldIds.filter(id => !fieldIds.includes(id)));
         } else {
             setSelectedFieldIds([...selectedFieldIds, ...fieldIds]);
         }
-    }, [selectedFieldIds, isAllSelected, setSelectedFieldIds, mergedTableFields]);
+    }, [selectedFieldIds, isAllSelected, setSelectedFieldIds, tableFields]);
 
     return {
         selectedFields,

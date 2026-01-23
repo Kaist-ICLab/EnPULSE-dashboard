@@ -6,7 +6,7 @@ import { useEffect } from "react";
 
 // Campaign selection page
 const CampaignsPage: React.FC = () => {
-    const { campaigns, fetchCampaigns } = useCampaign();
+    const { campaignList, fetchCampaigns } = useCampaign();
     useEffect(() => {
         fetchCampaigns();
     }, [fetchCampaigns]);
@@ -19,10 +19,10 @@ const CampaignsPage: React.FC = () => {
             <div className="flex flex-col w-full p-4">
                 <h1>Campaigns</h1>
                 <div className="flex flex-col justify-between items-center p-4 gap-6">
-                    {Array.from(campaigns.values()).map((campaign) => (
-                        <Card key={`campaign-${campaign.id}`} className="w-[50%]">
-                            <Link href={`/campaigns/${campaign.id}`} className="flex flex-col items-center">
-                                <div>{`campagin-${campaign.id} / ${campaign.name}`}</div>
+                    {Array.from(campaignList.entries()).map(([id, name]) => (
+                        <Card key={`campaign-${id}`} className="w-[50%]">
+                            <Link href={`/campaigns/${id}`} className="flex flex-col items-center">
+                                <div>{`campagin-${id} / ${name}`}</div>
                             </Link>
                         </Card>
                     ))}

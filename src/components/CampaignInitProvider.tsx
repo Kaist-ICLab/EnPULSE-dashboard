@@ -1,13 +1,12 @@
 'use client';
 
-import { Campaign } from "@/types/campaign";
 import { useEffect } from "react";
 import useCampaign from "@/hooks/useCampaign";
 
-const CampaignInitProvider: React.FC<{ campaignId: number, campaigns: Campaign[], children: React.ReactNode }> = ({ campaignId, campaigns, children }) => {
-    const { selectCampaign, setCampaigns } = useCampaign();
+const CampaignInitProvider: React.FC<{ campaignId: number, campaigns: { id: number, name: string }[], children: React.ReactNode }> = ({ campaignId, campaigns, children }) => {
+    const { selectCampaign, setCampaignList: setCampaigns } = useCampaign();
     useEffect(() => {
-        setCampaigns(new Map(campaigns.map(campaign => [campaign.id, campaign])));
+        setCampaigns(new Map(campaigns.map(campaign => [campaign.id, campaign.name])));
         selectCampaign(campaignId);
     }, []);
     return <>{children}</>;
