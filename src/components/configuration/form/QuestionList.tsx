@@ -1,16 +1,17 @@
 'use client'
 
-import { Card, Select, TextInput, Checkbox } from "flowbite-react";
+import { Card, Select, Checkbox, Button } from "flowbite-react";
+import { AnswerType, SurveyQuestion, SurveyQuestionOption } from "@/types/survey";
+
 import useCampaignConfigEdit from "@/hooks/create/useCampaignConfigEdit";
-import { useState, useEffect } from "react";
-import { AnswerType, SurveyQuestion } from "@/types/survey";
+import SwitchingTextInput from "./SwitchingTextInput";
 
 interface QuestionListProps {
     surveyIndex: number;
 }
 
 const QuestionList: React.FC<QuestionListProps> = ({ surveyIndex }) => {
-    const { surveys, removeSurveyQuestion, updateSurveyQuestion, reorderSurveyQuestion } = useCampaignConfigEdit();
+    const { surveys, removeSurveyQuestion, updateSurveyQuestion, reorderSurveyQuestion, addSurveyQuestionOption, removeSurveyQuestionOption, updateSurveyQuestionOption } = useCampaignConfigEdit();
     const survey = surveys[surveyIndex];
 
     if (!survey) {
@@ -40,6 +41,9 @@ const QuestionList: React.FC<QuestionListProps> = ({ surveyIndex }) => {
                     onUpdate={(updates) => updateSurveyQuestion(surveyIndex, questionIndex, updates)}
                     onMoveUp={() => reorderSurveyQuestion(surveyIndex, questionIndex, 'up')}
                     onMoveDown={() => reorderSurveyQuestion(surveyIndex, questionIndex, 'down')}
+                    onAddOption={() => addSurveyQuestionOption(surveyIndex, questionIndex)}
+                    onRemoveOption={(optionIndex) => removeSurveyQuestionOption(surveyIndex, questionIndex, optionIndex)}
+                    onUpdateOption={(optionIndex, updates) => updateSurveyQuestionOption(surveyIndex, questionIndex, optionIndex, updates)}
                 />
             ))}
         </div>
@@ -55,18 +59,12 @@ interface QuestionCardProps {
     onUpdate: (updates: Partial<SurveyQuestion>) => void;
     onMoveUp: () => void;
     onMoveDown: () => void;
+    onAddOption: () => void;
+    onRemoveOption: (optionIndex: number) => void;
+    onUpdateOption: (optionIndex: number, updates: Partial<SurveyQuestionOption>) => void;
 }
 
-const QuestionCard: React.FC<QuestionCardProps> = ({ question, questionIndex, totalQuestions, onRemove, onUpdate, onMoveUp, onMoveDown }) => {
-    const [isEditingQuestion, setIsEditingQuestion] = useState(false);
-    const [questionText, setQuestionText] = useState(question.question);
-
-    useEffect(() => {
-        if (!isEditingQuestion) {
-            setQuestionText(question.question);
-        }
-    }, [question.question, isEditingQuestion]);
-
+const QuestionCard: React.FC<QuestionCardProps> = ({ question, questionIndex, totalQuestions, onRemove, onUpdate, onMoveUp, onMoveDown, onAddOption, onRemoveOption, onUpdateOption }) => {
     const answerTypeOptions: { value: AnswerType; label: string }[] = [
         { value: 'text', label: 'Text' },
         { value: 'number', label: 'Number' },
@@ -74,15 +72,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question, questionIndex, to
         { value: 'checkbox', label: 'Checkbox' },
     ];
 
-    const handleQuestionSave = () => {
-        onUpdate({ question: questionText });
-        setIsEditingQuestion(false);
-    };
-
-    const handleQuestionCancel = () => {
-        setQuestionText(question.question);
-        setIsEditingQuestion(false);
-    };
+    const needsOptions = question.answer_type === 'radio' || question.answer_type === 'checkbox';
+    const options = question.options || [];
 
     return (
         <Card>
@@ -92,28 +83,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question, questionIndex, to
                         className="icon-[humbleicons--times] w-5 h-5 cursor-pointer text-gray-500 hover:text-red-500"
                         onClick={onRemove}
                     ></span>
-                    {isEditingQuestion ? (
-                        <div className="flex w-full gap-2">
-                            <TextInput
-                                value={questionText}
-                                onChange={(e) => setQuestionText(e.target.value)}
-                                onBlur={handleQuestionSave}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') handleQuestionSave();
-                                    if (e.key === 'Escape') handleQuestionCancel();
-                                }}
-                                className="flex-1"
-                                autoFocus
-                            />
-                        </div>
-                    ) : (
-                        <div
-                            className="w-full px-3 py-2 border border-transparent hover:border-gray-300 rounded-lg cursor-text font-bold text-xl"
-                            onClick={() => setIsEditingQuestion(true)}
-                        >
-                            {question.question || <span className="text-gray-400">Click to edit question</span>}
-                        </div>
-                    )}
+                    <SwitchingTextInput
+                        value={question.question}
+                        onChange={(value: string) => onUpdate({ question: value })}
+                        className="font-bold text-lg"
+                    />
                 </div>
                 <div className="flex items-center gap-2 ml-2">
                     {questionIndex > 0 && (
@@ -139,7 +113,21 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question, questionIndex, to
                 </label>
                 <Select
                     value={question.answer_type}
-                    onChange={(e) => onUpdate({ answer_type: e.target.value as AnswerType })}
+                    onChange={(e) => {
+                        const newAnswerType = e.target.value as AnswerType;
+                        const updates: Partial<SurveyQuestion> = { answer_type: newAnswerType };
+
+                        // Initialize options array if switching to radio/checkbox
+                        if ((newAnswerType === 'radio' || newAnswerType === 'checkbox') && !question.options) {
+                            updates.options = [];
+                        }
+                        // Clear options if switching away from radio/checkbox
+                        else if (newAnswerType !== 'radio' && newAnswerType !== 'checkbox' && question.options) {
+                            updates.options = undefined;
+                        }
+
+                        onUpdate(updates);
+                    }}
                     className="grow max-w-xs"
                     sizing="sm"
                 >
@@ -161,6 +149,44 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question, questionIndex, to
                     Mandatory
                 </label>
             </div>
+
+            {needsOptions && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium text-gray-900">
+                            Options
+                        </label>
+                        <Button
+                            size="xs"
+                            color="light"
+                            onClick={onAddOption}
+                        >
+                            <span className="icon-[material-symbols--add] w-4 h-4 mr-1"></span>
+                            Add Option
+                        </Button>
+                    </div>
+                    {options.length === 0 ? (
+                        <p className="text-sm text-gray-500 py-2">No options added</p>
+                    ) : (
+                        <div className="flex flex-col gap-2">
+                            {options.map((option, optionIndex) => (
+                                <div key={optionIndex} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                                    <span
+                                        className="icon-[humbleicons--times] w-4 h-4 cursor-pointer text-gray-500 hover:text-red-500 flex-shrink-0"
+                                        onClick={() => onRemoveOption(optionIndex)}
+                                        title="Remove option"
+                                    ></span>
+                                    <SwitchingTextInput
+                                        value={option.display}
+                                        onChange={(value: string) => onUpdateOption(optionIndex, { display: value })}
+                                        sizing="sm"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </Card>
     );
 };

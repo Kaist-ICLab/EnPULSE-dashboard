@@ -1,5 +1,5 @@
 import { CampaignTableField, FieldRole, FieldType, NewCampaignTable } from "@/types/campaign";
-import { NewSurvey, ScheduleMethod, SurveyQuestion } from "@/types/survey";
+import { NewSurvey, ScheduleMethod, SurveyQuestion, SurveyQuestionOption } from "@/types/survey";
 import { create } from "zustand";
 import { templateTable } from "./sensorTemplate";
 
@@ -32,6 +32,9 @@ interface CampaignConfigEditState {
     removeSurveyQuestion: (surveyIndex: number, questionIndex: number) => void;
     updateSurveyQuestion: (surveyIndex: number, questionIndex: number, updates: Partial<SurveyQuestion>) => void;
     reorderSurveyQuestion: (surveyIndex: number, questionIndex: number, direction: 'up' | 'down') => void;
+    addSurveyQuestionOption: (surveyIndex: number, questionIndex: number) => void;
+    removeSurveyQuestionOption: (surveyIndex: number, questionIndex: number, optionIndex: number) => void;
+    updateSurveyQuestionOption: (surveyIndex: number, questionIndex: number, optionIndex: number, updates: Partial<SurveyQuestionOption>) => void;
     reset: () => void;
 }
 
@@ -266,6 +269,47 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
                 ...newSurveys[surveyIndex],
                 questions: questions,
             };
+            return { surveys: newSurveys };
+        });
+    },
+
+    addSurveyQuestionOption: (surveyIndex: number, questionIndex: number) => {
+        set((state) => {
+            const newSurveys = structuredClone(state.surveys);
+            const question = newSurveys[surveyIndex].questions[questionIndex];
+            if (!question.options) {
+                question.options = [];
+            }
+            const newOption: SurveyQuestionOption = {
+                id: -1, // Temporary ID
+                question_id: question.id,
+                value: `option_${question.options.length + 1}`,
+                display: `Option ${question.options.length + 1}`,
+                is_free_answer_allowed: false,
+            };
+            question.options.push(newOption);
+            return { surveys: newSurveys };
+        });
+    },
+
+    removeSurveyQuestionOption: (surveyIndex: number, questionIndex: number, optionIndex: number) => {
+        set((state) => {
+            const newSurveys = structuredClone(state.surveys);
+            const question = newSurveys[surveyIndex].questions[questionIndex];
+            if (question.options) {
+                question.options = question.options.filter((_, i) => i !== optionIndex);
+            }
+            return { surveys: newSurveys };
+        });
+    },
+
+    updateSurveyQuestionOption: (surveyIndex: number, questionIndex: number, optionIndex: number, updates: Partial<SurveyQuestionOption>) => {
+        set((state) => {
+            const newSurveys = structuredClone(state.surveys);
+            const question = newSurveys[surveyIndex].questions[questionIndex];
+            if (question.options && question.options[optionIndex]) {
+                question.options[optionIndex] = { ...question.options[optionIndex], ...updates };
+            }
             return { surveys: newSurveys };
         });
     },

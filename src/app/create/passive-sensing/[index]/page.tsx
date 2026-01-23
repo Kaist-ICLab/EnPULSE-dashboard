@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "flowbite-react";
 import useCampaignConfigEdit from "@/hooks/create/useCampaignConfigEdit";
-import QuestionList from "@/components/create/Form/QuestionList";
+import QuestionList from "@/components/configuration/form/QuestionList";
 
 export default function SurveyQuestionsPage() {
     const params = useParams();
@@ -24,7 +24,6 @@ export default function SurveyQuestionsPage() {
     return (
         <div className="w-full flex flex-col gap-6">
             <QuestionList surveyIndex={surveyIndex} />
-
             <div className="flex gap-4">
                 <Button
                     color="gray"

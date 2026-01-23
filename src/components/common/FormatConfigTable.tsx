@@ -169,7 +169,6 @@ const FormatConfigTable: React.FC<{
                 <FieldMappingEditor
                     fieldName={currentTableFields[editingFieldIdx]?.name || ''}
                     initialMapping={currentTableFields[editingFieldIdx]?.mapping || []}
-                    isOpen={editingFieldIdx !== null}
                     onClose={() => setEditingFieldIdx(null)}
                     onSave={(mapping) => {
                         onMappingChange?.(editingFieldIdx, mapping);

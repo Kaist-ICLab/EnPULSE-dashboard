@@ -1,12 +1,12 @@
 'use client'
 
 import { Button, TextInput } from "flowbite-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import RemoveIconButton from "../configuration/RemoveIconButton";
 
 interface FieldMappingEditorProps {
     fieldName: string;
     initialMapping: { value: string, display: string }[];
-    isOpen: boolean;
     onClose: () => void;
     onSave: (mapping: { value: string, display: string }[]) => void;
 }
@@ -14,31 +14,16 @@ interface FieldMappingEditorProps {
 const FieldMappingEditor: React.FC<FieldMappingEditorProps> = ({
     fieldName,
     initialMapping,
-    isOpen,
     onClose,
     onSave
 }) => {
-    const [mapping, setMapping] = useState<{ value: string, display: string }[]>([]);
-
-    useEffect(() => {
-        if (isOpen) {
-            setMapping(initialMapping ? [...initialMapping] : []);
-        }
-    }, [isOpen, initialMapping]);
-
-    if (!isOpen) return null;
+    const [mapping, setMapping] = useState<{ value: string, display: string }[]>(initialMapping ? [...initialMapping] : []);
 
     return (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl max-h-[80vh] flex flex-col">
                 <div className="p-4 bg-gray-100 rounded-t-lg flex justify-between items-center">
                     <h3 className="font-semibold text-lg">Edit Mapping - {fieldName}</h3>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700"
-                    >
-                        <span className="icon-[humbleicons--times] w-5 h-5 cursor-pointer"></span>
-                    </button>
                 </div>
                 <div className="p-4 flex-1 overflow-auto">
                     <div className="mb-4">
@@ -48,7 +33,7 @@ const FieldMappingEditor: React.FC<FieldMappingEditorProps> = ({
                             <div className="w-10"></div>
                         </div>
                         {mapping.map((item, idx) => (
-                            <div key={idx} className="flex gap-2 mb-2">
+                            <div key={idx} className="flex gap-2 mb-2 items-center">
                                 <TextInput
                                     value={item.value}
                                     onChange={(e) => {
@@ -69,15 +54,13 @@ const FieldMappingEditor: React.FC<FieldMappingEditorProps> = ({
                                     className="flex-1"
                                     placeholder="Display"
                                 />
-                                <button
+                                <RemoveIconButton
                                     onClick={() => {
                                         const newMapping = mapping.filter((_, i) => i !== idx);
                                         setMapping(newMapping);
                                     }}
-                                    className="w-10 flex items-center justify-center text-gray-500 hover:text-red-500 cursor-pointer"
-                                >
-                                    <span className="icon-[humbleicons--times] w-4 h-4"></span>
-                                </button>
+                                    size="sm"
+                                />
                             </div>
                         ))}
                         <Button

@@ -14,6 +14,7 @@ export interface SurveyQuestion {
     answer_type: AnswerType;
     is_mandatory: boolean;
     trigger?: Trigger;
+    options?: SurveyQuestionOption[];
 }
 
 export interface SurveyQuestionOption {

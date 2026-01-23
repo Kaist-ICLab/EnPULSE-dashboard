@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
 import { usePathname } from "next/navigation";
-import AddSensorButtons from "./AddSensorButtons";
-import AddSurveyButton from "./AddSurveyButton";
+import AddSensorButtons from "@/components/configuration/header/AddSensorButtons";
+import AddSurveyButton from "@/components/configuration/header/AddSurveyButton";
 import SurveyQuestionHeader from "./SurveyQuestionHeader";
 
 const CampaignCreateHeader: React.FC = () => {
@@ -14,7 +14,7 @@ const CampaignCreateHeader: React.FC = () => {
         if (pathname.includes('/passive-sensing')) {
             // Check if we're on a question editing page
             if (pathname.match(/\/passive-sensing\/\d+$/)) {
-                return "Survey Questions for";
+                return "Questions for";
             }
             return "Passive Sensing";
         }

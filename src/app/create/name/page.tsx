@@ -1,8 +1,9 @@
 "use client"
-import { Button, Card } from "flowbite-react";
-import CampaignName from "@/components/create/Form/CampaignNameForm";
+import { Card } from "flowbite-react";
+import CampaignName from "@/components/configuration/form/CampaignNameForm";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
 
 const Page: React.FC = () => {
     const [campaignName, setCampaignName] = useState("");
@@ -19,12 +20,12 @@ const Page: React.FC = () => {
                 />
             </Card>
             <div className="w-full gap-4 flex my-5">
-                <Button className="grow" size="lg" color="gray" onClick={() => router.push("/campaigns")}>
-                    Cancel
-                </Button>
-                <Button className="grow" size="lg" disabled={!isValidName} onClick={() => router.push("/create/active-sensing")}>
-                    Next
-                </Button>
+                <PrevNextNavigation
+                    onPrevClick={() => router.push("/campaigns")}
+                    onNextClick={() => router.push("/create/active-sensing")}
+                    nextLabel="Next"
+                    disabled={!isValidName}
+                />
             </div>
         </>
     );

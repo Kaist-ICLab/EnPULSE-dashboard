@@ -1,5 +1,5 @@
-import CampaignCreateHeader from "@/components/create/CampaignCreateHeader";
-import CampaignCreateSidebar from "@/components/create/CampaignCreateSidebar";
+import CampaignCreateHeader from "@/components/configuration/header/CampaignCreateHeader";
+import CampaignCreateSidebar from "@/components/configuration/CampaignCreateSidebar";
 import NewCampaignTablesInitProvider from "@/components/NewCampaignTablesInitProvider";
 
 export default async function CampaignLayout({

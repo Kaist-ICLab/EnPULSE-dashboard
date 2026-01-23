@@ -1,7 +1,7 @@
 "use client"
-import { Button } from "flowbite-react";
-import ActiveSensingForm from "@/components/create/Form/ActiveSensingForm";
+import ActiveSensingForm from "@/components/configuration/form/ActiveSensingForm";
 import { useRouter } from "next/navigation";
+import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
 
 const Page: React.FC = () => {
     const router = useRouter();
@@ -9,12 +9,10 @@ const Page: React.FC = () => {
         <>
             <ActiveSensingForm />
             <div className="w-full gap-4 flex my-5 pb-5">
-                <Button className="grow" size="lg" color="gray" onClick={() => router.push("/create/name")}>
-                    Previous
-                </Button>
-                <Button className="grow" size="lg" onClick={() => router.push("/create/passive-sensing")}>
-                    Next
-                </Button>
+                <PrevNextNavigation
+                    onPrevClick={() => router.push("/create/name")}
+                    onNextClick={() => router.push("/create/passive-sensing")}
+                />
             </div>
         </>
     );
