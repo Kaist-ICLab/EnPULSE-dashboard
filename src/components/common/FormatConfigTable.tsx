@@ -7,7 +7,6 @@ import FieldMappingEditor from "./FieldMappingEditor";
 
 const FormatConfigTable: React.FC<{
     currentTableFields: CampaignTableField[];
-    // setChangedFields: (callback: (prev: Map<string, string>) => Map<string, string>) => void;
     canAddField: boolean | undefined;
     onFieldChange: (fieldId: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void;
     addField: (field: CampaignTableField) => void,
@@ -42,13 +41,13 @@ const FormatConfigTable: React.FC<{
                     </TableHead>
                     <TableBody>
                         {currentTableFields.map((field, fieldIdx) => (
-                            <TableRow key={field.id} className="bg-white text-gray-900">
+                            <TableRow key={fieldIdx} className="bg-white text-gray-900">
                                 <TableCell>{field.name}</TableCell>
                                 <TableCell>
                                     <select
                                         className="w-[120px] bg-transparent focus:outline-none shadow-none"
                                         defaultValue={field.field_role}
-                                        onChange={(e) => onFieldChange(field.id, 'role', e.target.value as FieldRole)}
+                                        onChange={(e) => onFieldChange(fieldIdx, 'role', e.target.value as FieldRole)}
                                     >
                                         {FieldRoleOption.map((option) => (
                                             <option key={option} value={option}>
@@ -62,7 +61,7 @@ const FormatConfigTable: React.FC<{
                                         className="w-[120px] bg-transparent focus:outline-none shadow-none"
                                         defaultValue={field.field_type}
                                         onChange={(e) => {
-                                            onFieldChange(field.id, 'type', e.target.value as FieldType)
+                                            onFieldChange(fieldIdx, 'type', e.target.value as FieldType)
                                         }}
                                     >
                                         {FieldTypeOption.map((option) => (
@@ -96,7 +95,7 @@ const FormatConfigTable: React.FC<{
                                         className="w-[120px] bg-transparent focus:outline-none shadow-none border-b-2 border-gray-200"
                                         onChange={e => setFieldName(e.target.value)}
                                         onBlur={() => {
-                                            if (fieldName) addField({ id: -1, campaign_id: -1, campaign_table_id: -1, name: fieldName, field_role: fieldRole, field_type: fieldType })
+                                            if (fieldName) addField({ campaign_table_id: -1, name: fieldName, field_role: fieldRole, field_type: fieldType })
                                             setIsFieldInputShown(false)
                                         }}
                                     />
@@ -168,7 +167,7 @@ const FormatConfigTable: React.FC<{
             {editingFieldIdx !== null && (
                 <FieldMappingEditor
                     fieldName={currentTableFields[editingFieldIdx]?.name || ''}
-                    initialMapping={currentTableFields[editingFieldIdx]?.mapping || []}
+                    initialMapping={currentTableFields[editingFieldIdx]?.campaign_table_field_mapping || []}
                     onClose={() => setEditingFieldIdx(null)}
                     onSave={(mapping) => {
                         onMappingChange?.(editingFieldIdx, mapping);

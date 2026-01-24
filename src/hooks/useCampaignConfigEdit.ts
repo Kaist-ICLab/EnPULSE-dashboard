@@ -68,7 +68,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
 
     addTable: (name: string, description: string, fields: CampaignTableField[] = []) => {
         set((state) => {
-            const newTables = [...state.tables, { id: -1, campaign_id: -1, name, description, daily_count_max: 0, campaign_table_field: fields, is_custom: true }];
+            const newTables = [...state.tables, { campaign_id: -1, name, description, daily_count_max: 0, campaign_table_field: fields, is_custom: true }];
             return {
                 tables: newTables,
                 availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
@@ -143,7 +143,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     setFieldMapping: (tableIndex: number, fieldIdx: number, mapping: { value: string, display: string }[]) => {
         set((state) => {
             const newTables = structuredClone(state.tables);
-            newTables[tableIndex].campaign_table_field[fieldIdx] = { ...newTables[tableIndex].campaign_table_field[fieldIdx], mapping };
+            newTables[tableIndex].campaign_table_field[fieldIdx] = { ...newTables[tableIndex].campaign_table_field[fieldIdx], campaign_table_field_mapping: mapping };
             return {
                 tables: newTables,
                 availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
@@ -172,7 +172,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     addSurvey: () => {
         set((state) => {
             const newSurvey: Survey = {
-                id: -1,
                 campaign_id: -1,
                 title: `Survey ${state.surveys.length + 1}`,
                 description: "",
@@ -286,12 +285,8 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         set((state) => {
             const newSurveys = structuredClone(state.surveys);
             const question = newSurveys[surveyIndex].survey_question[questionIndex];
-            if (!question.survey_question_option) {
-                question.survey_question_option = [];
-            }
             const newOption: SurveyQuestionOption = {
-                id: -1, // Temporary ID
-                question_id: question.id,
+                question_id: -1,
                 value: `option_${question.survey_question_option.length + 1}`,
                 display: `Option ${question.survey_question_option.length + 1}`,
                 allow_free_response: false,
@@ -305,9 +300,8 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         set((state) => {
             const newSurveys = structuredClone(state.surveys);
             const question = newSurveys[surveyIndex].survey_question[questionIndex];
-            if (question.survey_question_option) {
-                question.survey_question_option = question.survey_question_option.filter((_, i) => i !== optionIndex);
-            }
+            question.survey_question_option = question.survey_question_option.filter((_, i) => i !== optionIndex);
+
             return { surveys: newSurveys };
         });
     },
@@ -316,9 +310,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         set((state) => {
             const newSurveys = structuredClone(state.surveys);
             const question = newSurveys[surveyIndex].survey_question[questionIndex];
-            if (question.survey_question_option && question.survey_question_option[optionIndex]) {
-                question.survey_question_option[optionIndex] = { ...question.survey_question_option[optionIndex], ...updates };
-            }
+            question.survey_question_option[optionIndex] = { ...question.survey_question_option[optionIndex], ...updates };
             return { surveys: newSurveys };
         });
     },
@@ -327,10 +319,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         set((state) => {
             const newSurveys = structuredClone(state.surveys);
             const question = newSurveys[surveyIndex].survey_question[questionIndex];
-            if (!question.survey_question_option) {
-                return state;
-            }
-
             const options = [...question.survey_question_option];
             const newIndex = direction === 'up' ? optionIndex - 1 : optionIndex + 1;
 

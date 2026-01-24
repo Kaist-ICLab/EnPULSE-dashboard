@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { Campaign, CampaignTable, CampaignTableField } from '@/types/campaign';
+import { DeepRequired } from '@/utils/type';
 
 export const getCampaignList = async (): Promise<{ id: number, name: string }[]> => {
     const { data, error } = await supabase
@@ -7,10 +8,10 @@ export const getCampaignList = async (): Promise<{ id: number, name: string }[]>
         .select(`id, name`)
         .order('id')
     if (error) throw new Error(error.message);
-    return data as Campaign[];
+    return data;
 }
 
-export const getCampaignInfo = async (campaignId: number): Promise<Campaign> => {
+export const getCampaignInfo = async (campaignId: number): Promise<DeepRequired<Campaign>> => {
     const { data, error } = await supabase
         .from('campaigns')
         .select(`*, profiles(*), survey(*, survey_question(*, survey_question_option(*))),campaign_table(*, campaign_table_field(*, campaign_table_field_mapping(*)))`)
@@ -18,16 +19,19 @@ export const getCampaignInfo = async (campaignId: number): Promise<Campaign> => 
         .single()
 
     if (error) throw new Error(error.message);
-    return data as Campaign;
+    return data as DeepRequired<Campaign>;
 }
 
 export const upsertCampaign = async (campaign: Campaign): Promise<number> => {
+    if (campaign.id === -1) delete campaign.id;
+
     const { data, error } = await supabase
         .from('campaigns')
         .upsert(campaign)
         .select()
 
     if (error) throw new Error(error.message);
+
     return data[0].id;
 }
 

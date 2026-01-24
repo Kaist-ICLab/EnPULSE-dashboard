@@ -5,6 +5,7 @@ import { CampaignParticipant, CampaignTable } from '@/types/campaign';
 import { ChartType } from '@/types/chart';
 import { BucketCategoricalData, BucketNumericalData, groupByTimestamp } from '@/lib/supabaseHelper';
 import dayjs from 'dayjs';
+import { DeepRequired } from '@/utils/type';
 
 const DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ssZ'
 
@@ -68,7 +69,7 @@ export async function getDailyStatCount(campaignId: number) {
     return Math.max(count ?? 1, 1)
 }
 
-export async function getSensorComparisonData(date: Date, participant: CampaignParticipant | undefined, tables: CampaignTable[], timeRange: { start: number, end: number }, bucketSize: string) {
+export async function getSensorComparisonData(date: Date, participant: CampaignParticipant | undefined, tables: DeepRequired<CampaignTable>[], timeRange: { start: number, end: number }, bucketSize: string) {
     if (participant == undefined || tables.length == 0) return [];
 
     const timeGap = timeRange.end - timeRange.start;
@@ -121,7 +122,7 @@ export async function getSensorComparisonData(date: Date, participant: CampaignP
     })
 }
 
-export async function getPersonComparisonData(date: Date, participants: CampaignParticipant[], table: CampaignTable | undefined, timeRange: { start: number, end: number }, bucketSize: string) {
+export async function getPersonComparisonData(date: Date, participants: CampaignParticipant[], table: DeepRequired<CampaignTable> | undefined, timeRange: { start: number, end: number }, bucketSize: string) {
     if (participants.length == 0 || table == undefined) return [];
 
     const timeGap = timeRange.end - timeRange.start;
@@ -168,7 +169,7 @@ export async function getPersonComparisonData(date: Date, participants: Campaign
     }
 }
 
-export async function getDaysComparisonData(date: Date, participant: CampaignParticipant | undefined, table: CampaignTable | undefined, timeRange: { start: number, end: number }, bucketSize: string) {
+export async function getDaysComparisonData(date: Date, participant: CampaignParticipant | undefined, table: DeepRequired<CampaignTable> | undefined, timeRange: { start: number, end: number }, bucketSize: string) {
     if (participant == undefined || table == undefined) return [];
     const timeGap = timeRange.end - timeRange.start;
     const field = table.campaign_table_field[0]

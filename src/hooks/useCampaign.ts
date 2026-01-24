@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { CampaignTable, CampaignTableField, CampaignParticipant } from '@/types/campaign';
-import { getCampaignList, getCampaignInfo, updateCampaignName, updateCampaignTable, updateCampaignTableFields } from '@/services/campaignService';
+import { getCampaignList, getCampaignInfo } from '@/services/campaignService';
+import { DeepRequired } from '@/utils/type';
 
 export type ResponseStatus = 'loading' | 'ok' | 'error';
 interface Response {
@@ -10,9 +11,9 @@ interface Response {
 
 interface CampaignState {
     campaignList: Map<number, string>;
-    campaignTables: Map<number, CampaignTable>;
-    campaignTableFields: Map<number, CampaignTableField>;
-    campaignParticipants: Map<string, CampaignParticipant>;
+    campaignTables: Map<number, DeepRequired<CampaignTable>>;
+    campaignTableFields: Map<number, DeepRequired<CampaignTableField>>;
+    campaignParticipants: Map<string, DeepRequired<CampaignParticipant>>;
     selectedCampaignId: number | null;
     responses: {
         fetchCampaigns: Response,
@@ -90,54 +91,19 @@ const useCampaign = create<CampaignState>((set, get) => ({
             set((state) => ({ responses: { ...state.responses, selectCampaign: { status: 'error', message: "Error selecting campaign" } } }));
         }
     },
+
+    /* **********
+     * This feature will be move to useCampaignConfigEdit
+     ********** */
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     updateCampaignName: async (campaignId: number, name: string) => {
-        try {
-            set((state) => ({ responses: { ...state.responses, updateCampaignName: { status: 'loading', message: "Updating campaign name..." } } }));
-            await updateCampaignName(campaignId, name);
-            set((state) => ({
-                responses: { ...state.responses, updateCampaignName: { status: 'ok', message: null } },
-                campaignList: new Map(state.campaignList.set(campaignId, name))
-            }));
-        } catch {
-            set((state) => ({ responses: { ...state.responses, updateCampaignName: { status: 'error', message: "Error updating campaign name" } } }));
-        }
     },
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     updateCampaignTable: async (tableId: number, dailyCountMax: number) => {
-        try {
-            set((state) => ({ responses: { ...state.responses, updateCampaignTable: { status: 'loading', message: "Updating campaign table..." } } }));
-            await updateCampaignTable(tableId, dailyCountMax);
-            set((state) => ({
-                campaignTables: new Map(state.campaignTables.set(tableId, { ...state.campaignTables.get(tableId)!, daily_count_max: dailyCountMax })),
-                responses: { ...state.responses, updateCampaignTable: { status: 'ok', message: null } },
-            }));
-        } catch {
-            set((state) => ({
-                responses: {
-                    ...state.responses,
-                    updateCampaignTable: { status: 'error', message: "Error updating campaign table" }
-                }
-            }));
-        }
     },
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     updateCampaignField: async (changes: Partial<CampaignTableField>[]) => {
-        try {
-            set((state) => ({ responses: { ...state.responses, updateCampaignField: { status: 'loading', message: "Updating campaign field..." } } }));
-            await updateCampaignTableFields(changes);
-            set((state) => ({
-                campaignTableFields: new Map(Array.from(state.campaignTableFields.entries()).map(([id, campaignTableField]: [number, CampaignTableField]) => {
-                    const change = changes.find(change => change.id === id);
-                    if (change) {
-                        return [id, { ...campaignTableField, ...change }];
-                    }
-                    return [id, campaignTableField];
-                })),
-                responses: { ...state.responses, updateCampaignField: { status: 'ok', message: null } },
-            }));
-        } catch {
-            set((state) => ({
-                responses: { ...state.responses, updateCampaignField: { status: 'error', message: "Error updating campaign field" } }
-            }));
-        }
+
     },
 }));
 

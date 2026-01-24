@@ -1,31 +1,18 @@
-export interface Survey {
-    id: number;
-    campaign_id: number;
-    title: string;
-    description: string;
+import { Database } from "@/lib/schema";
+
+export type Survey = Database['public']['Tables']['survey']['Insert'] & {
     schedule_method: ScheduleMethod;
     survey_question: SurveyQuestion[];
 }
 
-export interface SurveyQuestion {
-    id: number;
-    survey_id: number;
-    question: string;
-    answer_type: AnswerType;
-    is_mandatory: boolean;
-    trigger: Trigger | null;
+export type SurveyQuestion = Database['public']['Tables']['survey_question']['Insert'] & {
     survey_question_option: SurveyQuestionOption[];
+    trigger: Trigger | null;
 }
 
-export interface SurveyQuestionOption {
-    id: number;
-    question_id: number;
-    value: string;
-    display: string;
-    allow_free_response: boolean;
-}
+export type SurveyQuestionOption = Database['public']['Tables']['survey_question_option']['Insert']
 
-export type AnswerType = 'checkbox' | 'radio' | 'text' | 'number'
+export type AnswerType = Database['public']['Enums']['survey_question_type']
 
 // Survey Schedule Methods
 export type ESM = {

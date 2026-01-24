@@ -360,13 +360,6 @@ export type Database = {
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "campaign_table_field_campaign_id_fkey"
-                        columns: ["campaign_id"]
-                        isOneToOne: false
-                        referencedRelation: "campaigns"
-                        referencedColumns: ["id"]
-                    },
-                    {
                         foreignKeyName: "campaign_table_field_campaign_table_id_fkey"
                         columns: ["campaign_table_id"]
                         isOneToOne: false
@@ -477,7 +470,7 @@ export type Database = {
                     end_time_of_day?: number
                     id?: number
                     name: string
-                    start_time_of_day: number
+                    start_time_of_day?: number
                 }
                 Update: {
                     created_at?: string | null
@@ -1245,26 +1238,26 @@ export type Database = {
                 Row: {
                     allow_free_response: boolean
                     created_at: string
-                    display: string | null
+                    display: string
                     id: number
                     question_id: number | null
-                    value: string | null
+                    value: string
                 }
                 Insert: {
                     allow_free_response?: boolean
                     created_at?: string
-                    display?: string | null
+                    display: string
                     id?: number
                     question_id?: number | null
-                    value?: string | null
+                    value: string
                 }
                 Update: {
                     allow_free_response?: boolean
                     created_at?: string
-                    display?: string | null
+                    display?: string
                     id?: number
                     question_id?: number | null
-                    value?: string | null
+                    value?: string
                 }
                 Relationships: [
                     {

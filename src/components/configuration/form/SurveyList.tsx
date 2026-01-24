@@ -2,7 +2,7 @@
 
 import { Card, Button } from "flowbite-react";
 import { useRouter } from "next/navigation";
-import { ScheduleMethod, SurveyQuestion } from "@/types/survey";
+import { ScheduleMethod, Survey } from "@/types/survey";
 
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import ScheduleMethodConfig from "./ScheduleMethodConfig";
@@ -36,17 +36,16 @@ const SurveyList: React.FC = () => {
     );
 };
 
-interface SurveyCardProps {
-    survey: { title: string; description: string; schedule_method: ScheduleMethod; questions?: SurveyQuestion[] };
+const SurveyCard: React.FC<{
+    survey: Survey;
     surveyIndex: number;
     onRemove: () => void;
     onTitleChange: (title: string) => void;
     onDescriptionChange: (description: string) => void;
     onScheduleMethodChange: (scheduleMethod: ScheduleMethod) => void;
-}
-
-const SurveyCard: React.FC<SurveyCardProps> = ({ survey, surveyIndex, onRemove, onTitleChange, onDescriptionChange, onScheduleMethodChange }) => {
+}> = ({ survey, surveyIndex, onRemove, onTitleChange, onDescriptionChange, onScheduleMethodChange }) => {
     const router = useRouter();
+
 
     return (
         <Card>
@@ -84,7 +83,7 @@ const SurveyCard: React.FC<SurveyCardProps> = ({ survey, surveyIndex, onRemove, 
                     className="w-full"
                 >
                     <span className="icon-[material-symbols--edit] mr-2"></span>
-                    Edit Questions ({survey.questions?.length || 0})
+                    Edit Questions ({survey.survey_question?.length || 0})
                 </Button>
             </div>
         </Card>

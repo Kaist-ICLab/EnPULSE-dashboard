@@ -1,10 +1,11 @@
 import { useMemo, useState, useCallback } from "react";
 import { CampaignTable, CampaignTableField } from "@/types/campaign";
+import { DeepRequired } from "@/utils/type";
 
 const useSensorDropdownState = (
     selectedFieldIds: number[],
-    campaignTables: Map<number, CampaignTable>,
-    campaignTableFields: Map<number, CampaignTableField>,
+    campaignTables: Map<number, DeepRequired<CampaignTable>>,
+    campaignTableFields: Map<number, DeepRequired<CampaignTableField>>,
     setSelectedFieldIds: (fieldIds: number[]) => void,
     isMultipleSelection: boolean,
 ) => {

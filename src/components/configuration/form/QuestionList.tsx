@@ -52,7 +52,7 @@ const QuestionList: React.FC<QuestionListProps> = ({ surveyIndex }) => {
     );
 };
 
-interface QuestionCardProps {
+const QuestionCard: React.FC<{
     question: SurveyQuestion;
     questionIndex: number;
     surveyIndex: number;
@@ -66,9 +66,7 @@ interface QuestionCardProps {
     onUpdateOption: (optionIndex: number, updates: Partial<SurveyQuestionOption>) => void;
     onMoveOptionUp: (optionIndex: number) => void;
     onMoveOptionDown: (optionIndex: number) => void;
-}
-
-const QuestionCard: React.FC<QuestionCardProps> = ({ question, questionIndex, totalQuestions, onRemove, onUpdate, onMoveUp, onMoveDown, onAddOption, onRemoveOption, onUpdateOption, onMoveOptionUp, onMoveOptionDown }) => {
+}> = ({ question, questionIndex, totalQuestions, onRemove, onUpdate, onMoveUp, onMoveDown, onAddOption, onRemoveOption, onUpdateOption, onMoveOptionUp, onMoveOptionDown }) => {
     const answerTypeOptions: { value: AnswerType; label: string }[] = [
         { value: 'text', label: 'Text' },
         { value: 'number', label: 'Number' },
