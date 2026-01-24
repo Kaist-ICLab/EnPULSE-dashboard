@@ -25,7 +25,7 @@ const SensorDropdown: React.FC<{
             dismissOnClick={false}
             onMouseUp={() => setSelectedSensor(-1)}
         >
-            <div className="max-h-64 flex flex-row px-1 py-2 gap-2">
+            <div className="h-64 flex flex-row px-2 py-2 gap-2">
                 <div className="min-w-56 flex flex-col">
                     <div className="overflow-y-auto grow scrollbar-thin">
                         {Array.from(campaignTables.values()).map((table) => (
