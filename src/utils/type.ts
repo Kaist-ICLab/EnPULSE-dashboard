@@ -7,3 +7,5 @@ export type DeepRequired<T> = T extends object
         [P in keyof T]-?: DeepRequired<T[P]>;
     }
     : T;
+
+export type MakeOptional<T, K extends keyof T> = Partial<Pick<T, K>> & Omit<T, K>;

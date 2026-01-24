@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { Campaign, CampaignTable, CampaignTableField } from '@/types/campaign';
-import { DeepRequired } from '@/utils/type';
+import { Survey, SurveyQuestion } from '@/types/survey';
+import { DeepRequired, MakeOptional } from '@/utils/type';
 
 export const getCampaignList = async (): Promise<{ id: number, name: string }[]> => {
     const { data, error } = await supabase
@@ -22,121 +23,149 @@ export const getCampaignInfo = async (campaignId: number): Promise<DeepRequired<
     return data as DeepRequired<Campaign>;
 }
 
-export const upsertCampaign = async (campaign: Campaign): Promise<number> => {
+export const upsertCampaign = async (campaign: Campaign, insertChildTables: boolean = true): Promise<number> => {
     if (campaign.id === -1) delete campaign.id;
+
+    const campaignTable = structuredClone(campaign.campaign_table);
+    const survey = structuredClone(campaign.survey);
+
+    const insertedCampaign: MakeOptional<Campaign, 'campaign_table' | 'survey' | 'profiles'> = structuredClone(campaign);
+    delete insertedCampaign.campaign_table;
+    delete insertedCampaign.survey;
+    delete insertedCampaign.profiles;
 
     const { data, error } = await supabase
         .from('campaigns')
-        .upsert(campaign)
+        .upsert(insertedCampaign)
         .select()
 
     if (error) throw new Error(error.message);
+    const campaignId = data[0].id;
+
+    if (insertChildTables) {
+        const campaignTablePromises = campaignTable.map((ct) => {
+            ct.campaign_id = campaignId;
+            upsertCampaignTable(ct, insertChildTables);
+        })
+        const surveyPromises = survey.map((s) => {
+            s.campaign_id = campaignId;
+            upsertSurvey(s)
+        })
+
+        await Promise.all(campaignTablePromises);
+        await Promise.all(surveyPromises);
+    }
 
     return data[0].id;
 }
 
-export const updateCampaignName = async (campaignId: number, campaignName: string): Promise<boolean> => {
-    const { error } = await supabase
-        .from('campaigns')
-        .update({ name: campaignName })
-        .eq('id', campaignId);
+export const upsertCampaignTable = async (campaignTable: CampaignTable, insertChildTables: boolean = true): Promise<void> => {
+    if (campaignTable.id === -1) delete campaignTable.id
 
-    if (error) throw new Error(error.message);
-    return true;
-}
+    const campaignTableFields = structuredClone(campaignTable.campaign_table_field);
 
-export const updateCampaignTable = async (campaignTableId: number, campaignTableDailyCountMax: number): Promise<boolean> => {
-    const { error } = await supabase
-        .from('campaign_table')
-        .update({ daily_count_max: campaignTableDailyCountMax })
-        .eq('id', campaignTableId);
+    const insertedTable: MakeOptional<CampaignTable, 'campaign_table_field'> = structuredClone(campaignTable);
+    delete insertedTable.campaign_table_field;
 
-    if (error) throw new Error(error.message);
-    return true;
-}
-
-export const updateCampaignField = async (fieldId: number, changes: Partial<CampaignTableField>): Promise<boolean> => {
-    const { error } = await supabase
-        .from('campaign_table_field')
-        .update(changes)
-        .eq('id', fieldId);
-
-    if (error) throw new Error(error.message);
-    return true;
-}
-
-export const createCampaign = async (campaign: Omit<Campaign, 'id'>): Promise<number> => {
     const { data, error } = await supabase
-        .from('campaigns')
-        .insert(campaign)
+        .from('campaign_table')
+        .upsert(insertedTable)
         .select()
 
     if (error) throw new Error(error.message);
-    return data[0].id
+    const insertedTableId = data[0].id;
+
+    if (insertChildTables) {
+        const campaignTableFieldsPromises = campaignTableFields.map((ctf) => {
+            ctf.campaign_table_id = insertedTableId;
+            upsertCampaignTableField(ctf, insertChildTables);
+        })
+
+        await Promise.all(campaignTableFieldsPromises);
+    }
 }
 
-export const createCampaignTable = async (campainTables: Omit<CampaignTable, 'id'>[]): Promise<number[]> => {
-    const promises = campainTables.map(ct => {
-        return supabase.from('campaign_table')
-            .insert(ct)
+export const upsertCampaignTableField = async (campaignTableField: CampaignTableField, insertChildTables: boolean = true): Promise<void> => {
+    if (campaignTableField.id === -1) delete campaignTableField.id
+
+    const insertedField: MakeOptional<CampaignTableField, 'campaign_table_field_mapping'> = structuredClone(campaignTableField);
+    delete insertedField.campaign_table_field_mapping;
+
+    const { data, error } = await supabase
+        .from('campaign_table_field')
+        .upsert(insertedField)
+        .select()
+
+    if (error) throw new Error(error.message);
+    const insertedFieldId = data[0].id;
+
+    // TODO: fix field mapping being not inserted
+    if (insertChildTables) {
+        campaignTableField.campaign_table_field_mapping.forEach((c) => {
+            if (c.id === -1) delete c.id;
+            c.field_id = insertedFieldId;
+        })
+
+        supabase.from('campaign_table_field_mapping')
+            .upsert(campaignTableField.campaign_table_field_mapping)
             .select()
-    })
-
-    const results = await Promise.allSettled(promises)
-    const errors = results
-        .filter(result => result.status === 'rejected')
-        .map(result => result.reason);
-
-    if (errors.length > 0) {
-        console.error(errors);
-        throw new Error(errors.join(', '));
     }
-
-    return results
-        .filter(result => result.status === 'fulfilled')
-        .map(result => result.value.data?.at(0)?.id as number);
 }
 
-export const createCampaignTableFields = async (campainTableFields: CampaignTableField[]): Promise<boolean> => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const promises = campainTableFields.map(({ id, ...others }) => {
-        return supabase.from('campaign_table_field')
-            .insert(others)
-            .select()
-    })
+export const upsertSurvey = async (survey: Survey, insertChildTables: boolean = true): Promise<void> => {
+    if (survey.id === -1) delete survey.id
 
-    const results = await Promise.allSettled(promises)
-    const errors = results
-        .filter(result => result.status === 'rejected')
-        .map(result => result.reason);
+    const surveyQuestions = structuredClone(survey.survey_question);
 
-    if (errors.length > 0) {
-        console.error(errors);
-        throw new Error(errors.join(', '));
+    const insertedSurvey: MakeOptional<Survey, 'survey_question'> = structuredClone(survey);
+    delete insertedSurvey.survey_question;
+
+    const { data, error } = await supabase
+        .from('survey')
+        .upsert(insertedSurvey)
+        .select()
+
+    if (error) throw new Error(error.message);
+    const insertedSurveyId = data[0].id;
+
+    if (insertChildTables) {
+        const surveyQuestionsPromises = surveyQuestions.map((sq) => {
+            sq.survey_id = insertedSurveyId;
+            upsertSurveyQuestion(sq, insertChildTables);
+        })
+
+        await Promise.all(surveyQuestionsPromises);
     }
-
-    return true
 }
 
-export const updateCampaignTableFields = async (changes: Partial<CampaignTableField>[]): Promise<boolean> => {
-    const promises = changes.map(({ id, ...change }) => {
-        if (!id) throw new Error('Field id is required');
-        return supabase.from('campaign_table_field').update(
-            change
-        ).eq('id', id)
-    })
-    const results = await Promise.allSettled(promises);
-    // error만 모으기
-    const errors = results
-        .filter(result => result.status === 'rejected')
-        .map(result => result.reason);
+export const upsertSurveyQuestion = async (surveyQuestion: SurveyQuestion, insertChildTables: boolean = true): Promise<void> => {
+    if (surveyQuestion.id === -1) delete surveyQuestion.id
 
-    if (errors.length > 0) {
-        console.error(errors);
-        throw new Error(errors.join(', '));
+    const surveyQuestionOptions = structuredClone(surveyQuestion.survey_question_option);
+
+    const insertedQuestion: MakeOptional<SurveyQuestion, 'survey_question_option'> = structuredClone(surveyQuestion);
+    delete insertedQuestion.survey_question_option;
+
+    const { data, error } = await supabase
+        .from('survey_question')
+        .upsert(insertedQuestion)
+        .select()
+
+    if (error) throw new Error(error.message);
+    const insertedQuestionId = data[0].id;
+
+    if (insertChildTables) {
+        const surveyQuestionOptionsPromises = surveyQuestionOptions.map((sqo) => {
+            sqo.question_id = insertedQuestionId;
+            if (sqo.id === -1) delete sqo.id;
+
+            sqo.question_id = insertedQuestionId;
+            return supabase.from('survey_question_option')
+                .upsert(sqo)
+        })
+
+        await Promise.all(surveyQuestionOptionsPromises);
     }
-
-    return true;
 }
 
 export const checkCampaignNameValidity = async (campaignName: string): Promise<boolean> => {

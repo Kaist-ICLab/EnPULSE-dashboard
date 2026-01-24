@@ -1,7 +1,7 @@
 import { CampaignTable, CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
 import { ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption } from "@/types/survey";
 import { create } from "zustand";
-import { templateTable } from "./create/sensorTemplate";
+import { templateTable } from "./configuration/sensorTemplate";
 
 interface PassiveSensingConfig {
     startTime: number; // milliseconds since midnight
@@ -101,9 +101,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     addField: (tableIndex: number, field: CampaignTableField) => {
         set((state) => {
             const newTables = structuredClone(state.tables);
-            const table = newTables[tableIndex];
-            table.campaign_table_field.forEach((v, i) => { v.id = i });
-            field.id = table.campaign_table_field.length;
+
             newTables[tableIndex].campaign_table_field.push(field);
             return {
                 tables: newTables,
@@ -116,7 +114,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         set((state) => {
             const newTables = structuredClone(state.tables);
             newTables[tableIndex].campaign_table_field.splice(fieldIdx, 1);
-            newTables[tableIndex].campaign_table_field.forEach((v, i) => { v.id = i });
+
             return {
                 tables: newTables,
                 availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
@@ -143,7 +141,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     setFieldMapping: (tableIndex: number, fieldIdx: number, mapping: { value: string, display: string }[]) => {
         set((state) => {
             const newTables = structuredClone(state.tables);
-            newTables[tableIndex].campaign_table_field[fieldIdx] = { ...newTables[tableIndex].campaign_table_field[fieldIdx], campaign_table_field_mapping: mapping };
+            newTables[tableIndex].campaign_table_field[fieldIdx] = { ...newTables[tableIndex].campaign_table_field[fieldIdx], campaign_table_field_mapping: mapping.map(m => ({ value: m.value, display: m.display, field_id: -1 })) };
             return {
                 tables: newTables,
                 availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
@@ -220,7 +218,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         set((state) => {
             const newSurveys = [...state.surveys];
             const newQuestion: SurveyQuestion = {
-                id: -1, // Temporary ID
                 survey_id: -1, // Temporary ID
                 question: `Question ${newSurveys[surveyIndex].survey_question.length + 1}`,
                 answer_type: 'text',

@@ -17,7 +17,9 @@ export type CampaignTable = Database['public']['Tables']['campaign_table']['Inse
 }
 
 export type CampaignTableField = Database['public']['Tables']['campaign_table_field']['Insert'] & {
-    campaign_table_field_mapping?: { value: string, display: string }[];
+    campaign_table_field_mapping: CampaignTableFieldMapping[];
 }
+
+export type CampaignTableFieldMapping = Database['public']['Tables']['campaign_table_field_mapping']['Insert']
 
 export type CampaignParticipant = Database['public']['Tables']['profiles']['Insert']

@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, Label, TextInput } from "flowbite-react";
-import { usePassiveSensingTime } from "@/hooks/create/usePassiveSensingTime";
+import { usePassiveSensingTime } from "@/hooks/configuration/usePassiveSensingTime";
 import SurveyList from "./SurveyList";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 

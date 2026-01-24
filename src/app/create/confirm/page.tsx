@@ -1,13 +1,23 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useUpdateSensorConfig } from "@/hooks/configuration/useUpdateSensorConfig";
+
 import { Card } from "flowbite-react";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
-import { useRouter } from "next/navigation";
 
 const ConfirmPage: React.FC = () => {
     const { campaignName, tables, surveys } = useCampaignConfigEdit();
+    const { updateSensorConfig, isSuccess, campaignId } = useUpdateSensorConfig();
     const router = useRouter();
+
+    useEffect(() => {
+        if (isSuccess && campaignId !== null) {
+            router.push(`/campaigns/${campaignId}`);
+        }
+    }, [isSuccess, campaignId, router]);
 
     return (
         <>
@@ -60,7 +70,7 @@ const ConfirmPage: React.FC = () => {
             </div>
             <PrevNextNavigation
                 onPrevClick={() => router.push("/create/passive-sensing")}
-                onNextClick={() => router.push("/campaigns")}
+                onNextClick={updateSensorConfig}
                 nextLabel="Create Campaign!"
             />
         </>
