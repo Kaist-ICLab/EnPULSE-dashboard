@@ -335,7 +335,6 @@ export type Database = {
             }
             campaign_table_field: {
                 Row: {
-                    campaign_id: number
                     campaign_table_id: number
                     description: string
                     field_role: Database["public"]["Enums"]["field_role"]
@@ -344,7 +343,6 @@ export type Database = {
                     name: string
                 }
                 Insert: {
-                    campaign_id: number
                     campaign_table_id: number
                     description?: string
                     field_role: Database["public"]["Enums"]["field_role"]
@@ -353,7 +351,6 @@ export type Database = {
                     name: string
                 }
                 Update: {
-                    campaign_id?: number
                     campaign_table_id?: number
                     description?: string
                     field_role?: Database["public"]["Enums"]["field_role"]

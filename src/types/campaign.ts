@@ -25,7 +25,6 @@ export interface CampaignTable {
 
 export interface CampaignTableField {
     id: number;
-    campaign_id: number;
     campaign_table_id: number;
     name: string;
     description?: string,

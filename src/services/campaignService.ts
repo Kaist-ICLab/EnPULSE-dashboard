@@ -10,6 +10,27 @@ export const getCampaignList = async (): Promise<{ id: number, name: string }[]>
     return data as Campaign[];
 }
 
+export const getCampaignInfo = async (campaignId: number): Promise<Campaign> => {
+    const { data, error } = await supabase
+        .from('campaigns')
+        .select(`*, profiles(*), campaign_table(*, campaign_table_field(*, campaign_table_field_mapping(*)))`)
+        .eq('id', campaignId)
+        .single()
+
+    if (error) throw new Error(error.message);
+    return data;
+}
+
+export const upsertCampaign = async (campaign: Campaign): Promise<number> => {
+    const { data, error } = await supabase
+        .from('campaigns')
+        .upsert(campaign)
+        .select()
+
+    if (error) throw new Error(error.message);
+    return data[0].id;
+}
+
 export const updateCampaignName = async (campaignId: number, campaignName: string): Promise<boolean> => {
     const { error } = await supabase
         .from('campaigns')
@@ -48,17 +69,6 @@ export const createCampaign = async (campaign: Omit<Campaign, 'id'>): Promise<nu
 
     if (error) throw new Error(error.message);
     return data[0].id
-}
-
-export const getCampaignInfo = async (campaignId: number): Promise<Campaign> => {
-    const { data, error } = await supabase
-        .from('campaigns')
-        .select(`*, profiles(*), campaign_table(*, campaign_table_field(*, campaign_table_field_mapping(*)))`)
-        .eq('id', campaignId)
-        .single()
-
-    if (error) throw new Error(error.message);
-    return data;
 }
 
 export const createCampaignTable = async (campainTables: Omit<CampaignTable, 'id'>[]): Promise<number[]> => {
