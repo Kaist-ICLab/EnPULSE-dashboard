@@ -13,12 +13,12 @@ export const getCampaignList = async (): Promise<{ id: number, name: string }[]>
 export const getCampaignInfo = async (campaignId: number): Promise<Campaign> => {
     const { data, error } = await supabase
         .from('campaigns')
-        .select(`*, profiles(*), campaign_table(*, campaign_table_field(*, campaign_table_field_mapping(*)))`)
+        .select(`*, profiles(*), survey(*, survey_question(*, survey_question_option(*))),campaign_table(*, campaign_table_field(*, campaign_table_field_mapping(*)))`)
         .eq('id', campaignId)
         .single()
 
     if (error) throw new Error(error.message);
-    return data;
+    return data as Campaign;
 }
 
 export const upsertCampaign = async (campaign: Campaign): Promise<number> => {

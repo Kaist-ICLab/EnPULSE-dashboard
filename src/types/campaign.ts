@@ -1,3 +1,5 @@
+import { Survey } from "./survey";
+
 export type FieldType = 'categorical' | 'numerical' | 'datetime';
 export type FieldRole = 'uid' | 'timestamp' | 'data' | 'ignore';
 export const FieldRoleOption: FieldRole[] = ['uid', 'timestamp', 'data', 'ignore'];
@@ -11,6 +13,7 @@ export interface Campaign {
     end_time_of_day: number;
     profiles: CampaignParticipant[];
     campaign_table: CampaignTable[];
+    survey: Survey[];
 }
 
 export interface CampaignTable {
@@ -36,10 +39,4 @@ export interface CampaignTableField {
 export interface CampaignParticipant {
     uuid: string;
     email: string;
-}
-
-export interface CampaignTableFieldWithTable extends CampaignTableField {
-    table_id: number;
-    table_name: string;
-    display_name: string;
 }

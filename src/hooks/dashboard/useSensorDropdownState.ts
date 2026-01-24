@@ -4,21 +4,19 @@ import { CampaignTable, CampaignTableField } from "@/types/campaign";
 const useSensorDropdownState = (
     selectedFieldIds: number[],
     campaignTables: Map<number, CampaignTable>,
-    tableFields: CampaignTableField[],
+    campaignTableFields: Map<number, CampaignTableField>,
     setSelectedFieldIds: (fieldIds: number[]) => void,
     isMultipleSelection: boolean,
 ) => {
     const [selectedSensor, setSelectedSensor] = useState(-1);
-
-    const selectedFields = useMemo(() => tableFields.filter(field => selectedFieldIds.includes(field.id)), [selectedFieldIds, tableFields]);
+    const selectedFields = useMemo(() => selectedFieldIds.map(id => campaignTableFields.get(id)).filter(field => field != undefined), [selectedFieldIds, campaignTableFields]);
 
     const dropdownLabel = useMemo(() => {
         if (selectedFieldIds.length == 0) {
             return "Select Sensor";
         }
 
-        const displayedField = tableFields.find(field => field.id == selectedFieldIds[0]);
-
+        const displayedField = campaignTableFields.get(selectedFieldIds[0])
         if (displayedField == undefined) {
             return "Select Sensor";
         }
@@ -30,28 +28,25 @@ const useSensorDropdownState = (
         } else {
             return `${tableName} - ${displayedField?.name} + ${selectedFieldIds.length - 1} more`;
         }
-    }, [selectedFieldIds, tableFields, campaignTables]);
+    }, [selectedFieldIds, campaignTableFields, campaignTables]);
 
     const isAllSelected = useMemo(() => {
         return new Map<number, boolean>(
             Array.from(campaignTables.values()).map((table) => {
-                const allSelected = tableFields
-                    .filter(field => field.campaign_table_id === table.id)
-                    .every(field => selectedFieldIds.includes(field.id));
+                const allSelected = table.campaign_table_field.every(field => selectedFieldIds.includes(field.id));
                 return [table.id, allSelected];
             })
         );
-    }, [selectedFieldIds, tableFields, campaignTables]);
+    }, [selectedFieldIds, campaignTables]);
 
     const selectedCountByTable = useMemo(() => {
-        const counts = new Map<number, number>();
-        tableFields.forEach(field => {
-            if (selectedFieldIds.includes(field.id)) {
-                counts.set(field.campaign_table_id, (counts.get(field.campaign_table_id) || 0) + 1);
-            }
-        });
-        return counts;
-    }, [tableFields, selectedFieldIds]);
+        return new Map<number, number>(
+            Array.from(campaignTables.values()).map((table) => {
+                const selectedCount = table.campaign_table_field.filter(field => selectedFieldIds.includes(field.id)).length;
+                return [table.id, selectedCount];
+            })
+        );
+    }, [selectedFieldIds, campaignTables]);
 
     const toggleFieldSelection = useCallback((fieldId: number) => {
         if (isMultipleSelection) {
@@ -70,13 +65,14 @@ const useSensorDropdownState = (
     }, [selectedFieldIds, isMultipleSelection, setSelectedFieldIds]);
 
     const toggleAllFieldsSelection = useCallback((campaignTableId: number) => {
-        const fieldIds = tableFields.filter(field => field.campaign_table_id === campaignTableId).map(field => field.id);
+        const fieldIds = campaignTables.get(campaignTableId)?.campaign_table_field.map(field => field.id) ?? [];
+
         if (isAllSelected.get(campaignTableId) ?? false) {
             setSelectedFieldIds(selectedFieldIds.filter(id => !fieldIds.includes(id)));
         } else {
             setSelectedFieldIds([...selectedFieldIds, ...fieldIds]);
         }
-    }, [selectedFieldIds, isAllSelected, setSelectedFieldIds, tableFields]);
+    }, [selectedFieldIds, isAllSelected, setSelectedFieldIds, campaignTables]);
 
     return {
         selectedFields,

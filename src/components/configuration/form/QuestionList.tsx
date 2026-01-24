@@ -18,7 +18,7 @@ const QuestionList: React.FC<QuestionListProps> = ({ surveyIndex }) => {
         return null;
     }
 
-    const questions = survey.questions || [];
+    const questions = survey.survey_question || [];
 
     if (questions.length === 0) {
         return (
@@ -77,7 +77,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question, questionIndex, to
     ];
 
     const needsOptions = question.answer_type === 'radio' || question.answer_type === 'checkbox';
-    const options = question.options || [];
+    const options = question.survey_question_option || [];
 
     return (
         <Card>
@@ -122,12 +122,12 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question, questionIndex, to
                         const updates: Partial<SurveyQuestion> = { answer_type: newAnswerType };
 
                         // Initialize options array if switching to radio/checkbox
-                        if ((newAnswerType === 'radio' || newAnswerType === 'checkbox') && !question.options) {
-                            updates.options = [];
+                        if ((newAnswerType === 'radio' || newAnswerType === 'checkbox') && !question.survey_question_option) {
+                            updates.survey_question_option = [];
                         }
                         // Clear options if switching away from radio/checkbox
-                        else if (newAnswerType !== 'radio' && newAnswerType !== 'checkbox' && question.options) {
-                            updates.options = undefined;
+                        else if (newAnswerType !== 'radio' && newAnswerType !== 'checkbox' && question.survey_question_option) {
+                            updates.survey_question_option = undefined;
                         }
 
                         onUpdate(updates);

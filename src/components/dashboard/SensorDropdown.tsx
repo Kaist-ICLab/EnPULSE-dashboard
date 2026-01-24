@@ -7,7 +7,7 @@ const SensorDropdown: React.FC<{
     setSelectedFieldIds: (fieldId: number[]) => void,
     isMultipleSelection: boolean,
 }> = ({ selectedFieldIds, setSelectedFieldIds, isMultipleSelection }) => {
-    const { campaignTables, mergedTableFields } = useCampaign();
+    const { campaignTables, campaignTableFields } = useCampaign();
     const {
         selectedSensor,
         setSelectedSensor,
@@ -16,7 +16,7 @@ const SensorDropdown: React.FC<{
         toggleFieldSelection,
         toggleAllFieldsSelection,
         selectedCountByTable,
-    } = useSensorDropdownState(selectedFieldIds, campaignTables, mergedTableFields, setSelectedFieldIds, isMultipleSelection);
+    } = useSensorDropdownState(selectedFieldIds, campaignTables, campaignTableFields, setSelectedFieldIds, isMultipleSelection);
 
     return (
         <Dropdown
@@ -63,20 +63,19 @@ const SensorDropdown: React.FC<{
                 ) : (
                     <div className="min-w-40 flex flex-col">
                         <div className="overflow-y-auto grow scrollbar-thin">
-                            {mergedTableFields.filter(field => field.campaign_table_id === selectedSensor)
-                                .map((field) => (
-                                    <DropdownItem key={field.id} className="bg-white" onClick={() => {
-                                        toggleFieldSelection(field.id);
-                                    }}>
-                                        <input
-                                            type="checkbox"
-                                            className="mr-2"
-                                            checked={selectedFieldIds.includes(field.id)}
-                                            onChange={() => { }} // Add empty onChange to make it controlled
-                                        />
-                                        {field.name}
-                                    </DropdownItem>
-                                ))}
+                            {campaignTables.get(selectedSensor)?.campaign_table_field.map((field) => (
+                                <DropdownItem key={field.id} className="bg-white" onClick={() => {
+                                    toggleFieldSelection(field.id);
+                                }}>
+                                    <input
+                                        type="checkbox"
+                                        className="mr-2"
+                                        checked={selectedFieldIds.includes(field.id)}
+                                        onChange={() => { }} // Add empty onChange to make it controlled
+                                    />
+                                    {field.name}
+                                </DropdownItem>
+                            ))}
                         </div>
                         <DropdownDivider />
                         {isMultipleSelection && (

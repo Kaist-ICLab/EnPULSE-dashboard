@@ -1206,7 +1206,6 @@ export type Database = {
             survey_question: {
                 Row: {
                     answer_type: Database["public"]["Enums"]["survey_question_type"]
-                    campaign_id: number
                     created_at: string
                     id: number
                     is_mandatory: boolean
@@ -1216,7 +1215,6 @@ export type Database = {
                 }
                 Insert: {
                     answer_type: Database["public"]["Enums"]["survey_question_type"]
-                    campaign_id: number
                     created_at?: string
                     id?: number
                     is_mandatory: boolean
@@ -1226,7 +1224,6 @@ export type Database = {
                 }
                 Update: {
                     answer_type?: Database["public"]["Enums"]["survey_question_type"]
-                    campaign_id?: number
                     created_at?: string
                     id?: number
                     is_mandatory?: boolean
@@ -1235,13 +1232,6 @@ export type Database = {
                     trigger?: Json | null
                 }
                 Relationships: [
-                    {
-                        foreignKeyName: "survey_question_campaign_id_fkey"
-                        columns: ["campaign_id"]
-                        isOneToOne: false
-                        referencedRelation: "campaigns"
-                        referencedColumns: ["id"]
-                    },
                     {
                         foreignKeyName: "survey_question_survey_id_fkey"
                         columns: ["survey_id"]

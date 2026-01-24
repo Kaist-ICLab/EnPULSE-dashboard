@@ -49,7 +49,7 @@ const ConfirmPage: React.FC = () => {
                                     <li key={index} className="flex items-center justify-between py-2 border-b border-gray-200">
                                         <span className="text-gray-900">{survey.title || `Survey ${index + 1}`}</span>
                                         <span className="text-gray-600 text-sm">
-                                            {survey.questions?.length || 0} questions
+                                            {survey.survey_question?.length || 0} questions
                                         </span>
                                     </li>
                                 ))}

@@ -4,17 +4,17 @@ export interface Survey {
     title: string;
     description: string;
     schedule_method: ScheduleMethod;
+    survey_question: SurveyQuestion[];
 }
 
 export interface SurveyQuestion {
     id: number;
     survey_id: number;
-    campaign_id: number;
     question: string;
     answer_type: AnswerType;
     is_mandatory: boolean;
-    trigger?: Trigger;
-    options?: SurveyQuestionOption[];
+    trigger: Trigger | null;
+    survey_question_option: SurveyQuestionOption[];
 }
 
 export interface SurveyQuestionOption {
@@ -22,20 +22,10 @@ export interface SurveyQuestionOption {
     question_id: number;
     value: string;
     display: string;
-    is_free_answer_allowed: boolean;
-}
-
-export interface NewSurvey {
-    id: number;
-    campaign_id: number;
-    title: string;
-    description: string;
-    schedule_method: ScheduleMethod;
-    questions: SurveyQuestion[];
+    allow_free_response: boolean;
 }
 
 export type AnswerType = 'checkbox' | 'radio' | 'text' | 'number'
-
 
 // Survey Schedule Methods
 export type ESM = {
@@ -54,13 +44,13 @@ export type ScheduleMethod = ESM | Fixed | null;
 export type Expression = ValueComparator | Operator;
 
 export type ValueComparator =
-    | { type: 'Equal'; value: string }
-    | { type: 'NotEqual'; value: string };
+    | { op: 'Equal'; value: string }
+    | { op: 'NotEqual'; value: string };
 
 export type Operator =
-    | { type: 'And'; a: ValueComparator; b: ValueComparator }
-    | { type: 'Or'; a: ValueComparator; b: ValueComparator }
-    | { type: 'Not'; a: ValueComparator };
+    | { op: 'And'; a: Expression; b: Expression }
+    | { op: 'Or'; a: Expression; b: Expression }
+    | { op: 'Not'; a: Expression };
 
 export interface Trigger {
     predicate: Expression;
