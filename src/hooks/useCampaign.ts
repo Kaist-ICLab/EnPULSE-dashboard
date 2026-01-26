@@ -13,6 +13,7 @@ interface CampaignState {
     campaignList: Map<number, string>;
     campaignTables: Map<number, DeepRequired<CampaignTable>>;
     campaignTableFields: Map<number, DeepRequired<CampaignTableField>>;
+    campaignTableFieldMapping: Map<number, Map<string, string>>;
     campaignParticipants: Map<string, DeepRequired<CampaignParticipant>>;
     selectedCampaignId: number | null;
     responses: {
@@ -33,6 +34,7 @@ const useCampaign = create<CampaignState>((set, get) => ({
     campaignList: new Map(),
     campaignTables: new Map(),
     campaignTableFields: new Map(),
+    campaignTableFieldMapping: new Map(),
     campaignParticipants: new Map(),
     selectedCampaignId: null,
     responses: {
@@ -73,16 +75,19 @@ const useCampaign = create<CampaignState>((set, get) => ({
             const campaign = await getCampaignInfo(campaignId);
             const campaignTables = campaign.campaign_table.map(campaignTable => ({ ...campaignTable, campaign_table_field: campaignTable.campaign_table_field.filter(field => field.field_role == "data") }));
             const campaignTableFields = campaignTables.flatMap(campaignTable => campaignTable.campaign_table_field).filter(field => field.field_role == "data");
+            const campaignTableFieldMappings = campaignTableFields.map(field => [field.id, new Map(field.campaign_table_field_mapping.map(mapping => [mapping.value, mapping.display]))]) as [number, Map<string, string>][];
             const campaignParticipants = campaign.profiles;
 
             const tablesMap = new Map(campaignTables.map(campaignTable => [campaignTable.id, campaignTable]));
             const fieldsMap = new Map(campaignTableFields.map(campaignTableField => [campaignTableField.id, campaignTableField]));
+            const mappingMap = new Map(campaignTableFieldMappings);
 
             set({
                 campaignTables: tablesMap,
                 campaignTableFields: fieldsMap,
-                selectedCampaignId: campaignId,
+                campaignTableFieldMapping: mappingMap,
                 campaignParticipants: new Map(campaignParticipants.map(campaignParticipant => [campaignParticipant.uuid, campaignParticipant])),
+                selectedCampaignId: campaignId,
                 responses: { ...get().responses, selectCampaign: { status: 'ok', message: "Campaign selected" } }
             });
 

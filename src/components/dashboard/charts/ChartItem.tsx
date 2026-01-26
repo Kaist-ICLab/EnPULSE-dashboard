@@ -37,6 +37,7 @@ export const ChartItem: React.FC<{
                 className={`grow flex flex-row justify-center items-center cursor-pointer transition-colors`}
             >
                 <TimelineChart
+                    fieldId={timeline.params.fieldId}
                     chartType={timeline.chartType}
                     baseTime={timeline.params.date.getTime()}
                     data={timeline.value}

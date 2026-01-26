@@ -5,8 +5,9 @@ import { scaleOrdinal } from '@visx/scale';
 export const CategoricalTimelineLegend: React.FC<{
     uniqueCategories: string[],
     getCategoryColor: (category: string) => string,
-    handleLegendClick: (category: string) => void
-}> = ({ uniqueCategories, getCategoryColor, handleLegendClick }) => {
+    handleLegendClick: (category: string) => void,
+    mapping: Map<string, string> | undefined
+}> = ({ uniqueCategories, getCategoryColor, handleLegendClick, mapping }) => {
     const ordinalScale = scaleOrdinal<string, string>({
         domain: uniqueCategories,
         range: uniqueCategories.map((category) => getCategoryColor(category)),
@@ -35,7 +36,7 @@ export const CategoricalTimelineLegend: React.FC<{
                                         <rect width={12} height={12} fill={getCategoryColor(label.text)} />
                                     </svg>
                                     <LegendLabel align="left">
-                                        {label.text}
+                                        {mapping?.get(label.text) ?? label.text}
                                     </LegendLabel>
                                 </LegendItem>
                             );

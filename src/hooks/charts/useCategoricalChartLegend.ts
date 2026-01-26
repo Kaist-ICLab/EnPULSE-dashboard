@@ -47,7 +47,6 @@ export function useCategoricalChartLegend(data: TimelineCategoricalPoint[]) {
     const handleLegendClick = useCallback((category: string) => {
         if (colorQueue.current == null) return;
 
-
         const isVisible = visibleCategories.has(category);
         const newVisibleCategories = new Set(visibleCategories);
 

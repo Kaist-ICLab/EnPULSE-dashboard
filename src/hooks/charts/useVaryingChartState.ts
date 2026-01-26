@@ -8,6 +8,7 @@ export function useVaryingChartState(
     data: (TimelineNumericalPoint | TimelineCategoricalPoint)[],
     chartType: ChartType,
     bucketSize: number,
+    fieldId: number,
 ) {
     // Numerical chart state
     const { minValue: numericalMinValue, maxValue: numericalMaxValue, getTooltipData: numericalGetTooltipData } = useNumericalChartState(
@@ -18,7 +19,8 @@ export function useVaryingChartState(
     // Categorical chart state
     const { maxValue: categoricalMaxValue, getTooltipData: categoricalGetTooltipData } = useCategoricalChartState(
         chartType === 'categorical' ? (data as TimelineCategoricalPoint[]) : [],
-        bucketSize
+        bucketSize,
+        fieldId
     );
     const { getCategoryColor, uniqueCategories, handleLegendClick } = useCategoricalChartLegend(chartType === 'categorical' ? (data as TimelineCategoricalPoint[]) : []);
 

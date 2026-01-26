@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { TimelineCategoricalPoint, TimelineNumericalPoint } from "@/types/chart";
 import { TimelineGraph } from "./graphs/TimelineGraph";
 import { TooltipWithBounds, defaultStyles } from "@visx/tooltip";
@@ -8,8 +8,10 @@ import { Group } from '@visx/group';
 import { Brush } from "@visx/brush";
 import { useChartState } from "@/hooks/charts/useChartState";
 import { CategoricalTimelineLegend } from "./legends/CategoricalTimelineLegend";
+import useCampaign from "@/hooks/useCampaign";
 
 interface TimelineChartProps {
+    fieldId: number;
     chartType: 'categorical' | 'numerical';
     baseTime: number;
     data: (TimelineNumericalPoint | TimelineCategoricalPoint)[];
@@ -19,6 +21,7 @@ interface TimelineChartProps {
 }
 
 const TimelineChart: React.FC<TimelineChartProps> = ({
+    fieldId,
     chartType,
     baseTime,
     data,
@@ -27,7 +30,27 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
     height,
 }) => {
     const svgRef = useRef<SVGSVGElement>(null);
-    const { timeScale, valueScale, barWidth, handleMouseMove, handleDoubleClick, handleBrushChange, tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hideTooltip, getCategoryColor, uniqueCategories, handleLegendClick } = useChartState(data, chartType, bucketSize, baseTime, svgRef, width, height);
+    const {
+        timeScale,
+        valueScale,
+        barWidth,
+        handleMouseMove,
+        handleDoubleClick,
+        handleBrushChange,
+        tooltipData,
+        tooltipLeft,
+        tooltipTop,
+        tooltipOpen,
+        hideTooltip,
+        getCategoryColor,
+        uniqueCategories,
+        handleLegendClick
+    } = useChartState(data, chartType, bucketSize, baseTime, svgRef, width, height, fieldId);
+
+    const { campaignTableFieldMapping } = useCampaign();
+    const mapping = useMemo(() => {
+        return campaignTableFieldMapping.get(fieldId);
+    }, [campaignTableFieldMapping, fieldId]);
 
     if (width === 0 || height === 0) {
         return (
@@ -37,7 +60,11 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
 
     return (
         <div className="w-full flex flex-col justify-center items-center">
-            {chartType === 'categorical' && <CategoricalTimelineLegend uniqueCategories={uniqueCategories} getCategoryColor={getCategoryColor} handleLegendClick={handleLegendClick} />}
+            {chartType === 'categorical' && <CategoricalTimelineLegend
+                uniqueCategories={uniqueCategories}
+                getCategoryColor={getCategoryColor}
+                handleLegendClick={handleLegendClick}
+                mapping={mapping} />}
             <div
                 className="w-full flex flex-col justify-center items-center relative border-1 border-gray-200"
                 style={{ height: `${height}px` }}

@@ -1,9 +1,8 @@
 import { DynamicDataColumn } from '@/hooks/charts/useUserDailyStat';
 import { supabase } from '@/lib/supabase';
-import { mapQuery } from '@/lib/supabaseHelper';
+import { BucketCategoricalData, BucketNumericalData, groupByTimestamp, mapQuery } from '@/lib/supabaseHelper';
 import { CampaignParticipant, CampaignTable } from '@/types/campaign';
-import { ChartType } from '@/types/chart';
-import { BucketCategoricalData, BucketNumericalData, groupByTimestamp } from '@/lib/supabaseHelper';
+import { ChartType, TimelineData } from '@/types/chart';
 import dayjs from 'dayjs';
 import { DeepRequired } from '@/utils/type';
 
@@ -69,7 +68,13 @@ export async function getDailyStatCount(campaignId: number) {
     return Math.max(count ?? 1, 1)
 }
 
-export async function getSensorComparisonData(date: Date, participant: CampaignParticipant | undefined, tables: DeepRequired<CampaignTable>[], timeRange: { start: number, end: number }, bucketSize: string) {
+export async function getSensorComparisonData(
+    date: Date,
+    participant: CampaignParticipant | undefined,
+    tables: DeepRequired<CampaignTable>[],
+    timeRange: { start: number, end: number },
+    bucketSize: string,
+): Promise<TimelineData[]> {
     if (participant == undefined || tables.length == 0) return [];
 
     const timeGap = timeRange.end - timeRange.start;
@@ -100,8 +105,6 @@ export async function getSensorComparisonData(date: Date, participant: CampaignP
             return {
                 title: `${field.table_name} - ${field.name}`,
                 id: `${field.id}`,
-                table: field.table_name,
-                column: field.name,
                 chartType: 'categorical' as ChartType,
                 params: { date, uuid, fieldId: field.id },
                 value: groupedData ?? []
@@ -112,8 +115,6 @@ export async function getSensorComparisonData(date: Date, participant: CampaignP
             return {
                 title: `${field.table_name} - ${field.name}`,
                 id: `${field.id}`,
-                table: field.table_name,
-                column: field.name,
                 chartType: 'numerical' as ChartType,
                 params: { date, uuid, fieldId: field.id },
                 value: numericalData ? numericalData.map(d => ({ timestamp: new Date(d.bucket).getTime(), avg: d.avg, min: d.min, max: d.max })) : []
@@ -122,7 +123,12 @@ export async function getSensorComparisonData(date: Date, participant: CampaignP
     })
 }
 
-export async function getPersonComparisonData(date: Date, participants: CampaignParticipant[], table: DeepRequired<CampaignTable> | undefined, timeRange: { start: number, end: number }, bucketSize: string) {
+export async function getPersonComparisonData(
+    date: Date, participants: CampaignParticipant[],
+    table: DeepRequired<CampaignTable> | undefined,
+    timeRange: { start: number, end: number },
+    bucketSize: string,
+): Promise<TimelineData[]> {
     if (participants.length == 0 || table == undefined) return [];
 
     const timeGap = timeRange.end - timeRange.start;
@@ -146,8 +152,6 @@ export async function getPersonComparisonData(date: Date, participants: Campaign
             {
                 title: p.email,
                 id: p.uuid,
-                table: table.name,
-                column: field.name,
                 chartType: "categorical" as ChartType,
                 params: { date, uuid: p.uuid, fieldId: field.id },
                 value: groupByTimestamp(rawCategoricalData[idx])
@@ -159,8 +163,6 @@ export async function getPersonComparisonData(date: Date, participants: Campaign
             {
                 title: p.email,
                 id: p.uuid,
-                table: table.name,
-                column: field.name,
                 chartType: "numerical" as ChartType,
                 params: { date, uuid: p.uuid, fieldId: field.id },
                 value: numericalData[idx]?.map(d => ({ timestamp: new Date(d.bucket).getTime(), avg: d.avg, min: d.min, max: d.max })) ?? []
@@ -169,7 +171,12 @@ export async function getPersonComparisonData(date: Date, participants: Campaign
     }
 }
 
-export async function getDaysComparisonData(date: Date, participant: CampaignParticipant | undefined, table: DeepRequired<CampaignTable> | undefined, timeRange: { start: number, end: number }, bucketSize: string) {
+export async function getDaysComparisonData(
+    date: Date, participant: CampaignParticipant | undefined,
+    table: DeepRequired<CampaignTable> | undefined,
+    timeRange: { start: number, end: number },
+    bucketSize: string,
+): Promise<TimelineData[]> {
     if (participant == undefined || table == undefined) return [];
     const timeGap = timeRange.end - timeRange.start;
     const field = table.campaign_table_field[0]
@@ -194,8 +201,6 @@ export async function getDaysComparisonData(date: Date, participant: CampaignPar
         return dates.map((d, idx) => ({
             title: dayjs(d).format('YYYY-MM-DD'),
             id: dayjs(d).format('YYYY-MM-DD'),
-            table: table.name,
-            column: field.name,
             chartType: "categorical" as ChartType,
             params: { date: d, uuid, fieldId: field.id },
             value: groupByTimestamp(categoricalData[idx] ?? [])
@@ -206,8 +211,6 @@ export async function getDaysComparisonData(date: Date, participant: CampaignPar
         return dates.map((d, idx) => ({
             title: dayjs(d).format('YYYY-MM-DD'),
             id: dayjs(d).format('YYYY-MM-DD'),
-            table: table.name,
-            column: field.name,
             chartType: "numerical" as ChartType,
             params: { date: d, uuid, fieldId: field.id },
             value: numericalData[idx]?.map(v => ({ timestamp: new Date(v.bucket).getTime(), avg: v.avg, min: v.min, max: v.max })) ?? []

@@ -16,9 +16,10 @@ export function useChartState(
     svgRef: React.RefObject<SVGSVGElement | null>,
     width: number,
     height: number,
+    fieldId: number,
 ) {
     const { timeRange, draggedTime, updateTimeRange, initTimeRange } = useSectionState();
-    const { minValue, maxValue, getTooltipData, getCategoryColor, uniqueCategories, handleLegendClick } = useVaryingChartState(data, chartType, bucketSize);
+    const { minValue, maxValue, getTooltipData, getCategoryColor, uniqueCategories, handleLegendClick } = useVaryingChartState(data, chartType, bucketSize, fieldId);
     const currentTimeRange = useMemo(() => {
         return { start: timeRange.start + draggedTime, end: timeRange.end + draggedTime };
     }, [timeRange, draggedTime]);

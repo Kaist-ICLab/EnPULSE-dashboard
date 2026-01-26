@@ -25,11 +25,9 @@ export type TimelineDataPoint = TimelineNumericalPoint | TimelineCategoricalPoin
 export interface TimelineData {
     id: string;
     title: string;
-    table: string;
-    column: string;
     chartType: ChartType;
     params: TimelineParams;
-    value: (TimelineNumericalPoint | TimelineCategoricalPoint)[];
+    value: TimelineDataPoint[];
 }
 
 export interface TimelineChartGraphProps<T extends TimelineDataPoint> {

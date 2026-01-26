@@ -1,8 +1,10 @@
 import { useMemo, useCallback } from "react";
 import { formatTime } from "@/utils/timelineUtils";
 import { TimelineCategoricalPoint } from "@/types/chart";
+import useCampaign from "../useCampaign";
 
-export function useCategoricalChartState(data: TimelineCategoricalPoint[], bucketSize: number) {
+export function useCategoricalChartState(data: TimelineCategoricalPoint[], bucketSize: number, fieldId: number) {
+    const { campaignTableFieldMapping } = useCampaign();
     // Calculate max stack value (sum of all counts for a timestamp)
     const maxValue = useMemo(() => {
         // For each timestamp, sum all counts from the value array
@@ -11,6 +13,10 @@ export function useCategoricalChartState(data: TimelineCategoricalPoint[], bucke
         const maxAgg = Math.max(...data.map(d => Math.max(...d.value.map(v => v.aggregated))))
         return maxAgg || 0;
     }, [data]);
+
+    const mapping = useMemo(() => {
+        return campaignTableFieldMapping.get(fieldId);
+    }, [campaignTableFieldMapping, fieldId]);
 
     const getTooltipData = useCallback((timeMs: number) => {
         // Find all data points for this timestamp
@@ -30,7 +36,7 @@ export function useCategoricalChartState(data: TimelineCategoricalPoint[], bucke
         });
 
         const tooltipItems = Array.from(categoryMap.entries()).map(([category, count]) => ({
-            label: category.toString(),
+            label: mapping?.get(category) ?? category.toString(),
             value: count.toString(),
         }));
 
@@ -41,7 +47,7 @@ export function useCategoricalChartState(data: TimelineCategoricalPoint[], bucke
             },
             ...tooltipItems
         ];
-    }, [data, bucketSize]);
+    }, [data, bucketSize, mapping]);
 
     return { maxValue, getTooltipData };
 }
