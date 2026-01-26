@@ -79,7 +79,7 @@ const SurveyCard: React.FC<{
             <div className="mt-4">
                 <Button
                     color="blue"
-                    onClick={() => router.push(`/create/passive-sensing/${surveyIndex}`)}
+                    onClick={() => router.push(`/create/active-sensing/${surveyIndex}`)}
                     className="w-full"
                 >
                     <span className="icon-[material-symbols--edit] mr-2"></span>

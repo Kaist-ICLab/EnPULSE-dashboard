@@ -1,49 +1,59 @@
 'use client'
-import { Card } from "flowbite-react";
-import useNewCampainTables from "@/hooks/useCampaignConfigEdit";
-import CampaignTableCard from "../CampaignTableCard";
-import RemoveIconButton from "../RemoveIconButton";
 
-export default function ActiveSensingForm() {
-    const { tables, removeTable, addField, removeField, setField, setFieldMapping, setDailyCountMax } = useNewCampainTables();
+import { Card, Label, TextInput } from "flowbite-react";
+import { usePassiveSensingTime } from "@/hooks/configuration/usePassiveSensingTime";
+import SurveyList from "./SurveyList";
+import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 
-    if (tables.length === 0) {
-        return (
-            <div className="w-full flex items-center justify-center py-12 bg-gray-100">
-                <p className="text-gray-500 text-lg">No active sensing is configured</p>
-            </div>
-        );
-    }
+const ActiveSensingForm: React.FC = () => {
+    const { startTimeString, endTimeString, endTimeNextDay, setStartTime, setEndTime } = usePassiveSensingTime();
+    const { surveys } = useCampaignConfigEdit();
 
     return (
-        <div className="w-full flex flex-col gap-4">
-            <div role="campaign-sensors" className="flex flex-col gap-4">
-                {tables.map((table, tableIndex) => (
-                    <Card key={tableIndex}>
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
-                                <RemoveIconButton
-                                    onClick={() => removeTable(tableIndex)}
-                                    size="md"
-                                />
-                                <div>
-                                    <div className="text-lg font-semibold text-gray-900 whitespace-nowrap">{table.name}</div>
-                                    <div className="text-xs text-gray-500 whitespace-nowrap">{table.description}</div>
-                                </div>
-                            </div>
+        <div className="w-full flex flex-col gap-6">
+            {surveys.length > 0 && <Card className="bg-blue-100">
+                <div className="flex flex-col gap-4">
+                    <h6 className="text-xl font-medium text-gray-900">
+                        Schedule Time
+                    </h6>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-row gap-2 items-center">
+                            <Label htmlFor="start-time" className="block text-sm font-medium text-gray-900 w-20">
+                                Start of Day
+                            </Label>
+                            <TextInput
+                                id="start-time"
+                                type="time"
+                                sizing="sm"
+                                value={startTimeString}
+                                onChange={(e) => setStartTime(e.target.value)}
+                                className="w-full max-w-2xs"
+                            />
                         </div>
-                        <CampaignTableCard
-                            table={table}
-                            setChangedFields={(id, name, value) => setField(tableIndex, id, name, value)}
-                            addField={field => addField(tableIndex, field)}
-                            removeField={fieldIdx => removeField(tableIndex, fieldIdx)}
-                            setFieldMapping={(fieldIdx, mapping) => setFieldMapping(tableIndex, fieldIdx, mapping)}
-                            setDailyCountThreshold={v => setDailyCountMax(tableIndex, v)}
-                            dailyCountThreshold={table.daily_count_max}
-                        />
-                    </Card>
-                ))}
-            </div>
+                        <div className="flex flex-row gap-2 items-center">
+                            <Label htmlFor="end-time" className="block text-sm font-medium text-gray-900 w-20">
+                                End of Day
+                            </Label>
+                            <TextInput
+                                id="end-time"
+                                type="time"
+                                sizing="sm"
+                                value={endTimeString}
+                                onChange={(e) => setEndTime(e.target.value)}
+                                className="w-full max-w-2xs"
+                            />
+                            {endTimeNextDay && (
+                                <div className="flex items-center gap-2 text-sm text-blue-500">
+                                    (Tomorrow {endTimeString})
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </Card>}
+            <SurveyList />
         </div>
-    )
-}
+    );
+};
+
+export default ActiveSensingForm;

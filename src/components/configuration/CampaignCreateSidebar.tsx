@@ -7,15 +7,15 @@ const DashboardSidebar: React.FC = () => {
 
     const steps = [
         { name: "Campaign Information", href: `/create/name` },
-        { name: "Active Sensing", href: `/create/active-sensing` },
         { name: "Passive Sensing", href: `/create/passive-sensing` },
+        { name: "Active Sensing", href: `/create/active-sensing` },
         { name: "Confirm Configuration", href: `/create/confirm` },
     ];
 
     const getCurrentStepIndex = () => {
         if (pathname.includes('/name')) return 0;
-        if (pathname.includes('/active-sensing')) return 1;
-        if (pathname.includes('/passive-sensing')) return 2;
+        if (pathname.includes('/passive-sensing')) return 1;
+        if (pathname.includes('/active-sensing')) return 2;
         if (pathname.includes('/confirm')) return 3;
         return 0;
     };

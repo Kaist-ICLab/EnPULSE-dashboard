@@ -21,7 +21,7 @@ const Page: React.FC = () => {
             </Card>
             <PrevNextNavigation
                 onPrevClick={() => router.push("/campaigns")}
-                onNextClick={() => router.push("/create/active-sensing")}
+                onNextClick={() => router.push("/create/passive-sensing")}
                 nextLabel="Next"
                 disabled={!isValidName}
             />

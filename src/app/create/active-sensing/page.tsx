@@ -1,6 +1,7 @@
 "use client"
-import ActiveSensingForm from "@/components/configuration/form/ActiveSensingForm";
 import { useRouter } from "next/navigation";
+
+import ActiveSensingForm from "@/components/configuration/form/ActiveSensingForm";
 import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
 
 const Page: React.FC = () => {
@@ -9,8 +10,8 @@ const Page: React.FC = () => {
         <>
             <ActiveSensingForm />
             <PrevNextNavigation
-                onPrevClick={() => router.push("/create/name")}
-                onNextClick={() => router.push("/create/passive-sensing")}
+                onPrevClick={() => router.push("/create/passive-sensing")}
+                onNextClick={() => router.push("/create/confirm")}
             />
         </>
     );

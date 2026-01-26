@@ -27,9 +27,9 @@ export default function SurveyQuestionsPage() {
             <div className="flex gap-4">
                 <Button
                     color="gray"
-                    onClick={() => router.push('/create/passive-sensing')}
+                    onClick={() => router.push('/create/active-sensing')}
                 >
-                    Back to Passive Sensing Configuration
+                    Back to Active Sensing Configuration
                 </Button>
             </div>
         </div>
