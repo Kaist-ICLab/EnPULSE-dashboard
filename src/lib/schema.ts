@@ -1164,7 +1164,6 @@ export type Database = {
             survey: {
                 Row: {
                     campaign_id: number
-                    created_at: string
                     description: string
                     id: number
                     schedule_method: Json | null
@@ -1172,7 +1171,6 @@ export type Database = {
                 }
                 Insert: {
                     campaign_id: number
-                    created_at?: string
                     description: string
                     id?: number
                     schedule_method?: Json | null
@@ -1180,7 +1178,6 @@ export type Database = {
                 }
                 Update: {
                     campaign_id?: number
-                    created_at?: string
                     description?: string
                     id?: number
                     schedule_method?: Json | null
@@ -1199,30 +1196,27 @@ export type Database = {
             survey_question: {
                 Row: {
                     answer_type: Database["public"]["Enums"]["survey_question_type"]
-                    created_at: string
                     id: number
                     is_mandatory: boolean
                     question: string
                     survey_id: number
-                    trigger: Json | null
+                    triggered_by: number | null
                 }
                 Insert: {
                     answer_type: Database["public"]["Enums"]["survey_question_type"]
-                    created_at?: string
                     id?: number
                     is_mandatory: boolean
                     question: string
                     survey_id: number
-                    trigger?: Json | null
+                    triggered_by?: number | null
                 }
                 Update: {
                     answer_type?: Database["public"]["Enums"]["survey_question_type"]
-                    created_at?: string
                     id?: number
                     is_mandatory?: boolean
                     question?: string
                     survey_id?: number
-                    trigger?: Json | null
+                    triggered_by?: number | null
                 }
                 Relationships: [
                     {
@@ -1232,12 +1226,18 @@ export type Database = {
                         referencedRelation: "survey"
                         referencedColumns: ["id"]
                     },
+                    {
+                        foreignKeyName: "survey_question_triggered_by_fkey"
+                        columns: ["triggered_by"]
+                        isOneToOne: false
+                        referencedRelation: "survey_question_trigger"
+                        referencedColumns: ["id"]
+                    },
                 ]
             }
             survey_question_option: {
                 Row: {
                     allow_free_response: boolean
-                    created_at: string
                     display: string
                     id: number
                     question_id: number | null
@@ -1245,7 +1245,6 @@ export type Database = {
                 }
                 Insert: {
                     allow_free_response?: boolean
-                    created_at?: string
                     display: string
                     id?: number
                     question_id?: number | null
@@ -1253,7 +1252,6 @@ export type Database = {
                 }
                 Update: {
                     allow_free_response?: boolean
-                    created_at?: string
                     display?: string
                     id?: number
                     question_id?: number | null
@@ -1262,6 +1260,32 @@ export type Database = {
                 Relationships: [
                     {
                         foreignKeyName: "survey_question_option_question_id_fkey"
+                        columns: ["question_id"]
+                        isOneToOne: false
+                        referencedRelation: "survey_question"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            survey_question_trigger: {
+                Row: {
+                    expression: Json | null
+                    id: number
+                    question_id: number | null
+                }
+                Insert: {
+                    expression?: Json | null
+                    id?: number
+                    question_id?: number | null
+                }
+                Update: {
+                    expression?: Json | null
+                    id?: number
+                    question_id?: number | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "survey_question_trigger_question_id_fkey"
                         columns: ["question_id"]
                         isOneToOne: false
                         referencedRelation: "survey_question"
