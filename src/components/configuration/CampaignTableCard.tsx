@@ -1,5 +1,5 @@
 import { CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
-import FormatConfigTable from "../common/FormatConfigTable";
+import FormatConfigTable from "./FormatConfigTable";
 import { CampaignTable } from "@/types/campaign";
 
 const CampaignTableCard: React.FC<{

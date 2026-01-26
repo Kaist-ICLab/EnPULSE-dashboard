@@ -2,7 +2,7 @@
 
 import { Button, TextInput } from "flowbite-react";
 import { useState } from "react";
-import RemoveIconButton from "../configuration/RemoveIconButton";
+import RemoveIconButton from "./RemoveIconButton";
 
 interface FieldMappingEditorProps {
     fieldName: string;

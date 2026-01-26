@@ -1,7 +1,7 @@
 'use client'
 
 import { Button, Select } from "flowbite-react";
-import FormatConfigTable from "../common/FormatConfigTable";
+import FormatConfigTable from "../configuration/FormatConfigTable";
 import { useEffect } from "react";
 import { CampaignTableField } from "@/types/campaign";
 import { useMemo } from "react";

@@ -3,7 +3,7 @@
 import { CampaignTableField, FieldRole, FieldRoleOption, FieldType, FieldTypeOption } from "@/types/campaign";
 import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { useEffect, useRef, useState } from "react";
-import FieldMappingEditor from "./FieldMappingEditor";
+import FieldMappingEditor from "../configuration/FieldMappingEditor";
 
 const FormatConfigTable: React.FC<{
     currentTableFields: CampaignTableField[];
