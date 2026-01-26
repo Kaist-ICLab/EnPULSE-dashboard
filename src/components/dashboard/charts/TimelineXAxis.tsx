@@ -82,10 +82,10 @@ const TimelineXAxis: React.FC<{
         startRafLoop();
     }, [currentTimeRange, startRafLoop]);
 
-    const handleMouseMove = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
+    const handleMouseMove = useCallback((clientX: number) => {
         if (!isDragging || !dragStartRef.current) return;
 
-        const deltaX = event.clientX - dragStartRef.current.x;
+        const deltaX = clientX - dragStartRef.current.x;
         const currentRange = dragStartRef.current.endTime - dragStartRef.current.startTime;
         const pixelToTimeRatio = currentRange / innerWidth;
         const deltaTime = -deltaX * pixelToTimeRatio; // Negative because dragging right should move forward in time
@@ -102,17 +102,25 @@ const TimelineXAxis: React.FC<{
         updateTimeRangeAfterDrag();
     }, [stopRafLoop, updateTimeRangeAfterDrag]);
 
-    // Handle global mouseup so dragging stops even if the cursor leaves the SVG.
+    // Handle global mouseup and mousemove so dragging continues even if the cursor leaves the SVG.
     useEffect(() => {
         if (!isDragging) return;
+
+        const handleGlobalMouseMove = (event: MouseEvent) => {
+            handleMouseMove(event.clientX);
+        };
 
         const handleGlobalMouseUp = () => {
             handleMouseUp();
         };
 
+        window.addEventListener('mousemove', handleGlobalMouseMove);
         window.addEventListener('mouseup', handleGlobalMouseUp);
-        return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
-    }, [isDragging, handleMouseUp]);
+        return () => {
+            window.removeEventListener('mousemove', handleGlobalMouseMove);
+            window.removeEventListener('mouseup', handleGlobalMouseUp);
+        };
+    }, [isDragging, handleMouseMove, handleMouseUp]);
 
     // Cleanup RAF on unmount just in case.
     useEffect(() => {
@@ -147,7 +155,7 @@ const TimelineXAxis: React.FC<{
                     width={width}
                     height={height}
                     onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
+                    onMouseMove={(e) => handleMouseMove(e.clientX)}
                     onMouseUp={handleMouseUp}
                     style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
                 >
