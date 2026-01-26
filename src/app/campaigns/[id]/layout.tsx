@@ -15,7 +15,7 @@ export default async function CampaignLayout({
     const campaigns = await getCampaignList();
     const campaignId = parseInt(id);
     const currentCampaign = campaigns.find((campaign) => campaign.id === campaignId);
-    if (!currentCampaign) {
+    if (currentCampaign === undefined) {
         notFound();
     }
 
