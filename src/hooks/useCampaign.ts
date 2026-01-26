@@ -71,8 +71,8 @@ const useCampaign = create<CampaignState>((set, get) => ({
             set((state) => ({ responses: { ...state.responses, selectCampaign: { status: 'loading', message: "Selecting campaign..." } } }));
 
             const campaign = await getCampaignInfo(campaignId);
-            const campaignTables = campaign.campaign_table;
-            const campaignTableFields = campaignTables.flatMap(campaignTable => campaignTable.campaign_table_field);
+            const campaignTables = campaign.campaign_table.map(campaignTable => ({ ...campaignTable, campaign_table_field: campaignTable.campaign_table_field.filter(field => field.field_role == "data") }));
+            const campaignTableFields = campaignTables.flatMap(campaignTable => campaignTable.campaign_table_field).filter(field => field.field_role == "data");
             const campaignParticipants = campaign.profiles;
 
             const tablesMap = new Map(campaignTables.map(campaignTable => [campaignTable.id, campaignTable]));
