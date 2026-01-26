@@ -95,7 +95,7 @@ const FormatConfigTable: React.FC<{
                                         className="w-[120px] bg-transparent focus:outline-none shadow-none border-b-2 border-gray-200"
                                         onChange={e => setFieldName(e.target.value)}
                                         onBlur={() => {
-                                            if (fieldName) addField({ campaign_table_id: -1, name: fieldName, field_role: fieldRole, field_type: fieldType })
+                                            if (fieldName) addField({ campaign_table_id: -1, name: fieldName, field_role: fieldRole, field_type: fieldType, campaign_table_field_mapping: [] })
                                             setIsFieldInputShown(false)
                                         }}
                                     />

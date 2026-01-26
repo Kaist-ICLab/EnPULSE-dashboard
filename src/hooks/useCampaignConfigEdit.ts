@@ -1,7 +1,6 @@
 import { CampaignTable, CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
 import { ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption } from "@/types/survey";
 import { create } from "zustand";
-import { templateTable } from "./configuration/sensorTemplate";
 
 interface PassiveSensingConfig {
     startTime: number; // milliseconds since midnight
@@ -11,13 +10,11 @@ interface PassiveSensingConfig {
 interface CampaignConfigEditState {
     campaignName: string;
     tables: CampaignTable[];
-    availableTemplateTables: CampaignTable[];
     passiveSensingConfig: PassiveSensingConfig;
     surveys: Survey[];
     setCampaignName: (name: string) => void;
     setDailyCountMax: (index: number, value: number) => void;
-    addTable: (name: string, description: string, fields?: CampaignTableField[]) => void;
-    addNewTemplateTable: (idx: number) => void;
+    addTable: (table: CampaignTable) => void;
     removeTable: (index: number) => void;
     addField: (tableIndex: number, field: CampaignTableField) => void;
     removeField: (tableIndex: number, fieldIdx: number) => void;
@@ -44,7 +41,6 @@ interface CampaignConfigEditState {
 const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     campaignName: "",
     tables: [],
-    availableTemplateTables: templateTable,
     passiveSensingConfig: {
         startTime: 0, // 00:00 in milliseconds
         endTime: 23 * 60 * 60 * 1000 + 59 * 60 * 1000, // 23:59 in milliseconds
@@ -61,28 +57,15 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             newTables.splice(index, 1, { ...state.tables[index], daily_count_max: value });
             return {
                 tables: newTables,
-                availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
             };
         });
     },
 
-    addTable: (name: string, description: string, fields: CampaignTableField[] = []) => {
+    addTable: (table: CampaignTable) => {
         set((state) => {
-            const newTables = [...state.tables, { campaign_id: -1, name, description, daily_count_max: 0, campaign_table_field: fields, is_custom: true }];
+            const newTables = [...state.tables, table];
             return {
                 tables: newTables,
-                availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
-            };
-        });
-    },
-
-    addNewTemplateTable: (idx: number) => {
-        set((state) => {
-            const availableTables = templateTable.filter(t => !state.tables.some(t2 => t2.name == t.name));
-            const newTables = [...state.tables, structuredClone(availableTables[idx])];
-            return {
-                tables: newTables,
-                availableTemplateTables: availableTables
             };
         });
     },
@@ -93,7 +76,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             newTables.splice(index, 1);
             return {
                 tables: newTables,
-                availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
             };
         });
     },
@@ -105,7 +87,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             newTables[tableIndex].campaign_table_field.push(field);
             return {
                 tables: newTables,
-                availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
             };
         });
     },
@@ -117,7 +98,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
 
             return {
                 tables: newTables,
-                availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
             };
         });
     },
@@ -133,7 +113,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             }
             return {
                 tables: newTables,
-                availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
             };
         });
     },
@@ -144,7 +123,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             newTables[tableIndex].campaign_table_field[fieldIdx] = { ...newTables[tableIndex].campaign_table_field[fieldIdx], campaign_table_field_mapping: mapping.map(m => ({ value: m.value, display: m.display, field_id: -1 })) };
             return {
                 tables: newTables,
-                availableTemplateTables: templateTable.filter(t => !newTables.some(t2 => t2.name == t.name))
             };
         });
     },
@@ -219,11 +197,12 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             const newSurveys = [...state.surveys];
             const newQuestion: SurveyQuestion = {
                 survey_id: -1, // Temporary ID
+                triggered_by: null,
                 question: `Question ${newSurveys[surveyIndex].survey_question.length + 1}`,
                 answer_type: 'text',
                 is_mandatory: false,
-                trigger: null,
                 survey_question_option: [],
+                survey_question_trigger: [],
             };
             newSurveys[surveyIndex] = {
                 ...newSurveys[surveyIndex],
@@ -335,7 +314,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         set({
             campaignName: "",
             tables: [],
-            availableTemplateTables: templateTable,
             passiveSensingConfig: {
                 startTime: 0,
                 endTime: 23 * 60 * 60 * 1000 + 59 * 60 * 1000,

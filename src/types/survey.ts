@@ -7,10 +7,14 @@ export type Survey = Database['public']['Tables']['survey']['Insert'] & {
 
 export type SurveyQuestion = Database['public']['Tables']['survey_question']['Insert'] & {
     survey_question_option: SurveyQuestionOption[];
-    trigger: Trigger | null;
+    survey_question_trigger: SurveyQuestionTrigger[];
 }
 
 export type SurveyQuestionOption = Database['public']['Tables']['survey_question_option']['Insert']
+
+export type SurveyQuestionTrigger = Database['public']['Tables']['survey_question_trigger']['Insert'] & {
+    survey_question: SurveyQuestion[];
+}
 
 export type AnswerType = Database['public']['Enums']['survey_question_type']
 
