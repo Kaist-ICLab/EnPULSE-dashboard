@@ -106,9 +106,7 @@ export const upsertCampaignTableField = async (campaignTableField: CampaignTable
             c.field_id = insertedFieldId;
         })
 
-        supabase.from('campaign_table_field_mapping')
-            .upsert(campaignTableField.campaign_table_field_mapping)
-            .select()
+        await supabase.from('campaign_table_field_mapping').upsert(campaignTableField.campaign_table_field_mapping)
     }
 }
 
