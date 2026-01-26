@@ -52,32 +52,34 @@ const ParticipantDropdown: React.FC<ParticipantDropdownProps> = ({
         >
             <div className="min-w-56 h-64 overflow-y-auto scrollbar-thin px-2 py-2">
                 {participants.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full px-4 py-8 text-gray-500 text-sm bg-gray-50 rounded-sm">
+                    <div className="flex flex-col items-center justify-center h-full text-gray-500 text-sm bg-gray-50 rounded-sm">
                         <span className="icon-[material-symbols--person-off] text-4xl mb-2"></span>
                         No participants joined... yet
                     </div>
                 ) : (
-                    <>
-                        {participants.map((p) => (
-                            <DropdownItem
-                                key={p.uuid}
-                                className={selectedParticipantIds.includes(p.uuid) ? "text-blue-600 bg-gray-100" : "text-gray-700"}
-                                onClick={() => toggleSelection(p.uuid)}
-                            >
-                                <input
-                                    type="checkbox"
-                                    className="mr-2"
-                                    checked={selectedParticipantIds.includes(p.uuid)}
-                                    onChange={() => { }}
-                                />
-                                {p.email}
-                            </DropdownItem>
-                        ))}
+                    <div className="flex flex-col h-full">
+                        <div className="overflow-y-auto grow scrollbar-thin">
+                            {participants.map((p) => (
+                                <DropdownItem
+                                    key={p.uuid}
+                                    className={selectedParticipantIds.includes(p.uuid) ? "text-blue-600 bg-gray-100" : "text-gray-700"}
+                                    onClick={() => toggleSelection(p.uuid)}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        className="mr-2"
+                                        checked={selectedParticipantIds.includes(p.uuid)}
+                                        onChange={() => { }}
+                                    />
+                                    {p.email}
+                                </DropdownItem>
+                            ))}
+                        </div>
                         <DropdownDivider />
                         <DropdownItem className="font-bold" onClick={() => setSelectedParticipantIds([])}>
                             <span className="text-red-500">{isMultipleSelection ? "Deselect all" : "Deselect"}</span>
                         </DropdownItem>
-                    </>
+                    </div>
                 )}
             </div>
 
