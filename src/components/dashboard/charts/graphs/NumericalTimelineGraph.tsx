@@ -1,8 +1,10 @@
 'use client'
 
 import { useMemo } from "react";
-import { colors, gray } from '../../../../utils/timelineUtils';
+import { colors, gray } from '@/utils/timelineUtils';
 import { TimelineChartGraphProps, TimelineNumericalPoint } from "@/types/chart";
+import { AxisLeft } from "@visx/axis";
+import { GridRows } from "@visx/grid";
 
 export const NumericalTimelineGraph: React.FC<TimelineChartGraphProps<TimelineNumericalPoint>> = ({
     timeScale,
@@ -24,12 +26,31 @@ export const NumericalTimelineGraph: React.FC<TimelineChartGraphProps<TimelineNu
     return (
         valueScale && (
             <>
+                <AxisLeft
+                    scale={valueScale}
+                    stroke={'#EEE'}
+                    tickLength={0}
+                    tickStroke={'#EEE'}
+                    tickLabelProps={() => ({
+                        fill: '#BBB',
+                        fontSize: 12,
+                        textAnchor: 'start' as const,
+                    })}
+                    numTicks={4}
+                    tickClassName="translate-x-[4px] translate-y-[-2px]"
+                />
+                <GridRows
+                    scale={valueScale}
+                    stroke={'#EEE'}
+                    width={timeScale.range()[1] - timeScale.range()[0]}
+                    numTicks={4}
+                />
                 {chartData.map((d, i) => {
                     if (d.avg === undefined || isNaN(d.avg)) return null;
                     const x = timeScale(d.timestamp);
                     const yValue = valueScale(d.avg);
                     if (isNaN(yValue) || yValue === undefined) return null;
-                    const lineStartX = x + barWidth * 0.05;
+                    const lineStartX = x + barWidth * 0.05
                     const lineEndX = x + barWidth * 0.95;
                     return (
                         <line
