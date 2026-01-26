@@ -43,126 +43,92 @@ export const upsertCampaign = async (campaign: Campaign, insertChildTables: bool
     const campaignId = data[0].id;
 
     if (insertChildTables) {
-        const campaignTablePromises = campaignTable.map((ct) => {
-            ct.campaign_id = campaignId;
-            upsertCampaignTable(ct, insertChildTables);
-        })
-        const surveyPromises = survey.map((s) => {
-            s.campaign_id = campaignId;
-            upsertSurvey(s)
-        })
+        campaignTable.forEach(ct => { ct.campaign_id = campaignId })
+        survey.forEach(s => { s.campaign_id = campaignId })
 
-        await Promise.all(campaignTablePromises);
-        await Promise.all(surveyPromises);
+        await Promise.all([upsertCampaignTable(campaignTable), upsertSurvey(survey)]);
     }
 
     return data[0].id;
 }
 
-export const upsertCampaignTable = async (campaignTable: CampaignTable, insertChildTables: boolean = true): Promise<void> => {
-    if (campaignTable.id === -1) delete campaignTable.id
+export const upsertCampaignTable = async (campaignTable: CampaignTable[], insertChildTables: boolean = true): Promise<void> => {
+    campaignTable.filter(ct => ct.id === -1).forEach(ct => delete ct.id);
 
-    const campaignTableFields = structuredClone(campaignTable.campaign_table_field);
+    const insertedCampaignTable: MakeOptional<CampaignTable, 'campaign_table_field'>[] = structuredClone(campaignTable);
+    const propagatedCampaignTable: CampaignTable[] = structuredClone(campaignTable);
 
-    const insertedTable: MakeOptional<CampaignTable, 'campaign_table_field'> = structuredClone(campaignTable);
-    delete insertedTable.campaign_table_field;
+    insertedCampaignTable.forEach(ct => delete ct.campaign_table_field);
 
     const { data, error } = await supabase
         .from('campaign_table')
-        .upsert(insertedTable)
+        .upsert(insertedCampaignTable)
         .select()
 
     if (error) throw new Error(error.message);
-    const insertedTableId = data[0].id;
+    const insertedId = data.map(d => d.id);
 
     if (insertChildTables) {
-        const campaignTableFieldsPromises = campaignTableFields.map((ctf) => {
-            ctf.campaign_table_id = insertedTableId;
-            upsertCampaignTableField(ctf, insertChildTables);
-        })
-
-        await Promise.all(campaignTableFieldsPromises);
+        propagatedCampaignTable.forEach((ct, idx) => { ct.campaign_table_field.forEach(ctf => ctf.campaign_table_id = insertedId[idx]) })
+        const campaignTableFields = propagatedCampaignTable.flatMap(ct => ct.campaign_table_field);
+        await upsertCampaignTableField(campaignTableFields, insertChildTables);
     }
 }
 
-export const upsertCampaignTableField = async (campaignTableField: CampaignTableField, insertChildTables: boolean = true): Promise<void> => {
-    if (campaignTableField.id === -1) delete campaignTableField.id
+export const upsertCampaignTableField = async (campaignTableField: CampaignTableField[], insertChildTables: boolean = true): Promise<void> => {
+    campaignTableField.filter(ctf => ctf.id === -1).forEach(ctf => delete ctf.id);
 
-    const insertedField: MakeOptional<CampaignTableField, 'campaign_table_field_mapping'> = structuredClone(campaignTableField);
-    delete insertedField.campaign_table_field_mapping;
+    const insertedCampaignTableField: MakeOptional<CampaignTableField, 'campaign_table_field_mapping'>[] = structuredClone(campaignTableField);
+    const propagatedCampaignTableField: CampaignTableField[] = structuredClone(campaignTableField);
 
-    const { data, error } = await supabase
-        .from('campaign_table_field')
-        .upsert(insertedField)
-        .select()
+    insertedCampaignTableField.forEach(ctf => delete ctf.campaign_table_field_mapping);
 
+    const { data, error } = await supabase.from('campaign_table_field').upsert(insertedCampaignTableField).select()
     if (error) throw new Error(error.message);
-    const insertedFieldId = data[0].id;
+    const insertedId = data.map(d => d.id);
 
-    // TODO: fix field mapping being not inserted
     if (insertChildTables) {
-        campaignTableField.campaign_table_field_mapping.forEach((c) => {
-            if (c.id === -1) delete c.id;
-            c.field_id = insertedFieldId;
-        })
-
-        await supabase.from('campaign_table_field_mapping').upsert(campaignTableField.campaign_table_field_mapping)
+        propagatedCampaignTableField.forEach((ctf, idx) => { ctf.campaign_table_field_mapping.forEach(ctfm => ctfm.field_id = insertedId[idx]) })
+        const campaignTableFieldMappings = propagatedCampaignTableField.flatMap(ctf => ctf.campaign_table_field_mapping);
+        await supabase.from('campaign_table_field_mapping').upsert(campaignTableFieldMappings).select()
     }
 }
 
-export const upsertSurvey = async (survey: Survey, insertChildTables: boolean = true): Promise<void> => {
-    if (survey.id === -1) delete survey.id
+export const upsertSurvey = async (survey: Survey[], insertChildTables: boolean = true): Promise<void> => {
+    survey.filter(s => s.id === -1).forEach(s => delete s.id);
 
-    const surveyQuestions = structuredClone(survey.survey_question);
+    const insertedSurvey: MakeOptional<Survey, 'survey_question'>[] = structuredClone(survey);
+    const propagatedSurvey: Survey[] = structuredClone(survey);
 
-    const insertedSurvey: MakeOptional<Survey, 'survey_question'> = structuredClone(survey);
-    delete insertedSurvey.survey_question;
+    insertedSurvey.forEach(s => delete s.survey_question);
 
-    const { data, error } = await supabase
-        .from('survey')
-        .upsert(insertedSurvey)
-        .select()
-
+    const { data, error } = await supabase.from('survey').upsert(insertedSurvey).select()
     if (error) throw new Error(error.message);
-    const insertedSurveyId = data[0].id;
+    const insertedId = data.map(d => d.id);
 
     if (insertChildTables) {
-        const surveyQuestionsPromises = surveyQuestions.map((sq) => {
-            sq.survey_id = insertedSurveyId;
-            upsertSurveyQuestion(sq, insertChildTables);
-        })
-
-        await Promise.all(surveyQuestionsPromises);
+        propagatedSurvey.forEach((s, idx) => { s.survey_question.forEach(sq => sq.survey_id = insertedId[idx]) })
+        const surveyQuestions = propagatedSurvey.flatMap(s => s.survey_question);
+        await upsertSurveyQuestion(surveyQuestions, insertChildTables);
     }
 }
 
-export const upsertSurveyQuestion = async (surveyQuestion: SurveyQuestion, insertChildTables: boolean = true): Promise<void> => {
-    if (surveyQuestion.id === -1) delete surveyQuestion.id
+export const upsertSurveyQuestion = async (surveyQuestion: SurveyQuestion[], insertChildTables: boolean = true): Promise<void> => {
+    surveyQuestion.filter(sq => sq.id === -1).forEach(sq => delete sq.id);
 
-    const surveyQuestionOptions = structuredClone(surveyQuestion.survey_question_option);
+    const insertedSurveyQuestion: MakeOptional<SurveyQuestion, 'survey_question_option' | 'survey_question_trigger'>[] = structuredClone(surveyQuestion);
+    const propagatedSurveyQuestion: SurveyQuestion[] = structuredClone(surveyQuestion);
 
-    const insertedQuestion: MakeOptional<SurveyQuestion, 'survey_question_option'> = structuredClone(surveyQuestion);
-    delete insertedQuestion.survey_question_option;
+    insertedSurveyQuestion.forEach(sq => { delete sq.survey_question_option; delete sq.survey_question_trigger });
 
-    const { data, error } = await supabase
-        .from('survey_question')
-        .upsert(insertedQuestion)
-        .select()
-
+    const { data, error } = await supabase.from('survey_question').upsert(insertedSurveyQuestion).select()
     if (error) throw new Error(error.message);
-    const insertedQuestionId = data[0].id;
+    const insertedId = data.map(d => d.id);
 
     if (insertChildTables) {
-        const surveyQuestionOptionsPromises = surveyQuestionOptions.map((sqo) => {
-            sqo.question_id = insertedQuestionId;
-            if (sqo.id === -1) delete sqo.id;
-
-            sqo.question_id = insertedQuestionId;
-            return supabase.from('survey_question_option')
-                .upsert(sqo)
-        })
-
-        await Promise.all(surveyQuestionOptionsPromises);
+        propagatedSurveyQuestion.forEach((sq, idx) => { sq.survey_question_option.forEach(sqo => sqo.question_id = insertedId[idx]) })
+        const surveyQuestionOptions = propagatedSurveyQuestion.flatMap(sq => sq.survey_question_option);
+        await supabase.from('survey_question_option').upsert(surveyQuestionOptions).select()
     }
 }
 

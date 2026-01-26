@@ -78,9 +78,9 @@ const useCampaign = create<CampaignState>((set, get) => ({
             const campaignTableFieldMappings = campaignTableFields.map(field => [field.id, new Map(field.campaign_table_field_mapping.map(mapping => [mapping.value, mapping.display]))]) as [number, Map<string, string>][];
             const campaignParticipants = campaign.profiles;
 
-            const tablesMap = new Map(campaignTables.map(campaignTable => [campaignTable.id, campaignTable]));
-            const fieldsMap = new Map(campaignTableFields.map(campaignTableField => [campaignTableField.id, campaignTableField]));
-            const mappingMap = new Map(campaignTableFieldMappings);
+            const tablesMap = new Map(campaignTables.sort((a, b) => a.id - b.id).map(campaignTable => [campaignTable.id, campaignTable]));
+            const fieldsMap = new Map(campaignTableFields.sort((a, b) => a.id - b.id).map(campaignTableField => [campaignTableField.id, campaignTableField]));
+            const mappingMap = new Map(campaignTableFieldMappings); // We don't care about the order of the mapping
 
             set({
                 campaignTables: tablesMap,
