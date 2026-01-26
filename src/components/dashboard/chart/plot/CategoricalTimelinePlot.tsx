@@ -2,9 +2,9 @@
 
 import { Bar } from '@visx/shape';
 import { gray } from '../../../../utils/timelineUtils';
-import { TimelineChartGraphProps, TimelineCategoricalPoint } from "@/types/chart";
+import { TimelinePlotProps, TimelineCategoricalPoint } from "@/types/chart";
 
-export const CategoricalTimelineGraph: React.FC<TimelineChartGraphProps<TimelineCategoricalPoint>> = ({
+export const CategoricalTimelinePlot: React.FC<TimelinePlotProps<TimelineCategoricalPoint>> = ({
     timeScale,
     valueScale,
     barWidth,

@@ -2,7 +2,7 @@ import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { colors, gray } from "@/utils/timelineUtils";
 import { TimelineCategoricalPoint } from "@/types/chart";
 
-export function useCategoricalChartLegend(data: TimelineCategoricalPoint[]) {
+export function useCategoricalChartLegendState(data: TimelineCategoricalPoint[]) {
     const colorQueue = useRef<{ category: string, colorIndex: number }[] | null>(null);
     const [visibleCategories, setVisibleCategories] = useState<Set<string>>(new Set());
 

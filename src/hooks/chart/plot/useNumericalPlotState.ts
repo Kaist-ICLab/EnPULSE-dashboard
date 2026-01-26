@@ -3,7 +3,7 @@ import { min, max } from "d3-array";
 import { formatTime } from "@/utils/timelineUtils";
 import { TimelineNumericalPoint } from "@/types/chart";
 
-export function useNumericalChartState(data: TimelineNumericalPoint[], bucketSize: number) {
+export function useNumericalPlotState(data: TimelineNumericalPoint[], bucketSize: number) {
     const { minValue, maxValue } = useMemo(() => {
         return {
             minValue: min(data, d => d.min) || 0,

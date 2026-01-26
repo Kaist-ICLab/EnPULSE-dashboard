@@ -1,13 +1,20 @@
 
 import { LegendItem, LegendLabel, LegendOrdinal } from '@visx/legend';
 import { scaleOrdinal } from '@visx/scale';
+import useCampaign from '@/hooks/useCampaign';
+import { useMemo } from 'react';
 
 export const CategoricalTimelineLegend: React.FC<{
+    fieldId: number,
     uniqueCategories: string[],
     getCategoryColor: (category: string) => string,
     handleLegendClick: (category: string) => void,
-    mapping: Map<string, string> | undefined
-}> = ({ uniqueCategories, getCategoryColor, handleLegendClick, mapping }) => {
+}> = ({ fieldId, uniqueCategories, getCategoryColor, handleLegendClick }) => {
+    const { campaignTableFieldMapping } = useCampaign();
+    const mapping = useMemo(() => {
+        return campaignTableFieldMapping.get(fieldId);
+    }, [campaignTableFieldMapping, fieldId]);
+
     const ordinalScale = scaleOrdinal<string, string>({
         domain: uniqueCategories,
         range: uniqueCategories.map((category) => getCategoryColor(category)),

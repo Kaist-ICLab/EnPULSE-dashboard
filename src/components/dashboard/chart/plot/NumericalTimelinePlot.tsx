@@ -2,11 +2,11 @@
 
 import { useMemo } from "react";
 import { colors, gray } from '@/utils/timelineUtils';
-import { TimelineChartGraphProps, TimelineNumericalPoint } from "@/types/chart";
+import { TimelinePlotProps, TimelineNumericalPoint } from "@/types/chart";
 import { AxisLeft } from "@visx/axis";
 import { GridRows } from "@visx/grid";
 
-export const NumericalTimelineGraph: React.FC<TimelineChartGraphProps<TimelineNumericalPoint>> = ({
+export const NumericalTimelinePlot: React.FC<TimelinePlotProps<TimelineNumericalPoint>> = ({
     timeScale,
     valueScale,
     barWidth,

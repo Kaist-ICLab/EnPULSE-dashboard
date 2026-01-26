@@ -2,7 +2,7 @@ import { DragHandle } from "@/components/common/DnDList";
 import { DnDItem } from "@/components/common/DnDList";
 import { TimelineData } from "@/types/chart";
 import useSectionState from "@/hooks/useSectionState";
-import TimelineChart from "@/components/dashboard/charts/TimelineChart";
+import TimelineChart from "@/components/dashboard/chart/TimelineChart";
 
 export const ChartItem: React.FC<{
     timeline: TimelineData;

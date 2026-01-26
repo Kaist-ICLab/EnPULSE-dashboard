@@ -1,14 +1,14 @@
 'use client'
 
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import { TimelineCategoricalPoint, TimelineNumericalPoint } from "@/types/chart";
-import { TimelineGraph } from "./graphs/TimelineGraph";
+import { TimelinePlot } from "./plot/TimelinePlot";
 import { TooltipWithBounds, defaultStyles } from "@visx/tooltip";
 import { Group } from '@visx/group';
 import { Brush } from "@visx/brush";
-import { useChartState } from "@/hooks/charts/useChartState";
-import { CategoricalTimelineLegend } from "./legends/CategoricalTimelineLegend";
-import useCampaign from "@/hooks/useCampaign";
+import { usePlotState } from "@/hooks/chart/plot/usePlotState";
+import { CategoricalTimelineLegend } from "./legend/CategoricalTimelineLegend";
+import { useChartLegendState } from "@/hooks/chart/legend/useChartLegendState";
 
 interface TimelineChartProps {
     fieldId: number;
@@ -42,15 +42,8 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
         tooltipTop,
         tooltipOpen,
         hideTooltip,
-        getCategoryColor,
-        uniqueCategories,
-        handleLegendClick
-    } = useChartState(data, chartType, bucketSize, baseTime, svgRef, width, height, fieldId);
-
-    const { campaignTableFieldMapping } = useCampaign();
-    const mapping = useMemo(() => {
-        return campaignTableFieldMapping.get(fieldId);
-    }, [campaignTableFieldMapping, fieldId]);
+    } = usePlotState(data, chartType, bucketSize, baseTime, svgRef, width, height, fieldId);
+    const { getCategoryColor, uniqueCategories, handleLegendClick } = useChartLegendState(chartType, data);
 
     if (width === 0 || height === 0) {
         return (
@@ -64,7 +57,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
                 uniqueCategories={uniqueCategories}
                 getCategoryColor={getCategoryColor}
                 handleLegendClick={handleLegendClick}
-                mapping={mapping} />}
+                fieldId={fieldId} />}
             <div
                 className="w-full flex flex-col justify-center items-center relative border-1 border-gray-200"
                 style={{ height: `${height}px` }}
@@ -77,7 +70,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
                     onMouseLeave={hideTooltip}
                 >
                     <Group onDoubleClick={handleDoubleClick}>
-                        <TimelineGraph chartType={chartType} data={data} height={height} timeScale={timeScale} valueScale={valueScale} barWidth={barWidth} getCategoryColor={getCategoryColor} />
+                        <TimelinePlot chartType={chartType} data={data} height={height} timeScale={timeScale} valueScale={valueScale} barWidth={barWidth} getCategoryColor={getCategoryColor} />
                         <Brush
                             xScale={timeScale}
                             yScale={valueScale}

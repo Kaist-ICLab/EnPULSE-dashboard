@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import TimelineXAxis from '@/components/dashboard/charts/TimelineXAxis';
+import TimelineXAxis from '@/components/dashboard/chart/TimelineXAxis';
 import { DnDProvider } from '@/components/common/DnDList';
 import { Button } from 'flowbite-react';
 import Link from 'next/link';

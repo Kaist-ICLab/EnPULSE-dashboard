@@ -1,16 +1,12 @@
-import { ChartType, TimelineChartGraphProps, TimelineDataPoint, TimelineNumericalPoint, TimelineCategoricalPoint } from "@/types/chart";
-import { NumericalTimelineGraph } from "./NumericalTimelineGraph";
-import { CategoricalTimelineGraph } from "./CategoricalTimelineGraph";
+import { ChartType, TimelinePlotProps, TimelineDataPoint, TimelineNumericalPoint, TimelineCategoricalPoint } from "@/types/chart";
+import { NumericalTimelinePlot } from "./NumericalTimelinePlot";
+import { CategoricalTimelinePlot } from "./CategoricalTimelinePlot";
 
-interface TimelineGraphProps extends TimelineChartGraphProps<TimelineDataPoint> {
-    chartType: ChartType;
-}
-
-export const TimelineGraph: React.FC<TimelineGraphProps> = ({
+export const TimelinePlot: React.FC<TimelinePlotProps<TimelineDataPoint> & { chartType: ChartType }> = ({
     chartType, data, height, timeScale, valueScale, barWidth, getCategoryColor
 }) => {
     if (chartType === 'numerical') {
-        return <NumericalTimelineGraph
+        return <NumericalTimelinePlot
             data={data as TimelineNumericalPoint[]}
             height={height}
             timeScale={timeScale}
@@ -18,7 +14,7 @@ export const TimelineGraph: React.FC<TimelineGraphProps> = ({
             barWidth={barWidth}
         />
     } else {
-        return <CategoricalTimelineGraph
+        return <CategoricalTimelinePlot
             data={data as TimelineCategoricalPoint[]}
             height={height}
             timeScale={timeScale}

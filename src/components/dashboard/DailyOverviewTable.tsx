@@ -1,8 +1,8 @@
 "use client"
-import useUserDailyStat, { UserDailyStat } from "@/hooks/charts/useUserDailyStat";
+import useUserDailyStat, { UserDailyStat } from "@/hooks/chart/useUserDailyStat";
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Select, Spinner, Tooltip } from "flowbite-react";
-import { useDailyStatTableCheckedState } from "@/hooks/charts/useDailyStatTableCheckedState";
+import { useDailyStatTableCheckedState } from "@/hooks/chart/useDailyStatTableCheckedState";
 import { usePaging } from "@/hooks/usePaging";
 import Link from "next/link";
 import { CampaignParticipant } from "@/types/campaign";

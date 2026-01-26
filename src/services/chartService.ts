@@ -1,4 +1,4 @@
-import { DynamicDataColumn } from '@/hooks/charts/useUserDailyStat';
+import { DynamicDataColumn } from '@/hooks/chart/useUserDailyStat';
 import { supabase } from '@/lib/supabase';
 import { BucketCategoricalData, BucketNumericalData, groupByTimestamp, mapQuery } from '@/lib/supabaseHelper';
 import { CampaignParticipant, CampaignTable } from '@/types/campaign';

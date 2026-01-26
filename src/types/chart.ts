@@ -30,7 +30,7 @@ export interface TimelineData {
     value: TimelineDataPoint[];
 }
 
-export interface TimelineChartGraphProps<T extends TimelineDataPoint> {
+export interface TimelinePlotProps<T extends TimelineDataPoint> {
     data: T[];
     height: number;
     timeScale: ScaleTime<number, number, never>;

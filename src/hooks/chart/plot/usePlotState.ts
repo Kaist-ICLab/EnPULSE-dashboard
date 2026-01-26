@@ -1,4 +1,4 @@
-import useSectionState from "../useSectionState";
+import useSectionState from "@/hooks/useSectionState";
 import { useMemo, useEffect, useCallback } from "react";
 import { TimelineCategoricalPoint, TimelineNumericalPoint } from "@/types/chart";
 import { ChartType } from "@/types/chart";
@@ -6,9 +6,9 @@ import { useTooltip } from "@visx/tooltip";
 import { scaleTime } from "@visx/scale";
 import { scaleLinear } from "@visx/scale";
 import { TooltipData } from "@/types/chart";
-import { useVaryingChartState } from "./useVaryingChartState";
+import { useVaryingPlotState } from "./useVaryingPlotState";
 
-export function useChartState(
+export function usePlotState(
     data: (TimelineNumericalPoint | TimelineCategoricalPoint)[],
     chartType: ChartType,
     bucketSize: number,
@@ -19,7 +19,7 @@ export function useChartState(
     fieldId: number,
 ) {
     const { timeRange, draggedTime, updateTimeRange, initTimeRange } = useSectionState();
-    const { minValue, maxValue, getTooltipData, getCategoryColor, uniqueCategories, handleLegendClick } = useVaryingChartState(data, chartType, bucketSize, fieldId);
+    const { minValue, maxValue, getTooltipData } = useVaryingPlotState(data, chartType, bucketSize, fieldId);
     const currentTimeRange = useMemo(() => {
         return { start: timeRange.start + draggedTime, end: timeRange.end + draggedTime };
     }, [timeRange, draggedTime]);
@@ -151,8 +151,5 @@ export function useChartState(
         timeScale,
         valueScale,
         hideTooltip,
-        getCategoryColor,
-        uniqueCategories,
-        handleLegendClick,
     }
 }

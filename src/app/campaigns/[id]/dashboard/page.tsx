@@ -1,5 +1,5 @@
 "use client";
-import { ComparisonChart } from "@/components/dashboard/charts/ComparisonChart";
+import { ComparisonChart } from "@/components/dashboard/chart/ComparisonChart";
 import DailyOverviewTable from "@/components/dashboard/DailyOverviewTable";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
 import { CampaignParticipant } from "@/types/campaign";
