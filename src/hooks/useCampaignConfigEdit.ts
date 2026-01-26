@@ -1,5 +1,5 @@
 import { CampaignTable, CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
-import { ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption } from "@/types/survey";
+import { ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption, SurveyQuestionTrigger, Expression } from "@/types/survey";
 import { create } from "zustand";
 
 interface PassiveSensingConfig {
@@ -35,6 +35,14 @@ interface CampaignConfigEditState {
     removeSurveyQuestionOption: (surveyIndex: number, questionIndex: number, optionIndex: number) => void;
     updateSurveyQuestionOption: (surveyIndex: number, questionIndex: number, optionIndex: number, updates: Partial<SurveyQuestionOption>) => void;
     reorderSurveyQuestionOption: (surveyIndex: number, questionIndex: number, optionIndex: number, direction: 'up' | 'down') => void;
+    addSurveyQuestionTrigger: (surveyIndex: number, questionIndex: number) => void;
+    removeSurveyQuestionTrigger: (surveyIndex: number, questionIndex: number, triggerIndex: number) => void;
+    updateSurveyQuestionTrigger: (surveyIndex: number, questionIndex: number, triggerIndex: number, updates: Partial<SurveyQuestionTrigger>) => void;
+    updateSurveyQuestionTriggerExpression: (surveyIndex: number, questionIndex: number, triggerIndex: number, expression: Expression) => void;
+    addTriggerChildQuestion: (surveyIndex: number, questionIndex: number, triggerIndex: number) => void;
+    removeTriggerChildQuestion: (surveyIndex: number, questionIndex: number, triggerIndex: number, childQuestionIndex: number) => void;
+    updateTriggerChildQuestion: (surveyIndex: number, questionIndex: number, triggerIndex: number, childQuestionIndex: number, updates: Partial<SurveyQuestion>) => void;
+    reorderTriggerChildQuestion: (surveyIndex: number, questionIndex: number, triggerIndex: number, childQuestionIndex: number, direction: 'up' | 'down') => void;
     reset: () => void;
 }
 
@@ -306,6 +314,132 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             [options[optionIndex], options[newIndex]] = [options[newIndex], options[optionIndex]];
 
             question.survey_question_option = options;
+            return { surveys: newSurveys };
+        });
+    },
+
+    addSurveyQuestionTrigger: (surveyIndex: number, questionIndex: number) => {
+        set((state) => {
+            const newSurveys = structuredClone(state.surveys);
+            const question = newSurveys[surveyIndex].survey_question[questionIndex];
+            const newTrigger: SurveyQuestionTrigger = {
+                question_id: -1,
+                expression: { op: 'Equal', value: '' } as Expression,
+                survey_question: [],
+            };
+            if (!question.survey_question_trigger) {
+                question.survey_question_trigger = [];
+            }
+            question.survey_question_trigger.push(newTrigger);
+            return { surveys: newSurveys };
+        });
+    },
+
+    removeSurveyQuestionTrigger: (surveyIndex: number, questionIndex: number, triggerIndex: number) => {
+        set((state) => {
+            const newSurveys = structuredClone(state.surveys);
+            const question = newSurveys[surveyIndex].survey_question[questionIndex];
+            if (question.survey_question_trigger) {
+                question.survey_question_trigger = question.survey_question_trigger.filter((_, i) => i !== triggerIndex);
+            }
+            return { surveys: newSurveys };
+        });
+    },
+
+    updateSurveyQuestionTrigger: (surveyIndex: number, questionIndex: number, triggerIndex: number, updates: Partial<SurveyQuestionTrigger>) => {
+        set((state) => {
+            const newSurveys = structuredClone(state.surveys);
+            const question = newSurveys[surveyIndex].survey_question[questionIndex];
+            if (question.survey_question_trigger && question.survey_question_trigger[triggerIndex]) {
+                question.survey_question_trigger[triggerIndex] = {
+                    ...question.survey_question_trigger[triggerIndex],
+                    ...updates,
+                };
+            }
+            return { surveys: newSurveys };
+        });
+    },
+
+    updateSurveyQuestionTriggerExpression: (surveyIndex: number, questionIndex: number, triggerIndex: number, expression: Expression) => {
+        set((state) => {
+            const newSurveys = structuredClone(state.surveys);
+            const question = newSurveys[surveyIndex].survey_question[questionIndex];
+            if (question.survey_question_trigger && question.survey_question_trigger[triggerIndex]) {
+                question.survey_question_trigger[triggerIndex].expression = expression;
+            }
+            return { surveys: newSurveys };
+        });
+    },
+
+    addTriggerChildQuestion: (surveyIndex: number, questionIndex: number, triggerIndex: number) => {
+        set((state) => {
+            const newSurveys = structuredClone(state.surveys);
+            const question = newSurveys[surveyIndex].survey_question[questionIndex];
+            const trigger = question.survey_question_trigger?.[triggerIndex];
+            if (trigger) {
+                const newChildQuestion: SurveyQuestion = {
+                    survey_id: -1,
+                    triggered_by: null,
+                    question: `Child Question ${(trigger.survey_question?.length || 0) + 1}`,
+                    answer_type: 'text',
+                    is_mandatory: false,
+                    survey_question_option: [],
+                    survey_question_trigger: [],
+                };
+                if (!trigger.survey_question) {
+                    trigger.survey_question = [];
+                }
+                trigger.survey_question.push(newChildQuestion);
+            }
+            return { surveys: newSurveys };
+        });
+    },
+
+    removeTriggerChildQuestion: (surveyIndex: number, questionIndex: number, triggerIndex: number, childQuestionIndex: number) => {
+        set((state) => {
+            const newSurveys = structuredClone(state.surveys);
+            const question = newSurveys[surveyIndex].survey_question[questionIndex];
+            const trigger = question.survey_question_trigger?.[triggerIndex];
+            if (trigger && trigger.survey_question) {
+                trigger.survey_question = trigger.survey_question.filter((_, i) => i !== childQuestionIndex);
+            }
+            return { surveys: newSurveys };
+        });
+    },
+
+    updateTriggerChildQuestion: (surveyIndex: number, questionIndex: number, triggerIndex: number, childQuestionIndex: number, updates: Partial<SurveyQuestion>) => {
+        set((state) => {
+            const newSurveys = structuredClone(state.surveys);
+            const question = newSurveys[surveyIndex].survey_question[questionIndex];
+            const trigger = question.survey_question_trigger?.[triggerIndex];
+            if (trigger && trigger.survey_question && trigger.survey_question[childQuestionIndex]) {
+                trigger.survey_question[childQuestionIndex] = {
+                    ...trigger.survey_question[childQuestionIndex],
+                    ...updates,
+                };
+            }
+            return { surveys: newSurveys };
+        });
+    },
+
+    reorderTriggerChildQuestion: (surveyIndex: number, questionIndex: number, triggerIndex: number, childQuestionIndex: number, direction: 'up' | 'down') => {
+        set((state) => {
+            const newSurveys = structuredClone(state.surveys);
+            const question = newSurveys[surveyIndex].survey_question[questionIndex];
+            const trigger = question.survey_question_trigger?.[triggerIndex];
+            if (trigger && trigger.survey_question) {
+                const childQuestions = [...trigger.survey_question];
+                const newIndex = direction === 'up' ? childQuestionIndex - 1 : childQuestionIndex + 1;
+
+                if (newIndex < 0 || newIndex >= childQuestions.length) {
+                    return state; // Can't move beyond boundaries
+                }
+
+                // Swap child questions
+                [childQuestions[childQuestionIndex], childQuestions[newIndex]] = [childQuestions[newIndex], childQuestions[childQuestionIndex]];
+
+                trigger.survey_question = childQuestions;
+            }
             return { surveys: newSurveys };
         });
     },

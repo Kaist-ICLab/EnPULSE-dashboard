@@ -4,9 +4,11 @@ import CampaignName from "@/components/configuration/form/CampaignNameForm";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
+import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 
 const Page: React.FC = () => {
-    const [campaignName, setCampaignName] = useState("");
+    const { campaignName: campaignNameInHook } = useCampaignConfigEdit();
+    const [campaignName, setCampaignName] = useState(campaignNameInHook);
     const [isValidName, setIsValidName] = useState(false);
     const router = useRouter();
 
