@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { CampaignTable, CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
 import { Accordion, AccordionContent, AccordionPanel, AccordionTitle, Button, Card, Dropdown, DropdownItem, TextInput } from "flowbite-react";
-import CampaignTableCard from "./CampaignTableCard";
+import FormatConfigTable from "./FormatConfigTable";
 
 const CampaignSensors: React.FC<{
     tables: CampaignTable[],
@@ -14,7 +14,7 @@ const CampaignSensors: React.FC<{
     setDailyCountMax: (index: number, value: number) => void,
     addField: (tableIndex: number, field: CampaignTableField) => void
     setField: (tableIndex: number, fieldIdx: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void,
-}> = ({ tables, availableTemplateTables, addTable, removeTable, addNewTemplateTable, setDailyCountMax, addField, setField }) => {
+}> = ({ tables, availableTemplateTables, addTable, removeTable, addNewTemplateTable }) => {
     const [isSensorInputVisible, setIsSensorInputVisible] = useState(false);
     const [sensorName, setSensorName] = useState("");
     const [sensorDescription, setSensorDescription] = useState("");
@@ -35,13 +35,8 @@ const CampaignSensors: React.FC<{
                                 </div>
                             </AccordionTitle>
                             <AccordionContent>
-                                <CampaignTableCard
-                                    key={tableIndex}
-                                    table={table}
-                                    setChangedFields={(id, name, value) => setField(tableIndex, id, name, value)}
-                                    addField={field => addField(tableIndex, field,)}
-                                    setDailyCountThreshold={v => setDailyCountMax(tableIndex, v)}
-                                    dailyCountThreshold={table.daily_count_max}
+                                <FormatConfigTable
+                                    tableIdx={tableIndex}
                                 />
                             </AccordionContent>
                         </AccordionPanel>

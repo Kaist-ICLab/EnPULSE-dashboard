@@ -1,11 +1,11 @@
 'use client'
 import { Card } from "flowbite-react";
 import useNewCampainTables from "@/hooks/useCampaignConfigEdit";
-import CampaignTableCard from "../CampaignTableCard";
+import FormatConfigTable from "../FormatConfigTable";
 import RemoveIconButton from "../RemoveIconButton";
 
 export default function PassiveSensingForm() {
-    const { tables, removeTable, addField, removeField, setField, setFieldMapping, setDailyCountMax } = useNewCampainTables();
+    const { tables, removeTable } = useNewCampainTables();
 
     if (tables.length === 0) {
         return (
@@ -32,14 +32,8 @@ export default function PassiveSensingForm() {
                                 </div>
                             </div>
                         </div>
-                        <CampaignTableCard
-                            table={table}
-                            setChangedFields={(id, name, value) => setField(tableIndex, id, name, value)}
-                            addField={field => addField(tableIndex, field)}
-                            removeField={fieldIdx => removeField(tableIndex, fieldIdx)}
-                            setFieldMapping={(fieldIdx, mapping) => setFieldMapping(tableIndex, fieldIdx, mapping)}
-                            setDailyCountThreshold={v => setDailyCountMax(tableIndex, v)}
-                            dailyCountThreshold={table.daily_count_max}
+                        <FormatConfigTable
+                            tableIdx={tableIndex}
                         />
                     </Card>
                 ))}

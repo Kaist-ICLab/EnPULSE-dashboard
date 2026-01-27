@@ -1,20 +1,17 @@
 'use client'
 
-import { CampaignTableField, FieldRole, FieldRoleOption, FieldType, FieldTypeOption } from "@/types/campaign";
+import { FieldRole, FieldRoleOption, FieldType, FieldTypeOption } from "@/types/campaign";
 import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import FieldMappingEditor from "../configuration/FieldMappingEditor";
+import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 
 const FormatConfigTable: React.FC<{
-    currentTableFields: CampaignTableField[];
-    canAddField: boolean | undefined;
-    onFieldChange: (fieldId: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void;
-    addField: (field: CampaignTableField) => void,
-    removeField?: (fieldIdx: number) => void;
-    onMappingChange?: (fieldIdx: number, mapping: { value: string, display: string }[]) => void;
-    dailyCountThreshold: number;
-    setDailyCountThreshold: (threshold: number) => void;
-}> = ({ currentTableFields, onFieldChange, addField, removeField, onMappingChange, setDailyCountThreshold, dailyCountThreshold, canAddField = false }) => {
+    tableIdx: number;
+}> = ({ tableIdx }) => {
+    const { tables, addField, removeField, setField, setFieldMapping, setDailyCountMax } = useCampaignConfigEdit();
+    const currentTable = useMemo(() => tables[tableIdx], [tables, tableIdx]);
+
     const [fieldName, setFieldName] = useState('')
     const [fieldRole, setFieldRole] = useState<FieldRole>('data')
     const [fieldType, setFieldType] = useState<FieldType>('numerical')
@@ -40,14 +37,14 @@ const FormatConfigTable: React.FC<{
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {currentTableFields.map((field, fieldIdx) => (
+                        {currentTable.campaign_table_field.map((field, fieldIdx) => (
                             <TableRow key={fieldIdx} className="bg-white text-gray-900">
                                 <TableCell>{field.name}</TableCell>
                                 <TableCell>
                                     <select
                                         className="w-[120px] bg-transparent focus:outline-none shadow-none"
                                         defaultValue={field.field_role}
-                                        onChange={(e) => onFieldChange(fieldIdx, 'role', e.target.value as FieldRole)}
+                                        onChange={(e) => setField(tableIdx, fieldIdx, 'role', e.target.value as FieldRole)}
                                     >
                                         {FieldRoleOption.map((option) => (
                                             <option key={option} value={option}>
@@ -61,7 +58,7 @@ const FormatConfigTable: React.FC<{
                                         className="w-[120px] bg-transparent focus:outline-none shadow-none"
                                         defaultValue={field.field_type}
                                         onChange={(e) => {
-                                            onFieldChange(fieldIdx, 'type', e.target.value as FieldType)
+                                            setField(tableIdx, fieldIdx, 'type', e.target.value as FieldType)
                                         }}
                                     >
                                         {FieldTypeOption.map((option) => (
@@ -73,8 +70,8 @@ const FormatConfigTable: React.FC<{
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex gap-2 items-center">
-                                        {canAddField && removeField && (
-                                            <span className="icon-[humbleicons--times] w-4 h-4 text-gray-500 hover:text-red-500 cursor-pointer" onClick={() => removeField?.(fieldIdx)}></span>
+                                        {currentTable.is_custom && removeField && (
+                                            <span className="icon-[humbleicons--times] w-4 h-4 text-gray-500 hover:text-red-500 cursor-pointer" onClick={() => removeField(tableIdx, fieldIdx)}></span>
                                         )}
                                         {field.field_type === 'categorical' && field.field_role === 'data' && (
                                             <span
@@ -95,7 +92,7 @@ const FormatConfigTable: React.FC<{
                                         className="w-[120px] bg-transparent focus:outline-none shadow-none border-b-2 border-gray-200"
                                         onChange={e => setFieldName(e.target.value)}
                                         onBlur={() => {
-                                            if (fieldName) addField({ campaign_table_id: -1, name: fieldName, field_role: fieldRole, field_type: fieldType, campaign_table_field_mapping: [] })
+                                            if (fieldName) addField(tableIdx, { campaign_table_id: -1, name: fieldName, field_role: fieldRole, field_type: fieldType, campaign_table_field_mapping: [] })
                                             setIsFieldInputShown(false)
                                         }}
                                     />
@@ -133,7 +130,7 @@ const FormatConfigTable: React.FC<{
                     </TableBody>
                 </Table>
                 {
-                    canAddField &&
+                    currentTable.is_custom &&
                     <div
                         className="w-full px-6 py-2 flex justify-center items-center border-t-1 border-gray-200 cursor-pointer hover:bg-gray-50"
                         onClick={() => {
@@ -155,8 +152,8 @@ const FormatConfigTable: React.FC<{
                     <div className="flex">
                         <input
                             type="number"
-                            value={dailyCountThreshold}
-                            onChange={(e) => setDailyCountThreshold(Number(e.target.value))}
+                            value={currentTable.daily_count_max}
+                            onChange={(e) => setDailyCountMax(tableIdx, Number(e.target.value))}
                             className="w-[80px] outline-none focus:outline-none pl-3"
                         />
                     </div>
@@ -166,11 +163,11 @@ const FormatConfigTable: React.FC<{
 
             {editingFieldIdx !== null && (
                 <FieldMappingEditor
-                    fieldName={currentTableFields[editingFieldIdx]?.name || ''}
-                    initialMapping={currentTableFields[editingFieldIdx]?.campaign_table_field_mapping || []}
+                    fieldName={currentTable.campaign_table_field[editingFieldIdx]?.name || ''}
+                    initialMapping={currentTable.campaign_table_field[editingFieldIdx]?.campaign_table_field_mapping || []}
                     onClose={() => setEditingFieldIdx(null)}
                     onSave={(mapping) => {
-                        onMappingChange?.(editingFieldIdx, mapping);
+                        setFieldMapping(tableIdx, editingFieldIdx, mapping);
                     }}
                 />
             )}
