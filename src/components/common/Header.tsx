@@ -80,9 +80,11 @@ const Header: React.FC = () => {
                     {isPassiveSensingPage && <AddSensorButtons />}
                     {isActiveSensingPage && !isQuestionPage && <AddSurveyButton />}
                     {isQuestionPage && <SurveyQuestionHeader />}
-                    <Button color="blue" onClick={updateSensorConfig}>
-                        <span className="icon-[material-symbols--save] w-6 h-6 mr-2"></span>Save
-                    </Button>
+                    <div className="pl-4 border-l border-gray-200">
+                        <Button color="blue" onClick={updateSensorConfig}>
+                            <span className="icon-[material-symbols--save] w-6 h-6 mr-2"></span>Save
+                        </Button>
+                    </div>
                 </div>
             )}
         </div>
