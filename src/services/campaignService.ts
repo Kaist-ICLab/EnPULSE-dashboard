@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { Campaign, CampaignTable, CampaignTableField } from '@/types/campaign';
+import { Campaign, CampaignTable, CampaignTableField, RemovedEntries } from '@/types/campaign';
 import { Survey, SurveyQuestion } from '@/types/survey';
 import { DeepRequired, MakeOptional } from '@/utils/type';
 
@@ -134,6 +134,16 @@ export const upsertSurveyQuestion = async (surveyQuestion: SurveyQuestion[], ins
         const surveyQuestionOptions = propagatedSurveyQuestion.flatMap(sq => sq.survey_question_option);
         await supabase.from('survey_question_option').upsert(surveyQuestionOptions, { defaultToNull: false }).select()
     }
+}
+
+export const deleteEntries = async (removedEntries: RemovedEntries): Promise<void> => {
+    await supabase.from('campaign_table').delete().in('id', removedEntries.table);
+    await supabase.from('campaign_table_field').delete().in('id', removedEntries.field);
+    await supabase.from('campaign_table_field_mapping').delete().in('id', removedEntries.mapping);
+    await supabase.from('survey').delete().in('id', removedEntries.survey);
+    await supabase.from('survey_question').delete().in('id', removedEntries.question);
+    await supabase.from('survey_question_option').delete().in('id', removedEntries.option);
+    await supabase.from('survey_question_trigger').delete().in('id', removedEntries.trigger);
 }
 
 export const checkCampaignNameValidity = async (campaignName: string): Promise<boolean> => {

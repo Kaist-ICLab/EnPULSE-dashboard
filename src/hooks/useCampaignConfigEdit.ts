@@ -1,4 +1,4 @@
-import { CampaignTable, CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
+import { CampaignTable, CampaignTableField, FieldRole, FieldType, RemovedEntries } from "@/types/campaign";
 import { ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption, SurveyQuestionTrigger, Expression } from "@/types/survey";
 import { create } from "zustand";
 
@@ -13,15 +13,7 @@ interface CampaignConfigEditState {
     tables: CampaignTable[];
     passiveSensingConfig: PassiveSensingConfig;
     surveys: Survey[];
-    removedEntries: {
-        table: number[];
-        field: number[];
-        mapping: number[];
-        survey: number[];
-        question: number[];
-        option: number[];
-        trigger: number[];
-    }
+    removedEntries: RemovedEntries;
 
     // Campaign basic information
     setCampaignName: (name: string) => void;

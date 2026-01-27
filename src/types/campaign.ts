@@ -23,3 +23,13 @@ export type CampaignTableField = Database['public']['Tables']['campaign_table_fi
 export type CampaignTableFieldMapping = Database['public']['Tables']['campaign_table_field_mapping']['Insert']
 
 export type CampaignParticipant = Database['public']['Tables']['profiles']['Insert']
+
+export type RemovedEntries = {
+    table: number[];
+    field: number[];
+    mapping: number[];
+    survey: number[];
+    question: number[];
+    option: number[];
+    trigger: number[];
+}

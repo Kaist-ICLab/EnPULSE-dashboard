@@ -1,10 +1,10 @@
 import useCampaignConfigEdit from "../useCampaignConfigEdit";
-import { upsertCampaign } from "@/services/campaignService";
+import { deleteEntries, upsertCampaign } from "@/services/campaignService";
 import { useCallback } from "react";
 import { Campaign } from "@/types/campaign";
 
 export function useUpdateSensorConfig(onSuccess: (id: number) => void) {
-    const { campaignId, campaignName, tables, surveys, passiveSensingConfig } = useCampaignConfigEdit();
+    const { campaignId, campaignName, tables, surveys, passiveSensingConfig, removedEntries } = useCampaignConfigEdit();
 
     const updateSensorConfig = useCallback(() => {
         const callback = async () => {
@@ -20,6 +20,7 @@ export function useUpdateSensorConfig(onSuccess: (id: number) => void) {
                 }
 
                 const upsertedCampaignId = await upsertCampaign(campaign);
+                await deleteEntries(removedEntries);
                 onSuccess(upsertedCampaignId);
             } catch (error) {
                 console.error(error);
@@ -27,7 +28,7 @@ export function useUpdateSensorConfig(onSuccess: (id: number) => void) {
         }
 
         callback();
-    }, [campaignId, campaignName, tables, surveys, passiveSensingConfig, onSuccess]);
+    }, [campaignId, campaignName, tables, surveys, passiveSensingConfig, removedEntries, onSuccess]);
 
     return { updateSensorConfig };
 }
