@@ -8,7 +8,9 @@ import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import ScheduleMethodConfig from "./ScheduleMethodConfig";
 import SwitchingTextInput from "./SwitchingTextInput";
 
-const SurveyList: React.FC = () => {
+const SurveyList: React.FC<{
+    baseUrl: string;
+}> = ({ baseUrl }) => {
     const { surveys, removeSurvey, updateSurveyTitle, updateSurveyDescription, updateSurveyScheduleMethod } = useCampaignConfigEdit();
 
     if (surveys.length === 0) {
@@ -24,6 +26,7 @@ const SurveyList: React.FC = () => {
             {surveys.map((survey, index) => (
                 <SurveyCard
                     key={index}
+                    baseUrl={baseUrl}
                     survey={survey}
                     surveyIndex={index}
                     onRemove={() => removeSurvey(index)}
@@ -37,13 +40,14 @@ const SurveyList: React.FC = () => {
 };
 
 const SurveyCard: React.FC<{
+    baseUrl: string;
     survey: Survey;
     surveyIndex: number;
     onRemove: () => void;
     onTitleChange: (title: string) => void;
     onDescriptionChange: (description: string) => void;
     onScheduleMethodChange: (scheduleMethod: ScheduleMethod) => void;
-}> = ({ survey, surveyIndex, onRemove, onTitleChange, onDescriptionChange, onScheduleMethodChange }) => {
+}> = ({ baseUrl, survey, surveyIndex, onRemove, onTitleChange, onDescriptionChange, onScheduleMethodChange }) => {
     const router = useRouter();
 
 
@@ -79,7 +83,7 @@ const SurveyCard: React.FC<{
             <div className="mt-4">
                 <Button
                     color="blue"
-                    onClick={() => router.push(`/create/active-sensing/${surveyIndex}`)}
+                    onClick={() => router.push(`${baseUrl}/${surveyIndex}`)}
                     className="w-full"
                 >
                     <span className="icon-[material-symbols--edit] mr-2"></span>

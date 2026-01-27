@@ -1,6 +1,6 @@
 import CampaignCreateHeader from "@/components/configuration/header/CampaignCreateHeader";
 import CampaignCreateSidebar from "@/components/configuration/CampaignCreateSidebar";
-import NewCampaignTablesInitProvider from "@/components/NewCampaignTablesInitProvider";
+import NewCampaignTablesInitProvider from "@/components/NewCampaignInitProvider";
 
 export default async function CampaignLayout({
     children,
@@ -8,7 +8,7 @@ export default async function CampaignLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <NewCampaignTablesInitProvider>
+        <NewCampaignTablesInitProvider isNewCampaign={true}>
             <div className="w-full h-screen bg-gray-50 flex flex-row">
                 <CampaignCreateSidebar />
                 <div className="flex flex-col w-full items-stretch grow overflow-auto">

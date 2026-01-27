@@ -1,18 +1,16 @@
 import useCampaignConfigEdit from "../useCampaignConfigEdit";
 import { upsertCampaign } from "@/services/campaignService";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { Campaign } from "@/types/campaign";
 
-export function useUpdateSensorConfig() {
-    const { campaignName, tables, surveys, passiveSensingConfig } = useCampaignConfigEdit();
-
-    const [isSuccess, setIsSuccess] = useState(false);
-    const [campaignId, setCampaignId] = useState<number | null>(null);
+export function useUpdateSensorConfig(onSuccess: (id: number) => void) {
+    const { campaignId, campaignName, tables, surveys, passiveSensingConfig } = useCampaignConfigEdit();
 
     const updateSensorConfig = useCallback(() => {
         const callback = async () => {
             try {
                 const campaign: Campaign = {
+                    id: campaignId,
                     name: campaignName,
                     end_time_of_day: passiveSensingConfig.endTime,
                     start_time_of_day: passiveSensingConfig.startTime,
@@ -21,19 +19,15 @@ export function useUpdateSensorConfig() {
                     survey: surveys,
                 }
 
-                const campaignId = await upsertCampaign(campaign);
-                setCampaignId(campaignId);
-                setIsSuccess(true);
-
+                const upsertedCampaignId = await upsertCampaign(campaign);
+                onSuccess(upsertedCampaignId);
             } catch (error) {
                 console.error(error);
-                setIsSuccess(false);
-                setCampaignId(null);
             }
         }
 
         callback();
-    }, [campaignName, tables, surveys, passiveSensingConfig]);
+    }, [campaignId, campaignName, tables, surveys, passiveSensingConfig, onSuccess]);
 
-    return { updateSensorConfig, isSuccess, campaignId, setIsSuccess, setCampaignId };
+    return { updateSensorConfig };
 }

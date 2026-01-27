@@ -1,17 +1,8 @@
-import Section from "@/components/common/Section";
-import CampaignName from "@/components/settings/CampaignName";
-import DisplayConfiguration from "@/components/settings/DisplayConfiguration";
-import { Card } from "flowbite-react";
+import { redirect } from "next/navigation";
 
-const Page = () => {
-    return (<Card className="m-4">
-        <Section title="General">
-            <CampaignName />
-        </Section>
-        <Section title="Database Configuration">
-            <DisplayConfiguration />
-        </Section>
-    </Card>);
+const Page: React.FC<{ params: { id: string } }> = ({ params }) => {
+    const { id } = params;
+    redirect(`/campaigns/${id}/settings/general`);
 }
 
 export default Page;

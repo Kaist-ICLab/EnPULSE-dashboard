@@ -4,11 +4,12 @@ import { useEffect } from "react";
 import useCampaign from "@/hooks/useCampaign";
 
 const CampaignInitProvider: React.FC<{ campaignId: number, campaigns: { id: number, name: string }[], children: React.ReactNode }> = ({ campaignId, campaigns, children }) => {
-    const { selectCampaign, setCampaignList: setCampaigns } = useCampaign();
+    const { selectCampaign, setCampaignList } = useCampaign();
+    console.log("CampaignInitProvider");
     useEffect(() => {
-        setCampaigns(new Map(campaigns.map(campaign => [campaign.id, campaign.name])));
+        setCampaignList(new Map(campaigns.map(campaign => [campaign.id, campaign.name])));
         selectCampaign(campaignId);
-    }, [campaignId, campaigns, selectCampaign, setCampaigns]);
+    }, [campaignId, campaigns, selectCampaign, setCampaignList]);
     return <>{children}</>;
 }
 

@@ -8,6 +8,7 @@ interface PassiveSensingConfig {
 }
 
 interface CampaignConfigEditState {
+    campaignId: number;
     campaignName: string;
     tables: CampaignTable[];
     passiveSensingConfig: PassiveSensingConfig;
@@ -44,9 +45,22 @@ interface CampaignConfigEditState {
     updateTriggerChildQuestion: (surveyIndex: number, questionIndex: number, triggerIndex: number, childQuestionIndex: number, updates: Partial<SurveyQuestion>) => void;
     reorderTriggerChildQuestion: (surveyIndex: number, questionIndex: number, triggerIndex: number, childQuestionIndex: number, direction: 'up' | 'down') => void;
     reset: () => void;
+    /**
+     * Set store state from a loaded campaign.
+     * Keep this type shallow to avoid TS "type instantiation is excessively deep" on recursive survey types.
+     */
+    setCampaign: (campaign: {
+        id: number;
+        name: string;
+        campaign_table: CampaignTable[];
+        start_time_of_day: number;
+        end_time_of_day: number;
+        survey: Survey[];
+    }) => void;
 }
 
 const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
+    campaignId: -1,
     campaignName: "",
     tables: [],
     passiveSensingConfig: {
@@ -453,6 +467,23 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
                 endTime: 23 * 60 * 60 * 1000 + 59 * 60 * 1000,
             },
             surveys: [],
+        });
+    },
+
+    setCampaign: (campaign: {
+        id: number;
+        name: string;
+        start_time_of_day: number;
+        end_time_of_day: number;
+        campaign_table: CampaignTable[];
+        survey: Survey[];
+    }) => {
+        set({
+            campaignId: campaign.id,
+            campaignName: campaign.name,
+            tables: campaign.campaign_table,
+            passiveSensingConfig: { startTime: campaign.start_time_of_day, endTime: campaign.end_time_of_day },
+            surveys: campaign.survey,
         });
     }
 }));

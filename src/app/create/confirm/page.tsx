@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { useUpdateSensorConfig } from "@/hooks/configuration/useUpdateSensorConfig";
 
 import { Card } from "flowbite-react";
@@ -10,14 +9,8 @@ import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
 
 const ConfirmPage: React.FC = () => {
     const { campaignName, tables, surveys } = useCampaignConfigEdit();
-    const { updateSensorConfig, isSuccess, campaignId } = useUpdateSensorConfig();
+    const { updateSensorConfig } = useUpdateSensorConfig((id) => { router.push(`/campaigns/${id}`); });
     const router = useRouter();
-
-    useEffect(() => {
-        if (isSuccess && campaignId !== null) {
-            router.push(`/campaigns/${campaignId}`);
-        }
-    }, [isSuccess, campaignId, router]);
 
     return (
         <>

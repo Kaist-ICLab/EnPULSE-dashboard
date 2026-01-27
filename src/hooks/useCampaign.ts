@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { CampaignTable, CampaignTableField, CampaignParticipant } from '@/types/campaign';
+import { CampaignTable, CampaignTableField, CampaignParticipant, Campaign } from '@/types/campaign';
 import { getCampaignList, getCampaignInfo } from '@/services/campaignService';
 import { DeepRequired } from '@/utils/type';
 
@@ -10,6 +10,7 @@ interface Response {
 }
 
 interface CampaignState {
+    campaign?: DeepRequired<Campaign>;
     campaignList: Map<number, string>;
     campaignTables: Map<number, DeepRequired<CampaignTable>>;
     campaignTableFields: Map<number, DeepRequired<CampaignTableField>>;
@@ -25,8 +26,6 @@ interface CampaignState {
     setCampaignList: (campaigns: Map<number, string>) => void;
     selectCampaign: (campaignId: number) => Promise<void>;
     updateCampaignName: (campaignId: number, name: string) => Promise<void>;
-    updateCampaignTable: (tableId: number, dailyCountMax: number) => Promise<void>;
-    updateCampaignField: (changes: Partial<CampaignTableField>[]) => Promise<void>;
 }
 
 
@@ -83,6 +82,7 @@ const useCampaign = create<CampaignState>((set, get) => ({
             const mappingMap = new Map(campaignTableFieldMappings); // We don't care about the order of the mapping
 
             set({
+                campaign: campaign,
                 campaignTables: tablesMap,
                 campaignTableFields: fieldsMap,
                 campaignTableFieldMapping: mappingMap,
@@ -102,13 +102,6 @@ const useCampaign = create<CampaignState>((set, get) => ({
      ********** */
     //eslint-disable-next-line @typescript-eslint/no-unused-vars
     updateCampaignName: async (campaignId: number, name: string) => {
-    },
-    //eslint-disable-next-line @typescript-eslint/no-unused-vars
-    updateCampaignTable: async (tableId: number, dailyCountMax: number) => {
-    },
-    //eslint-disable-next-line @typescript-eslint/no-unused-vars
-    updateCampaignField: async (changes: Partial<CampaignTableField>[]) => {
-
     },
 }));
 

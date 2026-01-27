@@ -1,26 +1,22 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems } from "flowbite-react";
+import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems, SidebarCollapse, Dropdown, DropdownItem } from "flowbite-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 const DashboardSidebar: React.FC = () => {
     const pathname = usePathname();
 
-    const isActive = (href: string) => {
+    const id = useMemo(() => {
+        return parseInt(pathname.split("/")[2]);
+    }, [pathname]);
+
+    const isActive = (directory: string) => {
         const path = pathname.split("/");
-        const hrefPath = href.slice(2)
-        return path[3] === hrefPath; // Compare [here]: /campaigns/:campaignId/[here]
+        return path[3] === directory;
     };
 
     const [collapsed, setCollapsed] = useState(true);
-
-    const menus = [
-        { name: "Dashboard", icon: "icon-[fluent-mdl2--b-i-dashboard]", href: `./dashboard` },
-        { name: "Messaging", icon: "icon-[mi--message-alt]", href: `./messaging` },
-        { name: "Settings", icon: "icon-[uil--setting]", href: `./settings` },
-        { name: "Notification", icon: "icon-[mingcute--notification-line]", href: `./` },
-    ];
 
     return (
         <Sidebar className="h-screen border-r-1 border-gray-300 bg-white" collapsed={collapsed}>
@@ -31,26 +27,76 @@ const DashboardSidebar: React.FC = () => {
                     </SidebarItem>
                 </SidebarItemGroup>
                 <SidebarItemGroup>
-                    {
-                        menus.map((menu, idx) => (
-                            <SidebarItem key={`menu-${idx}`} as={Link} href={menu.href} icon={SidebarIcon({ icon: menu.icon })} className={` ${isActive(menu.href) ? "bg-gray-200 hover:bg-gray-200" : "hover:bg-gray-100"} text-sm`}>
-                                <span className="mr-1 align-baseline">{menu.name}</span>
-                            </SidebarItem>
-                        ))
-                    }
+                    <MySidebarItem isActive={isActive("dashboard")} href={`/campaigns/${id}/dashboard`} icon="icon-[fluent-mdl2--b-i-dashboard]" name="Campaigns" />
+                    <MySidebarItem isActive={isActive("messaging")} href={`/campaigns/${id}/messaging`} icon="icon-[mi--message-alt]" name="Messaging" />
+                    {collapsed ? (
+                        <SettingsDropdown isActive={isActive} id={id} />
+                    ) : (
+                        <SidebarCollapse icon={SidebarIcon({ icon: "icon-[uil--setting]" })} label="Settings">
+                            <MySidebarItem isActive={isActive("general")} href={`/campaigns/${id}/settings/general`} name="General" />
+                            <MySidebarItem isActive={isActive("passive-sensing")} href={`/campaigns/${id}/settings/passive-sensing`} name="Passive Sensing" />
+                            <MySidebarItem isActive={isActive("active-sensing")} href={`/campaigns/${id}/settings/active-sensing`} name="Active Sensing" />
+                        </SidebarCollapse>
+                    )}
+                    <MySidebarItem isActive={isActive("./notification")} href={`/campaigns/${id}/notification`} icon="icon-[mingcute--notification-line]" name="Notification" />
                 </SidebarItemGroup>
             </SidebarItems>
         </Sidebar>
     )
 }
 
-function SidebarIcon(props: {
-    icon: string;
-}) {
-    const { icon } = props;
+const SidebarIcon = (props: { icon: string }) => {
     return function IconComponent() {
-        return <span className={`w-5 h-5 text-gray-500 ${icon} text-align-center`} />;
-    };
+        return <span className={`w-5 h-5 text-gray-500 ${props.icon} text-align-center`} />
+    }
+}
+
+const MySidebarItem: React.FC<{
+    isActive: boolean;
+    href: string;
+    icon?: string;
+    name: string;
+}> = ({ isActive, href, icon, name }) => {
+    return <SidebarItem as={Link} href={href} icon={icon ? SidebarIcon({ icon: icon }) : () => <></>} className={` ${isActive ? "bg-gray-200 hover:bg-gray-200" : "hover:bg-gray-100"} text-sm`}>
+        <span className="mr-1 align-baseline">{name}</span>
+    </SidebarItem>
+}
+
+const SettingsDropdown: React.FC<{
+    isActive: (directory: string) => boolean;
+    id: number;
+}> = ({ isActive, id }) => {
+    const settingsItems = [
+        { name: "General", href: `/campaigns/${id}/settings/general`, directory: "general" },
+        { name: "Passive Sensing", href: `/campaigns/${id}/settings/passive-sensing`, directory: "passive-sensing" },
+        { name: "Active Sensing", href: `/campaigns/${id}/settings/active-sensing`, directory: "active-sensing" },
+    ];
+
+    return (
+        <Dropdown
+            dismissOnClick={true}
+            placement="right-start"
+            renderTrigger={() => (
+                <SidebarItem
+                    icon={SidebarIcon({ icon: "icon-[uil--setting]" })}
+                    className={`text-sm hover:bg-gray-100 cursor-pointer`}
+                >
+                    <span className="mr-1 align-baseline">Settings</span>
+                </SidebarItem>
+            )}
+        >
+            {settingsItems.map((item, index) => (
+                <DropdownItem
+                    key={index}
+                    as={Link}
+                    href={item.href}
+                    className={`${isActive(item.directory) ? "bg-gray-200 hover:bg-gray-200" : "hover:bg-gray-100"} text-sm`}
+                >
+                    {item.name}
+                </DropdownItem>
+            ))}
+        </Dropdown>
+    );
 }
 
 export default DashboardSidebar;

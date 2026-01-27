@@ -5,7 +5,9 @@ import { usePassiveSensingTime } from "@/hooks/configuration/usePassiveSensingTi
 import SurveyList from "./SurveyList";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 
-const ActiveSensingForm: React.FC = () => {
+const ActiveSensingForm: React.FC<{
+    baseUrl: string;
+}> = ({ baseUrl }) => {
     const { startTimeString, endTimeString, endTimeNextDay, setStartTime, setEndTime } = usePassiveSensingTime();
     const { surveys } = useCampaignConfigEdit();
 
@@ -51,7 +53,7 @@ const ActiveSensingForm: React.FC = () => {
                     </div>
                 </div>
             </Card>}
-            <SurveyList />
+            <SurveyList baseUrl={baseUrl} />
         </div>
     );
 };

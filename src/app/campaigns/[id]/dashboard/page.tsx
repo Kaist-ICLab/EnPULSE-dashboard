@@ -15,7 +15,7 @@ const Page = () => {
     }, [])
 
     return (
-        <div className="space-y-4 p-4">
+        <>
             <DailyOverviewTable
                 syncTime={lastLoaded}
                 openMessageModal={(sendTo: CampaignParticipant[]) => { setSendTo(sendTo); setMessageModalVisible(true); }}
@@ -29,7 +29,7 @@ const Page = () => {
                     onClose={() => setMessageModalVisible(false)}
                 />
             }
-        </div>
+        </>
     );
 }
 

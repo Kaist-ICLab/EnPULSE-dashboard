@@ -29,7 +29,7 @@ export default async function CampaignLayout({
                 <div className="flex flex-col w-full items-stretch grow overflow-auto">
                     <Header />
                     <div className="flex flex-row grow w-full overflow-hidden">
-                        <main className="flex flex-col w-full items-stretch gap-4 grow overflow-auto">
+                        <main className="flex flex-col w-full items-stretch gap-4 grow overflow-auto p-4">
                             {children}
                         </main>
                     </div>
