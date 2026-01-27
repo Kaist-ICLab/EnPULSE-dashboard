@@ -13,7 +13,20 @@ interface CampaignConfigEditState {
     tables: CampaignTable[];
     passiveSensingConfig: PassiveSensingConfig;
     surveys: Survey[];
+    removedEntries: {
+        table: number[];
+        field: number[];
+        mapping: number[];
+        survey: number[];
+        question: number[];
+        option: number[];
+        trigger: number[];
+    }
+
+    // Campaign basic information
     setCampaignName: (name: string) => void;
+
+    // Passive sensing
     setDailyCountMax: (index: number, value: number) => void;
     addTable: (table: CampaignTable) => void;
     removeTable: (index: number) => void;
@@ -23,23 +36,29 @@ interface CampaignConfigEditState {
     setFieldMapping: (tableIndex: number, fieldIdx: number, mapping: { value: string, display: string }[]) => void;
     setPassiveSensingStartTime: (timeMs: number) => void;
     setPassiveSensingEndTime: (timeMs: number) => void;
+
+    // Active sensing
     addSurvey: () => void;
     removeSurvey: (index: number) => void;
     updateSurveyTitle: (index: number, title: string) => void;
     updateSurveyDescription: (index: number, description: string) => void;
     updateSurveyScheduleMethod: (index: number, scheduleMethod: ScheduleMethod) => void;
+
     addSurveyQuestion: (surveyIndex: number) => void;
     removeSurveyQuestion: (surveyIndex: number, questionIndex: number) => void;
     updateSurveyQuestion: (surveyIndex: number, questionIndex: number, updates: Partial<SurveyQuestion>) => void;
     reorderSurveyQuestion: (surveyIndex: number, questionIndex: number, direction: 'up' | 'down') => void;
+
     addSurveyQuestionOption: (surveyIndex: number, questionIndex: number) => void;
     removeSurveyQuestionOption: (surveyIndex: number, questionIndex: number, optionIndex: number) => void;
     updateSurveyQuestionOption: (surveyIndex: number, questionIndex: number, optionIndex: number, updates: Partial<SurveyQuestionOption>) => void;
     reorderSurveyQuestionOption: (surveyIndex: number, questionIndex: number, optionIndex: number, direction: 'up' | 'down') => void;
+
     addSurveyQuestionTrigger: (surveyIndex: number, questionIndex: number) => void;
     removeSurveyQuestionTrigger: (surveyIndex: number, questionIndex: number, triggerIndex: number) => void;
     updateSurveyQuestionTrigger: (surveyIndex: number, questionIndex: number, triggerIndex: number, updates: Partial<SurveyQuestionTrigger>) => void;
     updateSurveyQuestionTriggerExpression: (surveyIndex: number, questionIndex: number, triggerIndex: number, expression: Expression) => void;
+
     addTriggerChildQuestion: (surveyIndex: number, questionIndex: number, triggerIndex: number) => void;
     removeTriggerChildQuestion: (surveyIndex: number, questionIndex: number, triggerIndex: number, childQuestionIndex: number) => void;
     updateTriggerChildQuestion: (surveyIndex: number, questionIndex: number, triggerIndex: number, childQuestionIndex: number, updates: Partial<SurveyQuestion>) => void;
@@ -68,6 +87,15 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         endTime: 23 * 60 * 60 * 1000 + 59 * 60 * 1000, // 23:59 in milliseconds
     },
     surveys: [],
+    removedEntries: {
+        table: [],
+        field: [],
+        mapping: [],
+        survey: [],
+        question: [],
+        option: [],
+        trigger: [],
+    },
 
     setCampaignName: (name: string) => {
         set({ campaignName: name });
@@ -95,8 +123,12 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     removeTable: (index: number) => {
         set((state) => {
             const newTables = [...state.tables];
-            newTables.splice(index, 1);
+            const removedTableId = newTables.splice(index, 1)[0].id ?? -1;
             return {
+                removedEntries: {
+                    ...state.removedEntries,
+                    table: [...state.removedEntries.table, removedTableId],
+                },
                 tables: newTables,
             };
         });
@@ -116,9 +148,12 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     removeField: (tableIndex: number, fieldIdx: number) => {
         set((state) => {
             const newTables = structuredClone(state.tables);
-            newTables[tableIndex].campaign_table_field.splice(fieldIdx, 1);
-
+            const removedFieldId = newTables[tableIndex].campaign_table_field.splice(fieldIdx, 1)[0].id ?? -1;
             return {
+                removedEntries: {
+                    ...state.removedEntries,
+                    field: [...state.removedEntries.field, removedFieldId],
+                },
                 tables: newTables,
             };
         });
@@ -142,9 +177,14 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     setFieldMapping: (tableIndex: number, fieldIdx: number, mapping: { value: string, display: string }[]) => {
         set((state) => {
             const newTables = structuredClone(state.tables);
+            const originalMapping = newTables[tableIndex].campaign_table_field[fieldIdx].campaign_table_field_mapping;
             newTables[tableIndex].campaign_table_field[fieldIdx] = { ...newTables[tableIndex].campaign_table_field[fieldIdx], campaign_table_field_mapping: mapping.map(m => ({ value: m.value, display: m.display, field_id: -1 })) };
             return {
                 tables: newTables,
+                removedEntries: {
+                    ...state.removedEntries,
+                    mapping: [...state.removedEntries.mapping, ...originalMapping.map(m => m.id ?? -1)],
+                },
             };
         });
     },
@@ -185,8 +225,14 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     removeSurvey: (index: number) => {
         set((state) => {
             const newSurveys = [...state.surveys];
-            newSurveys.splice(index, 1);
-            return { surveys: newSurveys };
+            const removedSurveyId = newSurveys.splice(index, 1)[0].id ?? -1;
+            return {
+                removedEntries: {
+                    ...state.removedEntries,
+                    survey: [...state.removedEntries.survey, removedSurveyId],
+                },
+                surveys: newSurveys,
+            };
         });
     },
 
@@ -237,11 +283,18 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     removeSurveyQuestion: (surveyIndex: number, questionIndex: number) => {
         set((state) => {
             const newSurveys = [...state.surveys];
+            const removedQuestionId = newSurveys[surveyIndex].survey_question.splice(questionIndex, 1)[0].id ?? -1;
             newSurveys[surveyIndex] = {
                 ...newSurveys[surveyIndex],
                 survey_question: newSurveys[surveyIndex].survey_question.filter((_, i) => i !== questionIndex),
             };
-            return { surveys: newSurveys };
+            return {
+                removedEntries: {
+                    ...state.removedEntries,
+                    question: [...state.removedEntries.question, removedQuestionId],
+                },
+                surveys: newSurveys,
+            };
         });
     },
 
@@ -298,9 +351,15 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         set((state) => {
             const newSurveys = structuredClone(state.surveys);
             const question = newSurveys[surveyIndex].survey_question[questionIndex];
+            const removedOptionId = question.survey_question_option.splice(optionIndex, 1)[0].id ?? -1;
             question.survey_question_option = question.survey_question_option.filter((_, i) => i !== optionIndex);
-
-            return { surveys: newSurveys };
+            return {
+                removedEntries: {
+                    ...state.removedEntries,
+                    option: [...state.removedEntries.option, removedOptionId],
+                },
+                surveys: newSurveys,
+            };
         });
     },
 
@@ -353,10 +412,17 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         set((state) => {
             const newSurveys = structuredClone(state.surveys);
             const question = newSurveys[surveyIndex].survey_question[questionIndex];
+            const removedTriggerId = question.survey_question_trigger?.splice(triggerIndex, 1)[0].id ?? -1;
             if (question.survey_question_trigger) {
                 question.survey_question_trigger = question.survey_question_trigger.filter((_, i) => i !== triggerIndex);
             }
-            return { surveys: newSurveys };
+            return {
+                removedEntries: {
+                    ...state.removedEntries,
+                    trigger: [...state.removedEntries.trigger, removedTriggerId],
+                },
+                surveys: newSurveys,
+            };
         });
     },
 
@@ -414,10 +480,17 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             const newSurveys = structuredClone(state.surveys);
             const question = newSurveys[surveyIndex].survey_question[questionIndex];
             const trigger = question.survey_question_trigger?.[triggerIndex];
+            const removedChildQuestionId = trigger?.survey_question?.splice(childQuestionIndex, 1)[0].id ?? -1;
             if (trigger && trigger.survey_question) {
                 trigger.survey_question = trigger.survey_question.filter((_, i) => i !== childQuestionIndex);
             }
-            return { surveys: newSurveys };
+            return {
+                removedEntries: {
+                    ...state.removedEntries,
+                    question: [...state.removedEntries.question, removedChildQuestionId],
+                },
+                surveys: newSurveys,
+            };
         });
     },
 
@@ -460,7 +533,17 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
 
     reset: () => {
         set({
+            campaignId: -1,
             campaignName: "",
+            removedEntries: {
+                table: [],
+                field: [],
+                mapping: [],
+                survey: [],
+                question: [],
+                option: [],
+                trigger: [],
+            },
             tables: [],
             passiveSensingConfig: {
                 startTime: 0,

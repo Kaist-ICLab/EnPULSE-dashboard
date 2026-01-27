@@ -60,10 +60,14 @@ export const upsertCampaignTable = async (campaignTable: CampaignTable[], insert
 
     insertedCampaignTable.forEach(ct => delete ct.campaign_table_field);
 
+    console.log(insertedCampaignTable);
+
     const { data, error } = await supabase
         .from('campaign_table')
-        .upsert(insertedCampaignTable)
+        .upsert(insertedCampaignTable, { defaultToNull: false })
         .select()
+
+    console.log(data)
 
     if (error) throw new Error(error.message);
     const insertedId = data.map(d => d.id);
@@ -83,14 +87,14 @@ export const upsertCampaignTableField = async (campaignTableField: CampaignTable
 
     insertedCampaignTableField.forEach(ctf => delete ctf.campaign_table_field_mapping);
 
-    const { data, error } = await supabase.from('campaign_table_field').upsert(insertedCampaignTableField).select()
+    const { data, error } = await supabase.from('campaign_table_field').upsert(insertedCampaignTableField, { defaultToNull: false }).select()
     if (error) throw new Error(error.message);
     const insertedId = data.map(d => d.id);
 
     if (insertChildTables) {
         propagatedCampaignTableField.forEach((ctf, idx) => { ctf.campaign_table_field_mapping.forEach(ctfm => ctfm.field_id = insertedId[idx]) })
         const campaignTableFieldMappings = propagatedCampaignTableField.flatMap(ctf => ctf.campaign_table_field_mapping);
-        await supabase.from('campaign_table_field_mapping').upsert(campaignTableFieldMappings).select()
+        await supabase.from('campaign_table_field_mapping').upsert(campaignTableFieldMappings, { defaultToNull: false }).select()
     }
 }
 
@@ -102,7 +106,7 @@ export const upsertSurvey = async (survey: Survey[], insertChildTables: boolean 
 
     insertedSurvey.forEach(s => delete s.survey_question);
 
-    const { data, error } = await supabase.from('survey').upsert(insertedSurvey).select()
+    const { data, error } = await supabase.from('survey').upsert(insertedSurvey, { defaultToNull: false }).select()
     if (error) throw new Error(error.message);
     const insertedId = data.map(d => d.id);
 
@@ -121,14 +125,14 @@ export const upsertSurveyQuestion = async (surveyQuestion: SurveyQuestion[], ins
 
     insertedSurveyQuestion.forEach(sq => { delete sq.survey_question_option; delete sq.survey_question_trigger });
 
-    const { data, error } = await supabase.from('survey_question').upsert(insertedSurveyQuestion).select()
+    const { data, error } = await supabase.from('survey_question').upsert(insertedSurveyQuestion, { defaultToNull: false }).select()
     if (error) throw new Error(error.message);
     const insertedId = data.map(d => d.id);
 
     if (insertChildTables) {
         propagatedSurveyQuestion.forEach((sq, idx) => { sq.survey_question_option.forEach(sqo => sqo.question_id = insertedId[idx]) })
         const surveyQuestionOptions = propagatedSurveyQuestion.flatMap(sq => sq.survey_question_option);
-        await supabase.from('survey_question_option').upsert(surveyQuestionOptions).select()
+        await supabase.from('survey_question_option').upsert(surveyQuestionOptions, { defaultToNull: false }).select()
     }
 }
 
