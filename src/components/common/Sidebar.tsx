@@ -2,19 +2,25 @@
 import { usePathname } from "next/navigation";
 import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems, SidebarCollapse, Dropdown, DropdownItem } from "flowbite-react";
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 
 const DashboardSidebar: React.FC = () => {
     const pathname = usePathname();
 
-    const id = useMemo(() => {
-        return parseInt(pathname.split("/")[2]);
+    const baseUrl = useMemo(() => {
+        const id = pathname.split("/")[2];
+        return `/campaigns/${id}`;
     }, [pathname]);
 
-    const isActive = (directory: string) => {
-        const path = pathname.split("/");
-        return path[3] === directory;
-    };
+    const isActive = useCallback((directory: string) => {
+        return pathname.startsWith(`${baseUrl}/${directory}`) || pathname.startsWith(directory);
+    }, [pathname, baseUrl]);
+
+    const settingsItems = useMemo(() => [
+        { name: "General", href: `${baseUrl}/settings/general` },
+        { name: "Passive Sensing", href: `${baseUrl}/settings/passive-sensing` },
+        { name: "Active Sensing", href: `${baseUrl}/settings/active-sensing` },
+    ], [baseUrl]);
 
     const [collapsed, setCollapsed] = useState(true);
 
@@ -27,18 +33,18 @@ const DashboardSidebar: React.FC = () => {
                     </SidebarItem>
                 </SidebarItemGroup>
                 <SidebarItemGroup>
-                    <MySidebarItem isActive={isActive("dashboard")} href={`/campaigns/${id}/dashboard`} icon="icon-[fluent-mdl2--b-i-dashboard]" name="Campaigns" />
-                    <MySidebarItem isActive={isActive("messaging")} href={`/campaigns/${id}/messaging`} icon="icon-[mi--message-alt]" name="Messaging" />
+                    <MySidebarItem isActive={isActive("dashboard")} href={`${baseUrl}/dashboard`} icon="icon-[fluent-mdl2--b-i-dashboard]" name="Campaigns" />
+                    <MySidebarItem isActive={isActive("messaging")} href={`${baseUrl}/messaging`} icon="icon-[mi--message-alt]" name="Messaging" />
                     {collapsed ? (
-                        <SettingsDropdown isActive={isActive} id={id} />
+                        <SettingsDropdown isActive={isActive} settingsItems={settingsItems} />
                     ) : (
-                        <SidebarCollapse icon={SidebarIcon({ icon: "icon-[uil--setting]" })} label="Settings">
-                            <MySidebarItem isActive={isActive("general")} href={`/campaigns/${id}/settings/general`} name="General" />
-                            <MySidebarItem isActive={isActive("passive-sensing")} href={`/campaigns/${id}/settings/passive-sensing`} name="Passive Sensing" />
-                            <MySidebarItem isActive={isActive("active-sensing")} href={`/campaigns/${id}/settings/active-sensing`} name="Active Sensing" />
+                        <SidebarCollapse icon={SidebarIcon({ icon: "icon-[uil--setting]" })} label="Settings" className="text-sm">
+                            {settingsItems.map((item, index) => (
+                                <MySidebarItem key={index} isActive={isActive(item.href)} href={item.href} name={item.name} />
+                            ))}
                         </SidebarCollapse>
                     )}
-                    <MySidebarItem isActive={isActive("./notification")} href={`/campaigns/${id}/notification`} icon="icon-[mingcute--notification-line]" name="Notification" />
+                    <MySidebarItem isActive={isActive(`${baseUrl}/notification`)} href={`${baseUrl}/notification`} icon="icon-[mingcute--notification-line]" name="Notification" />
                 </SidebarItemGroup>
             </SidebarItems>
         </Sidebar>
@@ -64,14 +70,8 @@ const MySidebarItem: React.FC<{
 
 const SettingsDropdown: React.FC<{
     isActive: (directory: string) => boolean;
-    id: number;
-}> = ({ isActive, id }) => {
-    const settingsItems = [
-        { name: "General", href: `/campaigns/${id}/settings/general`, directory: "general" },
-        { name: "Passive Sensing", href: `/campaigns/${id}/settings/passive-sensing`, directory: "passive-sensing" },
-        { name: "Active Sensing", href: `/campaigns/${id}/settings/active-sensing`, directory: "active-sensing" },
-    ];
-
+    settingsItems: { name: string; href: string }[];
+}> = ({ isActive, settingsItems }) => {
     return (
         <Dropdown
             dismissOnClick={true}
@@ -79,7 +79,7 @@ const SettingsDropdown: React.FC<{
             renderTrigger={() => (
                 <SidebarItem
                     icon={SidebarIcon({ icon: "icon-[uil--setting]" })}
-                    className={`text-sm hover:bg-gray-100 cursor-pointer`}
+                    className={`text-sm hover:bg-gray-100 cursor-pointer ${isActive(`settings`) ? "bg-gray-200 hover:bg-gray-200!" : "hover:bg-gray-100"}`}
                 >
                     <span className="mr-1 align-baseline">Settings</span>
                 </SidebarItem>
@@ -90,7 +90,7 @@ const SettingsDropdown: React.FC<{
                     key={index}
                     as={Link}
                     href={item.href}
-                    className={`${isActive(item.directory) ? "bg-gray-200 hover:bg-gray-200" : "hover:bg-gray-100"} text-sm`}
+                    className={`${isActive(item.href) ? "bg-gray-200 hover:bg-gray-200!" : "hover:bg-gray-100"} text-sm`}
                 >
                     {item.name}
                 </DropdownItem>
