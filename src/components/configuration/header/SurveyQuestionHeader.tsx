@@ -23,7 +23,7 @@ export default function SurveyQuestionHeader() {
             </Select>
             <Button
                 color="blue"
-                onClick={() => addSurveyQuestion(currentSurveyIndex)}
+                onClick={() => addSurveyQuestion(currentSurveyIndex, [])}
                 className="ml-4"
             >
                 <span className="icon-[tabler--plus] mr-2"></span> Add Question

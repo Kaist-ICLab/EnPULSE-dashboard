@@ -15,8 +15,17 @@ export default function SurveyQuestionsPage() {
 
     if (!survey) {
         return (
-            <div className="w-full flex items-center justify-center py-12">
-                <p className="text-gray-500 text-lg">Survey not found</p>
+            <div className="w-full flex flex-col gap-4 items-center justify-center py-12">
+                <p className="text-gray-500 text-lg">
+                    Survey not found
+
+                </p>
+                <Button
+                    color="gray"
+                    onClick={() => router.push('/create/active-sensing')}
+                >
+                    Back to Active Sensing Configuration
+                </Button>
             </div>
         );
     }
@@ -24,7 +33,7 @@ export default function SurveyQuestionsPage() {
     return (
         <div className="w-full flex flex-col gap-6">
             <QuestionList surveyIndex={surveyIndex} />
-            <div className="flex gap-4">
+            <div className="flex gap-4 mb-4">
                 <Button
                     color="gray"
                     onClick={() => router.push('/create/active-sensing')}

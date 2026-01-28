@@ -60,14 +60,10 @@ export const upsertCampaignTable = async (campaignTable: CampaignTable[], insert
 
     insertedCampaignTable.forEach(ct => delete ct.campaign_table_field);
 
-    console.log(insertedCampaignTable);
-
     const { data, error } = await supabase
         .from('campaign_table')
         .upsert(insertedCampaignTable, { defaultToNull: false })
         .select()
-
-    console.log(data)
 
     if (error) throw new Error(error.message);
     const insertedId = data.map(d => d.id);
