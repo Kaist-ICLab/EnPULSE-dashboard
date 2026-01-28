@@ -1008,57 +1008,6 @@ export type Database = {
                     },
                 ]
             }
-            question_response: {
-                Row: {
-                    actual_trigger_time: string
-                    created_at: string
-                    id: number
-                    question_id: number
-                    response: string[]
-                    response_submission_time: string
-                    survey_start_time: string
-                    trigger_time: string
-                    uuid: string
-                }
-                Insert: {
-                    actual_trigger_time: string
-                    created_at?: string
-                    id?: number
-                    question_id: number
-                    response: string[]
-                    response_submission_time: string
-                    survey_start_time: string
-                    trigger_time: string
-                    uuid: string
-                }
-                Update: {
-                    actual_trigger_time?: string
-                    created_at?: string
-                    id?: number
-                    question_id?: number
-                    response?: string[]
-                    response_submission_time?: string
-                    survey_start_time?: string
-                    trigger_time?: string
-                    uuid?: string
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "question_response_question_id_fkey"
-                        columns: ["question_id"]
-                        isOneToOne: false
-                        referencedRelation: "survey_question"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "question_response_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
-            }
             screen_sensor: {
                 Row: {
                     created_at: string | null
@@ -1241,21 +1190,18 @@ export type Database = {
                     display: string
                     id: number
                     question_id: number | null
-                    value: string
                 }
                 Insert: {
                     allow_free_response?: boolean
                     display: string
                     id?: number
                     question_id?: number | null
-                    value: string
                 }
                 Update: {
                     allow_free_response?: boolean
                     display?: string
                     id?: number
                     question_id?: number | null
-                    value?: string
                 }
                 Relationships: [
                     {
@@ -1264,6 +1210,57 @@ export type Database = {
                         isOneToOne: false
                         referencedRelation: "survey_question"
                         referencedColumns: ["id"]
+                    },
+                ]
+            }
+            survey_question_response: {
+                Row: {
+                    actual_trigger_time: string
+                    created_at: string
+                    id: number
+                    question_id: number
+                    response: Json
+                    response_submission_time: string
+                    survey_start_time: string
+                    trigger_time: string
+                    uuid: string
+                }
+                Insert: {
+                    actual_trigger_time: string
+                    created_at?: string
+                    id?: number
+                    question_id: number
+                    response: Json
+                    response_submission_time: string
+                    survey_start_time: string
+                    trigger_time: string
+                    uuid: string
+                }
+                Update: {
+                    actual_trigger_time?: string
+                    created_at?: string
+                    id?: number
+                    question_id?: number
+                    response?: Json
+                    response_submission_time?: string
+                    survey_start_time?: string
+                    trigger_time?: string
+                    uuid?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "question_response_question_id_fkey"
+                        columns: ["question_id"]
+                        isOneToOne: false
+                        referencedRelation: "survey_question"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "question_response_uuid_fkey"
+                        columns: ["uuid"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["uuid"]
                     },
                 ]
             }

@@ -11,14 +11,14 @@ interface QuestionListProps {
 }
 
 const QuestionList: React.FC<QuestionListProps> = ({ surveyIndex }) => {
-    const { 
-        surveys, 
-        removeSurveyQuestion, 
-        updateSurveyQuestion, 
-        reorderSurveyQuestion, 
-        addSurveyQuestionOption, 
-        removeSurveyQuestionOption, 
-        updateSurveyQuestionOption, 
+    const {
+        surveys,
+        removeSurveyQuestion,
+        updateSurveyQuestion,
+        reorderSurveyQuestion,
+        addSurveyQuestionOption,
+        removeSurveyQuestionOption,
+        updateSurveyQuestionOption,
         reorderSurveyQuestionOption,
         addSurveyQuestionTrigger,
         removeSurveyQuestionTrigger,
@@ -460,7 +460,7 @@ const ExpressionBuilder: React.FC<{
                     >
                         <option value="">Or select option...</option>
                         {(question.survey_question_option || []).map((option, idx) => (
-                            <option key={idx} value={option.value}>
+                            <option key={idx} value={option.display}>
                                 {option.display}
                             </option>
                         ))}

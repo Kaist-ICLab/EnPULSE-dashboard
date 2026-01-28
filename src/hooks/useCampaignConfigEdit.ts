@@ -330,7 +330,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             const question = newSurveys[surveyIndex].survey_question[questionIndex];
             const newOption: SurveyQuestionOption = {
                 question_id: -1,
-                value: `option_${question.survey_question_option.length + 1}`,
                 display: `Option ${question.survey_question_option.length + 1}`,
                 allow_free_response: false,
             };
