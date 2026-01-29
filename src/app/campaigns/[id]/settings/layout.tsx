@@ -7,7 +7,9 @@ export default async function SettingsLayout({
 }>) {
     return (
         <NewCampaignTablesInitProvider isNewCampaign={false}>
-            {children}
+            <div className="max-w-3xl">
+                {children}
+            </div>
         </NewCampaignTablesInitProvider>
     );
 }
