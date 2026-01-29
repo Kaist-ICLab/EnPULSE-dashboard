@@ -25,10 +25,10 @@ export function useBarcodePlotState(data: TimelineCategoricalPoint[], bucketSize
         // Calculate opacity based on total count (normalized to 0.3 - 1.0 range)
         const opacity = Math.max(0.2, Math.min(1.0, 0.2 + (totalCount / maxTotalCount) * 0.7));
 
-        return {
+        return [{
             color: colors[0],
             opacity: opacity
-        };
+        }];
     }, [maxTotalCount]);
 
     const getTooltipData = useCallback((timeMs: number) => {

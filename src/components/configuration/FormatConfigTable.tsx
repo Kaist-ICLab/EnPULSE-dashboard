@@ -73,7 +73,7 @@ const FormatConfigTable: React.FC<{
                                         {currentTable.is_custom && removeField && (
                                             <span className="icon-[humbleicons--times] w-4 h-4 text-gray-500 hover:text-red-500 cursor-pointer" onClick={() => removeField(tableIdx, fieldIdx)}></span>
                                         )}
-                                        {field.field_type === 'categorical' && field.field_role === 'data' && (
+                                        {(field.field_type === 'categorical' || field.field_type === 'bitmask') && field.field_role === 'data' && (
                                             <span
                                                 className="icon-[material-symbols--settings] w-4 h-4 text-gray-500 hover:text-gray-700 cursor-pointer"
                                                 onClick={() => setEditingFieldIdx(fieldIdx)}
@@ -165,6 +165,7 @@ const FormatConfigTable: React.FC<{
                 <FieldMappingEditor
                     fieldName={currentTable.campaign_table_field[editingFieldIdx]?.name || ''}
                     initialMapping={currentTable.campaign_table_field[editingFieldIdx]?.campaign_table_field_mapping || []}
+                    isBitmaskMapping={currentTable.campaign_table_field[editingFieldIdx]?.field_type === 'bitmask'}
                     onClose={() => setEditingFieldIdx(null)}
                     onSave={(mapping) => {
                         setFieldMapping(tableIdx, editingFieldIdx, mapping);

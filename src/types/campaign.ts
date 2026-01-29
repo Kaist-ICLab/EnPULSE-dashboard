@@ -1,11 +1,11 @@
 import { FetchedSurvey, Survey } from "./survey";
-import { Database } from "@/lib/schema";
+import { Constants, Database } from "@/lib/schema";
 import { DeepRequired } from "@/utils/type";
 
 export type FieldType = Database['public']['Enums']['field_type'];
 export type FieldRole = Database['public']['Enums']['field_role'];
-export const FieldRoleOption: FieldRole[] = ['uid', 'timestamp', 'data', 'ignore'];
-export const FieldTypeOption: FieldType[] = ['categorical', 'numerical', 'datetime', 'text'];
+export const FieldRoleOption: readonly FieldRole[] = Constants.public.Enums.field_role;
+export const FieldTypeOption: readonly FieldType[] = Constants.public.Enums.field_type;
 
 export type Campaign = Database['public']['Tables']['campaigns']['Insert'] & {
     profiles: CampaignParticipant[];

@@ -6,7 +6,7 @@ export enum ComparisonType {
     Participants = "participants"
 }
 
-export type ChartType = "numerical" | "categorical" | "barcode"
+export type ChartType = "numerical" | "categorical" | "barcode" | "heatmap"
 
 export interface TimelineNumericalPoint {
     timestamp: number;
@@ -20,7 +20,12 @@ export interface TimelineCategoricalPoint {
     value: { category: string, count: number, aggregated: number }[];
 }
 
-export type TimelineDataPoint = TimelineNumericalPoint | TimelineCategoricalPoint;
+export interface TimelineHeatmapPoint {
+    timestamp: number;
+    value: { bitIndex: number, count: number }[];
+}
+
+export type TimelineDataPoint = TimelineNumericalPoint | TimelineCategoricalPoint | TimelineHeatmapPoint;
 
 export interface TimelineData {
     id: string;

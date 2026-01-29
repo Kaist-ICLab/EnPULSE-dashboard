@@ -1,6 +1,6 @@
 import useSectionState from "@/hooks/useSectionState";
 import { useMemo, useEffect, useCallback } from "react";
-import { TimelineCategoricalPoint, TimelineNumericalPoint } from "@/types/chart";
+import { TimelineDataPoint } from "@/types/chart";
 import { ChartType } from "@/types/chart";
 import { useTooltip } from "@visx/tooltip";
 import { scaleTime } from "@visx/scale";
@@ -9,7 +9,7 @@ import { TooltipData } from "@/types/chart";
 import { useVaryingPlotState } from "./useVaryingPlotState";
 
 export function usePlotState(
-    data: (TimelineNumericalPoint | TimelineCategoricalPoint)[],
+    data: TimelineDataPoint[],
     chartType: ChartType,
     bucketSize: number,
     baseTime: number,
@@ -57,10 +57,12 @@ export function usePlotState(
             });
         }
 
+        const rangeTop = chartType === 'barcode' ? height : chartType === 'heatmap' ? height : (height * 0.95);
+        const rangeBottom = chartType === 'numerical' ? height * 0.05 : 0;
+
         return scaleLinear({
             domain: [minValue, maxValue],
-            range: [chartType === 'barcode' ? height : (height * 0.95), chartType === 'numerical' ? height * 0.05 : 0],
-            nice: true,
+            range: [rangeTop, rangeBottom],
         });
     }, [data.length, minValue, maxValue, height, chartType]);
 

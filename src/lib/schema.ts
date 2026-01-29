@@ -2009,7 +2009,7 @@ export type Database = {
         }
         Enums: {
             field_role: "uid" | "timestamp" | "data" | "ignore"
-            field_type: "categorical" | "numerical" | "datetime" | "text"
+            field_type: "categorical" | "numerical" | "datetime" | "text" | "bitmask"
             survey_question_type: "checkbox" | "radio" | "text" | "number"
         }
         CompositeTypes: {
@@ -2142,7 +2142,7 @@ export const Constants = {
     public: {
         Enums: {
             field_role: ["uid", "timestamp", "data", "ignore"],
-            field_type: ["categorical", "numerical", "datetime", "text"],
+            field_type: ["categorical", "numerical", "datetime", "text", "bitmask"],
             survey_question_type: ["checkbox", "radio", "text", "number"],
         },
     },

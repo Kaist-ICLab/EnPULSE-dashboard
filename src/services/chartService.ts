@@ -1,6 +1,6 @@
 import { DynamicDataColumn } from '@/hooks/chart/useUserDailyStat';
 import { supabase } from '@/lib/supabase';
-import { BucketCategoricalData, BucketNumericalData, groupByTimestamp, mapQuery } from '@/lib/supabaseHelper';
+import { BucketCategoricalData, BucketNumericalData, groupByTimestamp, groupByTimestampAndBitmask, mapQuery } from '@/lib/supabaseHelper';
 import { CampaignParticipant, CampaignTable } from '@/types/campaign';
 import { ChartType, TimelineData } from '@/types/chart';
 import dayjs from 'dayjs';
@@ -86,7 +86,8 @@ export async function getSensorComparisonData(
     })).filter(field => field.table_name !== '')
 
     const data = await mapQuery(fields, field => {
-        return supabase.rpc(field.field_type == "categorical" || field.field_type == "text" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
+        const useCategoricalRpc = field.field_type === "categorical" || field.field_type === "text" || field.field_type === "bitmask";
+        return supabase.rpc(useCategoricalRpc ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: dayjs(date).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
             end_time: dayjs(date).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid: uuid,
@@ -110,6 +111,16 @@ export async function getSensorComparisonData(
                 value: groupedData ?? []
             }
 
+        } else if (field.field_type === "bitmask") {
+            const rawCategoricalData = data[idx] as (BucketCategoricalData[] | null);
+            const groupedData = groupByTimestampAndBitmask(rawCategoricalData);
+            return {
+                title: `${field.table_name} - ${field.name}`,
+                id: `${field.id}`,
+                chartType: 'heatmap' as ChartType,
+                params: { date, uuid, fieldId: field.id },
+                value: groupedData ?? []
+            };
         } else {
             const numericalData = data[idx] as BucketNumericalData[]
             return {
@@ -136,7 +147,8 @@ export async function getPersonComparisonData(
     const field = table.campaign_table_field[0]
 
     const data = await mapQuery(participants, p => {
-        return supabase.rpc(field.field_type == "categorical" || field.field_type == "text" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
+        const useCategoricalRpc = field.field_type === "categorical" || field.field_type === "text" || field.field_type === "bitmask";
+        return supabase.rpc(useCategoricalRpc ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: dayjs(date).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
             end_time: dayjs(date).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid: p.uuid,
@@ -157,6 +169,15 @@ export async function getPersonComparisonData(
                 value: groupByTimestamp(rawCategoricalData[idx])
             }
         ))
+    } else if (field.field_type === "bitmask") {
+        const rawCategoricalData = data as (BucketCategoricalData[] | null)[];
+        return participants.map((p, idx) => ({
+            title: p.email,
+            id: p.uuid,
+            chartType: 'heatmap' as ChartType,
+            params: { date, uuid: p.uuid, fieldId: field.id },
+            value: groupByTimestampAndBitmask(rawCategoricalData[idx])
+        }));
     } else {
         const numericalData = data as (BucketNumericalData[] | null)[]
         return participants.map((p, idx) => (
@@ -185,7 +206,8 @@ export async function getDaysComparisonData(
     const dates = Array.from({ length: 7 }, (_, i) => dayjs(date).subtract(i, 'day').toDate())
 
     const data = await mapQuery(dates, d => {
-        return supabase.rpc(field.field_type == "categorical" || field.field_type == "text" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
+        const useCategoricalRpc = field.field_type === "categorical" || field.field_type === "text" || field.field_type === "bitmask";
+        return supabase.rpc(useCategoricalRpc ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: dayjs(d).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
             end_time: dayjs(d).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid,
@@ -193,7 +215,6 @@ export async function getDaysComparisonData(
             column_name: field.name,
             bucket_unit: bucketSize,
         })
-
     }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
 
     if (field.field_type == "categorical" || field.field_type == "text") {
@@ -206,6 +227,15 @@ export async function getDaysComparisonData(
             value: groupByTimestamp(categoricalData[idx] ?? [])
         }
         ))
+    } else if (field.field_type === "bitmask") {
+        const categoricalData = data as (BucketCategoricalData[] | null)[];
+        return dates.map((d, idx) => ({
+            title: dayjs(d).format('YYYY-MM-DD'),
+            id: dayjs(d).format('YYYY-MM-DD'),
+            chartType: 'heatmap' as ChartType,
+            params: { date: d, uuid, fieldId: field.id },
+            value: groupByTimestampAndBitmask(categoricalData[idx] ?? [])
+        }));
     } else {
         const numericalData = data as (BucketNumericalData[] | null)[]
         return dates.map((d, idx) => ({

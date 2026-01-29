@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef } from "react";
-import { ChartType, TimelineCategoricalPoint, TimelineNumericalPoint } from "@/types/chart";
+import { ChartType, TimelineDataPoint } from "@/types/chart";
 import { TimelinePlot } from "./plot/TimelinePlot";
 import { TooltipWithBounds, defaultStyles } from "@visx/tooltip";
 import { Group } from '@visx/group';
@@ -14,7 +14,7 @@ interface TimelineChartProps {
     fieldId: number;
     chartType: ChartType;
     baseTime: number;
-    data: (TimelineNumericalPoint | TimelineCategoricalPoint)[];
+    data: TimelineDataPoint[];
     bucketSize: number;
     width: number;
     height: number;
@@ -72,7 +72,16 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
                     onMouseLeave={hideTooltip}
                 >
                     <Group onDoubleClick={handleDoubleClick}>
-                        <TimelinePlot chartType={chartType} data={data} height={height} timeScale={timeScale} valueScale={valueScale} barWidth={barWidth} getCategoryColor={getCategoryColor} getColor={getColor} />
+                        <TimelinePlot
+                            chartType={chartType}
+                            data={data}
+                            height={height}
+                            timeScale={timeScale}
+                            valueScale={valueScale}
+                            barWidth={barWidth}
+                            getCategoryColor={getCategoryColor}
+                            getColor={getColor as (point: TimelineDataPoint) => { color: string; opacity: number }[]}
+                        />
                         <Brush
                             xScale={timeScale}
                             yScale={valueScale}

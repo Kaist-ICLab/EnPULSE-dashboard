@@ -7,6 +7,7 @@ import RemoveIconButton from "./RemoveIconButton";
 interface FieldMappingEditorProps {
     fieldName: string;
     initialMapping: { value: string, display: string }[];
+    isBitmaskMapping: boolean;
     onClose: () => void;
     onSave: (mapping: { value: string, display: string }[]) => void;
 }
@@ -14,6 +15,7 @@ interface FieldMappingEditorProps {
 const FieldMappingEditor: React.FC<FieldMappingEditorProps> = ({
     fieldName,
     initialMapping,
+    isBitmaskMapping,
     onClose,
     onSave
 }) => {
@@ -28,21 +30,22 @@ const FieldMappingEditor: React.FC<FieldMappingEditorProps> = ({
                 <div className="p-4 flex-1 overflow-auto">
                     <div className="mb-4">
                         <div className="flex gap-2 mb-2">
-                            <div className="flex-1 font-medium text-sm text-gray-700">Value</div>
+                            <div className="flex-1 font-medium text-sm text-gray-700">{isBitmaskMapping ? 'Bit Index' : 'Value'}</div>
                             <div className="flex-1 font-medium text-sm text-gray-700">Display</div>
-                            <div className="w-10"></div>
+                            <div className="w-3"></div>
                         </div>
                         {mapping.map((item, idx) => (
                             <div key={idx} className="flex gap-2 mb-2 items-center">
                                 <TextInput
                                     value={item.value}
+                                    type={isBitmaskMapping ? 'number' : 'text'}
                                     onChange={(e) => {
                                         const newMapping = [...mapping];
                                         newMapping[idx] = { ...newMapping[idx], value: e.target.value };
                                         setMapping(newMapping);
                                     }}
                                     className="flex-1"
-                                    placeholder="Value"
+                                    placeholder={isBitmaskMapping ? 'Bit Index' : 'Value'}
                                 />
                                 <TextInput
                                     value={item.display}

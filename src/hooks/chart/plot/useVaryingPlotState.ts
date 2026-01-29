@@ -1,11 +1,12 @@
-import { ChartType, TimelineCategoricalPoint, TimelineNumericalPoint } from "@/types/chart";
+import { ChartType, TimelineCategoricalPoint, TimelineDataPoint, TimelineHeatmapPoint, TimelineNumericalPoint } from "@/types/chart";
 import { useNumericalPlotState } from "./useNumericalPlotState";
 import { useCategoricalPlotState } from "./useCategoricalPlotState";
 import { useBarcodePlotState } from "./useBarcodePlotState";
+import { useHeatmapPlotState } from "./useHeatmapPlotState";
 import { colors } from "@/utils/timelineUtils";
 
 export function useVaryingPlotState(
-    data: (TimelineNumericalPoint | TimelineCategoricalPoint)[],
+    data: TimelineDataPoint[],
     chartType: ChartType,
     bucketSize: number,
     fieldId: number,
@@ -29,20 +30,25 @@ export function useVaryingPlotState(
         fieldId
     );
 
+    const { maxValue: heatmapMaxValue, getTooltipData: heatmapGetTooltipData, getColor: heatmapGetColor } = useHeatmapPlotState(
+        chartType === 'heatmap' ? (data as TimelineHeatmapPoint[]) : [],
+        bucketSize,
+        fieldId
+    );
 
     if (chartType === 'numerical') {
         return {
             minValue: numericalMinValue,
             maxValue: numericalMaxValue,
             getTooltipData: numericalGetTooltipData,
-            getColor: () => ({ color: colors[0], opacity: 1 })
+            getColor: () => ([{ color: colors[0], opacity: 1 }])
         }
     } else if (chartType === 'categorical') {
         return {
             minValue: 0,
             maxValue: categoricalMaxValue,
             getTooltipData: categoricalGetTooltipData,
-            getColor: () => ({ color: colors[0], opacity: 1 })
+            getColor: () => ([{ color: colors[0], opacity: 1 }])
         }
     } else if (chartType === 'barcode') {
         return {
@@ -51,12 +57,19 @@ export function useVaryingPlotState(
             getTooltipData: barcodeGetTooltipData,
             getColor: barcodeGetColor
         }
+    } else if (chartType === 'heatmap') {
+        return {
+            minValue: 0,
+            maxValue: heatmapMaxValue,
+            getTooltipData: heatmapGetTooltipData,
+            getColor: heatmapGetColor,
+        }
     } else {
         return {
             minValue: 0,
             maxValue: 0,
             getTooltipData: () => null,
-            getColor: () => ({ color: colors[0], opacity: 1 })
+            getColor: () => ([{ color: colors[0], opacity: 1 }])
         }
     }
 }

@@ -4,7 +4,7 @@ import { Bar } from '@visx/shape';
 import { colors } from '../../../../utils/timelineUtils';
 import { TimelinePlotProps, TimelineCategoricalPoint } from "@/types/chart";
 
-export const BarcodeTimelinePlot: React.FC<TimelinePlotProps<TimelineCategoricalPoint> & { getColor: (point: TimelineCategoricalPoint) => { color: string, opacity: number } }> = ({
+export const BarcodeTimelinePlot: React.FC<TimelinePlotProps<TimelineCategoricalPoint> & { getColor: (point: TimelineCategoricalPoint) => { color: string, opacity: number }[] }> = ({
     timeScale,
     valueScale,
     barWidth,
@@ -35,8 +35,8 @@ export const BarcodeTimelinePlot: React.FC<TimelinePlotProps<TimelineCategorical
                                 y={valueScale(1)}
                                 width={barWidth * 0.6}
                                 height={height}
-                                fill={getColor(d).color}
-                                opacity={getColor(d).opacity}
+                                fill={getColor(d)[0].color}
+                                opacity={getColor(d)[0].opacity}
                             />
                         );
                     }
