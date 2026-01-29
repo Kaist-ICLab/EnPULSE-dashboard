@@ -1,87 +1,17 @@
 'use client'
 
 import { Button, Label, Select, TextInput } from "flowbite-react";
-import { ScheduleMethod, ESM } from "@/types/survey";
-import { useState, useEffect, useRef } from "react";
+import { ScheduleMethod } from "@/types/survey";
+import { millisecondsToTimeString, timeStringToMilliseconds } from "@/utils/date";
+import useSurveyScheduleState from "@/hooks/configuration/useSurveyScheduleState";
 
 interface ScheduleMethodConfigProps {
+    surveyIndex: number;
     scheduleMethod: ScheduleMethod;
-    onScheduleMethodChange: (scheduleMethod: ScheduleMethod) => void;
 }
 
-const ScheduleMethodConfig: React.FC<ScheduleMethodConfigProps> = ({ scheduleMethod, onScheduleMethodChange }) => {
-    const [methodType, setMethodType] = useState<'none' | 'esm' | 'fixed'>(() => {
-        if (!scheduleMethod) return 'none';
-        if ('minInterval' in scheduleMethod) return 'esm';
-        if ('timeOfDay' in scheduleMethod) return 'fixed';
-        return 'none';
-    });
-
-    const [esmConfig, setEsmConfig] = useState<ESM>(() => {
-        if (scheduleMethod && 'minInterval' in scheduleMethod) {
-            return scheduleMethod;
-        }
-        return { minInterval: 60, maxInterval: 120, numSurvey: 5 };
-    });
-
-    const [fixedTimes, setFixedTimes] = useState<string[]>(() => {
-        if (scheduleMethod && 'timeOfDay' in scheduleMethod) {
-            return scheduleMethod.timeOfDay || [];
-        }
-        return [];
-    });
-
-    const onScheduleMethodChangeRef = useRef(onScheduleMethodChange);
-    const prevMethodTypeRef = useRef(methodType);
-    const prevEsmConfigRef = useRef(esmConfig);
-    const prevFixedTimesRef = useRef(fixedTimes);
-
-    // Update ref when callback changes
-    useEffect(() => {
-        onScheduleMethodChangeRef.current = onScheduleMethodChange;
-    }, [onScheduleMethodChange]);
-
-    useEffect(() => {
-        const methodTypeChanged = prevMethodTypeRef.current !== methodType;
-        const esmConfigChanged = JSON.stringify(prevEsmConfigRef.current) !== JSON.stringify(esmConfig);
-        const fixedTimesChanged = JSON.stringify(prevFixedTimesRef.current) !== JSON.stringify(fixedTimes);
-
-        if (methodTypeChanged || esmConfigChanged || fixedTimesChanged) {
-            let newScheduleMethod: ScheduleMethod = null;
-
-            if (methodType === 'esm') {
-                newScheduleMethod = esmConfig;
-            } else if (methodType === 'fixed') {
-                newScheduleMethod = { timeOfDay: fixedTimes };
-            }
-
-            // Only call if the value actually changed
-            const currentScheduleMethod = scheduleMethod;
-            const scheduleMethodChanged = JSON.stringify(currentScheduleMethod) !== JSON.stringify(newScheduleMethod);
-
-            if (scheduleMethodChanged) {
-                onScheduleMethodChangeRef.current(newScheduleMethod);
-            }
-
-            prevMethodTypeRef.current = methodType;
-            prevEsmConfigRef.current = esmConfig;
-            prevFixedTimesRef.current = fixedTimes;
-        }
-    }, [methodType, esmConfig, fixedTimes, scheduleMethod]);
-
-    const addFixedTime = () => {
-        setFixedTimes([...fixedTimes, '09:00']);
-    };
-
-    const removeFixedTime = (index: number) => {
-        setFixedTimes(fixedTimes.filter((_, i) => i !== index));
-    };
-
-    const updateFixedTime = (index: number, time: string) => {
-        const newTimes = [...fixedTimes];
-        newTimes[index] = time;
-        setFixedTimes(newTimes);
-    };
+const ScheduleMethodConfig: React.FC<ScheduleMethodConfigProps> = ({ surveyIndex, scheduleMethod }) => {
+    const { methodType, esmConfig, fixedTimes, setMethodType, updateEsmConfig, addFixedTime, removeFixedTime, updateFixedTime } = useSurveyScheduleState(surveyIndex, scheduleMethod);
 
     return (<>
         <div className="flex flex-row gap-4 items-center">
@@ -111,7 +41,7 @@ const ScheduleMethodConfig: React.FC<ScheduleMethodConfigProps> = ({ scheduleMet
                             type="number"
                             sizing="sm"
                             value={esmConfig.minInterval}
-                            onChange={(e) => setEsmConfig({ ...esmConfig, minInterval: Number(e.target.value) })}
+                            onChange={(e) => updateEsmConfig({ minInterval: Number(e.target.value) })}
                             className="w-full max-w-20"
                         />
                     </div>
@@ -124,7 +54,7 @@ const ScheduleMethodConfig: React.FC<ScheduleMethodConfigProps> = ({ scheduleMet
                             type="number"
                             sizing="sm"
                             value={esmConfig.maxInterval}
-                            onChange={(e) => setEsmConfig({ ...esmConfig, maxInterval: Number(e.target.value) })}
+                            onChange={(e) => updateEsmConfig({ maxInterval: Number(e.target.value) })}
                             className="w-full max-w-20"
                         />
                     </div>
@@ -137,8 +67,34 @@ const ScheduleMethodConfig: React.FC<ScheduleMethodConfigProps> = ({ scheduleMet
                             type="number"
                             sizing="sm"
                             value={esmConfig.numSurvey}
-                            onChange={(e) => setEsmConfig({ ...esmConfig, numSurvey: Number(e.target.value) })}
+                            onChange={(e) => updateEsmConfig({ numSurvey: Number(e.target.value) })}
                             className="w-full max-w-20"
+                        />
+                    </div>
+                    <div className="flex flex-row gap-4 items-center">
+                        <Label htmlFor="num-survey" className="block text-sm font-medium text-gray-900 w-42">
+                            Start of Day
+                        </Label>
+                        <TextInput
+                            id="start-of-day"
+                            type="time"
+                            sizing="sm"
+                            value={millisecondsToTimeString(esmConfig.startOfDay)}
+                            onChange={(e) => updateEsmConfig({ startOfDay: timeStringToMilliseconds(e.target.value) })}
+                            className="w-full max-w-32"
+                        />
+                    </div>
+                    <div className="flex flex-row gap-4 items-center">
+                        <Label htmlFor="end-of-day" className="block text-sm font-medium text-gray-900 w-42">
+                            End of Day
+                        </Label>
+                        <TextInput
+                            id="end-of-day"
+                            type="time"
+                            sizing="sm"
+                            value={millisecondsToTimeString(esmConfig.endOfDay)}
+                            onChange={(e) => updateEsmConfig({ endOfDay: timeStringToMilliseconds(e.target.value) })}
+                            className="w-full max-w-32"
                         />
                     </div>
                 </div>

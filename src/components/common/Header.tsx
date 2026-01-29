@@ -6,6 +6,7 @@ import useSectionState from "@/hooks/useSectionState";
 import { usePathname } from "next/navigation";
 import dayjs from "dayjs";
 import useCampaign from "@/hooks/useCampaign";
+import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import { useUpdateSensorConfig } from "@/hooks/configuration/useUpdateSensorConfig";
 import AddSensorButtons from "@/components/configuration/header/AddSensorButtons";
 import AddSurveyButton from "@/components/configuration/header/AddSurveyButton";
@@ -13,10 +14,20 @@ import SurveyQuestionHeader from "@/components/configuration/header/SurveyQuesti
 
 const Header: React.FC = () => {
     const { date, updateDate: setDate, addDaysToDate, initTimeRange } = useSectionState();
-    const { fetchCampaigns, selectCampaign } = useCampaign();
-    const { updateSensorConfig } = useUpdateSensorConfig((id) => {
-        fetchCampaigns();
-        selectCampaign(id);
+    const { campaign, fetchCampaigns, selectCampaign } = useCampaign();
+    const { setCampaign } = useCampaignConfigEdit();
+    const { updateSensorConfig } = useUpdateSensorConfig(async (id) => {
+        await fetchCampaigns();
+        await selectCampaign(id);
+        console.log(campaign)
+        if (campaign) setCampaign({
+            id: campaign.id,
+            name: campaign.name,
+            campaign_table: campaign.campaign_table,
+            start_time_of_day: campaign.start_time_of_day,
+            end_time_of_day: campaign.end_time_of_day,
+            survey: campaign.survey,
+        });
     });
     const pathname = usePathname();
     const isSettingsPage = pathname?.includes("/settings") ?? false;

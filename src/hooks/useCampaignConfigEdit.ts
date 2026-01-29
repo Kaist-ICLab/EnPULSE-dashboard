@@ -475,7 +475,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             if (!question) return state;
             const newTrigger: SurveyQuestionTrigger = {
                 question_id: -1,
-                expression: { op: 'Equal', value: '' } as Expression,
+                expression: { op: 'Equal', value: question.answer_type in ['radio', 'checkbox'] && question.survey_question_option.length > 0 ? 0 : '' } as Expression,
                 survey_question: [],
             };
             if (!question.survey_question_trigger) {
@@ -579,6 +579,15 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             tables: campaign.campaign_table,
             passiveSensingConfig: { startTime: campaign.start_time_of_day, endTime: campaign.end_time_of_day },
             surveys: campaign.survey,
+            removedEntries: {
+                table: [],
+                field: [],
+                mapping: [],
+                survey: [],
+                question: [],
+                option: [],
+                trigger: [],
+            },
         });
     }
 }));

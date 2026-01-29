@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { CampaignTable, CampaignTableField, CampaignParticipant, Campaign } from '@/types/campaign';
+import { CampaignTable, CampaignTableField, CampaignParticipant, FetchedCampaign } from '@/types/campaign';
 import { getCampaignList, getCampaignInfo } from '@/services/campaignService';
 import { DeepRequired } from '@/utils/type';
 
@@ -10,7 +10,7 @@ interface Response {
 }
 
 interface CampaignState {
-    campaign?: DeepRequired<Campaign>;
+    campaign?: FetchedCampaign;
     campaignList: Map<number, string>;
     campaignTables: Map<number, DeepRequired<CampaignTable>>;
     campaignTableFields: Map<number, DeepRequired<CampaignTableField>>;

@@ -1,5 +1,6 @@
-import { Survey } from "./survey";
+import { FetchedSurvey, Survey } from "./survey";
 import { Database } from "@/lib/schema";
+import { DeepRequired } from "@/utils/type";
 
 export type FieldType = 'categorical' | 'numerical' | 'datetime';
 export type FieldRole = 'uid' | 'timestamp' | 'data' | 'ignore';
@@ -10,6 +11,10 @@ export type Campaign = Database['public']['Tables']['campaigns']['Insert'] & {
     profiles: CampaignParticipant[];
     campaign_table: CampaignTable[];
     survey: Survey[];
+}
+
+export type FetchedCampaign = DeepRequired<Omit<Campaign, 'survey'>> & {
+    survey: FetchedSurvey[];
 }
 
 export type CampaignTable = Database['public']['Tables']['campaign_table']['Insert'] & {

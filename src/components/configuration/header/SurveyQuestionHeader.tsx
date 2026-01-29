@@ -11,7 +11,7 @@ export default function SurveyQuestionHeader() {
     const { surveys, addSurveyQuestion } = useCampaignConfigEdit();
 
     const handleSurveySelect = (index: number) => {
-        router.push(`/create/active-sensing/${index}`);
+        router.push(`./${index}`);
     };
 
     return (

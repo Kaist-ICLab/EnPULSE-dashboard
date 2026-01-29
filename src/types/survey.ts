@@ -16,12 +16,28 @@ export type SurveyQuestionTrigger = Database['public']['Tables']['survey_questio
     survey_question: SurveyQuestion[];
 }
 
+
+export type FetchedSurveyTrigger = Required<SurveyQuestionTrigger> & {
+    survey_question: FetchedSurveyQuestion[];
+}
+
+export type FetchedSurveyQuestion = Required<SurveyQuestion> & {
+    survey_question_option: Required<SurveyQuestionOption>[];
+    survey_question_trigger: FetchedSurveyTrigger[];
+}
+
+export type FetchedSurvey = Required<Survey> & {
+    survey_question: FetchedSurveyQuestion[];
+}
+
 export type AnswerType = Database['public']['Enums']['survey_question_type']
 
 // Survey Schedule Methods
 export type ESM = {
     minInterval: number,
     maxInterval: number,
+    startOfDay: number,
+    endOfDay: number,
     numSurvey: number,
 }
 
