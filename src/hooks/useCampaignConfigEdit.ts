@@ -1,5 +1,5 @@
 import { CampaignTable, CampaignTableField, FieldRole, FieldType, RemovedEntries } from "@/types/campaign";
-import { ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption, SurveyQuestionTrigger, Expression } from "@/types/survey";
+import { AnswerType, ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption, SurveyQuestionTrigger, Expression } from "@/types/survey";
 import { create } from "zustand";
 
 interface PassiveSensingConfig {
@@ -114,6 +114,45 @@ function getQuestionArrayAndIndexFromPath(
     }
 
     return { arr, idx };
+}
+
+function getValueType(answerType: AnswerType, expression: Expression) {
+    switch (answerType) {
+        case 'text':
+            return expression.op === 'Empty' ? null : 'string';
+        case 'number':
+        case 'radio':
+            return 'number';
+        case 'checkbox':
+            return expression.op === 'Contains' ? 'number' : 'array';
+        default:
+            return null;
+    }
+}
+
+function checkExpressionValidity(prevAnswerType: AnswerType, prevExpression: Expression | null | undefined, answerType: AnswerType, expression: Expression | null | undefined): Expression | null | undefined {
+    if (!prevExpression || !expression) return expression;
+
+    if (answerType === 'text' && !['Empty', 'Equal', 'NotEqual'].includes(expression.op)) {
+        console.log('text operator not valid');
+        return { op: 'Equal', value: '' } as Expression;
+    }
+    if ((answerType === 'number' || answerType === 'radio') && !['Equal', 'NotEqual', 'GreaterThan', 'GreaterThanOrEqual', 'LessThan', 'LessThanOrEqual'].includes(expression.op)) {
+        return { op: 'Equal', value: 0 } as Expression;
+    }
+    if (answerType === 'checkbox' && !['Equal', 'NotEqual', 'Contains'].includes(expression.op)) {
+        return { op: 'Equal', value: [] } as Expression;
+    }
+
+    // Then check if the value type is still valid
+    const prevValueType = getValueType(prevAnswerType, prevExpression);
+    const newValueType = getValueType(answerType, expression);
+    console.log('new value type', newValueType, 'prev value type', prevValueType);
+    if (newValueType !== prevValueType) {
+        return { op: expression.op, value: newValueType === 'number' ? 0 : newValueType === 'string' ? '' : [0] } as Expression;
+    }
+
+    return expression;
 }
 
 const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
@@ -366,7 +405,14 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             const { arr, idx } = resolved;
             if (idx < 0 || idx >= arr.length) return state;
 
+            const prevAnswerType = arr[idx].answer_type;
+            const prevTriggers = structuredClone(arr[idx].survey_question_trigger);
             arr[idx] = { ...arr[idx], ...updates };
+
+            prevTriggers.forEach((pt, idx) => {
+                const safeExpression = checkExpressionValidity(prevAnswerType, pt.expression as Expression, arr[idx].answer_type, arr[idx].survey_question_trigger[idx].expression as Expression);
+                arr[idx].survey_question_trigger[idx].expression = safeExpression;
+            })
             return { surveys: newSurveys };
         });
     },
@@ -473,14 +519,29 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
 
             const question = getQuestionFromPath(survey, questionPath);
             if (!question) return state;
+
             const newTrigger: SurveyQuestionTrigger = {
                 question_id: -1,
                 expression: { op: 'Equal', value: question.answer_type in ['radio', 'checkbox'] && question.survey_question_option.length > 0 ? 0 : '' } as Expression,
                 survey_question: [],
             };
+
+            switch (question.answer_type) {
+                case 'checkbox':
+                    newTrigger.expression = { op: 'Equal', value: [] }
+                    break;
+                case 'text':
+                    newTrigger.expression = { op: 'Equal', value: '' }
+                    break;
+                default:
+                    newTrigger.expression = { op: 'Equal', value: 0 }
+                    break;
+            }
+
             if (!question.survey_question_trigger) {
                 question.survey_question_trigger = [];
             }
+
             question.survey_question_trigger.push(newTrigger);
             return { surveys: newSurveys };
         });
@@ -527,6 +588,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     },
 
     updateSurveyQuestionTriggerExpression: (surveyIndex: number, questionPath: number[], triggerIndex: number, expression: Expression) => {
+        console.log('delivered expression', expression);
         set((state) => {
             const newSurveys = structuredClone(state.surveys);
             const survey = newSurveys[surveyIndex];

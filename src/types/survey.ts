@@ -48,18 +48,43 @@ export type Fixed = {
 export type ScheduleMethod = ESM | Fixed | null;
 
 // Survey question triggers
-export type Expression = ValueComparator | Operator;
+// Expression<T> models the sealed Expression<T> hierarchy from the backend.
+export type Predicate<T = number | string> =
+    | { op: 'Equal'; value: T }
+    | { op: 'NotEqual'; value: T };
 
-export type ValueComparator =
-    | { op: 'Equal'; value: string }
-    | { op: 'NotEqual'; value: string };
+export type ComparablePredicate =
+    | { op: 'GreaterThan'; value: number }
+    | { op: 'GreaterThanOrEqual'; value: number }
+    | { op: 'LessThan'; value: number }
+    | { op: 'LessThanOrEqual'; value: number };
 
-export type Operator =
-    | { op: 'And'; a: Expression; b: Expression }
-    | { op: 'Or'; a: Expression; b: Expression }
-    | { op: 'Not'; a: Expression };
+export type SetPredicate = {
+    op: 'Contains';
+    value: number;
+};
+
+export type StringPredicate = {
+    op: 'Empty';
+};
+
+// export type Operator<T = unknown> =
+//     | { op: 'And'; a: Expression<T>; b: Expression<T> }
+//     | { op: 'Or'; a: Expression<T>; b: Expression<T> }
+//     | { op: 'Not'; a: Expression<T> };
+
+export type Expression<T = number | string | number[]> =
+    | Predicate<T>
+    | (T extends number ? ComparablePredicate : never)
+    | (T extends number[] ? SetPredicate : never)
+    | (T extends string ? StringPredicate : never)
+// | Operator<T>;
 
 export interface Trigger {
     predicate: Expression;
     children: SurveyQuestion[];
 }
+
+export type OperatorType = 'Equal' | 'NotEqual' | 'GreaterThan' | 'GreaterThanOrEqual' | 'LessThan' | 'LessThanOrEqual' | 'Contains' | 'Empty' | 'Contains';
+
+export type UnaryExpression = Exclude<Expression, StringPredicate>;
