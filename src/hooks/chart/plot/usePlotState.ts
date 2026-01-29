@@ -19,7 +19,7 @@ export function usePlotState(
     fieldId: number,
 ) {
     const { timeRange, draggedTime, updateTimeRange, initTimeRange } = useSectionState();
-    const { minValue, maxValue, getTooltipData } = useVaryingPlotState(data, chartType, bucketSize, fieldId);
+    const { minValue, maxValue, getTooltipData, getColor } = useVaryingPlotState(data, chartType, bucketSize, fieldId);
     const currentTimeRange = useMemo(() => {
         return { start: timeRange.start + draggedTime, end: timeRange.end + draggedTime };
     }, [timeRange, draggedTime]);
@@ -59,7 +59,7 @@ export function usePlotState(
 
         return scaleLinear({
             domain: [minValue, maxValue],
-            range: [height * 0.95, chartType === 'numerical' ? height * 0.05 : 0],
+            range: [chartType === 'barcode' ? height : (height * 0.95), chartType === 'numerical' ? height * 0.05 : 0],
             nice: true,
         });
     }, [data.length, minValue, maxValue, height, chartType]);
@@ -151,5 +151,6 @@ export function usePlotState(
         timeScale,
         valueScale,
         hideTooltip,
+        getColor,
     }
 }

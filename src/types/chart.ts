@@ -6,7 +6,7 @@ export enum ComparisonType {
     Participants = "participants"
 }
 
-export type ChartType = "numerical" | "categorical"
+export type ChartType = "numerical" | "categorical" | "barcode"
 
 export interface TimelineNumericalPoint {
     timestamp: number;

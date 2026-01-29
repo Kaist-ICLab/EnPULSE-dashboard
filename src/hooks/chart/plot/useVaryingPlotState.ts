@@ -1,6 +1,8 @@
 import { ChartType, TimelineCategoricalPoint, TimelineNumericalPoint } from "@/types/chart";
 import { useNumericalPlotState } from "./useNumericalPlotState";
 import { useCategoricalPlotState } from "./useCategoricalPlotState";
+import { useBarcodePlotState } from "./useBarcodePlotState";
+import { colors } from "@/utils/timelineUtils";
 
 export function useVaryingPlotState(
     data: (TimelineNumericalPoint | TimelineCategoricalPoint)[],
@@ -21,18 +23,40 @@ export function useVaryingPlotState(
         fieldId
     );
 
+    const { getTooltipData: barcodeGetTooltipData, getColor: barcodeGetColor } = useBarcodePlotState(
+        chartType === 'barcode' ? (data as TimelineCategoricalPoint[]) : [],
+        bucketSize,
+        fieldId
+    );
+
 
     if (chartType === 'numerical') {
         return {
             minValue: numericalMinValue,
             maxValue: numericalMaxValue,
             getTooltipData: numericalGetTooltipData,
+            getColor: () => ({ color: colors[0], opacity: 1 })
         }
-    } else {
+    } else if (chartType === 'categorical') {
         return {
             minValue: 0,
             maxValue: categoricalMaxValue,
             getTooltipData: categoricalGetTooltipData,
+            getColor: () => ({ color: colors[0], opacity: 1 })
+        }
+    } else if (chartType === 'barcode') {
+        return {
+            minValue: 0,
+            maxValue: 1,
+            getTooltipData: barcodeGetTooltipData,
+            getColor: barcodeGetColor
+        }
+    } else {
+        return {
+            minValue: 0,
+            maxValue: 0,
+            getTooltipData: () => null,
+            getColor: () => ({ color: colors[0], opacity: 1 })
         }
     }
 }

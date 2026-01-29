@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef } from "react";
-import { TimelineCategoricalPoint, TimelineNumericalPoint } from "@/types/chart";
+import { ChartType, TimelineCategoricalPoint, TimelineNumericalPoint } from "@/types/chart";
 import { TimelinePlot } from "./plot/TimelinePlot";
 import { TooltipWithBounds, defaultStyles } from "@visx/tooltip";
 import { Group } from '@visx/group';
@@ -12,7 +12,7 @@ import { useChartLegendState } from "@/hooks/chart/legend/useChartLegendState";
 
 interface TimelineChartProps {
     fieldId: number;
-    chartType: 'categorical' | 'numerical';
+    chartType: ChartType;
     baseTime: number;
     data: (TimelineNumericalPoint | TimelineCategoricalPoint)[];
     bucketSize: number;
@@ -30,6 +30,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
     height,
 }) => {
     const svgRef = useRef<SVGSVGElement>(null);
+    const { getCategoryColor, uniqueCategories, handleLegendClick } = useChartLegendState(chartType, data);
     const {
         timeScale,
         valueScale,
@@ -42,8 +43,9 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
         tooltipTop,
         tooltipOpen,
         hideTooltip,
+        getColor,
     } = usePlotState(data, chartType, bucketSize, baseTime, svgRef, width, height, fieldId);
-    const { getCategoryColor, uniqueCategories, handleLegendClick } = useChartLegendState(chartType, data);
+
 
     if (width === 0 || height === 0) {
         return (
@@ -70,7 +72,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
                     onMouseLeave={hideTooltip}
                 >
                     <Group onDoubleClick={handleDoubleClick}>
-                        <TimelinePlot chartType={chartType} data={data} height={height} timeScale={timeScale} valueScale={valueScale} barWidth={barWidth} getCategoryColor={getCategoryColor} />
+                        <TimelinePlot chartType={chartType} data={data} height={height} timeScale={timeScale} valueScale={valueScale} barWidth={barWidth} getCategoryColor={getCategoryColor} getColor={getColor} />
                         <Brush
                             xScale={timeScale}
                             yScale={valueScale}

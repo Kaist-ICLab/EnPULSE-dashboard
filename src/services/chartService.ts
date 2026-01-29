@@ -86,7 +86,7 @@ export async function getSensorComparisonData(
     })).filter(field => field.table_name !== '')
 
     const data = await mapQuery(fields, field => {
-        return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
+        return supabase.rpc(field.field_type == "categorical" || field.field_type == "text" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: dayjs(date).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
             end_time: dayjs(date).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid: uuid,
@@ -97,7 +97,7 @@ export async function getSensorComparisonData(
     }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
 
     return fields.map((field, idx) => {
-        if (field.field_type == "categorical") {
+        if (field.field_type == "categorical" || field.field_type == "text") {
             // Group data by timestamp
             const rawCategoricalData = data[idx] as (BucketCategoricalData[] | null);
             const groupedData = groupByTimestamp(rawCategoricalData);
@@ -105,7 +105,7 @@ export async function getSensorComparisonData(
             return {
                 title: `${field.table_name} - ${field.name}`,
                 id: `${field.id}`,
-                chartType: 'categorical' as ChartType,
+                chartType: field.field_type == "categorical" ? 'categorical' as ChartType : 'barcode' as ChartType,
                 params: { date, uuid, fieldId: field.id },
                 value: groupedData ?? []
             }
@@ -136,7 +136,7 @@ export async function getPersonComparisonData(
     const field = table.campaign_table_field[0]
 
     const data = await mapQuery(participants, p => {
-        return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
+        return supabase.rpc(field.field_type == "categorical" || field.field_type == "text" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: dayjs(date).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
             end_time: dayjs(date).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid: p.uuid,
@@ -146,13 +146,13 @@ export async function getPersonComparisonData(
         })
     }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
 
-    if (field.field_type == "categorical") {
+    if (field.field_type == "categorical" || field.field_type == "text") {
         const rawCategoricalData = data as (BucketCategoricalData[] | null)[]
         return participants.map((p, idx) => (
             {
                 title: p.email,
                 id: p.uuid,
-                chartType: "categorical" as ChartType,
+                chartType: field.field_type == "categorical" ? 'categorical' as ChartType : 'barcode' as ChartType,
                 params: { date, uuid: p.uuid, fieldId: field.id },
                 value: groupByTimestamp(rawCategoricalData[idx])
             }
@@ -185,7 +185,7 @@ export async function getDaysComparisonData(
     const dates = Array.from({ length: 7 }, (_, i) => dayjs(date).subtract(i, 'day').toDate())
 
     const data = await mapQuery(dates, d => {
-        return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
+        return supabase.rpc(field.field_type == "categorical" || field.field_type == "text" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: dayjs(d).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
             end_time: dayjs(d).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid,
@@ -196,12 +196,12 @@ export async function getDaysComparisonData(
 
     }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
 
-    if (field.field_type == "categorical") {
+    if (field.field_type == "categorical" || field.field_type == "text") {
         const categoricalData = data as (BucketCategoricalData[] | null)[]
         return dates.map((d, idx) => ({
             title: dayjs(d).format('YYYY-MM-DD'),
             id: dayjs(d).format('YYYY-MM-DD'),
-            chartType: "categorical" as ChartType,
+            chartType: field.field_type == "categorical" ? 'categorical' as ChartType : 'barcode' as ChartType,
             params: { date: d, uuid, fieldId: field.id },
             value: groupByTimestamp(categoricalData[idx] ?? [])
         }

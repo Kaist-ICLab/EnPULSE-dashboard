@@ -397,6 +397,45 @@ export type Database = {
                     },
                 ]
             }
+            campaign_table_row_count: {
+                Row: {
+                    count: number | null
+                    id: number
+                    table_id: number | null
+                    time_slot: number | null
+                    uuid: string | null
+                }
+                Insert: {
+                    count?: number | null
+                    id?: number
+                    table_id?: number | null
+                    time_slot?: number | null
+                    uuid?: string | null
+                }
+                Update: {
+                    count?: number | null
+                    id?: number
+                    table_id?: number | null
+                    time_slot?: number | null
+                    uuid?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "campaign_table_row_count_table_id_fkey"
+                        columns: ["table_id"]
+                        isOneToOne: false
+                        referencedRelation: "campaign_table"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "campaign_table_row_count_uuid_fkey"
+                        columns: ["uuid"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["uuid"]
+                    },
+                ]
+            }
             campaign_table_user_daily_summary: {
                 Row: {
                     campaign_table_id: number | null
@@ -1970,7 +2009,7 @@ export type Database = {
         }
         Enums: {
             field_role: "uid" | "timestamp" | "data" | "ignore"
-            field_type: "categorical" | "numerical" | "datetime"
+            field_type: "categorical" | "numerical" | "datetime" | "text"
             survey_question_type: "checkbox" | "radio" | "text" | "number"
         }
         CompositeTypes: {
@@ -2103,7 +2142,7 @@ export const Constants = {
     public: {
         Enums: {
             field_role: ["uid", "timestamp", "data", "ignore"],
-            field_type: ["categorical", "numerical", "datetime"],
+            field_type: ["categorical", "numerical", "datetime", "text"],
             survey_question_type: ["checkbox", "radio", "text", "number"],
         },
     },
