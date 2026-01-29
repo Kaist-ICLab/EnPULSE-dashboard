@@ -42,7 +42,7 @@ export type ESM = {
 }
 
 export type Fixed = {
-    timeOfDay: string[]
+    timeOfDay: number[]
 }
 
 export type ScheduleMethod = ESM | Fixed | null;

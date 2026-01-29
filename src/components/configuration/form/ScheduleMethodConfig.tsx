@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, Label, Select, TextInput } from "flowbite-react";
+import { Button, Label, Select, TextInput, Checkbox } from "flowbite-react";
 import { ScheduleMethod } from "@/types/survey";
 import { millisecondsToTimeString, timeStringToMilliseconds } from "@/utils/date";
 import useSurveyScheduleState from "@/hooks/configuration/useSurveyScheduleState";
@@ -96,6 +96,7 @@ const ScheduleMethodConfig: React.FC<ScheduleMethodConfigProps> = ({ surveyIndex
                             onChange={(e) => updateEsmConfig({ endOfDay: timeStringToMilliseconds(e.target.value) })}
                             className="w-full max-w-32"
                         />
+                        {esmConfig.endOfDay >= 86400 * 1000 && <span className="text-blue-500 text-sm">Next Day</span>}
                     </div>
                 </div>
             )}
@@ -110,12 +111,18 @@ const ScheduleMethodConfig: React.FC<ScheduleMethodConfigProps> = ({ surveyIndex
                     <div className="flex flex-col gap-2">
                         {fixedTimes.map((time, index) => (
                             <div key={index} className="flex gap-2 items-center">
+                                <Label htmlFor={`fixed-time-${index}`} className="block text-sm text-gray-800">Next Day</Label>
+                                <Checkbox
+                                    id={`fixed-time-${index}`}
+                                    checked={time >= 86400 * 1000}
+                                    onChange={() => updateFixedTime(index, time + (time >= 86400 * 1000 ? - 86400 * 1000 : 86400 * 1000))}
+                                />
                                 <TextInput
                                     type="time"
                                     sizing="sm"
-                                    value={time}
-                                    onChange={(e) => updateFixedTime(index, e.target.value)}
-                                    className="w-42"
+                                    value={millisecondsToTimeString(time)}
+                                    onChange={(e) => updateFixedTime(index, timeStringToMilliseconds(e.target.value))}
+                                    className="w-42 ml-1 mr-2"
                                 />
                                 <span className="icon-[humbleicons--times] w-5 h-5 cursor-pointer text-gray-500 hover:text-red-500" onClick={() => removeFixedTime(index)}></span>
                             </div>

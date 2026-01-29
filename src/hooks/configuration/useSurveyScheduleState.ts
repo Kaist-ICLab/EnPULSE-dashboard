@@ -16,7 +16,7 @@ function useSurveyScheduleState(surveyIndex: number, initialScheduleMethod: Sche
         return { minInterval: 60, maxInterval: 120, numSurvey: 5, startOfDay: 0, endOfDay: 86400 * 1000 };
     });
 
-    const [fixedTimes, setFixedTimes] = useState<string[]>(() => {
+    const [fixedTimes, setFixedTimes] = useState<number[]>(() => {
         if (initialScheduleMethod && 'timeOfDay' in initialScheduleMethod) {
             return initialScheduleMethod.timeOfDay || [];
         }
@@ -24,32 +24,28 @@ function useSurveyScheduleState(surveyIndex: number, initialScheduleMethod: Sche
     });
 
     const addFixedTime = () => {
-        setFixedTimes([...fixedTimes, '09:00']);
+        setFixedTimes([...fixedTimes, 9 * 3600 * 1000]);
     };
 
     const removeFixedTime = (index: number) => {
         setFixedTimes(fixedTimes.filter((_, i) => i !== index));
     };
 
-    const updateFixedTime = (index: number, time: string) => {
+    const updateFixedTime = (index: number, time: number) => {
         const newTimes = [...fixedTimes];
-        newTimes[index] = time;
+        newTimes[index] = time
         setFixedTimes(newTimes);
     };
 
     const updateEsmConfig = (updates: Partial<ESM>) => {
         const newEsmConfig = { ...esmConfig, ...updates };
 
-        if (updates.startOfDay) {
+        if (updates.startOfDay !== undefined || updates.endOfDay !== undefined) {
             if (newEsmConfig.startOfDay >= newEsmConfig.endOfDay) {
-                newEsmConfig.endOfDay = newEsmConfig.startOfDay + 1000
+                newEsmConfig.endOfDay = newEsmConfig.startOfDay + 86400 * 1000;
             }
         }
-        if (updates.endOfDay) {
-            if (newEsmConfig.startOfDay >= newEsmConfig.endOfDay) {
-                newEsmConfig.startOfDay = newEsmConfig.endOfDay - 1000
-            }
-        }
+
         setEsmConfig(newEsmConfig);
     };
 
