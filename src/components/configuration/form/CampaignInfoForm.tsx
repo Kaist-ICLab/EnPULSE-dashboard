@@ -16,7 +16,7 @@ const stateMessageMap = {
     "error": "Invalid name",
 }
 
-const CampaignNameForm: React.FC<{
+const CampaignInfoForm: React.FC<{
     campaignName: string,
     setCampaignName: Dispatch<SetStateAction<string>>,
     setIsValidName: Dispatch<SetStateAction<boolean>>,
@@ -63,4 +63,4 @@ const CampaignNameForm: React.FC<{
     );
 };
 
-export default CampaignNameForm; 
+export default CampaignInfoForm; 

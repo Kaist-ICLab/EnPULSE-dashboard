@@ -1,7 +1,7 @@
 "use client"
 
 import { Card } from "flowbite-react";
-import CampaignName from "@/components/configuration/form/CampaignNameForm";
+import CampaignInfoForm from "@/components/configuration/form/CampaignInfoForm";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import { useState } from "react";
 
@@ -11,7 +11,7 @@ const Page: React.FC = () => {
 
     return (
         <Card>
-            <CampaignName
+            <CampaignInfoForm
                 campaignName={campaignName}
                 setCampaignName={setCampaignName}
                 setIsValidName={() => { }}

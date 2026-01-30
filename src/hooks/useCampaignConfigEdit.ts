@@ -1,4 +1,4 @@
-import { CampaignTable, CampaignTableField, FieldRole, FieldType, RemovedEntries } from "@/types/campaign";
+import { CampaignTable, CampaignTableField, FieldRole, FieldType, RemovedEntries, FetchedCampaign } from "@/types/campaign";
 import { AnswerType, ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption, SurveyQuestionTrigger, Expression } from "@/types/survey";
 import { create } from "zustand";
 
@@ -62,14 +62,7 @@ interface CampaignConfigEditState {
      * Set store state from a loaded campaign.
      * Keep this type shallow to avoid TS "type instantiation is excessively deep" on recursive survey types.
      */
-    setCampaign: (campaign: {
-        id: number;
-        name: string;
-        campaign_table: CampaignTable[];
-        start_time_of_day: number;
-        end_time_of_day: number;
-        survey: Survey[];
-    }) => void;
+    setCampaign: (campaign: FetchedCampaign) => void;
 }
 
 /**
@@ -627,14 +620,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         });
     },
 
-    setCampaign: (campaign: {
-        id: number;
-        name: string;
-        start_time_of_day: number;
-        end_time_of_day: number;
-        campaign_table: CampaignTable[];
-        survey: Survey[];
-    }) => {
+    setCampaign: (campaign: FetchedCampaign) => {
         set({
             campaignId: campaign.id,
             campaignName: campaign.name,
