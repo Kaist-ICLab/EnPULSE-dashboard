@@ -1,142 +1,130 @@
-import { ChartParams, ChartPinQuery, SectionType } from "@/types/chart";
+import { ChartPinQuery, ComparisonType, ComparisonParams, TimelineParams } from "@/types/chart";
 import { create } from "zustand";
 import dayjs from "dayjs";
+import { getLocalDay } from "@/utils/date";
 
 const DAY = 24 * 60 * 60 * 1000;
 
-function getLocalDay() {
-    return dayjs().startOf('day').toDate()
-}
-
-export const sectionTypes = Object.freeze([
-    SectionType.TimelineOverview,
-    SectionType.IntraPerson,
-    SectionType.InterPerson
+export const comparisonTypes = Object.freeze([
+    ComparisonType.Sensors,
+    ComparisonType.Days,
+    ComparisonType.Participants
 ] as const)
 
 interface SectionState {
-    sectionParams: { [key: string]: ChartParams }
-    timeRange: { [key: string]: { start: number, end: number } }
-    draggedTime: { [key: string]: number }
+    date: Date,
+    timeRange: { start: number, end: number }
+    comparisonParams: { [key in ComparisonType]: ComparisonParams },
+    draggedTime: number
+    selectedSection: ComparisonType,
     chartPinQuery: ChartPinQuery
-    setSectionParams: (uuid: string, fieldId: number, date: Date) => void
-    updateSectionParams: (key: string, params: Partial<ChartParams>) => void
-    updateDraggedTime: (key: string, time: number) => void
-    updateTimeRange: (key: string, range: { start: number, end: number }) => void
-    updateTimeRangeAfterDrag: (key: string) => void
-    initTimeRange: (key: string) => void
-    initPinQuery: (key: SectionType) => void
-    updatePinQuery: (key: SectionType, params: ChartParams | null) => void
+    updateDate: (date: Date) => void,
+    addDaysToDate: (days: number) => void,
+    updateSelectedSection: (section: ComparisonType) => void
+    updateComparisonTypeFromPin: (section: ComparisonType, params: TimelineParams) => void
+    updateComparisonParams: (comparisonType: ComparisonType, params: Partial<ComparisonParams>) => void
+    updateDraggedTime: (time: number) => void
+    initTimeRange: () => void
+    updateTimeRange: (range: { start: number, end: number }) => void
+    updateTimeRangeAfterDrag: () => void
+    initPinQuery: () => void
+    updatePinQuery: (params: ChartPinQuery) => void
 }
 
 const useSectionState = create<SectionState>((set) => ({
-    sectionParams: sectionTypes.reduce((acc, type) => {
-        acc[type] = {
-            uuid: '',
-            date: getLocalDay(),
-            fieldId: 0,
-        }
+    date: getLocalDay(),
+    selectedSection: ComparisonType.Sensors,
+    comparisonParams: comparisonTypes.reduce((acc, type) => {
+        acc[type] = { uuid: [], fieldId: [] }
         return acc
-    }, {} as { [key: string]: ChartParams }),
+    }, {} as { [key in ComparisonType]: ComparisonParams }),
+    timeRange: { start: 0, end: DAY },
+    chartPinQuery: { date: null, uuid: null, fieldId: null },
+    draggedTime: 0,
 
-    timeRange: sectionTypes.reduce((acc, type) => {
-        acc[type] = {
-            start: 0,
-            end: DAY,
-        }
-        return acc
-    }, {} as { [key: string]: { start: number, end: number } }),
-
-    chartPinQuery: sectionTypes.reduce((acc, type) => {
-        acc[type] = null
-        return acc
-    }, {} as ChartPinQuery),
-
-    draggedTime: sectionTypes.reduce((acc, type) => {
-        acc[type] = 0
-        return acc
-    }, {} as { [key: string]: number }),
-
-    setSectionParams: (uuid: string, fieldId: number, date: Date) => {
-        sectionTypes.forEach(type => {
-            set(state => ({
-                sectionParams: { ...state.sectionParams, [type]: { uuid, fieldId, date } }
-            }))
-        })
-    },
-
-    updateSectionParams: (key: string, params: Partial<ChartParams>) => {
-        set(state => ({
-            sectionParams: { ...state.sectionParams, [key]: { ...state.sectionParams[key], ...params } }
+    updateDate: (date: Date) => {
+        set(() => ({
+            date: date
         }))
     },
 
-    initDraggedTime: (key: string) => {
-        set(state => ({
-            draggedTime: { ...state.draggedTime, [key]: 0 }
+    addDaysToDate: (days: number) => {
+        set((state) => ({
+            date: dayjs(state.date).add(days, 'day').toDate()
         }))
     },
 
-    updateDraggedTime: (key: string, time: number) => {
-        set(state => ({
-            draggedTime: { ...state.draggedTime, [key]: time }
+    updateSelectedSection: (section: ComparisonType) => {
+        set(() => ({
+            selectedSection: section
         }))
     },
 
-    updateTimeRangeAfterDrag: (key: string) => {
+    updateComparisonTypeFromPin: (section: ComparisonType, params: TimelineParams) => {
+        set((state) => ({
+            date: params.date,
+            selectedSection: section,
+            comparisonParams: { ...state.comparisonParams, [section]: { uuid: [params.uuid], fieldId: [params.fieldId] } }
+        }))
+    },
+
+    updateComparisonParams: (comparisonType: ComparisonType, params: Partial<ComparisonParams>) => {
+        set((state) => ({
+            comparisonParams: { ...state.comparisonParams, [comparisonType]: { ...state.comparisonParams[comparisonType], ...params } }
+        }))
+    },
+
+    updateDraggedTime: (time: number) => {
+        set(() => ({
+            draggedTime: time
+        }))
+    },
+
+    updateTimeRangeAfterDrag: () => {
         set(state => {
-            const prevRange = state.timeRange[key];
-            const dragged = state.draggedTime[key];
+            const prevRange = state.timeRange;
+            const dragged = state.draggedTime;
+            const date = state.date;
 
-            const currentDate = dayjs(state.sectionParams[key].date).startOf('day')
-            const draggedMidpointDate = dayjs(state.sectionParams[key].date).add((state.timeRange[key].start + state.timeRange[key].end) / 2, 'ms').add(dragged, 'ms').startOf('day')
+            const currentDate = dayjs(date).startOf('day')
+            const draggedMidpointDate = dayjs(date).add((state.timeRange.start + state.timeRange.end) / 2, 'ms').add(dragged, 'ms').startOf('day')
             const rangeTimeDelta = draggedMidpointDate.diff(currentDate, 'ms')
 
             const newRange = {
                 start: prevRange.start - rangeTimeDelta + dragged,
-                end: prevRange.end - rangeTimeDelta + dragged,
+                end: prevRange.end - rangeTimeDelta + dragged
             }
 
             return {
-                timeRange: { ...state.timeRange, [key]: newRange },
-                draggedTime: { ...state.draggedTime, [key]: 0 },
-                sectionParams: { ...state.sectionParams, [key]: { ...state.sectionParams[key], date: draggedMidpointDate.toDate() } },
+                timeRange: newRange,
+                draggedTime: 0,
+                date: draggedMidpointDate.toDate(),
             };
         });
     },
 
-    initTimeRange: (key: string) => {
-        set(state => ({
-            timeRange: { ...state.timeRange, [key]: { start: 0, end: DAY } }
+    initTimeRange: () => {
+        set(() => ({
+            timeRange: { start: 0, end: DAY }
         }))
     },
 
-    updateTimeRange: (key: string, range: { start: number, end: number }) => {
-        set(state => ({
-            timeRange: { ...state.timeRange, [key]: range }
+    updateTimeRange: (range: { start: number, end: number }) => {
+        set(() => ({
+            timeRange: range
         }))
     },
 
-    initPinQuery: (key: SectionType) => {
-        set((state) => ({
-            chartPinQuery: { ...state.chartPinQuery, [key]: null }
+    initPinQuery: () => {
+        set(() => ({
+            chartPinQuery: { date: null, uuid: null, fieldId: null }
         }))
     },
 
-    updatePinQuery: (key: SectionType, params: ChartParams | null) => {
-        if (key == SectionType.IntraPerson) {
-            set(state => ({
-                chartPinQuery: { ...state.chartPinQuery, [key]: params }
-            }))
-        } else if (key == SectionType.InterPerson) {
-            set(state => ({
-                chartPinQuery: { ...state.chartPinQuery, [key]: params }
-            }))
-        } else if (key == SectionType.TimelineOverview) {
-            set(state => ({
-                chartPinQuery: { ...state.chartPinQuery, [key]: params }
-            }))
-        }
+    updatePinQuery: (params: ChartPinQuery) => {
+        set(() => ({
+            chartPinQuery: params
+        }))
     }
 }))
 

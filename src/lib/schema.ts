@@ -302,22 +302,25 @@ export type Database = {
                 Row: {
                     campaign_id: number
                     daily_count_max: number
-                    description: string | null
+                    description: string
                     id: number
+                    is_custom: boolean
                     name: string
                 }
                 Insert: {
                     campaign_id: number
                     daily_count_max: number
-                    description?: string | null
+                    description?: string
                     id?: number
+                    is_custom?: boolean
                     name: string
                 }
                 Update: {
                     campaign_id?: number
                     daily_count_max?: number
-                    description?: string | null
+                    description?: string
                     id?: number
+                    is_custom?: boolean
                     name?: string
                 }
                 Relationships: [
@@ -332,46 +335,104 @@ export type Database = {
             }
             campaign_table_field: {
                 Row: {
-                    campaign_id: number
                     campaign_table_id: number
-                    description: string | null
-                    field_role: string
-                    field_type: string
+                    description: string
+                    field_role: Database["public"]["Enums"]["field_role"]
+                    field_type: Database["public"]["Enums"]["field_type"]
                     id: number
                     name: string
                 }
                 Insert: {
-                    campaign_id: number
                     campaign_table_id: number
-                    description?: string | null
-                    field_role: string
-                    field_type: string
+                    description?: string
+                    field_role: Database["public"]["Enums"]["field_role"]
+                    field_type: Database["public"]["Enums"]["field_type"]
                     id?: number
                     name: string
                 }
                 Update: {
-                    campaign_id?: number
                     campaign_table_id?: number
-                    description?: string | null
-                    field_role?: string
-                    field_type?: string
+                    description?: string
+                    field_role?: Database["public"]["Enums"]["field_role"]
+                    field_type?: Database["public"]["Enums"]["field_type"]
                     id?: number
                     name?: string
                 }
                 Relationships: [
-                    {
-                        foreignKeyName: "campaign_table_field_campaign_id_fkey"
-                        columns: ["campaign_id"]
-                        isOneToOne: false
-                        referencedRelation: "campaigns"
-                        referencedColumns: ["id"]
-                    },
                     {
                         foreignKeyName: "campaign_table_field_campaign_table_id_fkey"
                         columns: ["campaign_table_id"]
                         isOneToOne: false
                         referencedRelation: "campaign_table"
                         referencedColumns: ["id"]
+                    },
+                ]
+            }
+            campaign_table_field_mapping: {
+                Row: {
+                    display: string
+                    field_id: number
+                    id: number
+                    value: string
+                }
+                Insert: {
+                    display: string
+                    field_id: number
+                    id?: number
+                    value: string
+                }
+                Update: {
+                    display?: string
+                    field_id?: number
+                    id?: number
+                    value?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "campaign_table_field_mapping_field_id_fkey"
+                        columns: ["field_id"]
+                        isOneToOne: false
+                        referencedRelation: "campaign_table_field"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            campaign_table_row_count: {
+                Row: {
+                    count: number | null
+                    id: number
+                    table_id: number | null
+                    time_slot: number | null
+                    uuid: string | null
+                }
+                Insert: {
+                    count?: number | null
+                    id?: number
+                    table_id?: number | null
+                    time_slot?: number | null
+                    uuid?: string | null
+                }
+                Update: {
+                    count?: number | null
+                    id?: number
+                    table_id?: number | null
+                    time_slot?: number | null
+                    uuid?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "campaign_table_row_count_table_id_fkey"
+                        columns: ["table_id"]
+                        isOneToOne: false
+                        referencedRelation: "campaign_table"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "campaign_table_row_count_uuid_fkey"
+                        columns: ["uuid"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["uuid"]
                     },
                 ]
             }
@@ -438,18 +499,24 @@ export type Database = {
             campaigns: {
                 Row: {
                     created_at: string | null
+                    end_time_of_day: number
                     id: number
                     name: string
+                    start_time_of_day: number
                 }
                 Insert: {
                     created_at?: string | null
+                    end_time_of_day?: number
                     id?: number
                     name: string
+                    start_time_of_day?: number
                 }
                 Update: {
                     created_at?: string | null
+                    end_time_of_day?: number
                     id?: number
                     name?: string
+                    start_time_of_day?: number
                 }
                 Relationships: []
             }
@@ -980,57 +1047,6 @@ export type Database = {
                     },
                 ]
             }
-            question_response: {
-                Row: {
-                    actual_trigger_time: string
-                    created_at: string
-                    id: number
-                    question_id: number
-                    response: string[]
-                    response_submission_time: string
-                    survey_start_time: string
-                    trigger_time: string
-                    uuid: string
-                }
-                Insert: {
-                    actual_trigger_time: string
-                    created_at?: string
-                    id?: number
-                    question_id: number
-                    response: string[]
-                    response_submission_time: string
-                    survey_start_time: string
-                    trigger_time: string
-                    uuid: string
-                }
-                Update: {
-                    actual_trigger_time?: string
-                    created_at?: string
-                    id?: number
-                    question_id?: number
-                    response?: string[]
-                    response_submission_time?: string
-                    survey_start_time?: string
-                    trigger_time?: string
-                    uuid?: string
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "question_response_question_id_fkey"
-                        columns: ["question_id"]
-                        isOneToOne: false
-                        referencedRelation: "survey_question"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "question_response_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
-            }
             screen_sensor: {
                 Row: {
                     created_at: string | null
@@ -1136,7 +1152,6 @@ export type Database = {
             survey: {
                 Row: {
                     campaign_id: number
-                    created_at: string
                     description: string
                     id: number
                     schedule_method: Json | null
@@ -1144,7 +1159,6 @@ export type Database = {
                 }
                 Insert: {
                     campaign_id: number
-                    created_at?: string
                     description: string
                     id?: number
                     schedule_method?: Json | null
@@ -1152,7 +1166,6 @@ export type Database = {
                 }
                 Update: {
                     campaign_id?: number
-                    created_at?: string
                     description?: string
                     id?: number
                     schedule_method?: Json | null
@@ -1170,49 +1183,30 @@ export type Database = {
             }
             survey_question: {
                 Row: {
-                    answer_type: number | null
-                    campaign_id: number
-                    created_at: string
+                    answer_type: Database["public"]["Enums"]["survey_question_type"]
                     id: number
-                    is_free_answer_allowed: boolean | null
-                    is_mandatory: boolean | null
-                    is_multiple_choice_question: boolean | null
+                    is_mandatory: boolean
                     question: string
                     survey_id: number
-                    trigger: Json | null
+                    triggered_by: number | null
                 }
                 Insert: {
-                    answer_type?: number | null
-                    campaign_id: number
-                    created_at?: string
+                    answer_type: Database["public"]["Enums"]["survey_question_type"]
                     id?: number
-                    is_free_answer_allowed?: boolean | null
-                    is_mandatory?: boolean | null
-                    is_multiple_choice_question?: boolean | null
+                    is_mandatory: boolean
                     question: string
                     survey_id: number
-                    trigger?: Json | null
+                    triggered_by?: number | null
                 }
                 Update: {
-                    answer_type?: number | null
-                    campaign_id?: number
-                    created_at?: string
+                    answer_type?: Database["public"]["Enums"]["survey_question_type"]
                     id?: number
-                    is_free_answer_allowed?: boolean | null
-                    is_mandatory?: boolean | null
-                    is_multiple_choice_question?: boolean | null
+                    is_mandatory?: boolean
                     question?: string
                     survey_id?: number
-                    trigger?: Json | null
+                    triggered_by?: number | null
                 }
                 Relationships: [
-                    {
-                        foreignKeyName: "survey_question_campaign_id_fkey"
-                        columns: ["campaign_id"]
-                        isOneToOne: false
-                        referencedRelation: "campaigns"
-                        referencedColumns: ["id"]
-                    },
                     {
                         foreignKeyName: "survey_question_survey_id_fkey"
                         columns: ["survey_id"]
@@ -1220,33 +1214,114 @@ export type Database = {
                         referencedRelation: "survey"
                         referencedColumns: ["id"]
                     },
+                    {
+                        foreignKeyName: "survey_question_triggered_by_fkey"
+                        columns: ["triggered_by"]
+                        isOneToOne: false
+                        referencedRelation: "survey_question_trigger"
+                        referencedColumns: ["id"]
+                    },
                 ]
             }
             survey_question_option: {
                 Row: {
-                    created_at: string
-                    display: string | null
+                    allow_free_response: boolean
+                    display: string
                     id: number
                     question_id: number | null
-                    value: string | null
                 }
                 Insert: {
-                    created_at?: string
-                    display?: string | null
+                    allow_free_response?: boolean
+                    display: string
                     id?: number
                     question_id?: number | null
-                    value?: string | null
                 }
                 Update: {
-                    created_at?: string
-                    display?: string | null
+                    allow_free_response?: boolean
+                    display?: string
                     id?: number
                     question_id?: number | null
-                    value?: string | null
                 }
                 Relationships: [
                     {
                         foreignKeyName: "survey_question_option_question_id_fkey"
+                        columns: ["question_id"]
+                        isOneToOne: false
+                        referencedRelation: "survey_question"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            survey_question_response: {
+                Row: {
+                    actual_trigger_time: string
+                    created_at: string
+                    id: number
+                    question_id: number
+                    response: Json
+                    response_submission_time: string
+                    survey_start_time: string
+                    trigger_time: string
+                    uuid: string
+                }
+                Insert: {
+                    actual_trigger_time: string
+                    created_at?: string
+                    id?: number
+                    question_id: number
+                    response: Json
+                    response_submission_time: string
+                    survey_start_time: string
+                    trigger_time: string
+                    uuid: string
+                }
+                Update: {
+                    actual_trigger_time?: string
+                    created_at?: string
+                    id?: number
+                    question_id?: number
+                    response?: Json
+                    response_submission_time?: string
+                    survey_start_time?: string
+                    trigger_time?: string
+                    uuid?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "question_response_question_id_fkey"
+                        columns: ["question_id"]
+                        isOneToOne: false
+                        referencedRelation: "survey_question"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "question_response_uuid_fkey"
+                        columns: ["uuid"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["uuid"]
+                    },
+                ]
+            }
+            survey_question_trigger: {
+                Row: {
+                    expression: Json | null
+                    id: number
+                    question_id: number | null
+                }
+                Insert: {
+                    expression?: Json | null
+                    id?: number
+                    question_id?: number | null
+                }
+                Update: {
+                    expression?: Json | null
+                    id?: number
+                    question_id?: number | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "survey_question_trigger_question_id_fkey"
                         columns: ["question_id"]
                         isOneToOne: false
                         referencedRelation: "survey_question"
@@ -1933,7 +2008,9 @@ export type Database = {
             timescaledb_pre_restore: { Args: never; Returns: boolean }
         }
         Enums: {
-            [_ in never]: never
+            field_role: "uid" | "timestamp" | "data" | "ignore"
+            field_type: "categorical" | "numerical" | "datetime" | "text" | "bitmask"
+            survey_question_type: "checkbox" | "radio" | "text" | "number"
         }
         CompositeTypes: {
             [_ in never]: never
@@ -2063,7 +2140,11 @@ export const Constants = {
         Enums: {},
     },
     public: {
-        Enums: {},
+        Enums: {
+            field_role: ["uid", "timestamp", "data", "ignore"],
+            field_type: ["categorical", "numerical", "datetime", "text", "bitmask"],
+            survey_question_type: ["checkbox", "radio", "text", "number"],
+        },
     },
 } as const
 

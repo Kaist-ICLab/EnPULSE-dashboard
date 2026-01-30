@@ -1,39 +1,40 @@
-export type FieldType = 'categorical' | 'numerical' | 'timedelta' | 'datetime';
-export type FieldRole = 'uid' | 'timestamp' | 'data' | 'ignore';
-export const FieldRoleOption: FieldRole[] = ['uid', 'timestamp', 'data', 'ignore'];
-export const FieldTypeOption: FieldType[] = ['categorical', 'numerical', 'timedelta', 'datetime'];
+import { FetchedSurvey, Survey } from "./survey";
+import { Constants, Database } from "@/lib/schema";
+import { DeepRequired } from "@/utils/type";
 
-export interface Campaign {
-    id: number;
-    name: string;
+export type FieldType = Database['public']['Enums']['field_type'];
+export type FieldRole = Database['public']['Enums']['field_role'];
+export const FieldRoleOption: readonly FieldRole[] = Constants.public.Enums.field_role;
+export const FieldTypeOption: readonly FieldType[] = Constants.public.Enums.field_type;
+
+export type Campaign = Database['public']['Tables']['campaigns']['Insert'] & {
+    profiles: CampaignParticipant[];
+    campaign_table: CampaignTable[];
+    survey: Survey[];
 }
 
-export interface CampaignTable {
-    id: number;
-    campaign_id: number;
-    name: string;
-    description?: string,
-    daily_count_max: number;
+export type FetchedCampaign = DeepRequired<Omit<Campaign, 'survey'>> & {
+    survey: FetchedSurvey[];
 }
 
-export interface CampaignTableField {
-    id: number;
-    campaign_id: number;
-    campaign_table_id: number;
-    name: string;
-    description?: string,
-    field_type: FieldType;
-    field_role: FieldRole;
+export type CampaignTable = Database['public']['Tables']['campaign_table']['Insert'] & {
+    campaign_table_field: CampaignTableField[];
 }
 
-export interface CampaignParticipant {
-    uuid: string;
-    email: string;
+export type CampaignTableField = Database['public']['Tables']['campaign_table_field']['Insert'] & {
+    campaign_table_field_mapping: CampaignTableFieldMapping[];
 }
 
-export interface CampaignTableFieldWithTable extends CampaignTableField {
-    tableId: number;
-    tableName: string;
-    displayName: string;
-}
+export type CampaignTableFieldMapping = Database['public']['Tables']['campaign_table_field_mapping']['Insert']
 
+export type CampaignParticipant = Database['public']['Tables']['profiles']['Insert']
+
+export type RemovedEntries = {
+    table: number[];
+    field: number[];
+    mapping: number[];
+    survey: number[];
+    question: number[];
+    option: number[];
+    trigger: number[];
+}

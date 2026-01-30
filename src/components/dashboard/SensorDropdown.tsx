@@ -1,108 +1,95 @@
+import { Dropdown, DropdownDivider, DropdownItem } from "flowbite-react";
 import useCampaign from "@/hooks/useCampaign";
-import { Dropdown, DropdownDivider, DropdownItem, createTheme } from "flowbite-react";
-import { Dispatch, SetStateAction, useMemo, useState } from "react";
-
-const baseInnerTheme = {
-    arrowIcon: "ml-auto h-4 w-4",
-    floating: {
-        target: "grow pl-3 pr-2 border-0 focus:ring-0 justify-start rounded-none",
-    }
-}
+import useSensorDropdownState from "@/hooks/dashboard/useSensorDropdownState";
 
 const SensorDropdown: React.FC<{
-    isFieldSelected: { [key: number]: boolean }
-    setIsFieldSelected: Dispatch<SetStateAction<{ [key: number]: boolean }>>
-}> = ({ isFieldSelected, setIsFieldSelected }) => {
-    const { campaignTables, mergedTabledFields: mergedTableFields } = useCampaign();
-    const [selectedSensor, setSelectedSensor] = useState(-1)
-
-    const dropdownLabel = useMemo(() => {
-        const selectedId = Object.keys(isFieldSelected).filter(key => isFieldSelected[Number(key)])
-        if (!selectedId || selectedId?.length == 0) {
-            return "Select Sensor"
-        }
-
-        const selected = Number(selectedId[0])
-
-        if (selectedId.length == 1) {
-            return mergedTableFields.find(field => field.id == selected)?.displayName
-        } else {
-            return `${mergedTableFields.find(field => field.id == selected)?.displayName} + ${Object.values(isFieldSelected).filter(selected => selected).length - 1} more`
-        }
-    }, [isFieldSelected, mergedTableFields])
-
-    const isAllSelected = useMemo(() => {
-        return Array.from(campaignTables.values()).map(table =>
-            mergedTableFields.filter(field => field.campaign_table_id === table.id).every(field => isFieldSelected[field.id])
-        )
-    }, [isFieldSelected, mergedTableFields, campaignTables])
-
-    const innerTheme = createTheme(baseInnerTheme)
-    const selectedInnerTheme = createTheme({
-        ...baseInnerTheme,
-        floating: {
-            ...baseInnerTheme.floating,
-            target: "grow pl-3 pr-2 border-0 focus:ring-0 justify-start bg-gray-100 rounded-none",
-        }
-    })
+    selectedFieldIds: number[]
+    setSelectedFieldIds: (fieldId: number[]) => void,
+    isMultipleSelection: boolean,
+}> = ({ selectedFieldIds, setSelectedFieldIds, isMultipleSelection }) => {
+    const { campaignTables, campaignTableFields } = useCampaign();
+    const {
+        selectedSensor,
+        setSelectedSensor,
+        dropdownLabel,
+        isAllSelected,
+        toggleFieldSelection,
+        toggleAllFieldsSelection,
+        selectedCountByTable,
+    } = useSensorDropdownState(selectedFieldIds, campaignTables, campaignTableFields, setSelectedFieldIds, isMultipleSelection);
 
     return (
         <Dropdown
             label={dropdownLabel}
-            placement="bottom-end"
+            placement="bottom-start"
             dismissOnClick={false}
             onMouseUp={() => setSelectedSensor(-1)}
         >
-            {Array.from(campaignTables.values()).map((table, tidx) => (
-                <div key={table.id} className="relative group">
-                    <DropdownItem as="div" className="p-0 w-full">
-                        <Dropdown
-                            label={table.name}
-                            placement="right-start"
-                            dismissOnClick={false}
-                            onMouseUp={() => { setSelectedSensor(selectedSensor === table.id ? -1 : table.id) }}
-                            theme={selectedSensor === table.id ? selectedInnerTheme : innerTheme}
-                            applyTheme="replace"
-                            color="light"
-                        >
-                            {mergedTableFields.filter(field => field.campaign_table_id === table.id)
-                                .map((field) => (
-                                    <DropdownItem key={field.id} className="bg-white" onClick={() => {
-                                        setIsFieldSelected(prev => ({
-                                            ...prev,
-                                            [field.id]: !prev[field.id]
-                                        }));
-                                    }}>
-                                        <input
-                                            type="checkbox"
-                                            className="mr-2"
-                                            checked={isFieldSelected[field.id] || false}
-                                            onChange={() => { }} // Add empty onChange to make it controlled
-                                        />
-                                        {field.name}
-                                    </DropdownItem>
-                                ))}
-                            <DropdownDivider />
-                            <DropdownItem className="font-bold" onClick={() => {
-                                setIsFieldSelected(prev => {
-                                    const keys = mergedTableFields.filter(field => field.campaign_table_id === table.id).map(field => field.id)
-                                    const newSelectedFields = structuredClone(prev)
-                                    keys.forEach(key => {
-                                        newSelectedFields[key] = !isAllSelected[tidx]
-                                    })
-                                    return newSelectedFields
-                                });
-                            }}>
-                                {
-                                    isAllSelected[tidx] ?
-                                        "Deselect all" :
-                                        "Select all"
-                                }
+            <div className="h-64 flex flex-row px-2 py-2 gap-2">
+                <div className="min-w-56 flex flex-col">
+                    <div className="overflow-y-auto grow scrollbar-thin">
+                        {Array.from(campaignTables.values()).map((table) => (
+                            <DropdownItem
+                                key={table.id}
+                                className={`font-medium ${selectedSensor === table.id ? 'text-blue-600 bg-gray-100' : 'text-gray-700'}`}
+                                onClick={() => { setSelectedSensor(selectedSensor === table.id ? -1 : table.id) }}
+                            >
+                                <span className="flex items-center">
+                                    <span>{table.name}</span>
+                                    {isMultipleSelection ? (
+                                        (selectedCountByTable.get(table.id) || 0) > 0 && (
+                                            <span className="ml-2 inline-flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-xs w-5 h-5">
+                                                {selectedCountByTable.get(table.id)}
+                                            </span>
+                                        )
+                                    ) : (
+                                        (selectedCountByTable.get(table.id) || 0) > 0 && (
+                                            <span className="ml-2 inline-flex w-2 h-2 rounded-full bg-blue-500" />
+                                        )
+                                    )}
+                                </span>
                             </DropdownItem>
-                        </Dropdown>
+                        ))}
+                    </div>
+                    <DropdownDivider />
+                    <DropdownItem className="font-bold" onClick={() => setSelectedFieldIds([])}>
+                        <span className="text-red-500">{isMultipleSelection ? "Deselect all" : "Deselect"}</span>
                     </DropdownItem>
                 </div>
-            ))}
+                {selectedSensor === -1 ? (
+                    <div className="min-w-40 flex items-center justify-center bg-gray-50 rounded-sm">
+                        <span className="text-gray-400 text-sm ">Select Sensor</span>
+                    </div>
+                ) : (
+                    <div className="min-w-40 flex flex-col">
+                        <div className="overflow-y-auto grow scrollbar-thin">
+                            {campaignTables.get(selectedSensor)?.campaign_table_field.map((field) => (
+                                <DropdownItem key={field.id} className="bg-white" onClick={() => {
+                                    toggleFieldSelection(field.id);
+                                }}>
+                                    <input
+                                        type="checkbox"
+                                        className="mr-2"
+                                        checked={selectedFieldIds.includes(field.id)}
+                                        onChange={() => { }} // Add empty onChange to make it controlled
+                                    />
+                                    {field.name}
+                                </DropdownItem>
+                            ))}
+                        </div>
+                        <DropdownDivider />
+                        {isMultipleSelection && (
+                            <DropdownItem className="font-bold" onClick={() => toggleAllFieldsSelection(selectedSensor)}>
+                                {
+                                    (isAllSelected.get(selectedSensor) ?? false) ?
+                                        "Deselect all fields" :
+                                        "Select all fields"
+                                }
+                            </DropdownItem>
+                        )}
+                    </div>
+                )}
+            </div>
         </Dropdown>
     );
 };

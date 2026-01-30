@@ -1,56 +1,102 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems } from "flowbite-react";
+import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems, SidebarCollapse, Dropdown, DropdownItem } from "flowbite-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 
 const DashboardSidebar: React.FC = () => {
     const pathname = usePathname();
 
-    const isActive = (href: string) => {
-        const path = pathname.split("/");
-        const hrefPath = href.slice(2)
-        return path[3] === hrefPath; // Compare [here]: /campaigns/:campaignId/[here]
-    };
+    const baseUrl = useMemo(() => {
+        const id = pathname.split("/")[2];
+        return `/campaigns/${id}`;
+    }, [pathname]);
+
+    const isActive = useCallback((directory: string) => {
+        return pathname.startsWith(`${baseUrl}/${directory}`) || pathname.startsWith(directory);
+    }, [pathname, baseUrl]);
+
+    const settingsItems = useMemo(() => [
+        { name: "General", href: `${baseUrl}/settings/general` },
+        { name: "Passive Sensing", href: `${baseUrl}/settings/passive-sensing` },
+        { name: "Active Sensing", href: `${baseUrl}/settings/active-sensing` },
+    ], [baseUrl]);
 
     const [collapsed, setCollapsed] = useState(true);
-
-    const menus = [
-        { name: "Dashboard", icon: "icon-[fluent-mdl2--b-i-dashboard]", href: `./dashboard` },
-        { name: "Messaging", icon: "icon-[mi--message-alt]", href: `./messaging` },
-        { name: "Settings", icon: "icon-[uil--setting]", href: `./settings` },
-        { name: "Notification", icon: "icon-[mingcute--notification-line]", href: `./` },
-    ];
 
     return (
         <Sidebar className="h-screen border-r-1 border-gray-300 bg-white" collapsed={collapsed}>
             <SidebarItems>
-                <SidebarItemGroup>
+                <SidebarItemGroup className="mt-0 pt-0 border-t-0">
                     <SidebarItem key={`menu-collapse`} onClick={() => setCollapsed(!collapsed)} icon={SidebarIcon({ icon: collapsed ? "icon-[pajamas--expand-left]" : "icon-[pajamas--expand-right]" })} className={`text-sm cursor-pointer`}>
                         <span className="mr-1 align-baseline">{collapsed ? "Expand" : "Hide Sidebar"}</span>
                     </SidebarItem>
                 </SidebarItemGroup>
                 <SidebarItemGroup>
-                    {
-                        menus.map((menu, idx) => (
-                            <SidebarItem key={`menu-${idx}`} as={Link} href={menu.href} icon={SidebarIcon({ icon: menu.icon })} className={` ${isActive(menu.href) ? "bg-gray-200 hover:bg-gray-200" : "hover:bg-gray-100"} text-sm`}>
-                                <span className="mr-1 align-baseline">{menu.name}</span>
-                            </SidebarItem>
-                        ))
-                    }
+                    <MySidebarItem isActive={isActive("dashboard")} href={`${baseUrl}/dashboard`} icon="icon-[fluent-mdl2--b-i-dashboard]" name="Campaigns" />
+                    <MySidebarItem isActive={isActive("messaging")} href={`${baseUrl}/messaging`} icon="icon-[mi--message-alt]" name="Messaging" />
+                    {collapsed ? (
+                        <SettingsDropdown isActive={isActive} settingsItems={settingsItems} />
+                    ) : (
+                        <SidebarCollapse icon={SidebarIcon({ icon: "icon-[uil--setting]" })} label="Settings" className="text-sm">
+                            {settingsItems.map((item, index) => (
+                                <MySidebarItem key={index} isActive={isActive(item.href)} href={item.href} name={item.name} />
+                            ))}
+                        </SidebarCollapse>
+                    )}
+                    <MySidebarItem isActive={isActive(`${baseUrl}/notification`)} href={`${baseUrl}/notification`} icon="icon-[mingcute--notification-line]" name="Notification" />
                 </SidebarItemGroup>
             </SidebarItems>
         </Sidebar>
     )
 }
 
-function SidebarIcon(props: {
-    icon: string;
-}) {
-    const { icon } = props;
+const SidebarIcon = (props: { icon: string }) => {
     return function IconComponent() {
-        return <span className={`w-5 h-5 text-gray-500 ${icon} text-align-center`} />;
-    };
+        return <span className={`w-5 h-5 text-gray-500 ${props.icon} text-align-center`} />
+    }
+}
+
+const MySidebarItem: React.FC<{
+    isActive: boolean;
+    href: string;
+    icon?: string;
+    name: string;
+}> = ({ isActive, href, icon, name }) => {
+    return <SidebarItem as={Link} href={href} icon={icon ? SidebarIcon({ icon: icon }) : () => <></>} className={` ${isActive ? "bg-gray-200 hover:bg-gray-200" : "hover:bg-gray-100"} text-sm`}>
+        <span className="mr-1 align-baseline">{name}</span>
+    </SidebarItem>
+}
+
+const SettingsDropdown: React.FC<{
+    isActive: (directory: string) => boolean;
+    settingsItems: { name: string; href: string }[];
+}> = ({ isActive, settingsItems }) => {
+    return (
+        <Dropdown
+            dismissOnClick={true}
+            placement="right-start"
+            renderTrigger={() => (
+                <SidebarItem
+                    icon={SidebarIcon({ icon: "icon-[uil--setting]" })}
+                    className={`text-sm hover:bg-gray-100 cursor-pointer ${isActive(`settings`) ? "bg-gray-200 hover:bg-gray-200!" : "hover:bg-gray-100"}`}
+                >
+                    <span className="mr-1 align-baseline">Settings</span>
+                </SidebarItem>
+            )}
+        >
+            {settingsItems.map((item, index) => (
+                <DropdownItem
+                    key={index}
+                    as={Link}
+                    href={item.href}
+                    className={`${isActive(item.href) ? "bg-gray-200 hover:bg-gray-200!" : "hover:bg-gray-100"} text-sm`}
+                >
+                    {item.name}
+                </DropdownItem>
+            ))}
+        </Dropdown>
+    );
 }
 
 export default DashboardSidebar;

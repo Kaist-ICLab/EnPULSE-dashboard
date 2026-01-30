@@ -1,12 +1,12 @@
 import { ScaleLinear, ScaleTime } from "@visx/vendor/d3-scale";
 
-export enum SectionType {
-    TimelineOverview = "timeline-overview",
-    IntraPerson = "intra-person",
-    InterPerson = "inter-person"
+export enum ComparisonType {
+    Sensors = "sensors",
+    Days = "days",
+    Participants = "participants"
 }
 
-export type ChartType = "numerical" | "categorical"
+export type ChartType = "numerical" | "categorical" | "barcode" | "heatmap"
 
 export interface TimelineNumericalPoint {
     timestamp: number;
@@ -20,19 +20,22 @@ export interface TimelineCategoricalPoint {
     value: { category: string, count: number, aggregated: number }[];
 }
 
-export type TimelineDataPoint = TimelineNumericalPoint | TimelineCategoricalPoint;
+export interface TimelineHeatmapPoint {
+    timestamp: number;
+    value: { bitIndex: number, count: number }[];
+}
+
+export type TimelineDataPoint = TimelineNumericalPoint | TimelineCategoricalPoint | TimelineHeatmapPoint;
 
 export interface TimelineData {
     id: string;
     title: string;
-    table: string;
-    column: string;
     chartType: ChartType;
-    params: ChartParams;
-    value: (TimelineNumericalPoint | TimelineCategoricalPoint)[];
+    params: TimelineParams;
+    value: TimelineDataPoint[];
 }
 
-export interface TimelineChartGraphProps<T extends TimelineDataPoint> {
+export interface TimelinePlotProps<T extends TimelineDataPoint> {
     data: T[];
     height: number;
     timeScale: ScaleTime<number, number, never>;
@@ -41,16 +44,18 @@ export interface TimelineChartGraphProps<T extends TimelineDataPoint> {
     getCategoryColor?: (category: string) => string;
 }
 
-export type ChartParams = {
+export type TimelineParams = {
     uuid: string,
     fieldId: number,
     date: Date,
 }
 
+export type ComparisonParams = { uuid: string[], fieldId: number[] }
+
 export type ChartPinQuery = {
-    [SectionType.IntraPerson]: { date: Date } | null;
-    [SectionType.InterPerson]: { uuid: string } | null;
-    [SectionType.TimelineOverview]: { fieldId: number } | null;
+    date: Date | null,
+    uuid: string | null,
+    fieldId: number | null,
 };
 
 export type ChartPinQueryOption = { date: Date } | { uuid: string } | { fieldId: number } | null

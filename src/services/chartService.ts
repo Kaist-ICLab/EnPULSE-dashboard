@@ -1,10 +1,10 @@
-import { DynamicDataColumn } from '@/hooks/charts/useUserDailyStat';
+import { DynamicDataColumn } from '@/hooks/chart/useUserDailyStat';
 import { supabase } from '@/lib/supabase';
-import { mapQuery } from '@/lib/supabaseHelper';
-import { CampaignParticipant, CampaignTableFieldWithTable } from '@/types/campaign';
-import { ChartParams, ChartType } from '@/types/chart';
-import { BucketCategoricalData, BucketNumericalData, groupByTimestamp } from '@/lib/supabaseHelper';
+import { BucketCategoricalData, BucketNumericalData, groupByTimestamp, groupByTimestampAndBitmask, mapQuery } from '@/lib/supabaseHelper';
+import { CampaignParticipant, CampaignTable } from '@/types/campaign';
+import { ChartType, TimelineData } from '@/types/chart';
 import dayjs from 'dayjs';
+import { DeepRequired } from '@/utils/type';
 
 const DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ssZ'
 
@@ -68,146 +68,181 @@ export async function getDailyStatCount(campaignId: number) {
     return Math.max(count ?? 1, 1)
 }
 
-export async function getTimelineOverviewData(fields: CampaignTableFieldWithTable[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
-    const { uuid, date } = params;
-    const timeGap = timeRange.end - timeRange.start;
+export async function getSensorComparisonData(
+    date: Date,
+    participant: CampaignParticipant | undefined,
+    tables: DeepRequired<CampaignTable>[],
+    timeRange: { start: number, end: number },
+    bucketSize: string,
+): Promise<TimelineData[]> {
+    if (participant == undefined || tables.length == 0) return [];
 
-    const data = await mapQuery(fields, v => {
-        return supabase.rpc(v.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
+    const timeGap = timeRange.end - timeRange.start;
+    const uuid = participant.uuid;
+
+    const fields = tables.flatMap(table => table.campaign_table_field).map(field => ({
+        ...field,
+        table_name: tables.find(t => t.id === field.campaign_table_id)?.name ?? ''
+    })).filter(field => field.table_name !== '')
+
+    const data = await mapQuery(fields, field => {
+        const useCategoricalRpc = field.field_type === "categorical" || field.field_type === "text" || field.field_type === "bitmask";
+        return supabase.rpc(useCategoricalRpc ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: dayjs(date).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
             end_time: dayjs(date).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid: uuid,
-            table_name: v.tableName,
-            column_name: v.name,
+            table_name: field.table_name,
+            column_name: field.name,
             bucket_unit: bucketSize,
         })
     }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
 
-    return fields.map((v, idx) => {
-        if (v.field_type == "categorical") {
+    return fields.map((field, idx) => {
+        if (field.field_type == "categorical" || field.field_type == "text") {
             // Group data by timestamp
             const rawCategoricalData = data[idx] as (BucketCategoricalData[] | null);
             const groupedData = groupByTimestamp(rawCategoricalData);
 
             return {
-                title: v.displayName,
-                id: `${v.id}`,
-                table: v.tableName,
-                column: v.name,
-                chartType: 'categorical' as ChartType,
-                params: { ...params, fieldId: v.id },
+                title: `${field.table_name} - ${field.name}`,
+                id: `${field.id}`,
+                chartType: field.field_type == "categorical" ? 'categorical' as ChartType : 'barcode' as ChartType,
+                params: { date, uuid, fieldId: field.id },
                 value: groupedData ?? []
             }
 
+        } else if (field.field_type === "bitmask") {
+            const rawCategoricalData = data[idx] as (BucketCategoricalData[] | null);
+            const groupedData = groupByTimestampAndBitmask(rawCategoricalData);
+            return {
+                title: `${field.table_name} - ${field.name}`,
+                id: `${field.id}`,
+                chartType: 'heatmap' as ChartType,
+                params: { date, uuid, fieldId: field.id },
+                value: groupedData ?? []
+            };
         } else {
             const numericalData = data[idx] as BucketNumericalData[]
             return {
-                title: v.displayName,
-                id: `${v.id}`,
-                table: v.tableName,
-                column: v.name,
+                title: `${field.table_name} - ${field.name}`,
+                id: `${field.id}`,
                 chartType: 'numerical' as ChartType,
-                params: { ...params, fieldId: v.id },
+                params: { date, uuid, fieldId: field.id },
                 value: numericalData ? numericalData.map(d => ({ timestamp: new Date(d.bucket).getTime(), avg: d.avg, min: d.min, max: d.max })) : []
             }
         }
     })
 }
 
-export async function getInterPersonData(fields: CampaignTableFieldWithTable[], participants: CampaignParticipant[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
-    const { date, fieldId } = params;
-    const timeGap = timeRange.end - timeRange.start;
-    const field = fields.find(v => v.id === fieldId)
-    if (!field) throw new Error('Field not found');
+export async function getPersonComparisonData(
+    date: Date, participants: CampaignParticipant[],
+    table: DeepRequired<CampaignTable> | undefined,
+    timeRange: { start: number, end: number },
+    bucketSize: string,
+): Promise<TimelineData[]> {
+    if (participants.length == 0 || table == undefined) return [];
 
-    const tableName = field.tableName
-    const columnName = field.name
+    const timeGap = timeRange.end - timeRange.start;
+
+    const field = table.campaign_table_field[0]
 
     const data = await mapQuery(participants, p => {
-        return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
+        const useCategoricalRpc = field.field_type === "categorical" || field.field_type === "text" || field.field_type === "bitmask";
+        return supabase.rpc(useCategoricalRpc ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: dayjs(date).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
             end_time: dayjs(date).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
             uuid: p.uuid,
-            table_name: tableName,
-            column_name: columnName,
+            table_name: table.name,
+            column_name: field.name,
             bucket_unit: bucketSize,
         })
     }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
 
-    if (field.field_type == "categorical") {
+    if (field.field_type == "categorical" || field.field_type == "text") {
         const rawCategoricalData = data as (BucketCategoricalData[] | null)[]
         return participants.map((p, idx) => (
             {
                 title: p.email,
                 id: p.uuid,
-                table: tableName,
-                column: columnName,
-                chartType: "categorical" as ChartType,
-                params: { ...params, uuid: p.uuid },
+                chartType: field.field_type == "categorical" ? 'categorical' as ChartType : 'barcode' as ChartType,
+                params: { date, uuid: p.uuid, fieldId: field.id },
                 value: groupByTimestamp(rawCategoricalData[idx])
             }
         ))
+    } else if (field.field_type === "bitmask") {
+        const rawCategoricalData = data as (BucketCategoricalData[] | null)[];
+        return participants.map((p, idx) => ({
+            title: p.email,
+            id: p.uuid,
+            chartType: 'heatmap' as ChartType,
+            params: { date, uuid: p.uuid, fieldId: field.id },
+            value: groupByTimestampAndBitmask(rawCategoricalData[idx])
+        }));
     } else {
         const numericalData = data as (BucketNumericalData[] | null)[]
         return participants.map((p, idx) => (
             {
                 title: p.email,
                 id: p.uuid,
-                table: tableName,
-                column: columnName,
                 chartType: "numerical" as ChartType,
-                params: { ...params, uuid: p.uuid },
-                timestamp: numericalData[idx]?.map(d => new Date(d.bucket).getTime()) ?? [],
+                params: { date, uuid: p.uuid, fieldId: field.id },
                 value: numericalData[idx]?.map(d => ({ timestamp: new Date(d.bucket).getTime(), avg: d.avg, min: d.min, max: d.max })) ?? []
             }
         ))
     }
 }
 
-export async function getIntraPersonData(fields: CampaignTableFieldWithTable[], params: ChartParams, timeRange: { start: number, end: number }, bucketSize: string) {
-    const { date, fieldId, uuid } = params;
+export async function getDaysComparisonData(
+    date: Date, participant: CampaignParticipant | undefined,
+    table: DeepRequired<CampaignTable> | undefined,
+    timeRange: { start: number, end: number },
+    bucketSize: string,
+): Promise<TimelineData[]> {
+    if (participant == undefined || table == undefined) return [];
     const timeGap = timeRange.end - timeRange.start;
-    const field = fields.find(v => v.id === fieldId)
-    if (!field) throw new Error('Field not found');
+    const field = table.campaign_table_field[0]
+    const uuid = participant.uuid;
 
-    const tableName = field.tableName
-    const columnName = field.name
-
-    const dates = Array.from({ length: 7 }, (_, i) => new Date(date.getTime() - i * 24 * 60 * 60 * 1000))
+    const dates = Array.from({ length: 7 }, (_, i) => dayjs(date).subtract(i, 'day').toDate())
 
     const data = await mapQuery(dates, d => {
-        return supabase.rpc(field.field_type == "categorical" ? 'bucket_categorical_data' : 'bucket_numerical_data', {
+        const useCategoricalRpc = field.field_type === "categorical" || field.field_type === "text" || field.field_type === "bitmask";
+        return supabase.rpc(useCategoricalRpc ? 'bucket_categorical_data' : 'bucket_numerical_data', {
             start_time: dayjs(d).add(timeRange.start, 'ms').subtract(timeGap, 'ms').format(DATE_FORMAT),
             end_time: dayjs(d).add(timeRange.end, 'ms').add(timeGap, 'ms').format(DATE_FORMAT),
-            uuid: uuid,
-            table_name: tableName,
-            column_name: columnName,
+            uuid,
+            table_name: table.name,
+            column_name: field.name,
             bucket_unit: bucketSize,
         })
-
     }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
 
-    if (field.field_type == "categorical") {
+    if (field.field_type == "categorical" || field.field_type == "text") {
         const categoricalData = data as (BucketCategoricalData[] | null)[]
         return dates.map((d, idx) => ({
             title: dayjs(d).format('YYYY-MM-DD'),
             id: dayjs(d).format('YYYY-MM-DD'),
-            table: tableName,
-            column: columnName,
-            chartType: "categorical" as ChartType,
-            params: { ...params, date: d },
+            chartType: field.field_type == "categorical" ? 'categorical' as ChartType : 'barcode' as ChartType,
+            params: { date: d, uuid, fieldId: field.id },
             value: groupByTimestamp(categoricalData[idx] ?? [])
         }
         ))
+    } else if (field.field_type === "bitmask") {
+        const categoricalData = data as (BucketCategoricalData[] | null)[];
+        return dates.map((d, idx) => ({
+            title: dayjs(d).format('YYYY-MM-DD'),
+            id: dayjs(d).format('YYYY-MM-DD'),
+            chartType: 'heatmap' as ChartType,
+            params: { date: d, uuid, fieldId: field.id },
+            value: groupByTimestampAndBitmask(categoricalData[idx] ?? [])
+        }));
     } else {
         const numericalData = data as (BucketNumericalData[] | null)[]
         return dates.map((d, idx) => ({
             title: dayjs(d).format('YYYY-MM-DD'),
             id: dayjs(d).format('YYYY-MM-DD'),
-            table: tableName,
-            column: columnName,
             chartType: "numerical" as ChartType,
-            params: { ...params, date: d },
+            params: { date: d, uuid, fieldId: field.id },
             value: numericalData[idx]?.map(v => ({ timestamp: new Date(v.bucket).getTime(), avg: v.avg, min: v.min, max: v.max })) ?? []
         }))
     }

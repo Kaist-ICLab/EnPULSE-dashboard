@@ -1,8 +1,7 @@
 "use client";
-import { ComparisonChart } from "@/components/dashboard/charts/ComparisonChart";
-import UserDailyStatTable from "@/components/dashboard/UserDailyTable";
+import { ComparisonChart } from "@/components/dashboard/chart/ComparisonChart";
+import DailyOverviewTable from "@/components/dashboard/DailyOverviewTable";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
-import { sectionTypes } from "@/hooks/useSectionState";
 import { CampaignParticipant } from "@/types/campaign";
 import { useEffect, useState } from "react";
 
@@ -16,18 +15,13 @@ const Page = () => {
     }, [])
 
     return (
-        <div className="space-y-4 p-4">
-            <UserDailyStatTable
+        <>
+            <DailyOverviewTable
                 syncTime={lastLoaded}
                 openMessageModal={(sendTo: CampaignParticipant[]) => { setSendTo(sendTo); setMessageModalVisible(true); }}
             />
 
-            {sectionTypes.map((type) => (
-                <ComparisonChart
-                    key={type}
-                    sectionType={type}
-                />
-            ))}
+            <ComparisonChart />
 
             {
                 messageModalVisible && <SendMessageFloatingModal
@@ -35,7 +29,7 @@ const Page = () => {
                     onClose={() => setMessageModalVisible(false)}
                 />
             }
-        </div>
+        </>
     );
 }
 

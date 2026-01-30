@@ -26,5 +26,5 @@ export function usePaging(
         setPage(1)
     }
 
-    return { page, rowsPerPage, totalPage, changePageBy, setRowsPerPage, setTotalPage }
+    return { page, rowsPerPage, totalPage, changePageBy, setRowsPerPage, setTotalPage, setPage }
 }

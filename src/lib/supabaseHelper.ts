@@ -54,3 +54,37 @@ export function groupByTimestamp(data: BucketCategoricalData[] | null) {
 
     return groupedData;
 }
+
+// Bitmask data is grouped by timestamp and bit index
+export function groupByTimestampAndBitmask(data: BucketCategoricalData[] | null) {
+    if (!data) return [];
+    // Group data into { timestamp, value: [{bit index, count}, ...] }
+
+    const bitmaskGrouped: Record<number, { [bitIndex: string]: number }> = {};
+
+    const groupedData = groupByTimestamp(data);
+    groupedData.forEach(d => {
+        d.value.forEach(v => {
+            if (!bitmaskGrouped[d.timestamp]) {
+                bitmaskGrouped[d.timestamp] = {};
+            }
+
+            const numberValue = parseInt(v.category, 10).toString(2).split("").reverse().join("");
+            for (let i = 0; i < numberValue.length; i++) {
+                if (!bitmaskGrouped[d.timestamp][i]) {
+                    bitmaskGrouped[d.timestamp][i] = 0;
+                }
+                bitmaskGrouped[d.timestamp][i] += numberValue[i] === '1' ? v.count : 0;
+            }
+        });
+    })
+
+    return Object.entries(bitmaskGrouped).map(([timestamp, bitIndexCounts]) => ({
+        timestamp: Number(timestamp),
+        value: Object.entries(bitIndexCounts).map(([bitIndex, count]) => ({
+            bitIndex: Number(bitIndex),
+            count: count,
+            aggregated: 0
+        }))
+    }));
+}
