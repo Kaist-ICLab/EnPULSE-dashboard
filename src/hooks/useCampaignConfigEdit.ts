@@ -134,7 +134,6 @@ function checkExpressionValidity(prevAnswerType: AnswerType, prevExpression: Exp
     if (!prevExpression || !expression) return expression;
 
     if (answerType === 'text' && !['Empty', 'Equal', 'NotEqual'].includes(expression.op)) {
-        console.log('text operator not valid');
         return { op: 'Equal', value: '' } as Expression;
     }
     if ((answerType === 'number' || answerType === 'radio') && !['Equal', 'NotEqual', 'GreaterThan', 'GreaterThanOrEqual', 'LessThan', 'LessThanOrEqual'].includes(expression.op)) {
@@ -147,7 +146,6 @@ function checkExpressionValidity(prevAnswerType: AnswerType, prevExpression: Exp
     // Then check if the value type is still valid
     const prevValueType = getValueType(prevAnswerType, prevExpression);
     const newValueType = getValueType(answerType, expression);
-    console.log('new value type', newValueType, 'prev value type', prevValueType);
     if (newValueType !== prevValueType) {
         return { op: expression.op, value: newValueType === 'number' ? 0 : newValueType === 'string' ? '' : [0] } as Expression;
     }
@@ -187,7 +185,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
 
     setCampaignStartTime: (startTime: string) => {
         const formattedStartTime = dayjs(startTime).format(DATE_FORMAT);
-        console.log('formattedStartTime', formattedStartTime);
         set({ campaignStartTime: formattedStartTime });
     },
 
@@ -588,7 +585,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     },
 
     updateSurveyQuestionTriggerExpression: (surveyIndex: number, questionPath: number[], triggerIndex: number, expression: Expression) => {
-        console.log('delivered expression', expression);
         set((state) => {
             const newSurveys = structuredClone(state.surveys);
             const survey = newSurveys[surveyIndex];

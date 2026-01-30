@@ -2,7 +2,6 @@ import { AnswerType, Expression } from "@/types/survey";
 import { useMemo } from "react";
 
 export default function useExpressionState(answerType: AnswerType, expression: Expression | null | undefined) {
-    console.log(answerType, expression);
     const expressionState = useMemo<Expression>(() => {
         if (expression) return expression;
         if (answerType === 'checkbox') {
