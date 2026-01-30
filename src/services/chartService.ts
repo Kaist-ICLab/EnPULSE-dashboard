@@ -5,8 +5,7 @@ import { CampaignParticipant, CampaignTable } from '@/types/campaign';
 import { ChartType, TimelineData } from '@/types/chart';
 import dayjs from 'dayjs';
 import { DeepRequired } from '@/utils/type';
-
-const DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ssZ'
+import { DATE_FORMAT } from '@/utils/date';
 
 export async function getCampaignDailySummary(campaignId: number, date: Date, page: number, pageCount: number) {
     const from = (page - 1) * pageCount;

@@ -1,5 +1,7 @@
 import dayjs from "dayjs";
 
+export const DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ssZ'
+
 export function getLocalDay() {
     return dayjs().startOf('day').toDate()
 }

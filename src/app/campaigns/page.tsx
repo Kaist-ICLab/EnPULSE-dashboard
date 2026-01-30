@@ -3,6 +3,7 @@ import { Card } from "flowbite-react";
 import Link from "next/link";
 import useCampaign from "@/hooks/useCampaign";
 import { useEffect } from "react";
+import dayjs from "dayjs";
 
 // Campaign selection page
 const CampaignsPage: React.FC = () => {
@@ -11,29 +12,69 @@ const CampaignsPage: React.FC = () => {
         fetchCampaigns();
     }, [fetchCampaigns]);
 
+    const calculateProgress = (startTime: string, endTime: string): number => {
+        const now = dayjs();
+        const start = dayjs(startTime);
+        const end = dayjs(endTime);
+
+        if (now.isBefore(start)) {
+            return 0;
+        }
+        if (now.isAfter(end)) {
+            return 100;
+        }
+
+        const totalDuration = end.diff(start);
+        const elapsed = now.diff(start);
+        return parseFloat(((elapsed / totalDuration) * 100).toFixed(2));
+    };
+
     return (
-        <div className="w-full min-h-screen bg-gray-50 flex flex-row ">
-            <aside className="min-h-screen w-64 flex flex-col border-r border-gray-200">
-                <div className="px-5 h-16 flex items-center text-black text-2xl font-bold">DataSentry</div>
-            </aside>
-            <div className="flex flex-col w-full p-4">
-                <h1>Campaigns</h1>
-                <div className="flex flex-col justify-between items-center p-4 gap-6">
-                    {Array.from(campaignList.entries()).map(([id, name]) => (
-                        <Card key={`campaign-${id}`} className="w-[50%]">
-                            <Link href={`/campaigns/${id}`} className="flex flex-col items-center">
-                                <div>{`campagin-${id} / ${name}`}</div>
+        <div className="w-full min-h-screen bg-gray-50 flex flex-col">
+            <div className="px-4 border-b border-gray-200 py-4 flex flex-col items-center">
+                <div className="text-3xl font-bold">EnPULSE</div>
+                <div className="text-sm font-light">Enabling Platform for User Logging and Sensing Environment</div>
+            </div>
+            <div className="flex flex-col items-center p-6 gap-6 max-w-4xl w-full mx-auto">
+                {Array.from(campaignList.entries()).map(([id, { name, description, start_time, end_time }]) => {
+                    const progress = calculateProgress(start_time, end_time);
+                    return (
+                        <Card key={`campaign-${id}`} className="w-full hover:shadow-lg transition-shadow duration-200">
+                            <Link href={`/campaigns/${id}`} className="block">
+                                <div className="flex flex-col gap-4">
+                                    <div>
+                                        <h3 className="text-xl font-semibold text-gray-900">{name}</h3>
+                                        <p className="text-sm text-gray-400 line-clamp-2">
+                                            {description ? description : "No description provided"}
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex justify-between items-center text-xs text-gray-500">
+                                            <span>{Math.max(0, Math.min(100, progress))}% Complete</span>
+                                            <span className="text-gray-400">
+                                                {dayjs(start_time).format("MMM D, YYYY")} - {dayjs(end_time).format("MMM D, YYYY")}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                            <div
+                                                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                                                style={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </Link>
                         </Card>
-                    ))}
-                    <Card className="w-[50%]">
-                        <Link href={`/create`} className="flex flex-col items-center">
-                            <div className="flex items-center">
-                                <span className="icon-[tabler--plus] mr-2" />Create New Campaign
-                            </div>
-                        </Link>
-                    </Card>
-                </div>
+                    );
+                })}
+                <Card className="w-full hover:shadow-lg transition-shadow duration-200 border-2 border-dashed border-gray-300">
+                    <Link href={`/create`} className="block">
+                        <div className="flex items-center justify-center py-6 text-gray-600 hover:text-gray-900 transition-colors">
+                            <span className="icon-[tabler--plus] mr-2 text-2xl" />
+                            <span className="text-lg font-medium">Create New Campaign</span>
+                        </div>
+                    </Link>
+                </Card>
             </div>
         </div>
     );

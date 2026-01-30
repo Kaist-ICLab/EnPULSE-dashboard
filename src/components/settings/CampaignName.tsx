@@ -14,14 +14,15 @@ const CampaignName = () => {
     const [campaignName, setCampaignName] = useState("");
     useEffect(() => {
         if (selectedCampaignId !== null) {
-            setCampaignName(campaignList.get(selectedCampaignId!) || "");
+            setCampaignName(campaignList.get(selectedCampaignId!)?.name || "");
         }
     }, [selectedCampaignId, campaignList]);
 
     if (selectedCampaignId === null) {
         return <Spinner />;
     }
-    const currentCampaignName = campaignList.get(selectedCampaignId!)!;
+
+    const currentCampaignName = campaignList.get(selectedCampaignId)?.name || "";
 
     return (
         <div role="campaign-name">

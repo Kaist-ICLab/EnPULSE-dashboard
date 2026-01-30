@@ -25,10 +25,10 @@ function recursivelyFillSurveyId(surveyQuestion: SurveyQuestion[], surveyId: num
     recursivelyFillSurveyId(nextLevelQuestion, surveyId);
 }
 
-export const getCampaignList = async (): Promise<{ id: number, name: string }[]> => {
+export const getCampaignList = async (): Promise<{ id: number, name: string, description: string, start_time: string, end_time: string }[]> => {
     const { data, error } = await supabase
         .from('campaigns')
-        .select(`id, name`)
+        .select(`id, name, description, start_time, end_time`)
         .order('id')
     if (error) throw new Error(error.message);
     return data;

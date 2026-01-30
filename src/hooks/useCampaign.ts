@@ -11,7 +11,12 @@ interface Response {
 
 interface CampaignState {
     campaign?: FetchedCampaign;
-    campaignList: Map<number, string>;
+    campaignList: Map<number, {
+        name: string;
+        description: string;
+        start_time: string;
+        end_time: string;
+    }>;
     campaignTables: Map<number, DeepRequired<CampaignTable>>;
     campaignTableFields: Map<number, DeepRequired<CampaignTableField>>;
     campaignTableFieldMapping: Map<number, Map<string, string>>;
@@ -23,7 +28,7 @@ interface CampaignState {
         updateCampaignName: Response,
     }
     fetchCampaigns: () => Promise<void>;
-    setCampaignList: (campaigns: Map<number, string>) => void;
+    setCampaignList: (campaigns: Map<number, { name: string, description: string, start_time: string, end_time: string }>) => void;
     selectCampaign: (campaignId: number) => Promise<void>;
     updateCampaignName: (campaignId: number, name: string) => Promise<void>;
 }
@@ -56,14 +61,14 @@ const useCampaign = create<CampaignState>((set, get) => ({
             const campaigns = await getCampaignList();
             set((state) => ({
                 responses: { ...state.responses, fetchCampaigns: { status: 'ok', message: null } },
-                campaignList: new Map(campaigns.map(campaign => [campaign.id, campaign.name]))
+                campaignList: new Map(campaigns.map(({ id, ...others }) => [id, { ...others }]))
             }));
         } catch (error) {
             console.log(error)
             set((state) => ({ responses: { ...state.responses, fetchCampaigns: { status: 'error', message: "Error fetching campaigns" } } }));
         }
     },
-    setCampaignList: (campaigns: Map<number, string>) => {
+    setCampaignList: (campaigns: Map<number, { name: string, description: string, start_time: string, end_time: string }>) => {
         set({ campaignList: campaigns });
     },
     selectCampaign: async (campaignId: number) => {
