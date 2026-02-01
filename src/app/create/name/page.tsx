@@ -14,13 +14,11 @@ const Page: React.FC = () => {
 
     return (
         <>
-            <Card>
-                <CampaignName
-                    campaignName={campaignName}
-                    setCampaignName={setCampaignName}
-                    setIsValidName={setIsValidName}
-                />
-            </Card>
+            <CampaignName
+                campaignName={campaignName}
+                setCampaignName={setCampaignName}
+                setIsValidName={setIsValidName}
+            />
             <PrevNextNavigation
                 onPrevClick={() => router.push("/campaigns")}
                 onNextClick={() => router.push("/create/passive-sensing")}

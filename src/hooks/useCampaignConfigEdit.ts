@@ -12,9 +12,10 @@ interface PassiveSensingConfig {
 interface CampaignConfigEditState {
     campaignId: number;
     campaignName: string;
+    campaignPassword: string;
+    campaignDescription: string;
     campaignStartTime: string;
     campaignEndTime: string;
-    campaignDescription: string;
     tables: CampaignTable[];
     passiveSensingConfig: PassiveSensingConfig;
     surveys: Survey[];
@@ -23,6 +24,7 @@ interface CampaignConfigEditState {
     // Campaign basic information
     setCampaignName: (name: string) => void;
     setCampaignDescription: (description: string) => void;
+    setCampaignPassword: (password: string) => void;
     setCampaignStartTime: (startTime: string) => void;
     setCampaignEndTime: (endTime: string) => void;
 
@@ -157,6 +159,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     campaignId: -1,
     campaignName: "",
     campaignDescription: "",
+    campaignPassword: "",
     campaignStartTime: dayjs().format(DATE_FORMAT),
     campaignEndTime: dayjs().add(1, 'day').format(DATE_FORMAT),
     tables: [],
@@ -181,6 +184,10 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
 
     setCampaignDescription: (description: string) => {
         set({ campaignDescription: description });
+    },
+
+    setCampaignPassword: (password: string) => {
+        set({ campaignPassword: password });
     },
 
     setCampaignStartTime: (startTime: string) => {
