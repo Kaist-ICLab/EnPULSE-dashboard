@@ -1,4 +1,7 @@
-import { ChartPinQuery, ComparisonType, ComparisonParams, TimelineParams } from "@/types/chart";
+import { TimelineParams } from "@/types/chart";
+import { ChartPinQuery } from "@/types/dashboard";
+import { ComparisonParams } from "@/types/dashboard";
+import { ComparisonType } from "@/types/dashboard";
 import { create } from "zustand";
 import dayjs from "dayjs";
 import { getLocalDay } from "@/utils/date";

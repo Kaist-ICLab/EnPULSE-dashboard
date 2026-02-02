@@ -1,7 +1,7 @@
 "use client"
 import ChartContainer from "@/components/dashboard/chart/ChartContainer";
 import useTimeline from "@/hooks/chart/useTimeline";
-import { ComparisonType } from "@/types/chart";
+import { ComparisonType } from "@/types/dashboard";
 import { Card, Spinner } from "flowbite-react";
 import { useMemo, useRef } from "react";
 import SensorDropdown from "../SensorDropdown";

@@ -1,6 +1,8 @@
-import { getCampaignDailySummary, getDailyStatCount } from "@/services/chartService";
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { getCampaignDailySummary } from "@/services/chartService";
+import { useEffect, useMemo, useState } from "react";
 import useCampaign from "../useCampaign";
+import { UserDailyStatData } from "@/types/dashboard";
+import useSectionState from "../useSectionState";
 
 export type UserDailyStat = {
     uuid: string;
@@ -18,57 +20,86 @@ export type DynamicDataColumn = {
 };
 
 export const useUserDailyStat = (
-    date: Date,
-    page: number,
-    rowsPerPage: number,
-    setTotalPage: Dispatch<SetStateAction<number>>,
+    initialRowsPerPage: number,
     syncTime: Date | null
 ) => {
-    const { selectedCampaignId } = useCampaign()
-    const [data, setData] = useState<UserDailyStat[]>([])
+    const { date } = useSectionState()
+    const { campaignParticipants, campaignTables } = useCampaign()
+
+    const [data, setData] = useState<UserDailyStatData[]>([])
     const [loading, setLoading] = useState(true)
 
-    const columns = useMemo(() => {
-        return data.length > 0 ? Object.keys(data[0].columns) : []
-    }, [data])
+    const [page, _setPage] = useState(1)
+    const [rowsPerPage, _setRowsPerPage] = useState(initialRowsPerPage)
 
+    const uuids = useMemo(() => {
+        return Array.from(campaignParticipants.values()).filter((_, idx) => idx >= (page - 1) * rowsPerPage && idx < page * rowsPerPage).map(p => p.uuid)
+    }, [campaignParticipants, page, rowsPerPage])
+
+    const tableNames = useMemo(() => {
+        if (data.length == 0) return campaignTables.values().map(t => t.name)
+
+        const refrow = data[0].tables.map(t => t.table_id)
+        return refrow.map(t => campaignTables.get(t)?.name ?? '')
+    }, [data, campaignTables])
+
+    const totalPage = useMemo(() => {
+        return Math.ceil(Array.from(campaignParticipants.values()).length / rowsPerPage)
+    }, [campaignParticipants, rowsPerPage])
+
+    const setPage = (page: number) => {
+        if (page < 1) {
+            page = 1
+        }
+        if (page > totalPage) {
+            page = totalPage
+        }
+
+        _setPage(page)
+    }
+
+    const setRowsPerPage = (newRowsPerPage: number) => {
+        _setRowsPerPage(newRowsPerPage)
+        setPage(1)
+    }
+
+
+    // 각각의 campaign_table에 대해서 최대 count의 값을 계산
     const maxDailyCount = useMemo(() => {
-        const res = {} as { [name: string]: number }
-        columns.forEach(key => {
-            res[key] = data[0].columns[key].dailyCountMax
+        const res = new Map<number, number>()
+
+        for (const row of data) {
+            for (const table of row.tables) {
+                const rowMax = table.counts.reduce((acc, count) => Math.max(acc, count), 0)
+                res.set(table.table_id, Math.max(res.get(table.table_id) ?? 0, rowMax))
+            }
+        }
+
+        campaignTables.entries().forEach(([tableId, table]) => {
+            if (table.daily_count_max > 0) res.set(tableId, table.daily_count_max)
         })
 
         return res
-    }, [data, columns])
+    }, [data, campaignTables])
 
-    // // In practice, this should be calculated by the server as the client cannot see all the data
-    // const maxDailyCount = useMemo(() => {
-    //     const result: { [key: string]: number } = {};
-    //     columns.forEach(column => {
-    //         result[column] = fakeData.reduce((max, user) => {
-    //             return Math.max(max, user.columns[column].dailyCount);
-    //         }, 0);
-    //     });
-    //     return result;
-    // }, [columns]);
+    // In practice, this should be calculated by the server as the client cannot see all the data?
 
     useEffect(() => {
-        if (!selectedCampaignId) return
+        if (uuids.length == 0) return
 
         const load = async () => {
-            const count = await getDailyStatCount(selectedCampaignId)
-            const statData = await getCampaignDailySummary(selectedCampaignId, date, page, rowsPerPage)
+            const statData = await getCampaignDailySummary(uuids, date)
 
-            setTotalPage(Math.ceil(count ? count / rowsPerPage : 0))
             setData(statData)
             setLoading(false)
         }
 
         setLoading(true)
         load()
-    }, [date, page, rowsPerPage, setTotalPage, selectedCampaignId, syncTime])
 
-    return { data, columns, maxDailyCount, loading }
+    }, [date, page, rowsPerPage, totalPage, uuids, syncTime])
+
+    return { data, maxDailyCount, tableNames, loading, page, rowsPerPage, totalPage, setPage, setRowsPerPage }
 }
 
 export default useUserDailyStat

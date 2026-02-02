@@ -1,4 +1,5 @@
-import { ComparisonType, TimelineData } from "@/types/chart";
+import { TimelineData } from "@/types/chart";
+import { ComparisonType } from "@/types/dashboard";
 import { useEffect, useState, useMemo } from "react";
 import useCampaign from "../useCampaign";
 import { getPersonComparisonData, getDaysComparisonData, getSensorComparisonData } from "@/services/chartService";
