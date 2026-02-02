@@ -1,11 +1,5 @@
 import { ScaleLinear, ScaleTime } from "@visx/vendor/d3-scale";
 
-export enum ComparisonType {
-    Sensors = "sensors",
-    Days = "days",
-    Participants = "participants"
-}
-
 export type ChartType = "numerical" | "categorical" | "barcode" | "heatmap"
 
 export interface TimelineNumericalPoint {
@@ -49,15 +43,5 @@ export type TimelineParams = {
     fieldId: number,
     date: Date,
 }
-
-export type ComparisonParams = { uuid: string[], fieldId: number[] }
-
-export type ChartPinQuery = {
-    date: Date | null,
-    uuid: string | null,
-    fieldId: number | null,
-};
-
-export type ChartPinQueryOption = { date: Date } | { uuid: string } | { fieldId: number } | null
 
 export type TooltipData = { label: string, value: string }[] | null

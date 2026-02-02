@@ -4,7 +4,8 @@ import { DnDProvider } from '@/components/common/DnDList';
 import { Button } from 'flowbite-react';
 import Link from 'next/link';
 import useSectionState from '@/hooks/useSectionState';
-import { ComparisonType, TimelineData } from '@/types/chart';
+import { TimelineData } from '@/types/chart';
+import { ComparisonType } from "@/types/dashboard";
 import { ChartItem } from './ChartItem';
 
 const ChartContainer: React.FC<{
