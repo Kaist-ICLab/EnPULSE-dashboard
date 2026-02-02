@@ -3,11 +3,11 @@
 import useCampaign from '@/hooks/useCampaign';
 import { Dropdown, DropdownDivider, DropdownHeader, DropdownItem } from 'flowbite-react';
 import Link from 'next/link';
+import { useMemo } from 'react';
 
 const CampaignDropdown: React.FC = () => {
     const { campaignList, selectedCampaignId } = useCampaign();
-    const currentCampaignName = campaignList.get(selectedCampaignId!);
-
+    const currentCampaignName = useMemo(() => campaignList.get(selectedCampaignId!)?.name, [campaignList, selectedCampaignId]);
     return (
         <Dropdown
             dismissOnClick={true}
@@ -38,7 +38,7 @@ const CampaignDropdown: React.FC = () => {
             <DropdownHeader className="!px-3 !py-1.5 text-sm text-gray-500 text-left">
                 Your campaigns
             </DropdownHeader>
-            {Array.from(campaignList.entries()).map(([id, name]) => (
+            {Array.from(campaignList.entries()).map(([id, { name }]) => (
                 <DropdownItem key={id} className={`!px-3 !py-1.5 ${id === selectedCampaignId ? 'text-blue-600' : 'text-gray-700'}`}>
                     <Link href={`/campaigns/${id}/`} className={`w-full h-full block rounded-lg text-left `}>
                         {name}

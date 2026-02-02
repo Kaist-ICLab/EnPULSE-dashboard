@@ -25,10 +25,10 @@ function recursivelyFillSurveyId(surveyQuestion: SurveyQuestion[], surveyId: num
     recursivelyFillSurveyId(nextLevelQuestion, surveyId);
 }
 
-export const getCampaignList = async (): Promise<{ id: number, name: string }[]> => {
+export const getCampaignList = async (): Promise<{ id: number, name: string, description: string, start_time: string, end_time: string }[]> => {
     const { data, error } = await supabase
         .from('campaigns')
-        .select(`id, name`)
+        .select(`id, name, description, start_time, end_time`)
         .order('id')
     if (error) throw new Error(error.message);
     return data;
@@ -49,14 +49,11 @@ export const getCampaignInfo = async (campaignId: number): Promise<FetchedCampai
         s.survey_question = topLevelSurveyQuestion;
     })
 
-    console.log(data)
     return data as FetchedCampaign;
 }
 
 export const upsertCampaign = async (campaign: Campaign, insertChildTables: boolean = true): Promise<number> => {
     if (campaign.id === -1) delete campaign.id;
-
-    console.log(campaign)
 
     const campaignTable = structuredClone(campaign.campaign_table);
     const survey = structuredClone(campaign.survey);
@@ -185,7 +182,6 @@ export const upsertSurveyTrigger = async (surveyTrigger: SurveyQuestionTrigger[]
     const propagatedSurveyTrigger: SurveyQuestionTrigger[] = structuredClone(surveyTrigger);
 
     insertedSurveyTrigger.forEach(st => delete st.survey_question);
-    console.log(insertedSurveyTrigger)
 
     const { data, error } = await supabase.from('survey_question_trigger').upsert(insertedSurveyTrigger, { defaultToNull: false }).select()
     if (error) throw new Error(error.message);
@@ -199,7 +195,6 @@ export const upsertSurveyTrigger = async (surveyTrigger: SurveyQuestionTrigger[]
 }
 
 export const deleteEntries = async (removedEntries: RemovedEntries): Promise<void> => {
-    console.log(removedEntries)
     await supabase.from('campaign_table').delete().in('id', removedEntries.table);
     await supabase.from('campaign_table_field').delete().in('id', removedEntries.field);
     await supabase.from('campaign_table_field_mapping').delete().in('id', removedEntries.mapping);

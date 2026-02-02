@@ -1,6 +1,8 @@
-import { CampaignTable, CampaignTableField, FieldRole, FieldType, RemovedEntries } from "@/types/campaign";
+import { CampaignTable, CampaignTableField, FieldRole, FieldType, RemovedEntries, FetchedCampaign } from "@/types/campaign";
 import { AnswerType, ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption, SurveyQuestionTrigger, Expression } from "@/types/survey";
 import { create } from "zustand";
+import dayjs from "dayjs";
+import { DATE_FORMAT } from "@/utils/date";
 
 interface PassiveSensingConfig {
     startTime: number; // milliseconds since midnight
@@ -10,6 +12,10 @@ interface PassiveSensingConfig {
 interface CampaignConfigEditState {
     campaignId: number;
     campaignName: string;
+    campaignPassword: string;
+    campaignDescription: string;
+    campaignStartTime: string;
+    campaignEndTime: string;
     tables: CampaignTable[];
     passiveSensingConfig: PassiveSensingConfig;
     surveys: Survey[];
@@ -17,6 +23,10 @@ interface CampaignConfigEditState {
 
     // Campaign basic information
     setCampaignName: (name: string) => void;
+    setCampaignDescription: (description: string) => void;
+    setCampaignPassword: (password: string) => void;
+    setCampaignStartTime: (startTime: string) => void;
+    setCampaignEndTime: (endTime: string) => void;
 
     // Passive sensing
     setDailyCountMax: (index: number, value: number) => void;
@@ -26,8 +36,7 @@ interface CampaignConfigEditState {
     removeField: (tableIndex: number, fieldIdx: number) => void;
     setField: (tableIndex: number, fieldIdx: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void;
     setFieldMapping: (tableIndex: number, fieldIdx: number, mapping: { value: string, display: string }[]) => void;
-    setPassiveSensingStartTime: (timeMs: number) => void;
-    setPassiveSensingEndTime: (timeMs: number) => void;
+
 
     // Active sensing
     addSurvey: () => void;
@@ -62,14 +71,7 @@ interface CampaignConfigEditState {
      * Set store state from a loaded campaign.
      * Keep this type shallow to avoid TS "type instantiation is excessively deep" on recursive survey types.
      */
-    setCampaign: (campaign: {
-        id: number;
-        name: string;
-        campaign_table: CampaignTable[];
-        start_time_of_day: number;
-        end_time_of_day: number;
-        survey: Survey[];
-    }) => void;
+    setCampaign: (campaign: FetchedCampaign) => void;
 }
 
 /**
@@ -134,7 +136,6 @@ function checkExpressionValidity(prevAnswerType: AnswerType, prevExpression: Exp
     if (!prevExpression || !expression) return expression;
 
     if (answerType === 'text' && !['Empty', 'Equal', 'NotEqual'].includes(expression.op)) {
-        console.log('text operator not valid');
         return { op: 'Equal', value: '' } as Expression;
     }
     if ((answerType === 'number' || answerType === 'radio') && !['Equal', 'NotEqual', 'GreaterThan', 'GreaterThanOrEqual', 'LessThan', 'LessThanOrEqual'].includes(expression.op)) {
@@ -147,7 +148,6 @@ function checkExpressionValidity(prevAnswerType: AnswerType, prevExpression: Exp
     // Then check if the value type is still valid
     const prevValueType = getValueType(prevAnswerType, prevExpression);
     const newValueType = getValueType(answerType, expression);
-    console.log('new value type', newValueType, 'prev value type', prevValueType);
     if (newValueType !== prevValueType) {
         return { op: expression.op, value: newValueType === 'number' ? 0 : newValueType === 'string' ? '' : [0] } as Expression;
     }
@@ -158,6 +158,10 @@ function checkExpressionValidity(prevAnswerType: AnswerType, prevExpression: Exp
 const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     campaignId: -1,
     campaignName: "",
+    campaignDescription: "",
+    campaignPassword: "",
+    campaignStartTime: dayjs().format(DATE_FORMAT),
+    campaignEndTime: dayjs().add(1, 'day').format(DATE_FORMAT),
     tables: [],
     passiveSensingConfig: {
         startTime: 0, // 00:00 in milliseconds
@@ -176,6 +180,24 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
 
     setCampaignName: (name: string) => {
         set({ campaignName: name });
+    },
+
+    setCampaignDescription: (description: string) => {
+        set({ campaignDescription: description });
+    },
+
+    setCampaignPassword: (password: string) => {
+        set({ campaignPassword: password });
+    },
+
+    setCampaignStartTime: (startTime: string) => {
+        const formattedStartTime = dayjs(startTime).format(DATE_FORMAT);
+        set({ campaignStartTime: formattedStartTime });
+    },
+
+    setCampaignEndTime: (endTime: string) => {
+        const formattedEndTime = dayjs(endTime).format(DATE_FORMAT);
+        set({ campaignEndTime: formattedEndTime });
     },
 
     setDailyCountMax: (index: number, value: number) => {
@@ -264,24 +286,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
                 },
             };
         });
-    },
-
-    setPassiveSensingStartTime: (timeMs: number) => {
-        set((state) => ({
-            passiveSensingConfig: {
-                ...state.passiveSensingConfig,
-                startTime: timeMs,
-            }
-        }));
-    },
-
-    setPassiveSensingEndTime: (timeMs: number) => {
-        set((state) => ({
-            passiveSensingConfig: {
-                ...state.passiveSensingConfig,
-                endTime: timeMs,
-            }
-        }));
     },
 
     addSurvey: () => {
@@ -588,7 +592,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
     },
 
     updateSurveyQuestionTriggerExpression: (surveyIndex: number, questionPath: number[], triggerIndex: number, expression: Expression) => {
-        console.log('delivered expression', expression);
         set((state) => {
             const newSurveys = structuredClone(state.surveys);
             const survey = newSurveys[surveyIndex];
@@ -603,12 +606,13 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         });
     },
 
-
-
     reset: () => {
         set({
             campaignId: -1,
             campaignName: "",
+            campaignDescription: "",
+            campaignStartTime: dayjs().format(DATE_FORMAT),
+            campaignEndTime: dayjs().add(1, 'day').format(DATE_FORMAT),
             removedEntries: {
                 table: [],
                 field: [],
@@ -627,19 +631,14 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
         });
     },
 
-    setCampaign: (campaign: {
-        id: number;
-        name: string;
-        start_time_of_day: number;
-        end_time_of_day: number;
-        campaign_table: CampaignTable[];
-        survey: Survey[];
-    }) => {
+    setCampaign: (campaign: FetchedCampaign) => {
         set({
             campaignId: campaign.id,
             campaignName: campaign.name,
+            campaignDescription: campaign.description,
+            campaignStartTime: campaign.start_time,
+            campaignEndTime: campaign.end_time,
             tables: campaign.campaign_table,
-            passiveSensingConfig: { startTime: campaign.start_time_of_day, endTime: campaign.end_time_of_day },
             surveys: campaign.survey,
             removedEntries: {
                 table: [],

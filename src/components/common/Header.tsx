@@ -19,15 +19,7 @@ const Header: React.FC = () => {
     const { updateSensorConfig } = useUpdateSensorConfig(async (id) => {
         await fetchCampaigns();
         await selectCampaign(id);
-        console.log(campaign)
-        if (campaign) setCampaign({
-            id: campaign.id,
-            name: campaign.name,
-            campaign_table: campaign.campaign_table,
-            start_time_of_day: campaign.start_time_of_day,
-            end_time_of_day: campaign.end_time_of_day,
-            survey: campaign.survey,
-        });
+        if (campaign) setCampaign(campaign);
     });
     const pathname = usePathname();
     const isSettingsPage = pathname?.includes("/settings") ?? false;

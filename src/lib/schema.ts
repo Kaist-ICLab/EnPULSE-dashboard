@@ -499,24 +499,27 @@ export type Database = {
             campaigns: {
                 Row: {
                     created_at: string | null
-                    end_time_of_day: number
+                    description: string
+                    end_time: string
                     id: number
                     name: string
-                    start_time_of_day: number
+                    start_time: string
                 }
                 Insert: {
                     created_at?: string | null
-                    end_time_of_day?: number
+                    description?: string
+                    end_time: string
                     id?: number
                     name: string
-                    start_time_of_day?: number
+                    start_time: string
                 }
                 Update: {
                     created_at?: string | null
-                    end_time_of_day?: number
+                    description?: string
+                    end_time?: string
                     id?: number
                     name?: string
-                    start_time_of_day?: number
+                    start_time?: string
                 }
                 Relationships: []
             }

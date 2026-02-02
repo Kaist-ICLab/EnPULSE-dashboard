@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { Campaign } from "@/types/campaign";
 
 export function useUpdateSensorConfig(onSuccess: (id: number) => void) {
-    const { campaignId, campaignName, tables, surveys, passiveSensingConfig, removedEntries } = useCampaignConfigEdit();
+    const { campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, tables, surveys, removedEntries } = useCampaignConfigEdit();
 
     const updateSensorConfig = useCallback(() => {
         const callback = async () => {
@@ -12,8 +12,9 @@ export function useUpdateSensorConfig(onSuccess: (id: number) => void) {
                 const campaign: Campaign = {
                     id: campaignId,
                     name: campaignName,
-                    end_time_of_day: passiveSensingConfig.endTime,
-                    start_time_of_day: passiveSensingConfig.startTime,
+                    description: campaignDescription,
+                    end_time: campaignEndTime,
+                    start_time: campaignStartTime,
                     profiles: [],
                     campaign_table: tables,
                     survey: surveys,
@@ -28,7 +29,7 @@ export function useUpdateSensorConfig(onSuccess: (id: number) => void) {
         }
 
         callback();
-    }, [campaignId, campaignName, tables, surveys, passiveSensingConfig, removedEntries, onSuccess]);
+    }, [campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, tables, surveys, removedEntries, onSuccess]);
 
     return { updateSensorConfig };
 }
