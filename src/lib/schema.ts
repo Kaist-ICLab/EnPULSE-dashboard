@@ -472,6 +472,7 @@ export type Database = {
                     end_time: string
                     id: number
                     name: string
+                    password_hash: string
                     start_time: string
                 }
                 Insert: {
@@ -480,6 +481,7 @@ export type Database = {
                     end_time: string
                     id?: number
                     name: string
+                    password_hash?: string
                     start_time: string
                 }
                 Update: {
@@ -488,6 +490,7 @@ export type Database = {
                     end_time?: string
                     id?: number
                     name?: string
+                    password_hash?: string
                     start_time?: string
                 }
                 Relationships: []

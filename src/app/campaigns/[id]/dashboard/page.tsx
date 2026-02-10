@@ -1,6 +1,6 @@
 "use client";
 import { ComparisonChart } from "@/components/dashboard/chart/ComparisonChart";
-import DailyOverviewTable from "@/components/dashboard/DailyOverviewTable";
+import DailyOverviewTable from "@/components/dashboard/stat/DailyStatTable";
 import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
 import { CampaignParticipant } from "@/types/campaign";
 import { useEffect, useState } from "react";

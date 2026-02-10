@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { UserDailyStat } from "./useUserDailyStat";
+import { UserDailyStatData } from "@/types/dashboard";
 
 export function useDailyStatTableCheckedState(
-    data: UserDailyStat[]
+    data: UserDailyStatData[]
 ) {
     const [checkedState, setCheckedState] = useState<boolean[]>(
         data.length > 0 ? data.map(() => false) : []

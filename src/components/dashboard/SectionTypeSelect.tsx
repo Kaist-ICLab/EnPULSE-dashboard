@@ -1,4 +1,4 @@
-import { ComparisonType } from "@/types/chart";
+import { ComparisonType } from "@/types/dashboard";
 import { Select } from "flowbite-react";
 
 const SectionTypeSelect: React.FC<{

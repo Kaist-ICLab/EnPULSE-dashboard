@@ -1,4 +1,3 @@
-import { DynamicDataColumn } from '@/hooks/chart/useUserDailyStat';
 import { supabase } from '@/lib/supabase';
 import { BucketCategoricalData, BucketNumericalData, groupByTimestamp, groupByTimestampAndBitmask, mapQuery } from '@/lib/supabaseHelper';
 import { CampaignParticipant, CampaignTable } from '@/types/campaign';
@@ -6,65 +5,55 @@ import { ChartType, TimelineData } from '@/types/chart';
 import dayjs from 'dayjs';
 import { DeepRequired } from '@/utils/type';
 import { DATE_FORMAT } from '@/utils/date';
+import { UserDailyStatData } from '@/types/dashboard';
 
-export async function getCampaignDailySummary(campaignId: number, date: Date, page: number, pageCount: number) {
-    const from = (page - 1) * pageCount;
-    const to = from + pageCount - 1;
+export async function getCampaignDailySummary(uuids: string[], date: Date) {
+    const { data: contactData, error: contactError } = await supabase
+        .from('profiles')
+        .select('messages(count)')
+        .in('uuid', uuids)
+        .order('uuid', { ascending: true })
+
+    if (contactError) throw new Error(contactError.message);
 
     const { data, error } = await supabase
-        .from(`profiles`)
-        .select(`uuid, email, campaign_table_user_daily_summary(*), messages(count)`)
-        .eq('campaign_id', campaignId)
-        .filter('campaign_table_user_daily_summary.day', 'eq', dayjs(date).format('YYYY-MM-DD'))
-        .range(from, to)
+        .from(`campaign_table_row_count`)
+        .select('*')
+        .in('uuid', uuids)
+        .eq('day', dayjs(date).format('YYYY-MM-DD'))
+        .order('uuid', { ascending: true })
+        .order('table_id', { ascending: true })
+        .order('time_slot', { ascending: true })
 
     if (error) throw new Error(error.message);
 
     if (data.length == 0) return []
 
-    const campaignTableId = data[0].campaign_table_user_daily_summary.map(v => v.campaign_table_id)
-    const columnNameQuery = await mapQuery(campaignTableId, v => {
-        return supabase
-            .from(`campaign_table`)
-            .select(`name, daily_count_max`)
-            .eq(`id`, v)
-    }) as { name: string; daily_count_max: number }[][]
-    const columnName = columnNameQuery.map(v => v[0]?.name ?? '')
-    const dailyCountMax = columnNameQuery.map(v => v[0]?.daily_count_max ?? 0)
+    // Aggregate data per profile, with contacts, tables, and time_slots
+    const result: UserDailyStatData[] = uuids.map((uuid, idx) => ({
+        uuid: uuid,
+        contacts: contactData[idx].messages[0].count,
+        tables: []
+    }));
 
-    return data.map(v => {
-        const columns = {} as { [name: string]: DynamicDataColumn }
-
-        v.campaign_table_user_daily_summary.forEach((table, idx) => {
-            const timeline = Array.from({ length: 8 }).map((_, i) =>
-                table[`hourly_count_${i}`]
-            )
-            const dailyCount = timeline.reduce((a, b) => a + b, 0)
-            columns[columnName[idx]] = {
-                dailyCountMax: dailyCountMax[idx],
-                dailyCount,
-                timeline
-            }
-        })
-
-        return {
-            email: v.email,
-            uuid: v.uuid,
-            contacts: v.messages[0].count,
-            columns
+    for (const v of data) {
+        // Table aggregation
+        const tables = result.find(r => r.uuid === v.uuid)!.tables;
+        if (!tables.find(t => t.table_id === v.table_id)) {
+            tables.push({
+                table_id: v.table_id,
+                totalCount: 0,
+                counts: []
+            });
         }
-    })
-}
 
-export async function getDailyStatCount(campaignId: number) {
-    const { count, error } = await supabase
-        .from(`profiles`)
-        .select(`*`, { count: 'exact' })
-        .eq('campaign_id', campaignId)
+        const table = tables.find(t => t.table_id === v.table_id)!;
+        // Time slot aggregation
+        table.totalCount += v.count;
+        table.counts.push(v.count);
+    }
 
-    if (error) throw new Error(error.message);
-
-    return Math.max(count ?? 1, 1)
+    return result;
 }
 
 export async function getSensorComparisonData(
