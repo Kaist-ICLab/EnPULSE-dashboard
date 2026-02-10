@@ -2,7 +2,7 @@ import useCampaignConfigEdit from "../useCampaignConfigEdit";
 import { deleteEntries, upsertCampaign } from "@/services/campaignService";
 import { useCallback } from "react";
 import { Campaign } from "@/types/campaign";
-import bcrypt from "bcrypt";
+import bcryptjs from "bcryptjs";
 
 export function useUpdateSensorConfig(onSuccess: (id: number) => void) {
     const { campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, campaignPassword, tables, surveys, removedEntries } = useCampaignConfigEdit();
@@ -21,7 +21,7 @@ export function useUpdateSensorConfig(onSuccess: (id: number) => void) {
                     survey: surveys,
                 }
 
-                const hash = await bcrypt.hash(campaignPassword, 10);
+                const hash = await bcryptjs.hash(campaignPassword, 10);
 
                 const upsertedCampaignId = await upsertCampaign(campaign, hash);
                 await deleteEntries(removedEntries);
