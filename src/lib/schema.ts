@@ -298,6 +298,32 @@ export type Database = {
                 }
                 Relationships: []
             }
+            campaign_credentials: {
+                Row: {
+                    campaign_id: number
+                    id: number
+                    password_hash: string
+                }
+                Insert: {
+                    campaign_id: number
+                    id?: number
+                    password_hash: string
+                }
+                Update: {
+                    campaign_id?: number
+                    id?: number
+                    password_hash?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "campaign_credentials_campaign_id_fkey"
+                        columns: ["campaign_id"]
+                        isOneToOne: true
+                        referencedRelation: "campaigns"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
             campaign_table: {
                 Row: {
                     campaign_id: number
@@ -399,25 +425,28 @@ export type Database = {
             }
             campaign_table_row_count: {
                 Row: {
-                    count: number | null
+                    count: number
+                    day: string
                     id: number
-                    table_id: number | null
-                    time_slot: number | null
-                    uuid: string | null
+                    table_id: number
+                    time_slot: number
+                    uuid: string
                 }
                 Insert: {
-                    count?: number | null
+                    count?: number
+                    day: string
                     id?: number
-                    table_id?: number | null
-                    time_slot?: number | null
-                    uuid?: string | null
+                    table_id: number
+                    time_slot: number
+                    uuid: string
                 }
                 Update: {
-                    count?: number | null
+                    count?: number
+                    day?: string
                     id?: number
-                    table_id?: number | null
-                    time_slot?: number | null
-                    uuid?: string | null
+                    table_id?: number
+                    time_slot?: number
+                    uuid?: string
                 }
                 Relationships: [
                     {
@@ -436,69 +465,9 @@ export type Database = {
                     },
                 ]
             }
-            campaign_table_user_daily_summary: {
-                Row: {
-                    campaign_table_id: number | null
-                    day: string | null
-                    hourly_count_0: number
-                    hourly_count_1: number
-                    hourly_count_2: number
-                    hourly_count_3: number
-                    hourly_count_4: number
-                    hourly_count_5: number
-                    hourly_count_6: number
-                    hourly_count_7: number
-                    id: number
-                    uuid: string
-                }
-                Insert: {
-                    campaign_table_id?: number | null
-                    day?: string | null
-                    hourly_count_0: number
-                    hourly_count_1: number
-                    hourly_count_2: number
-                    hourly_count_3: number
-                    hourly_count_4: number
-                    hourly_count_5: number
-                    hourly_count_6: number
-                    hourly_count_7: number
-                    id?: number
-                    uuid: string
-                }
-                Update: {
-                    campaign_table_id?: number | null
-                    day?: string | null
-                    hourly_count_0?: number
-                    hourly_count_1?: number
-                    hourly_count_2?: number
-                    hourly_count_3?: number
-                    hourly_count_4?: number
-                    hourly_count_5?: number
-                    hourly_count_6?: number
-                    hourly_count_7?: number
-                    id?: number
-                    uuid?: string
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "campaign_table_user_daily_summary_campaign_table_id_fkey"
-                        columns: ["campaign_table_id"]
-                        isOneToOne: false
-                        referencedRelation: "campaign_table"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "campaign_table_user_daily_summary_uuid_fkey"
-                        columns: ["uuid"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
-            }
             campaigns: {
                 Row: {
-                    created_at: string | null
+                    created_at: string
                     description: string
                     end_time: string
                     id: number
@@ -506,7 +475,7 @@ export type Database = {
                     start_time: string
                 }
                 Insert: {
-                    created_at?: string | null
+                    created_at?: string
                     description?: string
                     end_time: string
                     id?: number
@@ -514,7 +483,7 @@ export type Database = {
                     start_time: string
                 }
                 Update: {
-                    created_at?: string | null
+                    created_at?: string
                     description?: string
                     end_time?: string
                     id?: number
