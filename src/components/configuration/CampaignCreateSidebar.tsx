@@ -23,7 +23,7 @@ const DashboardSidebar: React.FC = () => {
     const currentStepIndex = getCurrentStepIndex();
 
     return (
-        <div className="h-screen border-r border-gray-300 bg-gray-50 w-64 flex flex-col p-6">
+        <div className="h-screen border-r border-gray-300 bg-gray-50 w-64 flex flex-col px-6 py-4">
             <h2 className="text-lg font-semibold text-gray-800 mb-8">Create Campaign</h2>
             <div className="flex flex-col relative">
                 {/* Progress bar line */}

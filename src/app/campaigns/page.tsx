@@ -4,6 +4,7 @@ import Link from "next/link";
 import useCampaign from "@/hooks/useCampaign";
 import { useEffect } from "react";
 import dayjs from "dayjs";
+import MainHeader from "@/components/common/MainHeader";
 
 // Campaign selection page
 const CampaignsPage: React.FC = () => {
@@ -31,10 +32,7 @@ const CampaignsPage: React.FC = () => {
 
     return (
         <div className="w-full min-h-screen bg-gray-50 flex flex-col">
-            <div className="px-4 border-b border-gray-200 py-4 flex flex-col items-center">
-                <div className="text-3xl font-bold">EnPULSE</div>
-                <div className="text-sm font-light">Enabling Platform for User Logging and Sensing Environment</div>
-            </div>
+            <MainHeader />
             <div className="flex flex-col items-center p-6 gap-6 max-w-4xl w-full mx-auto">
                 {Array.from(campaignList.entries()).map(([id, { name, description, start_time, end_time }]) => {
                     const progress = calculateProgress(start_time, end_time);

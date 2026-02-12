@@ -1,5 +1,5 @@
 import Sidebar from "@/components/common/Sidebar";
-import Header from "@/components/common/Header";
+import Header from "@/components/common/CampaignHeader";
 import { notFound } from "next/navigation";
 import { getCampaignList } from "@/services/campaignService";
 import CampaignInitProvider from "@/components/CampaignInitProvider";

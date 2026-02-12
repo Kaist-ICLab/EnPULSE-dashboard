@@ -9,11 +9,11 @@ export default async function CampaignLayout({
 }>) {
     return (
         <NewCampaignTablesInitProvider isNewCampaign={true}>
-            <div className="w-full h-screen bg-gray-50 flex flex-row">
-                <CampaignCreateSidebar />
-                <div className="flex flex-col w-full items-stretch grow overflow-auto">
-                    <CampaignCreateHeader />
-                    <div className="flex flex-row grow w-full overflow-hidden">
+            <div className="flex flex-col w-full items-stretch grow overflow-auto">
+                <CampaignCreateHeader />
+                <div className="flex flex-row grow w-full overflow-hidden">
+                    <div className="w-full grow bg-gray-50 flex flex-row">
+                        <CampaignCreateSidebar />
                         <main className="flex flex-col w-full items-stretch gap-4 grow p-4 overflow-auto">
                             <div className="h-full max-w-3xl">
                                 {children}
@@ -22,6 +22,7 @@ export default async function CampaignLayout({
                     </div>
                 </div>
             </div>
+
         </NewCampaignTablesInitProvider>
     );
 }

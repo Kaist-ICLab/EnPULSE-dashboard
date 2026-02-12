@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import AddSensorButtons from "@/components/configuration/header/AddSensorButtons";
 import AddSurveyButton from "@/components/configuration/header/AddSurveyButton";
 import SurveyQuestionHeader from "./SurveyQuestionHeader";
+import MainHeader from "@/components/common/MainHeader";
 
 const CampaignCreateHeader: React.FC = () => {
     const pathname = usePathname();
@@ -27,8 +28,9 @@ const CampaignCreateHeader: React.FC = () => {
     const isQuestionPage = pathname.match(/\/active-sensing\/\d+$/) !== null;
 
     return (
-        <div className="w-full min-h-16 flex items-center border-b border-gray-200 px-6 relative">
-            <h2 className="text-xl font-bold text-gray-900 mr-4">{getPageTitle()}</h2>
+        <div className="w-full min-h-14 flex items-center border-b border-gray-200 px-6 relative bg-gray-50">
+
+            <MainHeader />
             <div className="grow flex justify-end">
                 {isPassiveSensingPage && <AddSensorButtons />}
                 {isActiveSensingPage && !isQuestionPage && <AddSurveyButton />}
