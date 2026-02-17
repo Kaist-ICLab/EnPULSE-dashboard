@@ -30,7 +30,6 @@ interface CampaignState {
     fetchCampaigns: () => Promise<void>;
     setCampaignList: (campaigns: Map<number, { name: string, description: string, start_time: string, end_time: string }>) => void;
     selectCampaign: (campaignId: number) => Promise<void>;
-    updateCampaignName: (campaignId: number, name: string) => Promise<void>;
 }
 
 
@@ -100,13 +99,6 @@ const useCampaign = create<CampaignState>((set, get) => ({
             console.error(error);
             set((state) => ({ responses: { ...state.responses, selectCampaign: { status: 'error', message: "Error selecting campaign" } } }));
         }
-    },
-
-    /* **********
-     * This feature will be move to useCampaignConfigEdit
-     ********** */
-    //eslint-disable-next-line @typescript-eslint/no-unused-vars
-    updateCampaignName: async (campaignId: number, name: string) => {
     },
 }));
 
