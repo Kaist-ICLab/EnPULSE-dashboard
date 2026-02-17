@@ -1,9 +1,9 @@
 'use client'
 import { Button, Card, TextInput, Tooltip } from "flowbite-react";
-import { useState } from "react";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import dayjs from "dayjs";
 import useCampaignNameState from "@/hooks/configuration/useCampaignNameState";
+import PasswordForm from "./PasswordForm";
 
 const stateMessageMap = {
     "loading": "Validating...",
@@ -29,7 +29,6 @@ const CampaignInfoForm = () => {
         setCampaignPassword
     } = useCampaignConfigEdit();
     const { campaignName, setCampaignName, status, isChanged, checkIsValidName } = useCampaignNameState();
-    const [showPassword, setShowPassword] = useState(false);
 
     return (
         <div className="flex flex-col gap-4">
@@ -82,24 +81,7 @@ const CampaignInfoForm = () => {
                             <span className="mt-1 w-6 h-6 icon-[mingcute--question-fill]"></span>
                         </button>
                     </Tooltip>
-                    <div className="relative w-full">
-                        <TextInput
-                            id="campaignPassword"
-                            type={showPassword ? "text" : "password"}
-                            value={campaignPassword}
-                            onChange={(e) => setCampaignPassword(e.target.value)}
-                            className="grow pr-10"
-                        />
-                        <button
-                            type="button"
-                            aria-label={showPassword ? "Hide password" : "Show password"}
-                            className="absolute inset-y-0 right-0 flex items-center px-2 focus:outline-none"
-                            onClick={() => setShowPassword((v) => !v)}
-                            tabIndex={-1}
-                        >
-                            <span className={`${showPassword ? "icon-[mdi--eye-off]" : "icon-[mdi--eye]"} text-gray-500 w-5 h-5`} />
-                        </button>
-                    </div>
+                    <PasswordForm password={campaignPassword} setPassword={setCampaignPassword} />
                 </div>
             </Card>
             <Card>
