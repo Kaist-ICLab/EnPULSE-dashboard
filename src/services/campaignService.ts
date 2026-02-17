@@ -215,13 +215,14 @@ export const deleteEntries = async (removedEntries: RemovedEntries): Promise<voi
     await supabase.from('survey_question_trigger').delete().in('id', removedEntries.trigger);
 }
 
-export const checkCampaignNameValidity = async (campaignName: string): Promise<boolean> => {
+export const checkCampaignNameValidity = async (campaignName: string, campaignId: number): Promise<boolean> => {
     if (campaignName == '') return false
 
     const { data, error } = await supabase
         .from('campaigns')
         .select('id')
-        .eq('name', campaignName);
+        .eq('name', campaignName)
+        .neq('id', campaignId);
 
     if (error) throw new Error(error.message);
     if (data && data.length > 0) return false
