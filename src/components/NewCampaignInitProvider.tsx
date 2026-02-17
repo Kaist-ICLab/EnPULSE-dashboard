@@ -8,7 +8,6 @@ const NewCampaignInitProvider: React.FC<{ children: React.ReactNode, isNewCampai
     const { campaign } = useCampaign();
     const { reset, setCampaign } = useCampaignConfigEdit();
     useEffect(() => {
-        console.log(campaign)
         if (isNewCampaign) reset()
         else if (campaign) setCampaign(campaign);
     }, [reset, setCampaign, campaign, isNewCampaign]);
