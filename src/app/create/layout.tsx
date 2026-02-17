@@ -1,4 +1,4 @@
-import CampaignCreateHeader from "@/components/configuration/header/CampaignCreateHeader";
+import MainHeader from "@/components/common/MainHeader";
 import CampaignCreateSidebar from "@/components/configuration/CampaignCreateSidebar";
 import NewCampaignTablesInitProvider from "@/components/NewCampaignInitProvider";
 
@@ -10,7 +10,7 @@ export default async function CampaignLayout({
     return (
         <NewCampaignTablesInitProvider isNewCampaign={true}>
             <div className="flex flex-col w-full items-stretch grow overflow-auto">
-                <CampaignCreateHeader />
+                <MainHeader />
                 <div className="flex flex-row grow w-full overflow-hidden">
                     <div className="w-full grow bg-gray-50 flex flex-row">
                         <CampaignCreateSidebar />

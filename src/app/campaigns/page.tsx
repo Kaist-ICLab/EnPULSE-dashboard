@@ -65,14 +65,6 @@ const CampaignsPage: React.FC = () => {
                         </Card>
                     );
                 })}
-                <Card className="w-full hover:shadow-lg transition-shadow duration-200 border-2 border-dashed border-gray-300">
-                    <Link href={`/create`} className="block">
-                        <div className="flex items-center justify-center py-6 text-gray-600 hover:text-gray-900 transition-colors">
-                            <span className="icon-[tabler--plus] mr-2 text-2xl" />
-                            <span className="text-lg font-medium">Create New Campaign</span>
-                        </div>
-                    </Link>
-                </Card>
             </div>
         </div>
     );
