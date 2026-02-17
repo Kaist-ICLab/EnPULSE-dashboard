@@ -1,5 +1,4 @@
 "use client"
-import { Card } from "flowbite-react";
 import CampaignName from "@/components/configuration/form/CampaignInfoForm";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
