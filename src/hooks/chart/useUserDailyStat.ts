@@ -40,7 +40,7 @@ export const useUserDailyStat = (
         if (data.length == 0) return campaignTables.values().map(t => t.name)
 
         const refrow = data[0].tables.map(t => t.table_id)
-        return refrow.map(t => campaignTables.get(t)?.name ?? '')
+        return refrow.map(t => campaignTables.get(t)?.name ?? `TABLE_ID_${t}`)
     }, [data, campaignTables])
 
     const totalPage = useMemo(() => {
