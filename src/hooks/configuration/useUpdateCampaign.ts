@@ -4,10 +4,10 @@ import { useCallback } from "react";
 import { Campaign } from "@/types/campaign";
 import bcryptjs from "bcryptjs";
 
-export function useUpdateSensorConfig(onSuccess: (id: number) => void) {
+export function useUpdateCampaign(onSuccess: (id: number) => void) {
     const { campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, campaignPassword, tables, surveys, removedEntries } = useCampaignConfigEdit();
 
-    const updateSensorConfig = useCallback(() => {
+    const updateCampaignConfig = useCallback(() => {
         const callback = async () => {
             try {
                 const campaign: Campaign = {
@@ -21,7 +21,7 @@ export function useUpdateSensorConfig(onSuccess: (id: number) => void) {
                     survey: surveys,
                 }
 
-                const hash = await bcryptjs.hash(campaignPassword, 10);
+                const hash = campaignPassword.length > 0 ? await bcryptjs.hash(campaignPassword, 10) : null;
 
                 const upsertedCampaignId = await upsertCampaign(campaign, hash);
                 await deleteEntries(removedEntries);
@@ -34,5 +34,5 @@ export function useUpdateSensorConfig(onSuccess: (id: number) => void) {
         callback();
     }, [campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, campaignPassword, tables, surveys, removedEntries, onSuccess]);
 
-    return { updateSensorConfig };
+    return { updateCampaignConfig };
 }

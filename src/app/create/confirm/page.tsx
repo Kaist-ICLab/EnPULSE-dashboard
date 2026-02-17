@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useUpdateSensorConfig } from "@/hooks/configuration/useUpdateSensorConfig";
+import { useUpdateCampaignConfig } from "@/hooks/configuration/useUpdateCampaign/";
 
 import { Card } from "flowbite-react";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
@@ -9,7 +9,7 @@ import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
 
 const ConfirmPage: React.FC = () => {
     const { campaignName, tables, surveys } = useCampaignConfigEdit();
-    const { updateSensorConfig } = useUpdateSensorConfig((id) => { router.push(`/campaigns/${id}`); });
+    const { updateSensorConfig } = useUpdateCampaignConfig((id) => { router.push(`/campaigns/${id}`); });
     const router = useRouter();
 
     return (

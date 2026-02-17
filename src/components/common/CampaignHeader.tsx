@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import dayjs from "dayjs";
 import useCampaign from "@/hooks/useCampaign";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
-import { useUpdateSensorConfig } from "@/hooks/configuration/useUpdateSensorConfig";
+import { useUpdateCampaign } from "@/hooks/configuration/useUpdateCampaign";
 import AddSensorButtons from "@/components/configuration/header/AddSensorButtons";
 import AddSurveyButton from "@/components/configuration/header/AddSurveyButton";
 import AddQuestionHeader from "@/components/configuration/header/AddQuestionHeader";
@@ -16,7 +16,7 @@ const Header: React.FC = () => {
     const { date, updateDate: setDate, addDaysToDate, initTimeRange } = useSectionState();
     const { campaign, fetchCampaigns, selectCampaign } = useCampaign();
     const { setCampaign } = useCampaignConfigEdit();
-    const { updateSensorConfig } = useUpdateSensorConfig(async (id) => {
+    const { updateCampaignConfig } = useUpdateCampaign(async (id) => {
         await fetchCampaigns();
         await selectCampaign(id);
         if (campaign) setCampaign(campaign);
@@ -84,7 +84,7 @@ const Header: React.FC = () => {
                     {isActiveSensingPage && !isQuestionPage && <AddSurveyButton />}
                     {isQuestionPage && <AddQuestionHeader />}
                     <div className="pl-4 border-l border-gray-200">
-                        <Button color="blue" onClick={updateSensorConfig}>
+                        <Button color="blue" onClick={updateCampaignConfig}>
                             <span className="icon-[material-symbols--save] w-6 h-6 mr-2"></span>Save
                         </Button>
                     </div>
