@@ -3,10 +3,12 @@
 import { useEffect } from "react";
 import useCampaign from "@/hooks/useCampaign";
 import useSectionState, { comparisonTypes } from "@/hooks/useSectionState";
+import dayjs from "dayjs";
+import { getLocalDay } from "@/utils/date";
 
 const SectionStateInitProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { campaignParticipants, campaignTableFields } = useCampaign();
-    const { updateComparisonParams, initTimeRange } = useSectionState();
+    const { campaign, campaignParticipants, campaignTableFields } = useCampaign();
+    const { updateComparisonParams, initTimeRange, updateDate } = useSectionState();
 
     useEffect(() => {
         comparisonTypes.forEach(type => {
@@ -20,6 +22,18 @@ const SectionStateInitProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     useEffect(() => {
         initTimeRange()
     }, [initTimeRange])
+
+    useEffect(() => {
+        if (!campaign) return;
+
+        if (dayjs(campaign.start_time).toDate() >= new Date()) {
+            updateDate(dayjs(campaign.start_time).toDate())
+        } else if (dayjs(campaign.end_time).toDate() <= new Date()) {
+            updateDate(dayjs(campaign.end_time).toDate())
+        } else {
+            updateDate(getLocalDay())
+        }
+    }, [campaign, updateDate])
 
     return <>{children}</>;
 }

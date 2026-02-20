@@ -21,6 +21,7 @@ const Header: React.FC = () => {
         await selectCampaign(id);
         if (campaign) setCampaign(campaign);
     });
+
     const pathname = usePathname();
     const isSettingsPage = pathname?.includes("/settings") ?? false;
 
@@ -42,6 +43,7 @@ const Header: React.FC = () => {
                             color="light"
                             className="px-1"
                             aria-label="Previous day"
+                            disabled={(dayjs(date).isBefore(dayjs(campaign?.start_time).endOf('day')))}
                             onClick={() => {
                                 addDaysToDate(-1);
                                 initTimeRange();
@@ -63,7 +65,7 @@ const Header: React.FC = () => {
                             color="light"
                             className="px-1"
                             aria-label="Next day"
-                            disabled={dayjs(date).isAfter(dayjs().startOf('day').subtract(1, 'second'))}
+                            disabled={(dayjs(date).isAfter(dayjs().startOf('day').subtract(1, 'second'))) || (!dayjs(date).isBefore(dayjs(campaign?.end_time).startOf('day')))}
                             onClick={() => {
                                 addDaysToDate(1);
                                 initTimeRange();
