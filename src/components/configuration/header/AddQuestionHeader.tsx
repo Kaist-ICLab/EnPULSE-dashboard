@@ -1,10 +1,8 @@
-'use client'
-
+import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import { useParams, useRouter } from "next/navigation";
 import { Button, Select } from "flowbite-react";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 
-export default function SurveyQuestionHeader() {
+export default function AddQuestionHeader() {
     const params = useParams();
     const router = useRouter();
     const currentSurveyIndex = parseInt(params.index as string);
@@ -16,7 +14,7 @@ export default function SurveyQuestionHeader() {
 
     return (
         <div className="flex w-full items-center">
-            <Select value={currentSurveyIndex} onChange={(e) => handleSurveySelect(parseInt(e.target.value))} className="w-40 mr-auto font-bold">
+            <Select value={currentSurveyIndex} onChange={(e) => handleSurveySelect(parseInt(e.target.value))} className="w-40 ml-auto font-bold">
                 {surveys.map((survey, index) => (
                     <option key={index} value={index}>{survey.title}</option>
                 ))}

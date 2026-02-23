@@ -1,9 +1,11 @@
 "use client";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useValidConfigState } from "@/hooks/configuration/useValidConfigState";
 
 const DashboardSidebar: React.FC = () => {
     const pathname = usePathname();
+    const { isAccessible } = useValidConfigState();
 
     const steps = [
         { name: "Campaign Information", href: `/create/name` },
@@ -12,18 +14,16 @@ const DashboardSidebar: React.FC = () => {
         { name: "Confirm Configuration", href: `/create/confirm` },
     ];
 
-    const getCurrentStepIndex = () => {
+    const currentStepIndex = (() => {
         if (pathname.includes('/name')) return 0;
         if (pathname.includes('/passive-sensing')) return 1;
         if (pathname.includes('/active-sensing')) return 2;
         if (pathname.includes('/confirm')) return 3;
         return 0;
-    };
-
-    const currentStepIndex = getCurrentStepIndex();
+    })();
 
     return (
-        <div className="h-screen border-r border-gray-300 bg-gray-50 w-64 flex flex-col p-6">
+        <div className="h-screen border-r border-gray-300 bg-gray-50 w-64 flex flex-col px-6 py-4">
             <h2 className="text-lg font-semibold text-gray-800 mb-8">Create Campaign</h2>
             <div className="flex flex-col relative">
                 {/* Progress bar line */}
@@ -41,7 +41,7 @@ const DashboardSidebar: React.FC = () => {
                     return (
                         <Link
                             key={index}
-                            href={step.href}
+                            href={isAccessible[index] ? step.href : ''}
                             className={`relative flex items-center gap-4 mb-8 group ${isActive ? 'cursor-default' : 'cursor-pointer'
                                 }`}
                         >

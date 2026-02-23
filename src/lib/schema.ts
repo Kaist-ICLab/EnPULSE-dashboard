@@ -298,6 +298,32 @@ export type Database = {
                 }
                 Relationships: []
             }
+            campaign_credentials: {
+                Row: {
+                    campaign_id: number
+                    id: number
+                    password_hash: string
+                }
+                Insert: {
+                    campaign_id: number
+                    id?: number
+                    password_hash: string
+                }
+                Update: {
+                    campaign_id?: number
+                    id?: number
+                    password_hash?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "campaign_credentials_campaign_id_fkey"
+                        columns: ["campaign_id"]
+                        isOneToOne: true
+                        referencedRelation: "campaigns"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
             campaign_table: {
                 Row: {
                     campaign_id: number

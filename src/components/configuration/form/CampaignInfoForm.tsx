@@ -1,29 +1,24 @@
 'use client'
 import { Button, Card, TextInput, Tooltip } from "flowbite-react";
-import { checkCampaignNameValidity } from "@/services/campaignService";
-import { Dispatch, SetStateAction, useState } from "react";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import dayjs from "dayjs";
-
-const stateColorMap = {
-    "loading": "text-gray-500",
-    "ok": "text-green-500",
-    "error": "text-red-500",
-}
+import useCampaignNameState from "@/hooks/configuration/useCampaignNameState";
+import PasswordForm from "./PasswordForm";
 
 const stateMessageMap = {
     "loading": "Validating...",
-    "ok": "Valid name",
-    "error": "Invalid name",
+    "ok": "Valid",
+    "error": "Invalid",
 }
 
-const CampaignInfoForm: React.FC<{
-    campaignName: string,
-    setCampaignName: Dispatch<SetStateAction<string>>,
-    setIsValidName: Dispatch<SetStateAction<boolean>>,
-}> = ({ campaignName, setCampaignName, setIsValidName }) => {
+const classMap = {
+    "loading": "bg-gray-100",
+    "ok": "bg-green-500 hover:bg-green-600",
+    "error": "bg-red-500 hover:bg-red-600",
+}
+
+const CampaignInfoForm = () => {
     const {
-        setCampaignName: setCampaignNameInHook,
         campaignStartTime,
         campaignEndTime,
         setCampaignStartTime,
@@ -33,9 +28,7 @@ const CampaignInfoForm: React.FC<{
         campaignPassword,
         setCampaignPassword
     } = useCampaignConfigEdit();
-    const [status, setStatus] = useState<"loading" | "ok" | "error" | null>(null);
-    const [isChanged, setIsChanged] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
+    const { campaignName, setCampaignName, status, isChanged, checkIsValidName } = useCampaignNameState();
 
     return (
         <div className="flex flex-col gap-4">
@@ -49,31 +42,24 @@ const CampaignInfoForm: React.FC<{
                         id="campaignName"
                         type="text"
                         value={campaignName}
-                        onChange={(e) => { setCampaignName(e.target.value); setIsChanged(true); setIsValidName(false) }}
+                        onChange={(e) => setCampaignName(e.target.value)}
                         className="grow"
                     />
-                    <Button
-                        color="gray"
-                        disabled={!isChanged}
-                        onClick={() => {
-                            setStatus("loading");
-                            checkCampaignNameValidity(campaignName).then((isValid) => {
-                                setStatus(isValid ? "ok" : "error");
-                                setIsValidName(isValid)
-                                setIsChanged(false);
-                                if (isValid) {
-                                    setCampaignNameInHook(campaignName);
-                                }
-                            })
-                        }}
-                        className="text-gray-900 font-medium bg-gray-50 border border-gray-300 hover:bg-gray-100"
-                    >
-                        Validate
-                    </Button>
+                    {(status && !isChanged) ? (
+                        <Button
+                            className={`${classMap[status]} text-white cursor-default`}
+                        >
+                            {stateMessageMap[status]}
+                        </Button>) :
+                        <Button
+                            color="gray"
+                            disabled={!isChanged}
+                            onClick={() => checkIsValidName()}
+                            className="text-gray-900 font-medium bg-gray-50 border border-gray-300 hover:bg-gray-100"
+                        >
+                            Validate
+                        </Button>}
                 </div>
-                {status && <div className={`mt-2 text-sm ${stateColorMap[status]}`}>
-                    {stateMessageMap[status]}
-                </div>}
                 <div className="flex items-center gap-2">
                     <label htmlFor="campaignDescription" className="block text-sm font-medium text-gray-900">Description</label>
                     <TextInput
@@ -95,24 +81,7 @@ const CampaignInfoForm: React.FC<{
                             <span className="mt-1 w-6 h-6 icon-[mingcute--question-fill]"></span>
                         </button>
                     </Tooltip>
-                    <div className="relative w-full">
-                        <TextInput
-                            id="campaignPassword"
-                            type={showPassword ? "text" : "password"}
-                            value={campaignPassword}
-                            onChange={(e) => setCampaignPassword(e.target.value)}
-                            className="grow pr-10"
-                        />
-                        <button
-                            type="button"
-                            aria-label={showPassword ? "Hide password" : "Show password"}
-                            className="absolute inset-y-0 right-0 flex items-center px-2 focus:outline-none"
-                            onClick={() => setShowPassword((v) => !v)}
-                            tabIndex={-1}
-                        >
-                            <span className={`${showPassword ? "icon-[mdi--eye-off]" : "icon-[mdi--eye]"} text-gray-500 w-5 h-5`} />
-                        </button>
-                    </div>
+                    <PasswordForm password={campaignPassword} setPassword={setCampaignPassword} />
                 </div>
             </Card>
             <Card>

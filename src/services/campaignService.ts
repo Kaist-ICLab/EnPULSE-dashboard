@@ -52,7 +52,7 @@ export const getCampaignInfo = async (campaignId: number): Promise<FetchedCampai
     return data as FetchedCampaign;
 }
 
-export const upsertCampaign = async (campaign: Campaign, insertChildTables: boolean = true): Promise<number> => {
+export const upsertCampaign = async (campaign: Campaign, passwordHash: string | null, insertChildTables: boolean = true): Promise<number> => {
     if (campaign.id === -1) delete campaign.id;
 
     const campaignTable = structuredClone(campaign.campaign_table);
@@ -70,6 +70,17 @@ export const upsertCampaign = async (campaign: Campaign, insertChildTables: bool
 
     if (error) throw new Error(error.message);
     const campaignId = data[0].id;
+
+    if (passwordHash) {
+        const { error: credentialTableError } = await supabase
+            .from('campaign_credentials')
+            .upsert({
+                campaign_id: campaignId,
+                password_hash: passwordHash,
+            }, { onConflict: 'campaign_id' })
+
+        if (credentialTableError) throw new Error(credentialTableError.message);
+    }
 
     if (insertChildTables && (campaignTable.length > 0 || survey.length > 0)) {
         campaignTable.forEach(ct => { ct.campaign_id = campaignId })
@@ -204,13 +215,14 @@ export const deleteEntries = async (removedEntries: RemovedEntries): Promise<voi
     await supabase.from('survey_question_trigger').delete().in('id', removedEntries.trigger);
 }
 
-export const checkCampaignNameValidity = async (campaignName: string): Promise<boolean> => {
+export const checkCampaignNameValidity = async (campaignName: string, campaignId: number): Promise<boolean> => {
     if (campaignName == '') return false
 
     const { data, error } = await supabase
         .from('campaigns')
         .select('id')
-        .eq('name', campaignName);
+        .eq('name', campaignName)
+        .neq('id', campaignId);
 
     if (error) throw new Error(error.message);
     if (data && data.length > 0) return false

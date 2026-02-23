@@ -1,8 +1,9 @@
 import Sidebar from "@/components/common/Sidebar";
-import Header from "@/components/common/Header";
+import Header from "@/components/common/CampaignHeader";
 import { notFound } from "next/navigation";
 import { getCampaignList } from "@/services/campaignService";
 import CampaignInitProvider from "@/components/CampaignInitProvider";
+import TimeHeadline from "@/components/common/TimeHeadline";
 
 export default async function CampaignLayout({
     params,
@@ -27,6 +28,7 @@ export default async function CampaignLayout({
             <div className="w-full h-screen bg-gray-50 flex flex-row">
                 <Sidebar />
                 <div className="flex flex-col w-full items-stretch grow overflow-auto">
+                    <TimeHeadline />
                     <Header />
                     <div className="flex flex-row grow w-full overflow-hidden">
                         <main className="flex flex-col w-full items-stretch gap-4 grow overflow-auto p-4">
