@@ -36,8 +36,14 @@ export const useUserDailyStat = (
         return Array.from(campaignParticipants.values()).filter((_, idx) => idx >= (page - 1) * rowsPerPage && idx < page * rowsPerPage).map(p => p.uuid)
     }, [campaignParticipants, page, rowsPerPage])
 
+    const tableIds = useMemo(() => {
+        return Array.from(campaignTables.values()).map(t => t.id)
+    }, [campaignTables])
+
     const tableNames = useMemo(() => {
         if (data.length == 0) return campaignTables.values().map(t => t.name)
+
+        console.log(data)
 
         const refrow = data[0].tables.map(t => t.table_id)
         return refrow.map(t => campaignTables.get(t)?.name ?? `TABLE_ID_${t}`)
@@ -88,7 +94,7 @@ export const useUserDailyStat = (
         if (uuids.length == 0) return
 
         const load = async () => {
-            const statData = await getCampaignDailySummary(uuids, date)
+            const statData = await getCampaignDailySummary(uuids, tableIds, date)
 
             setData(statData)
             setLoading(false)
@@ -97,7 +103,7 @@ export const useUserDailyStat = (
         setLoading(true)
         load()
 
-    }, [date, page, rowsPerPage, totalPage, uuids, syncTime])
+    }, [date, page, rowsPerPage, totalPage, uuids, syncTime, tableIds])
 
     return { data, maxDailyCount, tableNames, loading, page, rowsPerPage, totalPage, setPage, setRowsPerPage }
 }
