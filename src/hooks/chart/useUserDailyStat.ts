@@ -27,7 +27,7 @@ export const useUserDailyStat = (
     const { campaignParticipants, campaignTables } = useCampaign()
 
     const [data, setData] = useState<UserDailyStatData[]>([])
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
 
     const [page, _setPage] = useState(1)
     const [rowsPerPage, _setRowsPerPage] = useState(initialRowsPerPage)
