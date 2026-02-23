@@ -18,8 +18,9 @@ const Header: React.FC = () => {
     const { setCampaign } = useCampaignConfigEdit();
     const { updateCampaignConfig } = useUpdateCampaign(async (id) => {
         await fetchCampaigns();
-        await selectCampaign(id);
-        if (campaign) setCampaign(campaign);
+        await selectCampaign(id, true);
+        const updatedCampaign = useCampaign.getState().campaign;
+        if (updatedCampaign) setCampaign(updatedCampaign);
     });
 
     const pathname = usePathname();
