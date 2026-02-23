@@ -7,7 +7,7 @@ import { DeepRequired } from '@/utils/type';
 import { DATE_FORMAT } from '@/utils/date';
 import { UserDailyStatData } from '@/types/dashboard';
 
-export async function getCampaignDailySummary(uuids: string[], date: Date) {
+export async function getCampaignDailySummary(uuids: string[], tableIds: number[], date: Date) {
     const { data: contactData, error: contactError } = await supabase
         .from('profiles')
         .select('messages(count)')
@@ -20,6 +20,7 @@ export async function getCampaignDailySummary(uuids: string[], date: Date) {
         .from(`campaign_table_row_count`)
         .select('*')
         .in('uuid', uuids)
+        .in('table_id', tableIds)
         .eq('day', dayjs(date).format('YYYY-MM-DD'))
         .order('uuid', { ascending: true })
         .order('table_id', { ascending: true })
