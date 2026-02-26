@@ -11,16 +11,15 @@ import { useUpdateCampaign } from "@/hooks/configuration/useUpdateCampaign";
 import AddSensorButtons from "@/components/configuration/header/AddSensorButtons";
 import AddSurveyButton from "@/components/configuration/header/AddSurveyButton";
 import AddQuestionHeader from "@/components/configuration/header/AddQuestionHeader";
+import { useTemporalStore } from "@/hooks/useTemporalStore";
 
 const Header: React.FC = () => {
     const { date, updateDate: setDate, addDaysToDate, initTimeRange } = useSectionState();
     const { campaign, fetchCampaigns, selectCampaign } = useCampaign();
-    const { setCampaign } = useCampaignConfigEdit();
+    const { pastStates } = useTemporalStore(useCampaignConfigEdit, (state) => state);
     const { updateCampaignConfig } = useUpdateCampaign(async (id) => {
         await fetchCampaigns();
         await selectCampaign(id, true);
-        const updatedCampaign = useCampaign.getState().campaign;
-        if (updatedCampaign) setCampaign(updatedCampaign);
     });
 
     const pathname = usePathname();
@@ -87,7 +86,7 @@ const Header: React.FC = () => {
                     {isActiveSensingPage && !isQuestionPage && <AddSurveyButton />}
                     {isQuestionPage && <AddQuestionHeader />}
                     <div className="pl-4 border-l border-gray-200">
-                        <Button color="blue" onClick={updateCampaignConfig}>
+                        <Button color="blue" onClick={updateCampaignConfig} disabled={pastStates.length === 0}>
                             <span className="icon-[material-symbols--save] w-6 h-6 mr-2"></span>Save
                         </Button>
                     </div>

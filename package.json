@@ -49,6 +49,8 @@
         "react-dom": "^19.0.0",
         "recharts": "^2.15.2",
         "supabase": "^2.72.8",
+        "use-sync-external-store": "^1.6.0",
+        "zundo": "^2.3.0",
         "zustand": "^5.0.3"
     },
     "devDependencies": {

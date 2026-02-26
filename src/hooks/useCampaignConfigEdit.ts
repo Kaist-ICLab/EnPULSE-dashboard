@@ -1,6 +1,7 @@
 import { CampaignTable, CampaignTableField, FieldRole, FieldType, RemovedEntries, FetchedCampaign } from "@/types/campaign";
 import { AnswerType, ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption, SurveyQuestionTrigger, Expression } from "@/types/survey";
 import { create } from "zustand";
+import { temporal } from "zundo"
 import dayjs from "dayjs";
 import { DATE_FORMAT } from "@/utils/date";
 
@@ -9,7 +10,7 @@ interface PassiveSensingConfig {
     endTime: number; // milliseconds since midnight
 }
 
-interface CampaignConfigEditState {
+export interface CampaignConfigEditState {
     campaignId: number;
     campaignName: string;
     campaignPassword: string;
@@ -155,7 +156,7 @@ function checkExpressionValidity(prevAnswerType: AnswerType, prevExpression: Exp
     return expression;
 }
 
-const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
+const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal((set) => ({
     campaignId: -1,
     campaignName: "",
     campaignDescription: "",
@@ -651,6 +652,12 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>((set) => ({
             },
         });
     }
-}));
+}),
+    {
+        onSave: (state) => {
+            console.log("New state:", state)
+        }
+    }
+));
 
 export default useCampaignConfigEdit;
