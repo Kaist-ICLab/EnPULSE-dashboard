@@ -19,6 +19,7 @@
         "@types/d3-scale-chromatic": "^3.1.0",
         "@types/react-dnd": "^2.0.36",
         "@types/react-dnd-html5-backend": "^3.0.2",
+        "@types/throttle-debounce": "^5.0.2",
         "@visx/axis": "^3.13.0-alpha.0",
         "@visx/brush": "^3.13.0-alpha.0",
         "@visx/grid": "^3.13.0-alpha.0",
@@ -39,6 +40,7 @@
         "dayjs": "^1.11.19",
         "flowbite-react": "^0.11.5",
         "lightningcss": "^1.29.3",
+        "microdiff": "^1.5.0",
         "moment": "^2.30.1",
         "next": "^16.1.6",
         "plotly.js-dist-min": "^3.0.1",
@@ -49,6 +51,7 @@
         "react-dom": "^19.0.0",
         "recharts": "^2.15.2",
         "supabase": "^2.72.8",
+        "throttle-debounce": "^5.0.2",
         "use-sync-external-store": "^1.6.0",
         "zundo": "^2.3.0",
         "zustand": "^5.0.3"

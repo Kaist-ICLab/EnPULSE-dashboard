@@ -12,6 +12,7 @@ import AddSensorButtons from "@/components/configuration/header/AddSensorButtons
 import AddSurveyButton from "@/components/configuration/header/AddSurveyButton";
 import AddQuestionHeader from "@/components/configuration/header/AddQuestionHeader";
 import { useTemporalStore } from "@/hooks/useTemporalStore";
+import UndoRedoButtons from "../configuration/header/UndoRedoButtons";
 
 const Header: React.FC = () => {
     const { date, updateDate: setDate, addDaysToDate, initTimeRange } = useSectionState();
@@ -85,7 +86,8 @@ const Header: React.FC = () => {
                     {isPassiveSensingPage && <AddSensorButtons />}
                     {isActiveSensingPage && !isQuestionPage && <AddSurveyButton />}
                     {isQuestionPage && <AddQuestionHeader />}
-                    <div className="pl-4 border-l border-gray-200">
+                    <div className="pl-4 border-l border-gray-200 flex items-center gap-4">
+                        <UndoRedoButtons />
                         <Button color="blue" onClick={updateCampaignConfig} disabled={pastStates.length === 0}>
                             <span className="icon-[material-symbols--save] w-6 h-6 mr-2"></span>Save
                         </Button>

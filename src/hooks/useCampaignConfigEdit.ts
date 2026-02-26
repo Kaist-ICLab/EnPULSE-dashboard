@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { temporal } from "zundo"
 import dayjs from "dayjs";
 import { DATE_FORMAT } from "@/utils/date";
+import { debounce } from "throttle-debounce"
 
 interface PassiveSensingConfig {
     startTime: number; // milliseconds since midnight
@@ -654,9 +655,13 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal((set) =
     }
 }),
     {
-        onSave: (state) => {
-            console.log("New state:", state)
-        }
+        // onSave: (state) => {
+        //     console.log('onSave', state);
+        // },
+        handleSet: (handleSet) =>
+            debounce<typeof handleSet>(100, (state) => {
+                handleSet(state);
+            })
     }
 ));
 

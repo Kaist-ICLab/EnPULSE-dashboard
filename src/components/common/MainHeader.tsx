@@ -6,6 +6,7 @@ import AddSurveyButton from "@/components/configuration/header/AddSurveyButton";
 import Link from "next/link";
 import AddQuestionHeader from "../configuration/header/AddQuestionHeader";
 import { Button } from "flowbite-react";
+import UndoRedoButtons from "../configuration/header/UndoRedoButtons";
 
 const CampaignCreateHeader: React.FC = () => {
     const pathname = usePathname();
@@ -33,6 +34,7 @@ const CampaignCreateHeader: React.FC = () => {
                 {isPassiveSensingPage && <AddSensorButtons />}
                 {isActiveSensingPage && !isQuestionPage && <AddSurveyButton />}
                 {isQuestionPage && <AddQuestionHeader />}
+                {!isMainCampaignPage && <div className="ml-4 pl-4 border-l border-gray-200 flex items-center py-4"><UndoRedoButtons /></div>}
             </div>
         </div>
     );
