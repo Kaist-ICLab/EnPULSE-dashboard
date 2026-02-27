@@ -3,10 +3,10 @@
 import { FieldRole, FieldRoleOption, FieldType, FieldTypeOption } from "@/types/campaign";
 import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import FieldMappingEditor from "../configuration/FieldMappingEditor";
+import FieldMappingEditor from "./FieldMappingEditor";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 
-const FormatConfigTable: React.FC<{
+const PassiveSensingConfigTable: React.FC<{
     tableIdx: number;
 }> = ({ tableIdx }) => {
     const { tables, addField, removeField, setField, setFieldMapping, setDailyCountMax } = useCampaignConfigEdit();
@@ -168,4 +168,4 @@ const FieldTypeCell: React.FC<{
     )
 }
 
-export default FormatConfigTable;
+export default PassiveSensingConfigTable;

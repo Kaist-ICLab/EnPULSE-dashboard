@@ -1,10 +1,12 @@
-import { CampaignTable, CampaignTableField, FieldRole, FieldType, RemovedEntries, FetchedCampaign } from "@/types/campaign";
-import { AnswerType, ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption, SurveyQuestionTrigger, Expression } from "@/types/survey";
-import { create } from "zustand";
-import { temporal } from "zundo"
-import dayjs from "dayjs";
+import { CampaignTable, CampaignTableField, FetchedCampaign, FieldRole, FieldType, RemovedEntries } from "@/types/campaign";
+import { AnswerType, Expression, OperatorType, ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption, SurveyQuestionTrigger } from "@/types/survey";
 import { DATE_FORMAT } from "@/utils/date";
-import { debounce } from "throttle-debounce"
+import dayjs from "dayjs";
+import { WritableDraft } from "immer";
+import { debounce } from "throttle-debounce";
+import { temporal } from "zundo";
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
 
 interface PassiveSensingConfig {
     startTime: number; // milliseconds since midnight
@@ -47,7 +49,6 @@ export interface CampaignConfigEditState {
     updateSurveyDescription: (index: number, description: string) => void;
     updateSurveyScheduleMethod: (index: number, scheduleMethod: ScheduleMethod) => void;
 
-    addSurveyQuestion: (surveyIndex: number, questionPath: number[], triggerIndex?: number) => void;
     /**
      * Update/remove/reorder questions at any nesting level using a "question path".
      * Path format:
@@ -55,6 +56,7 @@ export interface CampaignConfigEditState {
      * - Child question under trigger: [questionIndex, triggerIndex, childQuestionIndex]
      * - Deeper nesting repeats pairs: [q, trigger, childQ, trigger2, grandchildQ, ...]
      */
+    addSurveyQuestion: (surveyIndex: number, questionPath: number[], triggerIndex?: number) => void;
     removeSurveyQuestion: (surveyIndex: number, questionPath: number[]) => void;
     updateSurveyQuestion: (surveyIndex: number, questionPath: number[], updates: Partial<SurveyQuestion>) => void;
     reorderSurveyQuestion: (surveyIndex: number, questionPath: number[], direction: 'up' | 'down') => void;
@@ -77,42 +79,28 @@ export interface CampaignConfigEditState {
 }
 
 /**
- * Resolve a question (at any nesting level) from a survey by a questionPath.
- * Path format:
- * - Top-level question: [questionIndex]
- * - Child question under trigger: [questionIndex, triggerIndex, childQuestionIndex]
- * - Deeper nesting repeats pairs: [q, trigger, childQ, trigger2, grandchildQ, ...]
- */
-function getQuestionFromPath(survey: Survey, questionPath: number[]): SurveyQuestion | undefined {
-    if (!questionPath.length) return undefined;
-    let current: SurveyQuestion | undefined = survey.survey_question?.[questionPath[0]];
-    for (let i = 1; i < questionPath.length; i += 2) {
-        const triggerIndex = questionPath[i];
-        const childQuestionIndex = questionPath[i + 1];
-        current = current?.survey_question_trigger?.[triggerIndex]?.survey_question?.[childQuestionIndex];
-    }
-    return current;
-}
-
-/**
  * Resolve the array that contains the target question + its index within that array.
+ * Accepts both plain `Survey` objects and Immer drafts, so it only relies
+ * on the `survey_question` field being present.
+ *
  * Useful for remove/reorder without needing parent pointers.
  */
 function getQuestionArrayAndIndexFromPath(
-    survey: Survey,
+    survey: WritableDraft<{ survey_question: SurveyQuestion[] }>,
     questionPath: number[]
-): { arr: SurveyQuestion[]; idx: number } | undefined {
-    if (!questionPath.length) return undefined;
+): { arr: WritableDraft<SurveyQuestion[]> | undefined; idx: number } {
+    if (!questionPath.length) return { arr: survey.survey_question, idx: -1 }
 
-    let arr: SurveyQuestion[] = survey.survey_question || [];
+    let arr = survey.survey_question;
     let idx = questionPath[0];
-    let current: SurveyQuestion | undefined = arr[idx];
+    let current = arr?.[idx];
 
     for (let i = 1; i < questionPath.length; i += 2) {
         const triggerIndex = questionPath[i];
         const childIndex = questionPath[i + 1];
-        const trigger = current?.survey_question_trigger?.[triggerIndex];
-        arr = trigger?.survey_question || [];
+        const trigger = current.survey_question_trigger?.[triggerIndex];
+
+        arr = trigger?.survey_question
         idx = childIndex;
         current = arr[idx];
     }
@@ -120,23 +108,53 @@ function getQuestionArrayAndIndexFromPath(
     return { arr, idx };
 }
 
-function getValueType(answerType: AnswerType, expression: Expression) {
+/**
+ * Resolve a question (at any nesting level) from a survey by a questionPath.
+ * Accepts both plain `Survey` objects and Immer drafts, so it only relies
+ * on the `survey_question` field being present.
+ *
+ * Path format:
+ * - Top-level question: [questionIndex]
+ * - Child question under trigger: [questionIndex, triggerIndex, childQuestionIndex]
+ * - Deeper nesting repeats pairs: [q, trigger, childQ, trigger2, grandchildQ, ...]
+ */
+function getQuestionFromPath(
+    survey: WritableDraft<{ survey_question: SurveyQuestion[] }>,
+    questionPath: number[]
+): SurveyQuestion | undefined {
+    const { arr, idx } = getQuestionArrayAndIndexFromPath(survey, questionPath);
+    if (!arr) return undefined;
+    return arr[idx];
+}
+
+function getTriggerFromPath(
+    survey: WritableDraft<{ survey_question: SurveyQuestion[] }>,
+    questionPath: number[],
+    triggerIndex: number
+): WritableDraft<SurveyQuestionTrigger> | undefined {
+    const question = getQuestionFromPath(survey, questionPath);
+    if (!question) return undefined;
+    return question.survey_question_trigger?.[triggerIndex];
+}
+
+function getValueType(answerType: AnswerType, op: OperatorType) {
     switch (answerType) {
         case 'text':
-            return expression.op === 'Empty' ? null : 'string';
+            return op === 'Empty' ? null : 'string';
         case 'number':
         case 'radio':
             return 'number';
         case 'checkbox':
-            return expression.op === 'Contains' ? 'number' : 'array';
+            return op === 'Contains' ? 'number' : 'array';
         default:
             return null;
     }
 }
 
-function checkExpressionValidity(prevAnswerType: AnswerType, prevExpression: Expression | null | undefined, answerType: AnswerType, expression: Expression | null | undefined): Expression | null | undefined {
-    if (!prevExpression || !expression) return expression;
+function checkExpressionValidity(prevAnswerType: AnswerType, answerType: AnswerType, expression: Expression | null | undefined): Expression | null | undefined {
+    if (!expression) return expression;
 
+    // If the operator type is not valid, return the default value
     if (answerType === 'text' && !['Empty', 'Equal', 'NotEqual'].includes(expression.op)) {
         return { op: 'Equal', value: '' } as Expression;
     }
@@ -148,8 +166,8 @@ function checkExpressionValidity(prevAnswerType: AnswerType, prevExpression: Exp
     }
 
     // Then check if the value type is still valid
-    const prevValueType = getValueType(prevAnswerType, prevExpression);
-    const newValueType = getValueType(answerType, expression);
+    const prevValueType = getValueType(prevAnswerType, expression.op);
+    const newValueType = getValueType(answerType, expression.op);
     if (newValueType !== prevValueType) {
         return { op: expression.op, value: newValueType === 'number' ? 0 : newValueType === 'string' ? '' : [0] } as Expression;
     }
@@ -157,7 +175,7 @@ function checkExpressionValidity(prevAnswerType: AnswerType, prevExpression: Exp
     return expression;
 }
 
-const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal((set) => ({
+const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((set) => ({
     campaignId: -1,
     campaignName: "",
     campaignDescription: "",
@@ -181,188 +199,131 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal((set) =
     },
 
     setCampaignName: (name: string) => {
-        set({ campaignName: name });
+        set((state) => {
+            state.campaignName = name;
+        });
     },
 
     setCampaignDescription: (description: string) => {
-        set({ campaignDescription: description });
+        set((state) => {
+            state.campaignDescription = description;
+        });
     },
 
     setCampaignPassword: (password: string) => {
-        set({ campaignPassword: password });
+        set((state) => {
+            state.campaignPassword = password;
+        });
     },
 
     setCampaignStartTime: (startTime: string) => {
-        const formattedStartTime = dayjs(startTime).format(DATE_FORMAT);
-        set({ campaignStartTime: formattedStartTime });
+        set((state) => {
+            state.campaignStartTime = dayjs(startTime).format(DATE_FORMAT);
+        });
     },
 
     setCampaignEndTime: (endTime: string) => {
-        const formattedEndTime = dayjs(endTime).format(DATE_FORMAT);
-        set({ campaignEndTime: formattedEndTime });
+        set((state) => {
+            state.campaignEndTime = dayjs(endTime).format(DATE_FORMAT);
+        });
     },
 
     setDailyCountMax: (index: number, value: number) => {
         set((state) => {
-            const newTables = [...state.tables];
-            newTables.splice(index, 1, { ...state.tables[index], daily_count_max: value });
-            return {
-                tables: newTables,
-            };
+            state.tables[index].daily_count_max = value;
         });
     },
 
     addTable: (table: CampaignTable) => {
         set((state) => {
-            const newTables = [...state.tables, table];
-            return {
-                tables: newTables,
-            };
+            state.tables.push(table);
         });
     },
 
     removeTable: (index: number) => {
         set((state) => {
-            const newTables = [...state.tables];
-            const removedTableId = newTables.splice(index, 1)[0].id ?? -1;
-            return {
-                removedEntries: {
-                    ...state.removedEntries,
-                    table: [...state.removedEntries.table, removedTableId],
-                },
-                tables: newTables,
-            };
+            state.removedEntries.table.push(state.tables[index].id ?? -1);
+            state.tables.splice(index, 1);
         });
     },
 
     addField: (tableIndex: number, field: CampaignTableField) => {
         set((state) => {
-            const newTables = structuredClone(state.tables);
-
-            newTables[tableIndex].campaign_table_field.push(field);
-            return {
-                tables: newTables,
-            };
+            state.tables[tableIndex].campaign_table_field.push(field);
         });
     },
 
     removeField: (tableIndex: number, fieldIdx: number) => {
         set((state) => {
-            const newTables = structuredClone(state.tables);
-            const removedFieldId = newTables[tableIndex].campaign_table_field.splice(fieldIdx, 1)[0].id ?? -1;
-            return {
-                removedEntries: {
-                    ...state.removedEntries,
-                    field: [...state.removedEntries.field, removedFieldId],
-                },
-                tables: newTables,
-            };
+            state.removedEntries.field.push(state.tables[tableIndex].campaign_table_field[fieldIdx].id ?? -1);
+            state.tables[tableIndex].campaign_table_field.splice(fieldIdx, 1);
         });
     },
 
     setField: (tableIndex: number, fieldIdx: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => {
         set((state) => {
-            const newTables = structuredClone(state.tables);
-            const field = newTables[tableIndex].campaign_table_field[fieldIdx];
             if (fieldName == 'role') {
-                newTables[tableIndex].campaign_table_field[fieldIdx] = { ...field, field_role: fieldValue as FieldRole };
+                state.tables[tableIndex].campaign_table_field[fieldIdx].field_role = fieldValue as FieldRole;
             } else {
-                newTables[tableIndex].campaign_table_field[fieldIdx] = { ...field, field_type: fieldValue as FieldType };
+                state.tables[tableIndex].campaign_table_field[fieldIdx].field_type = fieldValue as FieldType;
             }
-            return {
-                tables: newTables,
-            };
         });
     },
 
     setFieldMapping: (tableIndex: number, fieldIdx: number, mapping: { value: string, display: string }[]) => {
         set((state) => {
-            const newTables = structuredClone(state.tables);
-            const originalMapping = newTables[tableIndex].campaign_table_field[fieldIdx].campaign_table_field_mapping;
-            newTables[tableIndex].campaign_table_field[fieldIdx] = { ...newTables[tableIndex].campaign_table_field[fieldIdx], campaign_table_field_mapping: mapping.map(m => ({ value: m.value, display: m.display, field_id: -1 })) };
-            return {
-                tables: newTables,
-                removedEntries: {
-                    ...state.removedEntries,
-                    mapping: [...state.removedEntries.mapping, ...originalMapping.map(m => m.id ?? -1)],
-                },
-            };
+            state.removedEntries.mapping.push(...state.tables[tableIndex].campaign_table_field[fieldIdx].campaign_table_field_mapping.map(m => m.id ?? -1));
+            state.tables[tableIndex].campaign_table_field[fieldIdx].campaign_table_field_mapping = mapping.map(m => ({ value: m.value, display: m.display, field_id: -1 }));
         });
     },
 
     addSurvey: () => {
         set((state) => {
-            const newSurvey: Survey = {
+            state.surveys.push({
                 campaign_id: -1,
                 title: `Survey ${state.surveys.length + 1}`,
                 description: "",
                 schedule_method: null,
                 survey_question: [],
-            };
-            return {
-                surveys: [...state.surveys, newSurvey]
-            };
+            });
         });
     },
 
     removeSurvey: (index: number) => {
         set((state) => {
-            const newSurveys = [...state.surveys];
-            const removedSurveyId = newSurveys.splice(index, 1)[0].id ?? -1;
-            return {
-                removedEntries: {
-                    ...state.removedEntries,
-                    survey: [...state.removedEntries.survey, removedSurveyId],
-                },
-                surveys: newSurveys,
-            };
+            state.removedEntries.survey.push(state.surveys[index].id ?? -1);
+            state.surveys.splice(index, 1);
         });
     },
 
     updateSurveyTitle: (index: number, title: string) => {
         set((state) => {
-            const newSurveys = [...state.surveys];
-            newSurveys[index] = { ...newSurveys[index], title };
-            return { surveys: newSurveys };
+            state.surveys[index].title = title;
         });
     },
 
     updateSurveyDescription: (index: number, description: string) => {
         set((state) => {
-            const newSurveys = [...state.surveys];
-            newSurveys[index] = { ...newSurveys[index], description };
-            return { surveys: newSurveys };
+            state.surveys[index].description = description;
         });
     },
 
     updateSurveyScheduleMethod: (index: number, scheduleMethod: ScheduleMethod) => {
         set((state) => {
-            const newSurveys = [...state.surveys];
-            newSurveys[index] = { ...newSurveys[index], schedule_method: scheduleMethod };
-            return { surveys: newSurveys };
+            state.surveys[index].schedule_method = scheduleMethod;
         });
     },
 
     addSurveyQuestion: (surveyIndex: number, questionPath: number[], triggerIndex?: number) => {
         set((state) => {
-            const newSurveys = structuredClone(state.surveys);
-            const survey = newSurveys[surveyIndex];
-            if (!survey) return state;
-
-            let targetArray: SurveyQuestion[];
-
-            if (questionPath.length == 0) {
-                targetArray = survey.survey_question;
+            let targetArray;
+            if (questionPath.length === 0) {
+                targetArray = state.surveys[surveyIndex].survey_question;
             } else {
-                const question = getQuestionFromPath(survey, questionPath);
-                if (!question) return state;
-                const trigger = question.survey_question_trigger[triggerIndex!];
-                if (!trigger) return state;
-
-                targetArray = trigger.survey_question;
+                targetArray = getTriggerFromPath(state.surveys[surveyIndex], questionPath, triggerIndex!)?.survey_question ?? [];
             }
 
-            const newChildQuestion: SurveyQuestion = {
+            targetArray.push({
                 survey_id: -1,
                 triggered_by: null,
                 question: `Question ${(targetArray.length || 0) + 1}`,
@@ -370,161 +331,109 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal((set) =
                 is_mandatory: false,
                 survey_question_option: [],
                 survey_question_trigger: [],
-            };
-            targetArray.push(newChildQuestion);
-
-
-            return { surveys: newSurveys };
+            });
         });
     },
 
     removeSurveyQuestion: (surveyIndex: number, questionPath: number[]) => {
         set((state) => {
-            const newSurveys = structuredClone(state.surveys);
-            const survey = newSurveys[surveyIndex];
-            if (!survey || questionPath.length === 0) return state;
-
-            const resolved = getQuestionArrayAndIndexFromPath(survey, questionPath);
-            if (!resolved) return state;
-            const { arr, idx } = resolved;
-            if (idx < 0 || idx >= arr.length) return state;
+            const { arr, idx } = getQuestionArrayAndIndexFromPath(state.surveys[surveyIndex], questionPath);
+            if (!arr) return;
 
             const removedQuestionId = arr.splice(idx, 1)[0]?.id ?? -1;
-            return {
-                removedEntries: {
-                    ...state.removedEntries,
-                    question: [...state.removedEntries.question, removedQuestionId],
-                },
-                surveys: newSurveys,
-            };
+            state.removedEntries.question.push(removedQuestionId);
         });
     },
 
     updateSurveyQuestion: (surveyIndex: number, questionPath: number[], updates: Partial<SurveyQuestion>) => {
         set((state) => {
-            const newSurveys = structuredClone(state.surveys);
-            const survey = newSurveys[surveyIndex];
-            if (!survey || questionPath.length === 0) return state;
+            const survey = state.surveys[surveyIndex];
+            if (!survey) return;
 
-            const resolved = getQuestionArrayAndIndexFromPath(survey, questionPath);
-            if (!resolved) return state;
-            const { arr, idx } = resolved;
-            if (idx < 0 || idx >= arr.length) return state;
+            const question = getQuestionFromPath(survey, questionPath);
+            if (!question) return;
 
-            const prevAnswerType = arr[idx].answer_type;
-            const prevTriggers = structuredClone(arr[idx].survey_question_trigger);
-            arr[idx] = { ...arr[idx], ...updates };
+            const prevAnswerType = question.answer_type;
 
-            prevTriggers.forEach((pt, idx) => {
-                const safeExpression = checkExpressionValidity(prevAnswerType, pt.expression as Expression, arr[idx].answer_type, arr[idx].survey_question_trigger[idx].expression as Expression);
-                arr[idx].survey_question_trigger[idx].expression = safeExpression;
-            })
-            return { surveys: newSurveys };
+            // Apply updates directly to the draft question
+            Object.assign(question, updates);
+
+            // Ensure existing triggers remain valid after answer_type changes
+            question.survey_question_trigger?.forEach((trigger) => {
+                trigger.expression = checkExpressionValidity(
+                    prevAnswerType,
+                    question.answer_type,
+                    trigger.expression as Expression
+                );
+            });
         });
     },
 
     reorderSurveyQuestion: (surveyIndex: number, questionPath: number[], direction: 'up' | 'down') => {
         set((state) => {
-            const newSurveys = structuredClone(state.surveys);
-            const survey = newSurveys[surveyIndex];
-            if (!survey || questionPath.length === 0) return state;
-
-            const resolved = getQuestionArrayAndIndexFromPath(survey, questionPath);
-            if (!resolved) return state;
-            const { arr, idx } = resolved;
-            if (idx < 0 || idx >= arr.length) return state;
+            const { arr, idx } = getQuestionArrayAndIndexFromPath(state.surveys[surveyIndex], questionPath);
+            if (!arr) return;
 
             const newIndex = direction === 'up' ? idx - 1 : idx + 1;
-            if (newIndex < 0 || newIndex >= arr.length) return state;
+            if (newIndex < 0 || newIndex >= arr.length) return;
 
             [arr[idx], arr[newIndex]] = [arr[newIndex], arr[idx]];
-            return { surveys: newSurveys };
         });
     },
 
     addSurveyQuestionOption: (surveyIndex: number, questionPath: number[]) => {
         set((state) => {
-            const newSurveys = structuredClone(state.surveys);
-            const survey = newSurveys[surveyIndex];
-            if (!survey || questionPath.length === 0) return state;
+            const question = getQuestionFromPath(state.surveys[surveyIndex], questionPath);
+            if (!question) return;
 
-            const question = getQuestionFromPath(survey, questionPath);
-            if (!question) return state;
-            if (!question.survey_question_option) question.survey_question_option = [];
-            const newOption: SurveyQuestionOption = {
+            question.survey_question_option.push({
                 question_id: -1,
                 display: `Option ${question.survey_question_option.length + 1}`,
                 allow_free_response: false,
-            };
-            question.survey_question_option.push(newOption);
-            return { surveys: newSurveys };
+            });
         });
     },
 
     removeSurveyQuestionOption: (surveyIndex: number, questionPath: number[], optionIndex: number) => {
         set((state) => {
-            const newSurveys = structuredClone(state.surveys);
-            const survey = newSurveys[surveyIndex];
-            if (!survey || questionPath.length === 0) return state;
+            const question = getQuestionFromPath(state.surveys[surveyIndex], questionPath);
+            if (!question) return;
 
-            const question = getQuestionFromPath(survey, questionPath);
-            if (!question || !question.survey_question_option) return state;
             const removedOptionId = question.survey_question_option.splice(optionIndex, 1)[0].id ?? -1;
-            question.survey_question_option = question.survey_question_option.filter((_, i) => i !== optionIndex);
-            return {
-                removedEntries: {
-                    ...state.removedEntries,
-                    option: [...state.removedEntries.option, removedOptionId],
-                },
-                surveys: newSurveys,
-            };
+            state.removedEntries.option.push(removedOptionId);
         });
     },
 
     updateSurveyQuestionOption: (surveyIndex: number, questionPath: number[], optionIndex: number, updates: Partial<SurveyQuestionOption>) => {
         set((state) => {
-            const newSurveys = structuredClone(state.surveys);
-            const survey = newSurveys[surveyIndex];
-            if (!survey || questionPath.length === 0) return state;
+            const question = getQuestionFromPath(state.surveys[surveyIndex], questionPath);
+            if (!question) return;
 
-            const question = getQuestionFromPath(survey, questionPath);
-            if (!question || !question.survey_question_option) return state;
             question.survey_question_option[optionIndex] = { ...question.survey_question_option[optionIndex], ...updates };
-            return { surveys: newSurveys };
         });
     },
 
     reorderSurveyQuestionOption: (surveyIndex: number, questionPath: number[], optionIndex: number, direction: 'up' | 'down') => {
         set((state) => {
-            const newSurveys = structuredClone(state.surveys);
-            const survey = newSurveys[surveyIndex];
-            if (!survey || questionPath.length === 0) return state;
+            const question = getQuestionFromPath(state.surveys[surveyIndex], questionPath);
+            if (!question) return;
 
-            const question = getQuestionFromPath(survey, questionPath);
-            if (!question || !question.survey_question_option) return state;
-            const options = [...question.survey_question_option];
+            const options = question.survey_question_option;
             const newIndex = direction === 'up' ? optionIndex - 1 : optionIndex + 1;
 
             if (newIndex < 0 || newIndex >= options.length) {
-                return state; // Can't move beyond boundaries
+                return; // Can't move beyond boundaries
             }
 
             // Swap options
             [options[optionIndex], options[newIndex]] = [options[newIndex], options[optionIndex]];
-
-            question.survey_question_option = options;
-            return { surveys: newSurveys };
         });
     },
 
     addSurveyQuestionTrigger: (surveyIndex: number, questionPath: number[]) => {
         set((state) => {
-            const newSurveys = structuredClone(state.surveys);
-            const survey = newSurveys[surveyIndex];
-            if (!survey || questionPath.length === 0) return state;
-
-            const question = getQuestionFromPath(survey, questionPath);
-            if (!question) return state;
+            const question = getQuestionFromPath(state.surveys[surveyIndex], questionPath);
+            if (!question) return;
 
             const newTrigger: SurveyQuestionTrigger = {
                 question_id: -1,
@@ -549,73 +458,45 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal((set) =
             }
 
             question.survey_question_trigger.push(newTrigger);
-            return { surveys: newSurveys };
         });
     },
 
     removeSurveyQuestionTrigger: (surveyIndex: number, questionPath: number[], triggerIndex: number) => {
         set((state) => {
-            const newSurveys = structuredClone(state.surveys);
-            const survey = newSurveys[surveyIndex];
-            if (!survey || questionPath.length === 0) return state;
+            const survey = state.surveys[surveyIndex];
+            if (!survey || questionPath.length === 0) return;
 
             const question = getQuestionFromPath(survey, questionPath);
-            if (!question) return state;
+            if (!question) return;
             const removedTriggerId = question.survey_question_trigger?.splice(triggerIndex, 1)[0].id ?? -1;
-            if (question.survey_question_trigger) {
-                question.survey_question_trigger = question.survey_question_trigger.filter((_, i) => i !== triggerIndex);
-            }
-            return {
-                removedEntries: {
-                    ...state.removedEntries,
-                    trigger: [...state.removedEntries.trigger, removedTriggerId],
-                },
-                surveys: newSurveys,
-            };
+            state.removedEntries.trigger.push(removedTriggerId);
         });
     },
 
     updateSurveyQuestionTrigger: (surveyIndex: number, questionPath: number[], triggerIndex: number, updates: Partial<SurveyQuestionTrigger>) => {
         set((state) => {
-            const newSurveys = structuredClone(state.surveys);
-            const survey = newSurveys[surveyIndex];
-            if (!survey || questionPath.length === 0) return state;
-
-            const question = getQuestionFromPath(survey, questionPath);
-            if (!question) return state;
-            if (question.survey_question_trigger && question.survey_question_trigger[triggerIndex]) {
-                question.survey_question_trigger[triggerIndex] = {
-                    ...question.survey_question_trigger[triggerIndex],
-                    ...updates,
-                };
-            }
-            return { surveys: newSurveys };
+            const trigger = getTriggerFromPath(state.surveys[surveyIndex], questionPath, triggerIndex);
+            if (!trigger) return;
+            Object.assign(trigger, updates);
         });
     },
 
     updateSurveyQuestionTriggerExpression: (surveyIndex: number, questionPath: number[], triggerIndex: number, expression: Expression) => {
         set((state) => {
-            const newSurveys = structuredClone(state.surveys);
-            const survey = newSurveys[surveyIndex];
-            if (!survey || questionPath.length === 0) return state;
-
-            const question = getQuestionFromPath(survey, questionPath);
-            if (!question) return state;
-            if (question.survey_question_trigger && question.survey_question_trigger[triggerIndex]) {
-                question.survey_question_trigger[triggerIndex].expression = expression;
-            }
-            return { surveys: newSurveys };
+            const trigger = getTriggerFromPath(state.surveys[surveyIndex], questionPath, triggerIndex);
+            if (!trigger) return;
+            trigger.expression = expression;
         });
     },
 
     reset: () => {
-        set({
-            campaignId: -1,
-            campaignName: "",
-            campaignDescription: "",
-            campaignStartTime: dayjs().format(DATE_FORMAT),
-            campaignEndTime: dayjs().add(1, 'day').format(DATE_FORMAT),
-            removedEntries: {
+        set((state) => {
+            state.campaignId = -1;
+            state.campaignName = "";
+            state.campaignDescription = "";
+            state.campaignStartTime = dayjs().format(DATE_FORMAT);
+            state.campaignEndTime = dayjs().add(1, 'day').format(DATE_FORMAT);
+            state.removedEntries = {
                 table: [],
                 field: [],
                 mapping: [],
@@ -623,26 +504,26 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal((set) =
                 question: [],
                 option: [],
                 trigger: [],
-            },
-            tables: [],
-            passiveSensingConfig: {
+            };
+            state.tables = [];
+            state.passiveSensingConfig = {
                 startTime: 0,
                 endTime: 23 * 60 * 60 * 1000 + 59 * 60 * 1000,
-            },
-            surveys: [],
+            };
+            state.surveys = [];
         });
     },
 
     setCampaign: (campaign: FetchedCampaign) => {
-        set({
-            campaignId: campaign.id,
-            campaignName: campaign.name,
-            campaignDescription: campaign.description,
-            campaignStartTime: campaign.start_time,
-            campaignEndTime: campaign.end_time,
-            tables: campaign.campaign_table,
-            surveys: campaign.survey,
-            removedEntries: {
+        set((state) => {
+            state.campaignId = campaign.id;
+            state.campaignName = campaign.name;
+            state.campaignDescription = campaign.description;
+            state.campaignStartTime = campaign.start_time;
+            state.campaignEndTime = campaign.end_time;
+            state.tables = campaign.campaign_table;
+            state.surveys = campaign.survey;
+            state.removedEntries = {
                 table: [],
                 field: [],
                 mapping: [],
@@ -650,14 +531,11 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal((set) =
                 question: [],
                 option: [],
                 trigger: [],
-            },
+            };
         });
     }
-}),
+})),
     {
-        // onSave: (state) => {
-        //     console.log('onSave', state);
-        // },
         handleSet: (handleSet) =>
             debounce<typeof handleSet>(300, (state) => {
                 handleSet(state);

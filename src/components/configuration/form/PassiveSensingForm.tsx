@@ -1,7 +1,7 @@
 'use client'
 import { Card } from "flowbite-react";
 import useNewCampainTables from "@/hooks/useCampaignConfigEdit";
-import FormatConfigTable from "../FormatConfigTable";
+import FormatConfigTable from "../PassiveSensingConfigTable";
 import RemoveIconButton from "../RemoveIconButton";
 
 export default function PassiveSensingForm() {
