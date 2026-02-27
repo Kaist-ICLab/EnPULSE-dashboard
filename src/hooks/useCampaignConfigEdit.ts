@@ -659,9 +659,9 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal((set) =
         //     console.log('onSave', state);
         // },
         handleSet: (handleSet) =>
-            debounce<typeof handleSet>(100, (state) => {
+            debounce<typeof handleSet>(300, (state) => {
                 handleSet(state);
-            })
+            }, { atBegin: true })
     }
 ));
 

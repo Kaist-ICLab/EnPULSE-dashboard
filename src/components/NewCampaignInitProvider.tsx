@@ -15,6 +15,7 @@ const NewCampaignInitProvider: React.FC<{ children: React.ReactNode, isNewCampai
         else if (campaign) setCampaign(campaign);
         clear();
     }, [reset, setCampaign, campaign, isNewCampaign, clear]);
+
     return <>{children}</>;
 }
 export default NewCampaignInitProvider;

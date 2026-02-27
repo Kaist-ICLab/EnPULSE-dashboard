@@ -71,6 +71,7 @@ const useCampaign = create<CampaignState>((set, get) => ({
         set({ campaignList: campaigns });
     },
     selectCampaign: async (campaignId: number, force = false) => {
+        console.log('selectCampaign', campaignId, force)
         try {
             if (!force && get().selectedCampaignId === campaignId) return;
             set((state) => ({ responses: { ...state.responses, selectCampaign: { status: 'loading', message: "Selecting campaign..." } } }));
