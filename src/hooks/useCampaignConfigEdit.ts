@@ -6,21 +6,18 @@ import dayjs from "dayjs";
 import { DATE_FORMAT } from "@/utils/date";
 import { debounce } from "throttle-debounce"
 
-interface PassiveSensingConfig {
-    startTime: number; // milliseconds since midnight
-    endTime: number; // milliseconds since midnight
+export interface ExportedCampaignConfig {
+    tables: CampaignTable[];
+    surveys: Survey[];
 }
 
-export interface CampaignConfigEditState {
+export interface CampaignConfigEditState extends ExportedCampaignConfig {
     campaignId: number;
-    campaignName: string;
     campaignPassword: string;
+    campaignName: string;
     campaignDescription: string;
     campaignStartTime: string;
     campaignEndTime: string;
-    tables: CampaignTable[];
-    passiveSensingConfig: PassiveSensingConfig;
-    surveys: Survey[];
     removedEntries: RemovedEntries;
 
     // Campaign basic information
@@ -74,6 +71,7 @@ export interface CampaignConfigEditState {
      * Keep this type shallow to avoid TS "type instantiation is excessively deep" on recursive survey types.
      */
     setCampaign: (campaign: FetchedCampaign) => void;
+    setCampaignUsingImportedConfig: (config: ExportedCampaignConfig) => void;
 }
 
 /**
@@ -165,10 +163,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal((set) =
     campaignStartTime: dayjs().format(DATE_FORMAT),
     campaignEndTime: dayjs().add(1, 'day').format(DATE_FORMAT),
     tables: [],
-    passiveSensingConfig: {
-        startTime: 0, // 00:00 in milliseconds
-        endTime: 23 * 60 * 60 * 1000 + 59 * 60 * 1000, // 23:59 in milliseconds
-    },
     surveys: [],
     removedEntries: {
         table: [],
@@ -625,10 +619,6 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal((set) =
                 trigger: [],
             },
             tables: [],
-            passiveSensingConfig: {
-                startTime: 0,
-                endTime: 23 * 60 * 60 * 1000 + 59 * 60 * 1000,
-            },
             surveys: [],
         });
     },
@@ -652,7 +642,47 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal((set) =
                 trigger: [],
             },
         });
-    }
+    },
+
+    setCampaignUsingImportedConfig: (config: ExportedCampaignConfig) => {
+        set((state) => {
+            const removedEntries = structuredClone(state.removedEntries);
+            const walkQuestions = (questions: SurveyQuestion[]) => {
+                questions.forEach((q) => {
+                    removedEntries.question.push(q.id ?? -1);
+                    q.survey_question_option.forEach((o) => {
+                        removedEntries.option.push(o.id ?? -1);
+                    });
+                    q.survey_question_trigger.forEach((tr) => {
+                        removedEntries.trigger.push(tr.id ?? -1);
+                        walkQuestions(tr.survey_question);
+                    });
+                });
+            };
+
+            state.surveys.forEach((s) => {
+                removedEntries.survey.push(s.id ?? -1);
+                walkQuestions(s.survey_question);
+            });
+
+            state.tables.forEach((table) => {
+                removedEntries.table.push(table.id ?? -1);
+                table.campaign_table_field.forEach((field) => {
+                    removedEntries.field.push(field.id ?? -1);
+                    field.campaign_table_field_mapping.forEach((mapping) => {
+                        removedEntries.mapping.push(mapping.id ?? -1);
+                    });
+                });
+            });
+
+            return {
+                ...state,
+                tables: config.tables,
+                surveys: config.surveys,
+                removedEntries,
+            }
+        });
+    },
 }),
     {
         // onSave: (state) => {
