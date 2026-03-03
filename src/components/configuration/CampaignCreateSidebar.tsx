@@ -8,14 +8,14 @@ const DashboardSidebar: React.FC = () => {
     const { isAccessible } = useValidConfigState();
 
     const steps = [
-        { name: "Campaign Information", href: `/create/name` },
+        { name: "Campaign Information", href: `/create/general` },
         { name: "Passive Sensing", href: `/create/passive-sensing` },
         { name: "Active Sensing", href: `/create/active-sensing` },
         { name: "Confirm Configuration", href: `/create/confirm` },
     ];
 
     const currentStepIndex = (() => {
-        if (pathname.includes('/name')) return 0;
+        if (pathname.includes('/general')) return 0;
         if (pathname.includes('/passive-sensing')) return 1;
         if (pathname.includes('/active-sensing')) return 2;
         if (pathname.includes('/confirm')) return 3;

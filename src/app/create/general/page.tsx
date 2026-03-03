@@ -20,8 +20,10 @@ const Page: React.FC = () => {
 
     return (
         <>
-            <CampaignInfoForm />
-            <CampaignPeriodForm />
+            <div className="flex flex-col gap-4">
+                <CampaignInfoForm />
+                <CampaignPeriodForm />
+            </div>
             <PrevNextNavigation
                 onPrevClick={() => router.push("/campaigns")}
                 onNextClick={() => router.push("/create/passive-sensing")}

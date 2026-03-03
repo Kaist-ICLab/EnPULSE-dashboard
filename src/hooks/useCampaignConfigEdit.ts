@@ -607,6 +607,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal((set) =
             campaignId: -1,
             campaignName: "",
             campaignDescription: "",
+            campaignPassword: "",
             campaignStartTime: dayjs().format(DATE_FORMAT),
             campaignEndTime: dayjs().add(1, 'day').format(DATE_FORMAT),
             removedEntries: {
@@ -628,6 +629,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal((set) =
             campaignId: campaign.id,
             campaignName: campaign.name,
             campaignDescription: campaign.description,
+            campaignPassword: "",
             campaignStartTime: campaign.start_time,
             campaignEndTime: campaign.end_time,
             tables: campaign.campaign_table,

@@ -25,7 +25,7 @@ const ConfigImportExportForm = () => {
                 accept=".json,application/json"
                 className="hidden"
                 onChange={(e) => {
-                    importCampaignConfig(e.target.files?.[0]);
+                    void importCampaignConfig(e.target.files?.[0]);
                     e.target.value = "";
                 }}
             />
