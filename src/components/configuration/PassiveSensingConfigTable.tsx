@@ -3,10 +3,10 @@
 import { FieldRole, FieldRoleOption, FieldType, FieldTypeOption } from "@/types/campaign";
 import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import FieldMappingEditor from "../configuration/FieldMappingEditor";
+import FieldMappingEditor from "./FieldMappingEditor";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 
-const FormatConfigTable: React.FC<{
+const PassiveSensingConfigTable: React.FC<{
     tableIdx: number;
 }> = ({ tableIdx }) => {
     const { tables, addField, removeField, setField, setFieldMapping, setDailyCountMax } = useCampaignConfigEdit();
@@ -40,34 +40,8 @@ const FormatConfigTable: React.FC<{
                         {currentTable.campaign_table_field.map((field, fieldIdx) => (
                             <TableRow key={fieldIdx} className="bg-white text-gray-900">
                                 <TableCell>{field.name}</TableCell>
-                                <TableCell>
-                                    <select
-                                        className="w-[120px] bg-transparent focus:outline-none shadow-none"
-                                        defaultValue={field.field_role}
-                                        onChange={(e) => setField(tableIdx, fieldIdx, 'role', e.target.value as FieldRole)}
-                                    >
-                                        {FieldRoleOption.map((option) => (
-                                            <option key={option} value={option}>
-                                                {option}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </TableCell>
-                                <TableCell>
-                                    <select
-                                        className="w-[120px] bg-transparent focus:outline-none shadow-none"
-                                        defaultValue={field.field_type}
-                                        onChange={(e) => {
-                                            setField(tableIdx, fieldIdx, 'type', e.target.value as FieldType)
-                                        }}
-                                    >
-                                        {FieldTypeOption.map((option) => (
-                                            <option key={option} value={option}>
-                                                {option}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </TableCell>
+                                <FieldRoleCell fieldRole={field.field_role} onChange={(fieldRole) => setField(tableIdx, fieldIdx, 'role', fieldRole)} />
+                                <FieldTypeCell fieldType={field.field_type} onChange={(fieldType) => setField(tableIdx, fieldIdx, 'type', fieldType)} />
                                 <TableCell>
                                     <div className="flex gap-2 items-center">
                                         {currentTable.is_custom && removeField && (
@@ -97,39 +71,15 @@ const FormatConfigTable: React.FC<{
                                         }}
                                     />
                                 </TableCell>
-                                <TableCell>
-                                    <select
-                                        className="w-[120px] bg-transparent focus:outline-none shadow-none"
-                                        value={fieldRole}
-                                        onChange={(e) => setFieldRole(e.target.value as FieldRole)}
-                                    >
-                                        {FieldRoleOption.map((option) => (
-                                            <option key={option} value={option}>
-                                                {option}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </TableCell>
-                                <TableCell>
-                                    <select
-                                        className="w-[120px] bg-transparent focus:outline-none shadow-none"
-                                        value={fieldType}
-                                        onChange={(e) => setFieldType(e.target.value as FieldType)}
-                                    >
-                                        {FieldTypeOption.map((option) => (
-                                            <option key={option} value={option}>
-                                                {option}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </TableCell>
+                                <FieldRoleCell fieldRole={fieldRole} onChange={setFieldRole} />
+                                <FieldTypeCell fieldType={fieldType} onChange={setFieldType} />
                                 <TableCell></TableCell>
                             </TableRow>
-
                         }
                     </TableBody>
                 </Table>
                 {
+                    /** Add Field Button */
                     currentTable.is_custom &&
                     <div
                         className="w-full px-6 py-2 flex justify-center items-center border-t-1 border-gray-200 cursor-pointer hover:bg-gray-50"
@@ -176,4 +126,46 @@ const FormatConfigTable: React.FC<{
     )
 };
 
-export default FormatConfigTable;
+const FieldRoleCell: React.FC<{
+    fieldRole: FieldRole;
+    onChange: (fieldRole: FieldRole) => void;
+}> = ({ fieldRole, onChange }) => {
+    return (
+        <TableCell>
+            <select
+                className="w-[120px] bg-transparent focus:outline-none shadow-none"
+                value={fieldRole}
+                onChange={(e) => onChange(e.target.value as FieldRole)}
+            >
+                {FieldRoleOption.map((option) => (
+                    <option key={option} value={option}>
+                        {option}
+                    </option>
+                ))}
+            </select>
+        </TableCell>
+    )
+}
+
+const FieldTypeCell: React.FC<{
+    fieldType: FieldType;
+    onChange: (fieldType: FieldType) => void;
+}> = ({ fieldType, onChange }) => {
+    return (
+        <TableCell>
+            <select
+                className="w-[120px] bg-transparent focus:outline-none shadow-none"
+                value={fieldType}
+                onChange={(e) => onChange(e.target.value as FieldType)}
+            >
+                {FieldTypeOption.map((option) => (
+                    <option key={option} value={option}>
+                        {option}
+                    </option>
+                ))}
+            </select>
+        </TableCell>
+    )
+}
+
+export default PassiveSensingConfigTable;

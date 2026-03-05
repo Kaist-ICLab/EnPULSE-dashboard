@@ -43,8 +43,6 @@ export const useUserDailyStat = (
     const tableNames = useMemo(() => {
         if (data.length == 0) return campaignTables.values().map(t => t.name)
 
-        console.log(data)
-
         const refrow = data[0].tables.map(t => t.table_id)
         return refrow.map(t => campaignTables.get(t)?.name ?? `TABLE_ID_${t}`)
     }, [data, campaignTables])

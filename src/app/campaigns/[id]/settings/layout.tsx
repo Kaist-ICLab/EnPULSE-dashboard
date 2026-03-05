@@ -1,4 +1,4 @@
-import NewCampaignTablesInitProvider from "@/components/NewCampaignInitProvider";
+import NewCampaignTablesInitProvider from "@/components/ConfigEditInitProvider";
 
 export default async function SettingsLayout({
     children,

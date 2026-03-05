@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const Page: React.FC = () => {
     const pathname = usePathname();
+
     return <ActiveSensingForm baseUrl={pathname} />
 }
 

@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { CampaignTable, CampaignTableField, FieldRole, FieldType } from "@/types/campaign";
 import { Accordion, AccordionContent, AccordionPanel, AccordionTitle, Button, Card, Dropdown, DropdownItem, TextInput } from "flowbite-react";
-import FormatConfigTable from "./FormatConfigTable";
+import FormatConfigTable from "./PassiveSensingConfigTable";
 
 const CampaignSensors: React.FC<{
     tables: CampaignTable[],
