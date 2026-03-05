@@ -1,14 +1,12 @@
-import { useStoreWithEqualityFn } from "zustand/traditional";
 import type { TemporalState } from "zundo";
-import { UseBoundStore, StoreApi } from "zustand";
-
-// Copied from zundo/dist/index.d.ts
-type Write<T, U> = Omit<T, keyof U> & U;
-type StoreWithZundo<T> = UseBoundStore<Write<StoreApi<T>, {
-    temporal: StoreApi<TemporalState<T>>;
-}>>
+import { create, StoreApi } from "zustand";
+import { useStoreWithEqualityFn } from "zustand/traditional";
 
 
-export function useTemporalStore<K, T>(storeWithZundo: StoreWithZundo<K>, selector: (state: TemporalState<K>) => T, equality?: (a: T, b: T) => boolean): T {
+type CreateResult<K> = (ReturnType<typeof create<K, [['zustand/immer', never]]>>) & {
+    temporal: StoreApi<TemporalState<K>>;
+}
+
+export function useTemporalStore<K, T>(storeWithZundo: CreateResult<K>, selector: (state: TemporalState<K>) => T, equality?: (a: T, b: T) => boolean): T {
     return useStoreWithEqualityFn(storeWithZundo.temporal, selector, equality);
 }

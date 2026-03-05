@@ -1,12 +1,11 @@
 'use client'
 import { Card } from "flowbite-react";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
-import FormatConfigTable from "../FormatConfigTable";
+import PassiveSensingConfigTable from "../PassiveSensingConfigTable";
 import RemoveIconButton from "../RemoveIconButton";
 
 export default function PassiveSensingForm() {
     const { tables, removeTable } = useCampaignConfigEdit();
-    console.log(tables)
 
     if (tables.length === 0) {
         return (
@@ -33,7 +32,7 @@ export default function PassiveSensingForm() {
                                 </div>
                             </div>
                         </div>
-                        <FormatConfigTable
+                        <PassiveSensingConfigTable
                             tableIdx={tableIndex}
                         />
                     </Card>
