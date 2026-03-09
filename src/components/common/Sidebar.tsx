@@ -34,7 +34,8 @@ const DashboardSidebar: React.FC = () => {
                 </SidebarItemGroup>
                 <SidebarItemGroup>
                     <MySidebarItem isActive={isActive("dashboard")} href={`${baseUrl}/dashboard`} icon="icon-[fluent-mdl2--b-i-dashboard]" name="Campaigns" />
-                    <MySidebarItem isActive={isActive("messaging")} href={`${baseUrl}/messaging`} icon="icon-[mi--message-alt]" name="Messaging" />
+                    <MySidebarItem isActive={isActive("download-data")} href={`${baseUrl}/download-data`} icon="icon-[material-symbols--download]" name="Download Data" />
+                    {/* <MySidebarItem isActive={isActive("messaging")} href={`${baseUrl}/messaging`} icon="icon-[mi--message-alt]" name="Messaging" /> */}
                     {collapsed ? (
                         <SettingsDropdown isActive={isActive} settingsItems={settingsItems} />
                     ) : (
@@ -44,7 +45,7 @@ const DashboardSidebar: React.FC = () => {
                             ))}
                         </SidebarCollapse>
                     )}
-                    <MySidebarItem isActive={isActive(`${baseUrl}/notification`)} href={`${baseUrl}/notification`} icon="icon-[mingcute--notification-line]" name="Notification" />
+                    {/* <MySidebarItem isActive={isActive(`${baseUrl}/notification`)} href={`${baseUrl}/notification`} icon="icon-[mingcute--notification-line]" name="Notification" /> */}
                 </SidebarItemGroup>
             </SidebarItems>
         </Sidebar>
