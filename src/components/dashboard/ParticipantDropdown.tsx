@@ -7,12 +7,14 @@ import useCampaign from "@/hooks/useCampaign";
 interface ParticipantDropdownProps {
     selectedParticipantIds: string[];
     setSelectedParticipantIds: (ids: string[]) => void;
+    className?: string;
     isMultipleSelection?: boolean;
 }
 
 const ParticipantDropdown: React.FC<ParticipantDropdownProps> = ({
     selectedParticipantIds,
     setSelectedParticipantIds,
+    className,
     isMultipleSelection = false,
 }) => {
     const { campaignParticipants } = useCampaign();
@@ -49,6 +51,7 @@ const ParticipantDropdown: React.FC<ParticipantDropdownProps> = ({
             label={label}
             placement="bottom-start"
             dismissOnClick={false}
+            className={className}
         >
             <div className="min-w-56 h-64 overflow-y-auto scrollbar-thin px-2 py-2">
                 {participants.length === 0 ? (

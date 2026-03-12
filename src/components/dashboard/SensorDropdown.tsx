@@ -3,10 +3,11 @@ import useCampaign from "@/hooks/useCampaign";
 import useSensorDropdownState from "@/hooks/dashboard/useSensorDropdownState";
 
 const SensorDropdown: React.FC<{
+    className?: string;
     selectedFieldIds: number[]
     setSelectedFieldIds: (fieldId: number[]) => void,
     isMultipleSelection: boolean,
-}> = ({ selectedFieldIds, setSelectedFieldIds, isMultipleSelection }) => {
+}> = ({ className, selectedFieldIds, setSelectedFieldIds, isMultipleSelection }) => {
     const { campaignTables, campaignTableFields } = useCampaign();
     const {
         selectedSensor,
@@ -24,6 +25,7 @@ const SensorDropdown: React.FC<{
             placement="bottom-start"
             dismissOnClick={false}
             onMouseUp={() => setSelectedSensor(-1)}
+            className={className}
         >
             <div className="h-64 flex flex-row px-2 py-2 gap-2">
                 <div className="min-w-56 flex flex-col">

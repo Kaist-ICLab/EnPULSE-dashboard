@@ -24,8 +24,9 @@ const Header: React.FC = () => {
     });
 
     const pathname = usePathname();
-    const isSettingsPage = pathname?.includes("/settings") ?? false;
 
+    const isDashboardPage = pathname?.includes("/dashboard") ?? false;
+    const isSettingsPage = pathname?.includes("/settings") ?? false;
     const isPassiveSensingPage = isSettingsPage && pathname?.includes("/passive-sensing");
     const isActiveSensingPage = isSettingsPage && pathname?.includes("/active-sensing");
     const isQuestionPage = isSettingsPage && !!pathname?.match(/\/active-sensing\/\d+$/);
@@ -37,7 +38,7 @@ const Header: React.FC = () => {
                     <CampaignDropdown />
                 </div>
             </div>
-            {!isSettingsPage && (
+            {isDashboardPage && (
                 <>
                     <div className="flex items-center gap-1 ml-auto mr-6">
                         <Button
