@@ -3,11 +3,6 @@ import { CampaignTable, CampaignTableField, CampaignParticipant, FetchedCampaign
 import { getCampaignList, getCampaignInfo } from '@/services/campaignService';
 import { DeepRequired } from '@/utils/type';
 
-export type ResponseStatus = 'loading' | 'ok' | 'error';
-interface Response {
-    status: ResponseStatus,
-    message: string | null,
-}
 
 interface CampaignState {
     campaign?: FetchedCampaign;
@@ -22,11 +17,6 @@ interface CampaignState {
     campaignTableFieldMapping: Map<number, Map<string, string>>;
     campaignParticipants: Map<string, DeepRequired<CampaignParticipant>>;
     selectedCampaignId: number | null;
-    responses: {
-        fetchCampaigns: Response,
-        selectCampaign: Response,
-        updateCampaignName: Response,
-    }
     fetchCampaigns: () => Promise<void>;
     setCampaignList: (campaigns: Map<number, { name: string, description: string, start_time: string, end_time: string }>) => void;
     selectCampaign: (campaignId: number, force?: boolean) => Promise<void>;
@@ -40,41 +30,20 @@ const useCampaign = create<CampaignState>((set, get) => ({
     campaignTableFieldMapping: new Map(),
     campaignParticipants: new Map(),
     selectedCampaignId: null,
-    responses: {
-        fetchCampaigns: {
-            status: 'ok',
-            message: null,
-        },
-        selectCampaign: {
-            status: 'ok',
-            message: null,
-        },
-        updateCampaignName: {
-            status: 'ok',
-            message: null,
-        },
-    },
     fetchCampaigns: async () => {
         try {
-            set((state) => ({ responses: { ...state.responses, fetchCampaigns: { status: 'loading', message: "Fetching campaigns..." } } }));
             const campaigns = await getCampaignList();
-            set((state) => ({
-                responses: { ...state.responses, fetchCampaigns: { status: 'ok', message: null } },
-                campaignList: new Map(campaigns.map(({ id, ...others }) => [id, { ...others }]))
-            }));
+            set({ campaignList: new Map(campaigns.map(({ id, ...others }) => [id, { ...others }])) });
         } catch (error) {
             console.log(error)
-            set((state) => ({ responses: { ...state.responses, fetchCampaigns: { status: 'error', message: "Error fetching campaigns" } } }));
         }
     },
     setCampaignList: (campaigns: Map<number, { name: string, description: string, start_time: string, end_time: string }>) => {
         set({ campaignList: campaigns });
     },
     selectCampaign: async (campaignId: number, force = false) => {
-        console.log('selectCampaign', campaignId, force)
         try {
             if (!force && get().selectedCampaignId === campaignId) return;
-            set((state) => ({ responses: { ...state.responses, selectCampaign: { status: 'loading', message: "Selecting campaign..." } } }));
 
             const campaign = await getCampaignInfo(campaignId);
             const campaignTables = campaign.campaign_table.map(campaignTable => ({ ...campaignTable, campaign_table_field: campaignTable.campaign_table_field.filter(field => field.field_role == "data") }));
@@ -93,12 +62,10 @@ const useCampaign = create<CampaignState>((set, get) => ({
                 campaignTableFieldMapping: mappingMap,
                 campaignParticipants: new Map(campaignParticipants.map(campaignParticipant => [campaignParticipant.uuid, campaignParticipant])),
                 selectedCampaignId: campaignId,
-                responses: { ...get().responses, selectCampaign: { status: 'ok', message: "Campaign selected" } }
             });
 
         } catch (error) {
             console.error(error);
-            set((state) => ({ responses: { ...state.responses, selectCampaign: { status: 'error', message: "Error selecting campaign" } } }));
         }
     },
 }));

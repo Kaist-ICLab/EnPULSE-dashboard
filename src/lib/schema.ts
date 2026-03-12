@@ -105,8 +105,8 @@ export type Database = {
             }
             app_list_change_sensor: {
                 Row: {
-                    app_list: Json | null
-                    changed_app: Json[]
+                    app_list: Json[] | null
+                    changed_app: Json | null
                     created_at: string | null
                     device_type: number
                     event_id: string
@@ -115,8 +115,8 @@ export type Database = {
                     uuid: string
                 }
                 Insert: {
-                    app_list?: Json | null
-                    changed_app: Json[]
+                    app_list?: Json[] | null
+                    changed_app?: Json | null
                     created_at?: string | null
                     device_type: number
                     event_id: string
@@ -125,8 +125,8 @@ export type Database = {
                     uuid: string
                 }
                 Update: {
-                    app_list?: Json | null
-                    changed_app?: Json[]
+                    app_list?: Json[] | null
+                    changed_app?: Json | null
                     created_at?: string | null
                     device_type?: number
                     event_id?: string
@@ -264,7 +264,6 @@ export type Database = {
             }
             call_log_sensor: {
                 Row: {
-                    call_type: number
                     created_at: string | null
                     device_type: number
                     duration: number
@@ -272,10 +271,10 @@ export type Database = {
                     number: string
                     received: string
                     timestamp: string
+                    type: number
                     uuid: string
                 }
                 Insert: {
-                    call_type: number
                     created_at?: string | null
                     device_type: number
                     duration: number
@@ -283,10 +282,10 @@ export type Database = {
                     number: string
                     received: string
                     timestamp: string
+                    type: number
                     uuid: string
                 }
                 Update: {
-                    call_type?: number
                     created_at?: string | null
                     device_type?: number
                     duration?: number
@@ -294,6 +293,7 @@ export type Database = {
                     number?: string
                     received?: string
                     timestamp?: string
+                    type?: number
                     uuid?: string
                 }
                 Relationships: []
@@ -472,7 +472,6 @@ export type Database = {
                     end_time: string
                     id: number
                     name: string
-                    password_hash: string
                     start_time: string
                 }
                 Insert: {
@@ -481,7 +480,6 @@ export type Database = {
                     end_time: string
                     id?: number
                     name: string
-                    password_hash?: string
                     start_time: string
                 }
                 Update: {
@@ -490,7 +488,6 @@ export type Database = {
                     end_time?: string
                     id?: number
                     name?: string
-                    password_hash?: string
                     start_time?: string
                 }
                 Relationships: []
@@ -908,7 +905,7 @@ export type Database = {
             }
             notification_sensor: {
                 Row: {
-                    category: number
+                    category: string
                     created_at: string | null
                     device_type: number
                     event_id: string
@@ -922,7 +919,7 @@ export type Database = {
                     visibility: number
                 }
                 Insert: {
-                    category: number
+                    category: string
                     created_at?: string | null
                     device_type: number
                     event_id: string
@@ -936,7 +933,7 @@ export type Database = {
                     visibility: number
                 }
                 Update: {
-                    category?: number
+                    category?: string
                     created_at?: string | null
                     device_type?: number
                     event_id?: string
@@ -1562,6 +1559,10 @@ export type Database = {
                 }
                 Returns: unknown
             }
+            can_insert_row_to_sensor_table: {
+                Args: { p_table_name: string }
+                Returns: boolean
+            }
             chunk_compression_stats: {
                 Args: { hypertable: unknown }
                 Returns: {
@@ -1598,6 +1599,19 @@ export type Database = {
                     uncompressed_chunk: unknown
                 }
                 Returns: unknown
+            }
+            count_rows_by_uuid_day: {
+                Args: {
+                    p_end_day: string
+                    p_start_day: string
+                    p_table: string
+                    p_uuids: string[]
+                }
+                Returns: {
+                    count: number
+                    day: string
+                    uuid: string
+                }[]
             }
             create_hypertable:
             | {

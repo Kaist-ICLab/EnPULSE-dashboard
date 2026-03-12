@@ -6,15 +6,18 @@ const SensorDropdown: React.FC<{
     className?: string;
     selectedFieldIds: number[]
     setSelectedFieldIds: (fieldId: number[]) => void,
-    isMultipleSelection: boolean,
-}> = ({ className, selectedFieldIds, setSelectedFieldIds, isMultipleSelection }) => {
+    isMultipleSelection?: boolean,
+    showSelectAllSensors?: boolean,
+}> = ({ className, selectedFieldIds, setSelectedFieldIds, isMultipleSelection = false, showSelectAllSensors = false }) => {
     const { campaignTables, campaignTableFields } = useCampaign();
     const {
         selectedSensor,
         setSelectedSensor,
         dropdownLabel,
-        isAllSelected,
+        isAllFieldsSelected,
+        isAllSensorsSelected,
         toggleFieldSelection,
+        toggleAllSensorsSelection,
         toggleAllFieldsSelection,
         selectedCountByTable,
     } = useSensorDropdownState(selectedFieldIds, campaignTables, campaignTableFields, setSelectedFieldIds, isMultipleSelection);
@@ -28,12 +31,13 @@ const SensorDropdown: React.FC<{
             className={className}
         >
             <div className="h-64 flex flex-row px-2 py-2 gap-2">
-                <div className="min-w-56 flex flex-col">
+                {/* Sensor table selection */}
+                <div className="min-w-60 flex flex-col">
                     <div className="overflow-y-auto grow scrollbar-thin">
                         {Array.from(campaignTables.values()).map((table) => (
                             <DropdownItem
                                 key={table.id}
-                                className={`font-medium ${selectedSensor === table.id ? 'text-blue-600 bg-gray-100' : 'text-gray-700'}`}
+                                className={`font-medium ${selectedSensor === table.id ? 'text-blue-500 bg-gray-100' : 'text-gray-700'}`}
                                 onClick={() => { setSelectedSensor(selectedSensor === table.id ? -1 : table.id) }}
                             >
                                 <span className="flex items-center">
@@ -54,10 +58,15 @@ const SensorDropdown: React.FC<{
                         ))}
                     </div>
                     <DropdownDivider />
-                    <DropdownItem className="font-bold" onClick={() => setSelectedFieldIds([])}>
-                        <span className="text-red-500">{isMultipleSelection ? "Deselect all" : "Deselect"}</span>
-                    </DropdownItem>
+                    <SensorSelectionToggleButton
+                        isMultipleSelection={isMultipleSelection}
+                        showSelectAllSensors={showSelectAllSensors}
+                        isAllSensorsSelected={isAllSensorsSelected}
+                        toggleAllSensorsSelection={toggleAllSensorsSelection}
+                        deselectAllSelectedFields={() => setSelectedFieldIds([])}
+                    />
                 </div>
+                {/* Sensor field selection */}
                 {selectedSensor === -1 ? (
                     <div className="min-w-40 flex items-center justify-center bg-gray-50 rounded-sm">
                         <span className="text-gray-400 text-sm ">Select Sensor</span>
@@ -83,7 +92,7 @@ const SensorDropdown: React.FC<{
                         {isMultipleSelection && (
                             <DropdownItem className="font-bold" onClick={() => toggleAllFieldsSelection(selectedSensor)}>
                                 {
-                                    (isAllSelected.get(selectedSensor) ?? false) ?
+                                    (isAllFieldsSelected.get(selectedSensor) ?? false) ?
                                         "Deselect all fields" :
                                         "Select all fields"
                                 }
@@ -94,6 +103,28 @@ const SensorDropdown: React.FC<{
             </div>
         </Dropdown>
     );
+};
+
+const SensorSelectionToggleButton: React.FC<{
+    isMultipleSelection: boolean,
+    showSelectAllSensors: boolean,
+    isAllSensorsSelected: boolean,
+    deselectAllSelectedFields: () => void,
+    toggleAllSensorsSelection: () => void,
+}> = ({ isMultipleSelection, showSelectAllSensors, isAllSensorsSelected, deselectAllSelectedFields, toggleAllSensorsSelection }) => {
+    if (showSelectAllSensors) {
+        return (
+            <DropdownItem className={`font-bold ${isAllSensorsSelected ? 'text-red-500' : ''}`} onClick={toggleAllSensorsSelection}>
+                {isAllSensorsSelected ? "Deselect all sensors' fields" : "Select all sensors' fields"}
+            </DropdownItem>
+        );
+    } else {
+        return (
+            <DropdownItem className="font-bold" onClick={deselectAllSelectedFields}>
+                <span className="text-red-500">{isMultipleSelection ? "Deselect all" : "Deselect"}</span>
+            </DropdownItem>
+        )
+    }
 };
 
 export default SensorDropdown;
