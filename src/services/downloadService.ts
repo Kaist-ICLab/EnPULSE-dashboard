@@ -23,14 +23,17 @@ export async function getDownloadRowCount(participants: string[], startDate: Dat
     })))
 }
 
-export async function getDownloadData(participant: string, fields: string[], date: Date, table: string) {
+export async function getDownloadData(participant: string, fields: string[], date: Date, table: string, isPreview: boolean = false) {
     const selectedFields = "uuid, timestamp, " + fields.join(",");
-    const { data, error } = await supabase.from(table as never)
+    let supabasePromise = supabase.from(table as never)
         .select(selectedFields)
         .eq("uuid", participant)
         .gte("timestamp", dayjs(date).startOf('day').format(DATE_FORMAT))
         .lte("timestamp", dayjs(date).endOf('day').format(DATE_FORMAT))
-        .order("timestamp", { ascending: true });
+        .order("timestamp", { ascending: true })
+
+    if (isPreview) supabasePromise = supabasePromise.limit(10);
+    const { data, error } = await supabasePromise;
 
     if (error) {
         console.error(error);

@@ -2,7 +2,7 @@
 import { Card } from "flowbite-react";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import PassiveSensingConfigTable from "../PassiveSensingConfigTable";
-import RemoveIconButton from "../RemoveIconButton";
+import IconButton from "@/components/common/IconButton";
 
 export default function PassiveSensingForm() {
     const { tables, removeTable } = useCampaignConfigEdit();
@@ -22,9 +22,11 @@ export default function PassiveSensingForm() {
                     <Card key={tableIndex}>
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
-                                <RemoveIconButton
+                                <IconButton
                                     onClick={() => removeTable(tableIndex)}
-                                    size="md"
+                                    hoverColor="red"
+                                    size="lg"
+                                    className="icon-[humbleicons--times]"
                                 />
                                 <div>
                                     <div className="text-lg font-semibold text-gray-900 whitespace-nowrap">{table.name}</div>

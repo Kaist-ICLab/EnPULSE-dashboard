@@ -1,34 +1,60 @@
 import { DownloadFileRow } from "@/types/download";
 import { ResponseStatus } from "@/types/response";
+import PreviewDataModal from "@/components/download/PreviewDataModal";
 import dayjs from "dayjs";
-import { Button, Card, Spinner } from "flowbite-react";
+import { Card, Spinner } from "flowbite-react";
+import { useState } from "react";
+import IconButton from "../common/IconButton";
 
 export const DownloadTable: React.FC<{
     status: ResponseStatus;
-    previewRows: DownloadFileRow[];
+    downloadFiles: DownloadFileRow[];
+    previewStatus: ResponseStatus;
+    selectedPreviewRow: DownloadFileRow | null;
+    previewData: Record<string, unknown>[];
+    generatePreviewData: (row: DownloadFileRow) => void;
     downloadData: (row: DownloadFileRow) => void;
-}> = ({ status, previewRows, downloadData }) => {
-    return (
-        <Card className="max-w-3xl">
-            <h6 className="text-xl font-semibold text-gray-900">Download Data</h6>
-            <div className="relative">
-                {status === "loading" && (
-                    <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-lg">
-                        <Spinner />
-                    </div>
-                )}
-                <DownloadTableContent status={status} previewRows={previewRows} downloadData={downloadData} />
-            </div>
+}> = ({ status, downloadFiles, previewStatus, selectedPreviewRow, previewData, generatePreviewData, downloadData }) => {
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-        </Card>
+    return (
+        <>
+            <Card className="max-w-3xl">
+                <h6 className="text-xl font-semibold text-gray-900">Download Data</h6>
+                <div className="relative">
+                    {status === "loading" && (
+                        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-lg">
+                            <Spinner />
+                        </div>
+                    )}
+                    <DownloadTableContent
+                        status={status}
+                        previewStatus={previewStatus}
+                        generatePreviewData={(row) => { generatePreviewData(row); setIsPreviewOpen(true); }}
+                        downloadFiles={downloadFiles}
+                        downloadData={downloadData}
+                    />
+                </div>
+            </Card>
+
+            <PreviewDataModal
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                selectedRow={selectedPreviewRow}
+                previewStatus={previewStatus}
+                previewData={previewData}
+            />
+        </>
     )
 }
 
 const DownloadTableContent: React.FC<{
     status: ResponseStatus;
-    previewRows: DownloadFileRow[];
+    previewStatus: ResponseStatus;
+    generatePreviewData: (row: DownloadFileRow) => void;
+    downloadFiles: DownloadFileRow[];
     downloadData: (row: DownloadFileRow) => void;
-}> = ({ status, previewRows, downloadData }) => {
+}> = ({ status, generatePreviewData, downloadFiles, downloadData }) => {
     if (status === null) {
         return (
             <div className="w-full min-h-24 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 text-sm">
@@ -36,7 +62,7 @@ const DownloadTableContent: React.FC<{
             </div>
         )
     }
-    if (previewRows.length === 0) {
+    if (downloadFiles.length === 0) {
         return (
             <div className="mt-4">
                 <h6 className="mb-2 text-sm font-semibold text-gray-900">
@@ -48,7 +74,7 @@ const DownloadTableContent: React.FC<{
         return (
             <div className="mt-4">
                 <h6 className="mb-2 text-sm font-semibold text-gray-900">
-                    Generated files ({previewRows.length})
+                    Generated files ({downloadFiles.length})
                 </h6>
                 <div className="overflow-x-auto rounded-lg border border-gray-200">
                     <table className="min-w-full divide-y divide-gray-200 text-sm">
@@ -63,7 +89,7 @@ const DownloadTableContent: React.FC<{
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-white">
-                            {previewRows.map((row, idx) => (
+                            {downloadFiles.map((row, idx) => (
                                 <tr key={idx}>
                                     <td className="px-3 py-2 font-mono text-xs text-gray-900">
                                         {row.uuid}
@@ -75,13 +101,20 @@ const DownloadTableContent: React.FC<{
                                     <td className="px-3 py-2">
                                         {
                                             row.count > 0 && (
-                                                <Button
-                                                    size="xs"
-                                                    disabled={row.count === 0}
-                                                    onClick={() => downloadData(row)}
-                                                >
-                                                    <span className="icon-[material-symbols--download] w-4 h-4" />
-                                                </Button>
+                                                <div className="flex items-center gap-2">
+                                                    <IconButton
+                                                        onClick={() => downloadData(row)}
+                                                        hoverColor="gray"
+                                                        className="icon-[material-symbols--download]"
+                                                        disabled={row.count === 0}
+                                                    />
+                                                    <IconButton
+                                                        onClick={() => generatePreviewData(row)}
+                                                        hoverColor="gray"
+                                                        className="icon-[mdi--eye]"
+                                                        disabled={row.count === 0}
+                                                    />
+                                                </div>
                                             )
                                         }
                                     </td>

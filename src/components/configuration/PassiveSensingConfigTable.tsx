@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from 
 import { useEffect, useMemo, useRef, useState } from "react";
 import FieldMappingEditor from "./FieldMappingEditor";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import IconButton from "../common/IconButton";
 
 const PassiveSensingConfigTable: React.FC<{
     tableIdx: number;
@@ -45,13 +46,17 @@ const PassiveSensingConfigTable: React.FC<{
                                 <TableCell>
                                     <div className="flex gap-2 items-center">
                                         {currentTable.is_custom && removeField && (
-                                            <span className="icon-[humbleicons--times] w-4 h-4 text-gray-500 hover:text-red-500 cursor-pointer" onClick={() => removeField(tableIdx, fieldIdx)}></span>
+                                            <IconButton
+                                                onClick={() => removeField(tableIdx, fieldIdx)}
+                                                hoverColor="red"
+                                                className="icon-[humbleicons--times]"
+                                            />
                                         )}
                                         {(field.field_type === 'categorical' || field.field_type === 'bitmask') && field.field_role === 'data' && (
-                                            <span
-                                                className="icon-[material-symbols--settings] w-4 h-4 text-gray-500 hover:text-gray-700 cursor-pointer"
+                                            <IconButton
                                                 onClick={() => setEditingFieldIdx(fieldIdx)}
-                                            ></span>
+                                                className="icon-[material-symbols--settings]"
+                                            />
                                         )}
                                     </div>
                                 </TableCell>

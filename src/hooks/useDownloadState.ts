@@ -12,8 +12,13 @@ export default function useDownloadState() {
     const [selectedFieldIds, setSelectedFieldIds] = useState<number[]>([]);
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
+
     const [status, setStatus] = useState<ResponseStatus>(null);
-    const [previewRows, setPreviewRows] = useState<DownloadFileRow[]>([]);
+    const [downloadFiles, setDownloadFiles] = useState<DownloadFileRow[]>([]);
+
+    const [previewStatus, setPreviewStatus] = useState<ResponseStatus>(null);
+    const [selectedPreviewRow, setSelectedPreviewRow] = useState<DownloadFileRow | null>(null);
+    const [previewData, setPreviewData] = useState<Record<string, unknown>[]>([]);
 
     const csvEscape = useCallback((value: string) => {
         if (value.includes(",") || value.includes('"') || value.includes("\n")) {
@@ -43,10 +48,10 @@ export default function useDownloadState() {
 
     const generateCountPreview = useCallback(async () => {
         const tables = selectedTableIds.map(id => campaignTables.get(id)?.name ?? "");
-        setPreviewRows([]);
+        setDownloadFiles([]);
         setStatus("loading");
         const rowCounts = await getDownloadRowCount(selectedParticipantIds, startDate, endDate, tables);
-        setPreviewRows(rowCounts.map(row => ({
+        setDownloadFiles(rowCounts.map(row => ({
             table: row.table,
             uuid: row.uuid,
             email: campaignParticipants.get(row.uuid)?.email ?? "",
@@ -87,8 +92,17 @@ export default function useDownloadState() {
 
     }, [campaignTables, campaignTableFields, selectedFieldIds, csvEscape]);
 
+    const generatePreviewData = useCallback(async (row: DownloadFileRow) => {
+        setPreviewStatus("loading");
+        const fieldIdInTable = Array.from(campaignTables.values()).filter(table => table.name === row.table).flatMap(table => table.campaign_table_field.map(field => field.id));
+        const fields = fieldIdInTable.filter(id => selectedFieldIds.includes(id)).map(id => campaignTableFields.get(id)?.name ?? "");
+        const data = await getDownloadData(row.uuid, fields, row.date, row.table, true);
+        setPreviewData(data);
+        setSelectedPreviewRow(row);
+        setPreviewStatus("ok");
+    }, [selectedFieldIds, campaignTableFields, campaignTables]);
+
     return {
-        status,
         selectedParticipantIds,
         setSelectedParticipantIds,
         selectedFieldIds,
@@ -97,8 +111,13 @@ export default function useDownloadState() {
         setStartDate,
         endDate,
         setEndDate,
+        status,
+        previewStatus,
+        selectedPreviewRow,
         generateCountPreview,
-        previewRows,
+        generatePreviewData,
+        downloadFiles,
+        previewData,
         downloadData,
     }
 }

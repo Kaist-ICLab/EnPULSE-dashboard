@@ -5,7 +5,21 @@ import DownloadedDataConfig from "@/components/download/DownloadedDataConfig";
 import useDownloadState from "@/hooks/useDownloadState";
 
 const Page = () => {
-    const { status, selectedParticipantIds, setSelectedParticipantIds, selectedFieldIds, setSelectedFieldIds, startDate, setStartDate, endDate, setEndDate, generateCountPreview, previewRows, downloadData } = useDownloadState();
+    const { status,
+        previewStatus,
+        selectedPreviewRow,
+        selectedParticipantIds,
+        setSelectedParticipantIds,
+        selectedFieldIds,
+        setSelectedFieldIds,
+        startDate,
+        setStartDate,
+        endDate,
+        setEndDate,
+        generateCountPreview,
+        generatePreviewData,
+        downloadFiles,
+        previewData, downloadData } = useDownloadState();
 
     return (
         <>
@@ -20,7 +34,15 @@ const Page = () => {
                 setEndDate={setEndDate}
                 generateCountPreview={generateCountPreview}
             />
-            <DownloadTable status={status} previewRows={previewRows} downloadData={downloadData} />
+            <DownloadTable
+                status={status}
+                selectedPreviewRow={selectedPreviewRow}
+                downloadFiles={downloadFiles}
+                previewStatus={previewStatus}
+                previewData={previewData}
+                generatePreviewData={generatePreviewData}
+                downloadData={downloadData}
+            />
         </>
     );
 };
