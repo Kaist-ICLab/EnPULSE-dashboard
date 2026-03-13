@@ -2,7 +2,7 @@ import { DownloadFileRow } from "@/types/download";
 import { ResponseStatus } from "@/types/response";
 import PreviewDataModal from "@/components/download/PreviewDataModal";
 import dayjs from "dayjs";
-import { Card, Spinner } from "flowbite-react";
+import { Button, Card, Spinner } from "flowbite-react";
 import { useState } from "react";
 import IconButton from "../common/IconButton";
 
@@ -14,7 +14,9 @@ export const DownloadTable: React.FC<{
     previewData: Record<string, unknown>[];
     generatePreviewData: (row: DownloadFileRow) => void;
     downloadData: (row: DownloadFileRow) => void;
-}> = ({ status, downloadFiles, previewStatus, selectedPreviewRow, previewData, generatePreviewData, downloadData }) => {
+    downloadAllData: () => void;
+    isDownloadingAll: boolean;
+}> = ({ status, downloadFiles, previewStatus, selectedPreviewRow, previewData, generatePreviewData, downloadData, downloadAllData, isDownloadingAll }) => {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     return (
@@ -33,6 +35,8 @@ export const DownloadTable: React.FC<{
                         generatePreviewData={(row) => { generatePreviewData(row); setIsPreviewOpen(true); }}
                         downloadFiles={downloadFiles}
                         downloadData={downloadData}
+                        downloadAllData={downloadAllData}
+                        isDownloadingAll={isDownloadingAll}
                     />
                 </div>
             </Card>
@@ -54,7 +58,9 @@ const DownloadTableContent: React.FC<{
     generatePreviewData: (row: DownloadFileRow) => void;
     downloadFiles: DownloadFileRow[];
     downloadData: (row: DownloadFileRow) => void;
-}> = ({ status, generatePreviewData, downloadFiles, downloadData }) => {
+    downloadAllData: () => void;
+    isDownloadingAll: boolean;
+}> = ({ status, generatePreviewData, downloadFiles, downloadData, downloadAllData, isDownloadingAll }) => {
     if (status === null) {
         return (
             <div className="w-full min-h-24 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 text-sm">
@@ -72,10 +78,22 @@ const DownloadTableContent: React.FC<{
         )
     } else {
         return (
-            <div className="mt-4">
-                <h6 className="mb-2 text-sm font-semibold text-gray-900">
-                    Generated files ({downloadFiles.length})
-                </h6>
+            <div className="">
+                <div className="flex items-end justify-between gap-3 mb-2">
+                    <h6 className="text-sm font-semibold text-gray-900">
+                        Generated files ({downloadFiles.length})
+                    </h6>
+                    {downloadFiles.length > 0 && (
+                        <Button
+                            size="sm"
+                            onClick={downloadAllData}
+                        >
+                            {isDownloadingAll ? "Downloading..." : `Download all`}
+                        </Button>
+                    )}
+
+                </div>
+
                 <div className="overflow-x-auto rounded-lg border border-gray-200">
                     <table className="min-w-full divide-y divide-gray-200 text-sm">
                         <thead className="bg-gray-50">

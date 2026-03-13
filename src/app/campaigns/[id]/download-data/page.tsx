@@ -6,6 +6,7 @@ import useDownloadState from "@/hooks/useDownloadState";
 
 const Page = () => {
     const { status,
+        isDownloadingAll,
         previewStatus,
         selectedPreviewRow,
         selectedParticipantIds,
@@ -19,7 +20,7 @@ const Page = () => {
         generateCountPreview,
         generatePreviewData,
         downloadFiles,
-        previewData, downloadData } = useDownloadState();
+        previewData, downloadData, downloadAllData } = useDownloadState();
 
     return (
         <>
@@ -42,6 +43,8 @@ const Page = () => {
                 previewData={previewData}
                 generatePreviewData={generatePreviewData}
                 downloadData={downloadData}
+                downloadAllData={downloadAllData}
+                isDownloadingAll={isDownloadingAll}
             />
         </>
     );
