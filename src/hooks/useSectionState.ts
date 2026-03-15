@@ -15,12 +15,15 @@ export const comparisonTypes = Object.freeze([
 ] as const)
 
 interface SectionState {
+    lastManualSyncTime: number,
     date: Date,
     timeRange: { start: number, end: number }
     comparisonParams: { [key in ComparisonType]: ComparisonParams },
     draggedTime: number
     selectedSection: ComparisonType,
     chartPinQuery: ChartPinQuery
+
+    setLastManualSyncTime: (time: number) => void,
     updateDate: (date: Date) => void,
     addDaysToDate: (days: number) => void,
     updateSelectedSection: (section: ComparisonType) => void
@@ -35,6 +38,7 @@ interface SectionState {
 }
 
 const useSectionState = create<SectionState>((set) => ({
+    lastManualSyncTime: 0,
     date: getLocalDay(),
     selectedSection: ComparisonType.Sensors,
     comparisonParams: comparisonTypes.reduce((acc, type) => {
@@ -44,6 +48,12 @@ const useSectionState = create<SectionState>((set) => ({
     timeRange: { start: 0, end: DAY },
     chartPinQuery: { date: null, uuid: null, fieldId: null },
     draggedTime: 0,
+
+    setLastManualSyncTime: (time: number) => {
+        set(() => ({
+            lastManualSyncTime: time
+        }))
+    },
 
     updateDate: (date: Date) => {
         set(() => ({

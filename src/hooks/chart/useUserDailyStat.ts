@@ -4,11 +4,8 @@ import useCampaign from "../useCampaign";
 import { UserDailyStatData } from "@/types/dashboard";
 import useSectionState from "../useSectionState";
 
-export const useUserDailyStat = (
-    initialRowsPerPage: number,
-    syncTime: Date | null
-) => {
-    const { date } = useSectionState()
+export const useUserDailyStat = (initialRowsPerPage: number) => {
+    const { date, lastManualSyncTime } = useSectionState()
     const { campaignParticipants, campaignTables } = useCampaign()
 
     const [data, setData] = useState<UserDailyStatData[]>([])
@@ -86,7 +83,7 @@ export const useUserDailyStat = (
         setLoading(true)
         load()
 
-    }, [date, page, rowsPerPage, totalPage, uuids, syncTime, tableIds])
+    }, [date, page, rowsPerPage, totalPage, uuids, lastManualSyncTime, tableIds])
 
     return { data, maxDailyCount, tableNames, loading, page, rowsPerPage, totalPage, setPage, setRowsPerPage }
 }

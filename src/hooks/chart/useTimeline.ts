@@ -13,7 +13,7 @@ export default function useTimeline(secitonType: ComparisonType, chartWidth: num
     const [error, setError] = useState<Error | null>(null);
 
     const { selectedCampaignId, campaignParticipants, campaignTables } = useCampaign();
-    const { date, comparisonParams, timeRange } = useSectionState()
+    const { date, comparisonParams, timeRange, lastManualSyncTime } = useSectionState()
 
     const currentComparisonParams = useMemo(() => comparisonParams[secitonType], [comparisonParams, secitonType])
     const selectedFields = useMemo(() => {
@@ -75,7 +75,7 @@ export default function useTimeline(secitonType: ComparisonType, chartWidth: num
         }
 
         fetchData();
-    }, [selectedCampaignId, currentComparisonParams, timeRange, selectedFields, selectedUuids, secitonType, chartWidth, date]);
+    }, [selectedCampaignId, currentComparisonParams, timeRange, selectedFields, selectedUuids, secitonType, chartWidth, date, lastManualSyncTime]);
 
     return { timeline, bucketSize, loading, error };
 }   

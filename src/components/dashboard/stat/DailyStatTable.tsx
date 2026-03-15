@@ -20,13 +20,11 @@ const ChartTooltipContent: React.FC = () => {
     )
 }
 
-const DailyOverviewTable: React.FC<{
-    syncTime: Date | null,
-}> = ({ syncTime }) => {
+const DailyOverviewTable: React.FC = () => {
     const { campaignParticipants } = useCampaign()
     const { updateComparisonParams, updateSelectedSection } = useSectionState()
 
-    const { data, loading, maxDailyCount, tableNames, page, rowsPerPage, totalPage, setPage, setRowsPerPage } = useUserDailyStat(5, syncTime);
+    const { data, loading, maxDailyCount, tableNames, page, rowsPerPage, totalPage, setPage, setRowsPerPage } = useUserDailyStat(5);
     const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } = useDailyStatTableCheckedState(data);
 
     return (
@@ -67,61 +65,60 @@ const DailyOverviewTable: React.FC<{
 
                 </div>
             </div>
-            <div className="overflow-auto w-full">
-                {loading ? (
-                    <div className="flex justify-center items-center h-2xl" >
-                        <Spinner size="xl" />
-                    </div>
-                ) : (
-                    data.length > 0 ? (
-                        <table className="table-fixed w-full max-w-fit">
-                            <colgroup>
-                                <col className="w-[40px]" />
-                                <col className="w-[50px]" />
-                                <col className="w-[120px]" />
-                                {tableNames.map((name) => ([
-                                    <col key={`${name}-col-dailycount`} className="w-[140px]" />,
-                                    <col key={`${name}-col-timeline`} className="w-[160px]" />
-                                ]))}
-                            </colgroup>
-                            <thead className="uppercase text-gray-500 border-t border-gray-200 bg-gray-50 text-xs">
-                                <tr className="border-b border-l border-gray-200 h-[30px]">
-                                    <DailyStatTableHeader className="text-left" rowSpan={2}>
-                                        <Checkbox checked={isAllChecked} onChange={toggleAllChecked} />
-                                    </DailyStatTableHeader>
-                                    <DailyStatTableHeader className="text-left" rowSpan={2}>PID</DailyStatTableHeader>
-                                    <DailyStatTableHeader className="text-left w-12" rowSpan={2}>Contacts</DailyStatTableHeader>
-                                    {tableNames.map((name) => (
-                                        <DailyStatTableHeader key={`${name}-th`} className="py-0 text-center" colSpan={2}>{name}</DailyStatTableHeader>
-                                    ))}
-                                </tr>
-                                <tr className="border-b border-l border-gray-200 h-[30px]">
-                                    {tableNames.map((name) => ([
-                                        <DailyStatTableHeader key={`${name}-th-dailycount`} className="py-0 text-center">DAILY COUNT</DailyStatTableHeader>,
-                                        <DailyStatTableHeader key={`${name}-th-timeline`} className="py-0 text-center">DAILY TIMELINE</DailyStatTableHeader>
-                                    ]))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.map((row, index) => (
-                                    <DailyStatTableRow
-                                        key={`row-${row.uuid}`}
-                                        pid={campaignParticipants.get(row.uuid)?.pid ?? 0}
-                                        contacts={row.contacts}
-                                        tables={row.tables}
-                                        maxValue={maxDailyCount}
-                                        isSelected={checkedState[index]}
-                                        toggleChecked={() => toggleChecked(index)}
-                                    />
+            <div className="overflow-auto w-full relative">
+                {loading && <div className="absolute w-full h-full flex justify-center items-center bg-white/50 backdrop-blur-sm rounded-lg" >
+                    <Spinner size="xl" />
+                </div>}
+                {data.length > 0 ? (
+                    <table className="table-fixed w-full max-w-fit">
+                        <colgroup>
+                            <col className="w-[40px]" />
+                            <col className="w-[50px]" />
+                            <col className="w-[120px]" />
+                            {tableNames.map((name) => ([
+                                <col key={`${name}-col-dailycount`} className="w-[140px]" />,
+                                <col key={`${name}-col-timeline`} className="w-[160px]" />
+                            ]))}
+                        </colgroup>
+                        <thead className="uppercase text-gray-500 border-t border-gray-200 bg-gray-50 text-xs">
+                            <tr className="border-b border-l border-gray-200 h-[30px]">
+                                <DailyStatTableHeader className="text-left" rowSpan={2}>
+                                    <Checkbox checked={isAllChecked} onChange={toggleAllChecked} />
+                                </DailyStatTableHeader>
+                                <DailyStatTableHeader className="text-left" rowSpan={2}>PID</DailyStatTableHeader>
+                                {/* <DailyStatTableHeader className="text-left w-12" rowSpan={2}>Contacts</DailyStatTableHeader> */}
+                                {tableNames.map((name) => (
+                                    <DailyStatTableHeader key={`${name}-th`} className="py-0 text-center" colSpan={2}>{name}</DailyStatTableHeader>
                                 ))}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <div className="flex h-48 justify-center items-center bg-gray-100">
-                            <span className=" text-gray-500">No data</span>
-                        </div>
-                    )
+                            </tr>
+                            <tr className="border-b border-l border-gray-200 h-[30px]">
+                                {tableNames.map((name) => ([
+                                    <DailyStatTableHeader key={`${name}-th-dailycount`} className="py-0 text-center">DAILY COUNT</DailyStatTableHeader>,
+                                    <DailyStatTableHeader key={`${name}-th-timeline`} className="py-0 text-center">DAILY TIMELINE</DailyStatTableHeader>
+                                ]))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {data.map((row, index) => (
+                                <DailyStatTableRow
+                                    key={`row-${row.uuid}`}
+                                    pid={campaignParticipants.get(row.uuid)?.pid ?? 0}
+                                    contacts={row.contacts}
+                                    tables={row.tables}
+                                    maxValue={maxDailyCount}
+                                    isSelected={checkedState[index]}
+                                    toggleChecked={() => toggleChecked(index)}
+                                />
+                            ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <div className="flex h-48 justify-center items-center bg-gray-100">
+                        <span className=" text-gray-500">No data</span>
+                    </div>
                 )}
+
+
             </div>
             <div className="flex items-center justify-between px-2 py-3 w-full">
                 <div className="flex items-center gap-4">

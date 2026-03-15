@@ -63,14 +63,14 @@ const DailyStatTableRow: React.FC<{
     maxValue: Map<number, number>;
     isSelected: boolean;
     toggleChecked: () => void;
-}> = ({ pid, contacts, tables, maxValue, isSelected = false, toggleChecked }) => {
+}> = ({ pid, tables, maxValue, isSelected = false, toggleChecked }) => {
     return (
         <tr className={`border-b border-gray-200 border-l text-sm ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}`} onClick={toggleChecked}>
             <DailyStatTableCell>
                 <Checkbox checked={isSelected} onChange={toggleChecked} />
             </DailyStatTableCell>
             <DailyStatTableCell>P{pid}</DailyStatTableCell>
-            <DailyStatTableCell>{contacts} Contacts</DailyStatTableCell>
+            {/* <DailyStatTableCell>{contacts} Contacts</DailyStatTableCell> */}
             {tables.map((table) => (
                 [<DailyStatTableCell key={`${table.table_id}-dailycount`}>
                     <Tooltip content={`${table.totalCount} ${maxValue.get(table.table_id) ? ` / ${maxValue.get(table.table_id)}` : ''}`}>

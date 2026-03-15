@@ -15,7 +15,7 @@ import { useTemporalStore } from "@/hooks/useTemporalStore";
 import UndoRedoButtons from "../configuration/header/UndoRedoButtons";
 
 const Header: React.FC = () => {
-    const { date, updateDate: setDate, addDaysToDate, initTimeRange } = useSectionState();
+    const { date, updateDate: setDate, addDaysToDate, initTimeRange, setLastManualSyncTime: setManualSyncTime } = useSectionState();
     const { campaign, fetchCampaigns, selectCampaign } = useCampaign();
     const { pastStates } = useTemporalStore(useCampaignConfigEdit, (state) => state);
     const { updateCampaignConfig } = useUpdateCampaign(async (id) => {
@@ -76,7 +76,7 @@ const Header: React.FC = () => {
                             <span className="icon-[eva--chevron-right-fill] w-6 h-6"></span>
                         </Button>
                     </div>
-                    <Button>
+                    <Button onClick={() => setManualSyncTime(Date.now())}>
                         <span className="icon-[eva--sync-fill] w-4 h-4 mr-2"></span> Sync now
                     </Button>
                 </>
