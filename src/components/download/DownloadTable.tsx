@@ -1,22 +1,16 @@
-import { DownloadFileRow } from "@/types/download";
-import { ResponseStatus } from "@/types/response";
 import PreviewDataModal from "@/components/download/PreviewDataModal";
+import useDownloadListState from "@/hooks/download/useDownloadListState";
+import useDownloadState from "@/hooks/useDownloadState";
+import { DownloadFileRow } from "@/types/download";
 import dayjs from "dayjs";
-import { Button, Card, Spinner } from "flowbite-react";
+import { Card, Checkbox, Spinner } from "flowbite-react";
 import { useState } from "react";
 import IconButton from "../common/IconButton";
 
-export const DownloadTable: React.FC<{
-    status: ResponseStatus;
-    downloadFiles: DownloadFileRow[];
-    previewStatus: ResponseStatus;
-    selectedPreviewRow: DownloadFileRow | null;
-    previewData: Record<string, unknown>[];
-    generatePreviewData: (row: DownloadFileRow) => void;
-    downloadData: (row: DownloadFileRow) => void;
-    downloadAllData: () => void;
-    isDownloadingAll: boolean;
-}> = ({ status, downloadFiles, previewStatus, selectedPreviewRow, previewData, generatePreviewData, downloadData, downloadAllData, isDownloadingAll }) => {
+export const DownloadTable = () => {
+    const { downloadListStatus } = useDownloadState();
+    const { selectedPreviewRow, previewStatus, previewData, selectedDataCount, isSomethingDownloading, generatePreviewData, downloadData, downloadAllData } = useDownloadListState();
+
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     return (
@@ -24,19 +18,17 @@ export const DownloadTable: React.FC<{
             <Card className="max-w-3xl">
                 <h6 className="text-xl font-semibold text-gray-900">Download Data</h6>
                 <div className="relative">
-                    {status === "loading" && (
+                    {downloadListStatus === "loading" && (
                         <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-lg">
                             <Spinner />
                         </div>
                     )}
                     <DownloadTableContent
-                        status={status}
-                        previewStatus={previewStatus}
+                        selectedDataCount={selectedDataCount}
                         generatePreviewData={(row) => { generatePreviewData(row); setIsPreviewOpen(true); }}
-                        downloadFiles={downloadFiles}
                         downloadData={downloadData}
                         downloadAllData={downloadAllData}
-                        isDownloadingAll={isDownloadingAll}
+                        isSomethingDownloading={isSomethingDownloading}
                     />
                 </div>
             </Card>
@@ -53,22 +45,22 @@ export const DownloadTable: React.FC<{
 }
 
 const DownloadTableContent: React.FC<{
-    status: ResponseStatus;
-    previewStatus: ResponseStatus;
+    selectedDataCount: number;
     generatePreviewData: (row: DownloadFileRow) => void;
-    downloadFiles: DownloadFileRow[];
-    downloadData: (row: DownloadFileRow) => void;
+    downloadData: (idx: number, row: DownloadFileRow) => void;
     downloadAllData: () => void;
-    isDownloadingAll: boolean;
-}> = ({ status, generatePreviewData, downloadFiles, downloadData, downloadAllData, isDownloadingAll }) => {
-    if (status === null) {
+    isSomethingDownloading: boolean;
+}> = ({ selectedDataCount, generatePreviewData, downloadData, downloadAllData, isSomethingDownloading }) => {
+    const { downloadList, downloadListStatus, toggleDownloadListItemChecked, setAllDownloadListItemsChecked } = useDownloadState();
+
+    if (downloadListStatus === null) {
         return (
             <div className="w-full min-h-24 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 text-sm">
                 Please generate download list first.
             </div>
         )
     }
-    if (downloadFiles.length === 0) {
+    if (downloadList.length === 0) {
         return (
             <div className="mt-4">
                 <h6 className="mb-2 text-sm font-semibold text-gray-900">
@@ -79,17 +71,18 @@ const DownloadTableContent: React.FC<{
     } else {
         return (
             <div className="">
-                <div className="flex items-end justify-between gap-3 mb-2">
-                    <h6 className="text-sm font-semibold text-gray-900">
-                        Generated files ({downloadFiles.length})
+                <div className="flex items-center justify-between gap-4 mb-2 bg-gray-200 h-10 px-4 rounded-lg">
+                    <h6 className="font-semibold text-sm text-gray-900">
+                        {selectedDataCount > 0 ? `${selectedDataCount} File${selectedDataCount > 1 ? 's' : ''} selected` : `${downloadList.length} File${downloadList.length > 1 ? 's' : ''} generated`}
                     </h6>
-                    {downloadFiles.length > 0 && (
-                        <Button
-                            size="sm"
+                    {selectedDataCount > 0 && (
+                        <IconButton
                             onClick={downloadAllData}
-                        >
-                            {isDownloadingAll ? "Downloading..." : `Download all`}
-                        </Button>
+                            hoverColor="gray"
+                            size="lg"
+                            className="icon-[material-symbols--download]"
+                            disabled={isSomethingDownloading}
+                        />
                     )}
 
                 </div>
@@ -98,6 +91,9 @@ const DownloadTableContent: React.FC<{
                     <table className="min-w-full divide-y divide-gray-200 text-sm">
                         <thead className="bg-gray-50">
                             <tr>
+                                <th className="px-3 py-2.5 flex items-center justify-center">
+                                    <Checkbox checked={selectedDataCount === downloadList.length} onChange={(e) => { e.stopPropagation(); setAllDownloadListItemsChecked(selectedDataCount !== downloadList.length); }} />
+                                </th>
                                 <th className="px-3 py-2 text-left font-medium text-gray-700">Participant</th>
                                 {/* <th className="px-3 py-2 text-left font-medium text-gray-700">Email</th> */}
                                 <th className="px-3 py-2 text-left font-medium text-gray-700">Sensor table</th>
@@ -107,8 +103,11 @@ const DownloadTableContent: React.FC<{
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-white">
-                            {downloadFiles.map((row, idx) => (
-                                <tr key={idx}>
+                            {downloadList.map((row, idx) => (
+                                <tr key={idx} onClick={() => toggleDownloadListItemChecked(idx)}>
+                                    <td className="px-3 py-2.5 flex">
+                                        <Checkbox checked={row.isChecked} onClick={(e) => { e.stopPropagation(); toggleDownloadListItemChecked(idx); }} onChange={() => { }} />
+                                    </td>
                                     <td className="px-3 py-2 font-mono text-xs text-gray-900">
                                         {row.uuid}
                                     </td>
@@ -120,12 +119,20 @@ const DownloadTableContent: React.FC<{
                                         {
                                             row.count > 0 && (
                                                 <div className="flex items-center gap-2">
-                                                    <IconButton
-                                                        onClick={() => downloadData(row)}
-                                                        hoverColor="gray"
-                                                        className="icon-[material-symbols--download]"
-                                                        disabled={row.count === 0}
-                                                    />
+                                                    {row.downloadStatus === null ? (
+                                                        <IconButton
+                                                            onClick={() => downloadData(idx, row)}
+                                                            hoverColor="gray"
+                                                            className="icon-[material-symbols--download]"
+                                                            disabled={row.count === 0}
+                                                        />
+                                                    ) : row.downloadStatus === 'loading' ? (
+                                                        <Spinner size="sm" />
+                                                    ) : row.downloadStatus === 'ok' ? (
+                                                        <span className="icon-[material-symbols--check] text-blue-500"></span>
+                                                    ) : <span className="icon-[material-symbols--times]"></span>
+                                                    }
+
                                                     <IconButton
                                                         onClick={() => generatePreviewData(row)}
                                                         hoverColor="gray"

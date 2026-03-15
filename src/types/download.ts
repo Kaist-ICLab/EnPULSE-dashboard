@@ -1,3 +1,5 @@
+import { ResponseStatus } from "./response";
+
 export type DownloadTable = {
     name: string;
     fieldNames: string[];
@@ -13,9 +15,11 @@ export type DownloadRecord = {
 };
 
 export type DownloadFileRow = {
+    isChecked: boolean;
     table: string;
     uuid: string;
     email: string;
     date: Date;
     count: number;
+    downloadStatus: ResponseStatus;
 };

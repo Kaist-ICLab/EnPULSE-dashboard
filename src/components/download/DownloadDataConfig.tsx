@@ -1,19 +1,19 @@
-import { Button, Card } from "flowbite-react";
+import useDownloadDataConfigState from "@/hooks/download/useDownloadDataConfigState";
+import useDownloadState from "@/hooks/useDownloadState";
 import dayjs from "dayjs";
+import { Button, Card } from "flowbite-react";
 import ParticipantDropdown from "../dashboard/ParticipantDropdown";
 import SensorDropdown from "../dashboard/SensorDropdown";
 
-const DownloadedDataConfig: React.FC<{
-    selectedParticipantIds: string[];
-    setSelectedParticipantIds: (participantIds: string[]) => void;
-    selectedFieldIds: number[];
-    setSelectedFieldIds: (fieldIds: number[]) => void;
-    startDate: Date;
-    setStartDate: (date: Date) => void;
-    endDate: Date;
-    setEndDate: (date: Date) => void;
-    generateCountPreview: () => void;
-}> = ({ selectedParticipantIds, setSelectedParticipantIds, selectedFieldIds, setSelectedFieldIds, startDate, setStartDate, endDate, setEndDate, generateCountPreview }) => {
+const DownloadDataConfig = () => {
+    const { selectedParticipantIds, selectedFieldIds, setSelectedParticipantIds, setSelectedFieldIds } = useDownloadState();
+    const {
+        startDate,
+        setStartDate,
+        endDate,
+        setEndDate,
+        generateDownloadList
+    } = useDownloadDataConfigState();
 
     const canDownload = selectedParticipantIds.length > 0
         && selectedFieldIds.length > 0
@@ -66,7 +66,7 @@ const DownloadedDataConfig: React.FC<{
                 </div>
 
                 <div className="flex items-center gap-3 mt-9">
-                    <Button className="w-full" size="md" onClick={generateCountPreview} disabled={!canDownload}>
+                    <Button className="w-full" size="md" onClick={generateDownloadList} disabled={!canDownload}>
                         Generate download list
                     </Button>
                 </div>
@@ -77,4 +77,4 @@ const DownloadedDataConfig: React.FC<{
     )
 }
 
-export default DownloadedDataConfig;
+export default DownloadDataConfig;
