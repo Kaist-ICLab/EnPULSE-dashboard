@@ -74,7 +74,6 @@ const DailyOverviewTable: React.FC = () => {
                         <colgroup>
                             <col className="w-[40px]" />
                             <col className="w-[50px]" />
-                            <col className="w-[120px]" />
                             {tableNames.map((name) => ([
                                 <col key={`${name}-col-dailycount`} className="w-[140px]" />,
                                 <col key={`${name}-col-timeline`} className="w-[160px]" />
