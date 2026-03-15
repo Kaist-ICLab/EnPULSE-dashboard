@@ -4,7 +4,7 @@ import { Card, Select, Checkbox, Button, Label } from "flowbite-react";
 import { AnswerType, SurveyQuestion } from "@/types/survey";
 
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
-import SwitchingTextInput from "./SwitchingTextInput";
+import SwitchingTextInput from "../../common/SwitchingTextInput";
 import TriggerCard from "./TriggerCard";
 import { useMemo } from "react";
 

@@ -33,6 +33,8 @@ export interface CampaignConfigEditState extends ExportedCampaignConfig {
     setDailyCountMax: (index: number, value: number) => void;
     addTable: (table: CampaignTable) => void;
     removeTable: (index: number) => void;
+    updateTableName: (index: number, name: string) => void;
+    updateTableDescription: (index: number, description: string) => void;
     addField: (tableIndex: number, field: CampaignTableField) => void;
     removeField: (tableIndex: number, fieldIdx: number) => void;
     setField: (tableIndex: number, fieldIdx: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void;
@@ -238,6 +240,18 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((
         set((state) => {
             state.removedEntries.table.push(state.tables[index].id ?? -1);
             state.tables.splice(index, 1);
+        });
+    },
+
+    updateTableName: (index: number, name: string) => {
+        set((state) => {
+            state.tables[index].name = name;
+        });
+    },
+
+    updateTableDescription: (index: number, description: string) => {
+        set((state) => {
+            state.tables[index].description = description;
         });
     },
 

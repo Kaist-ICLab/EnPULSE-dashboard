@@ -6,7 +6,7 @@ import { Survey } from "@/types/survey";
 
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import ScheduleMethodConfig from "./ScheduleMethodConfig";
-import SwitchingTextInput from "./SwitchingTextInput";
+import SwitchingTextInput from "../../common/SwitchingTextInput";
 
 const SurveyCard: React.FC<{
     baseUrl: string;
