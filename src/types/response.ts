@@ -1,4 +1,1 @@
-export interface ServerResponse {
-    success: boolean;
-    message: string;
-}
+export type ResponseStatus = null | 'loading' | 'ok' | 'error';
