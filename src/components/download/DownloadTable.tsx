@@ -130,7 +130,7 @@ const DownloadTableContent: React.FC<{
                                                         <Spinner size="sm" />
                                                     ) : row.downloadStatus === 'ok' ? (
                                                         <span className="icon-[material-symbols--check] text-blue-500"></span>
-                                                    ) : <span className="icon-[material-symbols--times]"></span>
+                                                    ) : <span className="icon-[humbleicons--times]"></span>
                                                     }
 
                                                     <IconButton
