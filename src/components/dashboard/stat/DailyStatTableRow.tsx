@@ -1,4 +1,4 @@
-import { Tooltip } from "flowbite-react";
+import { Checkbox, Tooltip } from "flowbite-react";
 import DailyStatTableCell from "./DailyStatTableCell";
 import React from "react";
 
@@ -57,19 +57,19 @@ const DailyCount: React.FC<{
 }
 
 const DailyStatTableRow: React.FC<{
-    email: string;
+    pid: number;
     contacts: number;
     tables: { table_id: number, totalCount: number, counts: number[] }[];
     maxValue: Map<number, number>;
     isSelected: boolean;
     toggleChecked: () => void;
-}> = ({ email, contacts, tables, maxValue, isSelected = false, toggleChecked }) => {
+}> = ({ pid, contacts, tables, maxValue, isSelected = false, toggleChecked }) => {
     return (
         <tr className={`border-b border-gray-200 border-l text-sm ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}`} onClick={toggleChecked}>
             <DailyStatTableCell>
-                <input type="checkbox" className="w-4 h-4" checked={isSelected} onChange={toggleChecked} />
+                <Checkbox checked={isSelected} onChange={toggleChecked} />
             </DailyStatTableCell>
-            <DailyStatTableCell>{email}</DailyStatTableCell>
+            <DailyStatTableCell>P{pid}</DailyStatTableCell>
             <DailyStatTableCell>{contacts} Contacts</DailyStatTableCell>
             {tables.map((table) => (
                 [<DailyStatTableCell key={`${table.table_id}-dailycount`}>

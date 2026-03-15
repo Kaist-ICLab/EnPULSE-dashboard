@@ -91,11 +91,10 @@ const DownloadTableContent: React.FC<{
                     <table className="min-w-full divide-y divide-gray-200 text-sm">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-3 py-2.5 flex items-center justify-center">
+                                <th className="px-2 py-2.5 flex items-center justify-center">
                                     <Checkbox checked={selectedDataCount === downloadList.length} onChange={(e) => { e.stopPropagation(); setAllDownloadListItemsChecked(selectedDataCount !== downloadList.length); }} />
                                 </th>
-                                <th className="px-3 py-2 text-left font-medium text-gray-700">Participant</th>
-                                {/* <th className="px-3 py-2 text-left font-medium text-gray-700">Email</th> */}
+                                <th className="px-3 py-2 text-left font-medium text-gray-700">PID</th>
                                 <th className="px-3 py-2 text-left font-medium text-gray-700">Sensor table</th>
                                 <th className="px-3 py-2 text-left font-medium text-gray-700">Date</th>
                                 <th className="px-3 py-2 text-left font-medium text-gray-700">Rows</th>
@@ -105,13 +104,12 @@ const DownloadTableContent: React.FC<{
                         <tbody className="divide-y divide-gray-200 bg-white">
                             {downloadList.map((row, idx) => (
                                 <tr key={idx} onClick={() => toggleDownloadListItemChecked(idx)}>
-                                    <td className="px-3 py-2.5 flex">
+                                    <td className="px-2 py-2.5 flex items-center justify-center">
                                         <Checkbox checked={row.isChecked} onClick={(e) => { e.stopPropagation(); toggleDownloadListItemChecked(idx); }} onChange={() => { }} />
                                     </td>
                                     <td className="px-3 py-2 font-mono text-xs text-gray-900">
-                                        {row.uuid}
+                                        P{row.pid}
                                     </td>
-                                    {/* <td className="px-3 py-2 text-gray-900">{row.email}</td> */}
                                     <td className="px-3 py-2 text-gray-900">{row.table}</td>
                                     <td className="px-3 py-2 text-gray-900">{dayjs(row.date).format('YYYY-MM-DD')}</td>
                                     <td className="px-3 py-2 text-gray-900">{row.count}</td>

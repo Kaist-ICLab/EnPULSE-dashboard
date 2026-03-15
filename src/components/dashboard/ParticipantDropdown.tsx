@@ -26,8 +26,8 @@ const ParticipantDropdown: React.FC<ParticipantDropdownProps> = ({
     const label = useMemo(() => {
         if (selectedParticipantIds.length === 0) return "Select Participant";
         const first = participants.find(p => p.uuid === selectedParticipantIds[0]);
-        if (selectedParticipantIds.length === 1) return first?.email ?? "Select Participant";
-        return `${first?.email ?? "Participant"} + ${selectedParticipantIds.length - 1} more`;
+        if (selectedParticipantIds.length === 1) return `P${first?.pid}`
+        return `P${first?.pid} + ${selectedParticipantIds.length - 1} more`;
     }, [participants, selectedParticipantIds]);
 
     const toggleSelection = (uuid: string) => {
@@ -53,7 +53,7 @@ const ParticipantDropdown: React.FC<ParticipantDropdownProps> = ({
             dismissOnClick={false}
             className={className}
         >
-            <div className="min-w-56 h-64 overflow-y-auto scrollbar-thin px-2 py-2">
+            <div className="min-w-48 h-64 overflow-y-auto scrollbar-thin px-2 py-2">
                 {participants.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-gray-500 text-sm bg-gray-50 rounded-sm">
                         <span className="icon-[material-symbols--person-off] text-4xl mb-2"></span>
@@ -74,7 +74,7 @@ const ParticipantDropdown: React.FC<ParticipantDropdownProps> = ({
                                         checked={selectedParticipantIds.includes(p.uuid)}
                                         onChange={() => { }}
                                     />
-                                    {p.email}
+                                    P{p.pid}
                                 </DropdownItem>
                             ))}
                         </div>

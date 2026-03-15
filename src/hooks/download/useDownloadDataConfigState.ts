@@ -45,7 +45,7 @@ export default function useDownloadDataConfigState() {
             downloadStatus: null,
             table: row.table,
             uuid: row.uuid,
-            email: campaignParticipants.get(row.uuid)?.email ?? "",
+            pid: campaignParticipants.get(row.uuid)?.pid ?? 0,
             date: row.date,
             count: row.count,
         })));

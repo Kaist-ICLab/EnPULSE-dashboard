@@ -151,7 +151,7 @@ export async function getPersonComparisonData(
         const rawCategoricalData = data as (BucketCategoricalData[] | null)[]
         return participants.map((p, idx) => (
             {
-                title: p.email,
+                title: `P${p.pid}`,
                 id: p.uuid,
                 chartType: field.field_type == "categorical" ? 'categorical' as ChartType : 'barcode' as ChartType,
                 params: { date, uuid: p.uuid, fieldId: field.id },
@@ -161,7 +161,7 @@ export async function getPersonComparisonData(
     } else if (field.field_type === "bitmask") {
         const rawCategoricalData = data as (BucketCategoricalData[] | null)[];
         return participants.map((p, idx) => ({
-            title: p.email,
+            title: `P${p.pid}`,
             id: p.uuid,
             chartType: 'heatmap' as ChartType,
             params: { date, uuid: p.uuid, fieldId: field.id },
@@ -171,7 +171,7 @@ export async function getPersonComparisonData(
         const numericalData = data as (BucketNumericalData[] | null)[]
         return participants.map((p, idx) => (
             {
-                title: p.email,
+                title: `P${p.pid}`,
                 id: p.uuid,
                 chartType: "numerical" as ChartType,
                 params: { date, uuid: p.uuid, fieldId: field.id },

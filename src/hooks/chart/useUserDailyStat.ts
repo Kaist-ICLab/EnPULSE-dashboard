@@ -4,21 +4,6 @@ import useCampaign from "../useCampaign";
 import { UserDailyStatData } from "@/types/dashboard";
 import useSectionState from "../useSectionState";
 
-export type UserDailyStat = {
-    uuid: string;
-    email: string;
-    contacts: number;
-    columns: {
-        [name: string]: DynamicDataColumn;
-    };
-};
-
-export type DynamicDataColumn = {
-    dailyCount: number;
-    dailyCountMax: number;
-    timeline: number[];
-};
-
 export const useUserDailyStat = (
     initialRowsPerPage: number,
     syncTime: Date | null

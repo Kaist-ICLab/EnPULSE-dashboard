@@ -997,16 +997,19 @@ export type Database = {
                 Row: {
                     campaign_id: number | null
                     email: string
+                    pid: number
                     uuid: string
                 }
                 Insert: {
                     campaign_id?: number | null
                     email: string
+                    pid?: number
                     uuid: string
                 }
                 Update: {
                     campaign_id?: number | null
                     email?: string
+                    pid?: number
                     uuid?: string
                 }
                 Relationships: [
