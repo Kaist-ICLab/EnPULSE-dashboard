@@ -31,6 +31,7 @@ const DownloadDataConfig = () => {
                             selectedParticipantIds={selectedParticipantIds}
                             setSelectedParticipantIds={setSelectedParticipantIds}
                             isMultipleSelection={true}
+                            showSelectAllParticipants={true}
                         />
                     </div>
                     <div className="w-1/2">

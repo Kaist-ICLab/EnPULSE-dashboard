@@ -21,6 +21,10 @@ export default function useParticipantDropdownState(
         [campaignParticipants]
     );
 
+    const isAllParticipantsSelected = useMemo(() => {
+        return selectedParticipantIds.length === participants.length;
+    }, [selectedParticipantIds, participants]);
+
     const toggleSelection = useCallback((uuid: string) => {
         if (isMultipleSelection) {
             if (selectedParticipantIds.includes(uuid)) {
@@ -36,6 +40,14 @@ export default function useParticipantDropdownState(
             }
         }
     }, [selectedParticipantIds, isMultipleSelection, setSelectedParticipantIds]);
+
+    const toggleAllParticipantsSelection = useCallback(() => {
+        if (isAllParticipantsSelected) {
+            setSelectedParticipantIds([]);
+        } else {
+            setSelectedParticipantIds(participants.map(p => p.uuid));
+        }
+    }, [participants, isAllParticipantsSelected, setSelectedParticipantIds]);
 
     const label = useMemo(() => {
         if (selectedParticipantIds.length === 0) return "Select Participant";
@@ -74,5 +86,7 @@ export default function useParticipantDropdownState(
         maxBatchIndex,
         setBatchIndex,
         setBatchSize,
+        toggleAllParticipantsSelection,
+        isAllParticipantsSelected,
     };
 }
