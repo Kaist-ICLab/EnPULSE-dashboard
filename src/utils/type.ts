@@ -13,6 +13,9 @@ export type MakeOptional<T, K extends keyof T> = Partial<Pick<T, K>> & Omit<T, K
 /**
  * Rust-inspired Result type
  */
-export type Ok<T> = { data: T }
-export type Error = { errorMessage: string }
-export type Result<T> = Ok<T> | Error;
+export type Ok<T> = { ok: true; data: T };
+export type Err<E = string> = { ok: false; error: E };
+export type Result<T, E = string> = Ok<T> | Err<E>;
+
+export const Ok = <T>(data: T): Ok<T> => ({ ok: true, data });
+export const Err = <E = string>(error: E): Err<E> => ({ ok: false, error });
