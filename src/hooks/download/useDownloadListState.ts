@@ -79,9 +79,10 @@ export default function useDownloadListState() {
             const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
             triggerFileDownload(blob, fileName);
         } finally {
+            setDownloadListItemStatus(idx, null);
         }
 
-    }, [downloadAndBuildFile, triggerFileDownload]);
+    }, [downloadAndBuildFile, triggerFileDownload, setDownloadListItemStatus]);
 
     const downloadAllData = useCallback(async () => {
         downloadList.forEach((row, idx) => row.isChecked && setDownloadListItemStatus(idx, "loading"));
