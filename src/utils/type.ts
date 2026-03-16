@@ -9,3 +9,10 @@ export type DeepRequired<T> = T extends object
     : T;
 
 export type MakeOptional<T, K extends keyof T> = Partial<Pick<T, K>> & Omit<T, K>;
+
+/**
+ * Rust-inspired Result type
+ */
+export type Ok<T> = { data: T }
+export type Error = { errorMessage: string }
+export type Result<T> = Ok<T> | Error;
