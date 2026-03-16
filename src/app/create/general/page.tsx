@@ -25,7 +25,6 @@ const Page: React.FC = () => {
                 <CampaignPeriodForm />
             </div>
             <PrevNextNavigation
-                onPrevClick={() => router.push("/campaigns")}
                 onNextClick={() => router.push("/create/passive-sensing")}
                 nextLabel="Next"
                 disabled={!isInfoValid}

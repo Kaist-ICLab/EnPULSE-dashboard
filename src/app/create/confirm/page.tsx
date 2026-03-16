@@ -62,7 +62,6 @@ const ConfirmPage: React.FC = () => {
                 </Card>
             </div>
             <PrevNextNavigation
-                onPrevClick={() => router.push("/create/active-sensing")}
                 onNextClick={updateCampaignConfig}
                 nextLabel="Create Campaign!"
             />

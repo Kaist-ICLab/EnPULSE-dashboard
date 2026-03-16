@@ -22,7 +22,6 @@ const Page: React.FC = () => {
         <>
             <ActiveSensingForm baseUrl={pathname} />
             <PrevNextNavigation
-                onPrevClick={() => router.push("/create/passive-sensing")}
                 onNextClick={() => router.push("/create/confirm")}
                 disabled={!isActiveSensingValid}
             />

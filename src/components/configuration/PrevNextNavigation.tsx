@@ -1,15 +1,16 @@
 import { Button } from "flowbite-react";
+import { useRouter } from "next/navigation";
 
 const PrevNextNavigation: React.FC<{
-    onPrevClick: () => void;
     onNextClick: () => void;
     prevLabel?: string;
     nextLabel?: string;
     disabled?: boolean;
-}> = ({ onPrevClick, onNextClick, prevLabel = "Previous", nextLabel = "Next", disabled = false }) => {
+}> = ({ onNextClick, prevLabel = "Previous", nextLabel = "Next", disabled = false }) => {
+    const router = useRouter();
     return (
         <div className="w-full gap-4 flex my-5 pb-5">
-            <Button className="grow" color="gray" onClick={onPrevClick}>
+            <Button className="grow" color="gray" onClick={() => router.back()}>
                 {prevLabel}
             </Button>
             <Button className="grow" color="blue" onClick={onNextClick} disabled={disabled}>
