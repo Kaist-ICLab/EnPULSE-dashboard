@@ -1,8 +1,8 @@
 'use client'
 
-import { Dropdown, DropdownDivider, DropdownItem } from "flowbite-react";
-import { useMemo } from "react";
-import useCampaign from "@/hooks/useCampaign";
+import useParticipantDropdownState from "@/hooks/dashboard/useParticipantDropdownState";
+import { Dropdown, DropdownDivider, DropdownItem, Select } from "flowbite-react";
+import IconButton from "../common/IconButton";
 
 interface ParticipantDropdownProps {
     selectedParticipantIds: string[];
@@ -17,34 +17,8 @@ const ParticipantDropdown: React.FC<ParticipantDropdownProps> = ({
     className,
     isMultipleSelection = false,
 }) => {
-    const { campaignParticipants } = useCampaign();
-    const participants = useMemo(
-        () => Array.from(campaignParticipants.values()),
-        [campaignParticipants]
-    );
+    const { label, participants, toggleSelection, batchIndex, batchSize, maxBatchIndex, setBatchIndex, setBatchSize } = useParticipantDropdownState(selectedParticipantIds, setSelectedParticipantIds, isMultipleSelection);
 
-    const label = useMemo(() => {
-        if (selectedParticipantIds.length === 0) return "Select Participant";
-        const first = participants.find(p => p.uuid === selectedParticipantIds[0]);
-        if (selectedParticipantIds.length === 1) return `P${first?.pid}`
-        return `P${first?.pid} + ${selectedParticipantIds.length - 1} more`;
-    }, [participants, selectedParticipantIds]);
-
-    const toggleSelection = (uuid: string) => {
-        if (isMultipleSelection) {
-            if (selectedParticipantIds.includes(uuid)) {
-                setSelectedParticipantIds(selectedParticipantIds.filter(id => id !== uuid));
-            } else {
-                setSelectedParticipantIds([...selectedParticipantIds, uuid]);
-            }
-        } else {
-            if (selectedParticipantIds.includes(uuid)) {
-                setSelectedParticipantIds([]);
-            } else {
-                setSelectedParticipantIds([uuid]);
-            }
-        }
-    };
 
     return (
         <Dropdown
@@ -53,7 +27,7 @@ const ParticipantDropdown: React.FC<ParticipantDropdownProps> = ({
             dismissOnClick={false}
             className={className}
         >
-            <div className="min-w-48 h-64 overflow-y-auto scrollbar-thin px-2 py-2">
+            <div className="min-w-48 h-80 overflow-y-auto scrollbar-thin px-2 py-2">
                 {participants.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-gray-500 text-sm bg-gray-50 rounded-sm">
                         <span className="icon-[material-symbols--person-off] text-4xl mb-2"></span>
@@ -79,8 +53,42 @@ const ParticipantDropdown: React.FC<ParticipantDropdownProps> = ({
                             ))}
                         </div>
                         <DropdownDivider />
-                        <DropdownItem className="font-bold" onClick={() => setSelectedParticipantIds([])}>
-                            <span className="text-red-500">{isMultipleSelection ? "Deselect all" : "Deselect"}</span>
+                        <div className="w-full">
+                            <div className="grid grid-cols-[auto_auto] gap-x-3 gap-y-1 items-center justify-between py-1 px-2 ">
+                                <div className="text-xs text-gray-500">Batch #</div>
+                                <div className="text-xs text-gray-500">Batch size</div>
+                                <div className="flex items-center gap-1">
+                                    <IconButton
+                                        size="lg"
+                                        className="icon-[material-symbols--chevron-left-rounded]"
+                                        onClick={() => setBatchIndex(batchIndex - 1)}
+                                        disabled={batchIndex == 1}
+                                    />
+                                    <span className="text-sm">{batchIndex} / {maxBatchIndex}</span>
+                                    <IconButton
+                                        size="lg"
+                                        className="icon-[material-symbols--chevron-right-rounded]"
+                                        onClick={() => setBatchIndex(batchIndex + 1)}
+                                        disabled={batchIndex == maxBatchIndex}
+                                    />
+                                </div>
+                                <div>
+                                    <Select sizing="sm" className="w-16" value={batchSize.toString()} onChange={(e) => setBatchSize(parseInt(e.target.value))} disabled={!isMultipleSelection}>
+                                        <option>1</option>
+                                        {isMultipleSelection && (
+                                            <>
+                                                <option>5</option>
+                                                <option>10</option>
+                                                <option>15</option>
+                                            </>
+                                        )}
+                                    </Select>
+                                </div>
+                            </div>
+                        </div>
+                        <DropdownDivider />
+                        <DropdownItem className="font-bold text-red-500" onClick={() => setSelectedParticipantIds([])}>
+                            {isMultipleSelection ? "Deselect all" : "Deselect"}
                         </DropdownItem>
                     </div>
                 )}

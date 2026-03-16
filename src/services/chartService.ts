@@ -71,7 +71,8 @@ export async function getSensorComparisonData(
 
     const fields = tables.flatMap(table => table.campaign_table_field).map(field => ({
         ...field,
-        table_name: tables.find(t => t.id === field.campaign_table_id)?.display_name ?? ''
+        table_name: tables.find(t => t.id === field.campaign_table_id)?.name ?? '',
+        display_name: tables.find(t => t.id === field.campaign_table_id)?.display_name ?? ''
     })).filter(field => field.table_name !== '')
 
     const data = await mapQuery(fields, field => {
@@ -93,7 +94,7 @@ export async function getSensorComparisonData(
             const groupedData = groupByTimestamp(rawCategoricalData);
 
             return {
-                title: `${field.table_name} - ${field.name}`,
+                title: `${field.display_name} - ${field.name}`,
                 id: `${field.id}`,
                 chartType: field.field_type == "categorical" ? 'categorical' as ChartType : 'barcode' as ChartType,
                 params: { date, uuid, fieldId: field.id },
@@ -104,7 +105,7 @@ export async function getSensorComparisonData(
             const rawCategoricalData = data[idx] as (BucketCategoricalData[] | null);
             const groupedData = groupByTimestampAndBitmask(rawCategoricalData);
             return {
-                title: `${field.table_name} - ${field.name}`,
+                title: `${field.display_name} - ${field.name}`,
                 id: `${field.id}`,
                 chartType: 'heatmap' as ChartType,
                 params: { date, uuid, fieldId: field.id },
@@ -113,7 +114,7 @@ export async function getSensorComparisonData(
         } else {
             const numericalData = data[idx] as BucketNumericalData[]
             return {
-                title: `${field.table_name} - ${field.name}`,
+                title: `${field.display_name} - ${field.name}`,
                 id: `${field.id}`,
                 chartType: 'numerical' as ChartType,
                 params: { date, uuid, fieldId: field.id },
