@@ -34,6 +34,7 @@ export interface CampaignConfigEditState extends ExportedCampaignConfig {
     addTable: (table: CampaignTable) => void;
     removeTable: (index: number) => void;
     updateTableName: (index: number, name: string) => void;
+    updateTableDisplayName: (index: number, displayName: string) => void;
     updateTableDescription: (index: number, description: string) => void;
     addField: (tableIndex: number, field: CampaignTableField) => void;
     removeField: (tableIndex: number, fieldIdx: number) => void;
@@ -246,6 +247,12 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((
     updateTableName: (index: number, name: string) => {
         set((state) => {
             state.tables[index].name = name;
+        });
+    },
+
+    updateTableDisplayName: (index: number, displayName: string) => {
+        set((state) => {
+            state.tables[index].display_name = displayName;
         });
     },
 

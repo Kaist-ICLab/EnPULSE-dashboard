@@ -329,6 +329,7 @@ export type Database = {
                     campaign_id: number
                     daily_count_max: number
                     description: string
+                    display_name: string
                     id: number
                     is_custom: boolean
                     name: string
@@ -337,6 +338,7 @@ export type Database = {
                     campaign_id: number
                     daily_count_max: number
                     description?: string
+                    display_name: string
                     id?: number
                     is_custom?: boolean
                     name: string
@@ -345,6 +347,7 @@ export type Database = {
                     campaign_id?: number
                     daily_count_max?: number
                     description?: string
+                    display_name?: string
                     id?: number
                     is_custom?: boolean
                     name?: string

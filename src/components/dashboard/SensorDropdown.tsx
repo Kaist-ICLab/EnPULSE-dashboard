@@ -41,7 +41,7 @@ const SensorDropdown: React.FC<{
                                 onClick={() => { setSelectedSensor(selectedSensor === table.id ? -1 : table.id) }}
                             >
                                 <span className="flex items-center">
-                                    <span>{table.name}</span>
+                                    <span>{table.display_name}</span>
                                     {isMultipleSelection ? (
                                         (selectedCountByTable.get(table.id) || 0) > 0 && (
                                             <span className="ml-2 inline-flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-xs w-5 h-5">

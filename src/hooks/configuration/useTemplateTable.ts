@@ -7,6 +7,7 @@ type TemplateCampaignTable = Omit<CampaignTable, 'id' | 'campaign_id' | 'daily_c
 
 const accelerometerSensor: TemplateCampaignTable = {
     name: "accelerometer_sensor",
+    display_name: "Accelerometer",
     description: "Accelerometer sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -20,6 +21,7 @@ const accelerometerSensor: TemplateCampaignTable = {
 
 const ambientLightSensor: TemplateCampaignTable = {
     name: "ambient_light_sensor",
+    display_name: "Ambient Light",
     description: "Ambient light sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -32,6 +34,7 @@ const ambientLightSensor: TemplateCampaignTable = {
 
 const appListChangeSensor: TemplateCampaignTable = {
     name: "app_list_change_sensor",
+    display_name: "App List Change",
     description: "App list change sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -44,6 +47,7 @@ const appListChangeSensor: TemplateCampaignTable = {
 
 const appUsageLogSensor: TemplateCampaignTable = {
     name: "app_usage_log_sensor",
+    display_name: "App Usage Log",
     description: "App usage log sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -57,6 +61,7 @@ const appUsageLogSensor: TemplateCampaignTable = {
 
 const batterySensor: TemplateCampaignTable = {
     name: "battery_sensor",
+    display_name: "Battery",
     description: "Battery sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -71,6 +76,7 @@ const batterySensor: TemplateCampaignTable = {
 
 const bluetoothScanSensor: TemplateCampaignTable = {
     name: "bluetooth_scan_sensor",
+    display_name: "Bluetooth Scan",
     description: "Bluetooth scan sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -89,6 +95,7 @@ const bluetoothScanSensor: TemplateCampaignTable = {
 
 const callLogSensor: TemplateCampaignTable = {
     name: "call_log_sensor",
+    display_name: "Call Log",
     description: "Call log sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -102,6 +109,7 @@ const callLogSensor: TemplateCampaignTable = {
 
 const connectivitySensor: TemplateCampaignTable = {
     name: "connectivity_sensor",
+    display_name: "Connectivity",
     description: "Connectivity sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -116,6 +124,7 @@ const connectivitySensor: TemplateCampaignTable = {
 
 const dataTrafficSensor: TemplateCampaignTable = {
     name: "data_traffic_sensor",
+    display_name: "Data Traffic",
     description: "Data traffic sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -130,6 +139,7 @@ const dataTrafficSensor: TemplateCampaignTable = {
 
 const deviceModeSensor: TemplateCampaignTable = {
     name: "device_mode_sensor",
+    display_name: "Device Mode",
     description: "Device mode sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -142,6 +152,7 @@ const deviceModeSensor: TemplateCampaignTable = {
 
 const edaSensor: TemplateCampaignTable = {
     name: "eda_sensor",
+    display_name: "Electrodermal Activity",
     description: "Electrodermal activity sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -154,6 +165,7 @@ const edaSensor: TemplateCampaignTable = {
 
 const heartRateSensor: TemplateCampaignTable = {
     name: "heart_rate_sensor",
+    display_name: "Heart Rate",
     description: "Heart rate sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -168,6 +180,7 @@ const heartRateSensor: TemplateCampaignTable = {
 
 const locationSensor: TemplateCampaignTable = {
     name: "location_sensor",
+    display_name: "Location",
     description: "Location sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -183,6 +196,7 @@ const locationSensor: TemplateCampaignTable = {
 
 const mediaSensor: TemplateCampaignTable = {
     name: "media_sensor",
+    display_name: "Media",
     description: "Media sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -202,6 +216,7 @@ const mediaSensor: TemplateCampaignTable = {
 
 const messageLogSensor: TemplateCampaignTable = {
     name: "message_log_sensor",
+    display_name: "Message Log",
     description: "Message log sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -215,6 +230,7 @@ const messageLogSensor: TemplateCampaignTable = {
 
 const notificationSensor: TemplateCampaignTable = {
     name: "notification_sensor",
+    display_name: "Notification",
     description: "Notification sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -231,6 +247,7 @@ const notificationSensor: TemplateCampaignTable = {
 
 const ppgSensor: TemplateCampaignTable = {
     name: "ppg_sensor",
+    display_name: "PPG",
     description: "PPG sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -247,6 +264,7 @@ const ppgSensor: TemplateCampaignTable = {
 
 const screenSensor: TemplateCampaignTable = {
     name: "screen_sensor",
+    display_name: "Screen",
     description: "Screen sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -258,6 +276,7 @@ const screenSensor: TemplateCampaignTable = {
 
 const skinTemperatureSensor: TemplateCampaignTable = {
     name: "skin_temperature_sensor",
+    display_name: "Skin Temperature",
     description: "Skin temperature sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -271,6 +290,7 @@ const skinTemperatureSensor: TemplateCampaignTable = {
 
 const stepSensor: TemplateCampaignTable = {
     name: "step_sensor",
+    display_name: "Step",
     description: "Step sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -284,6 +304,7 @@ const stepSensor: TemplateCampaignTable = {
 
 const userInteractionSensor: TemplateCampaignTable = {
     name: "user_interaction_sensor",
+    display_name: "User Interaction",
     description: "User interaction sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -298,6 +319,7 @@ const userInteractionSensor: TemplateCampaignTable = {
 
 const wifiScanSensor: TemplateCampaignTable = {
     name: "wifi_scan_sensor",
+    display_name: "WiFi Scan",
     description: "WiFi scan sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },

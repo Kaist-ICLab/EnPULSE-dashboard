@@ -6,7 +6,7 @@ import IconButton from "@/components/common/IconButton";
 import SwitchingTextInput from "@/components/common/SwitchingTextInput";
 
 export default function PassiveSensingForm() {
-    const { tables, removeTable, updateTableName, updateTableDescription } = useCampaignConfigEdit();
+    const { tables, removeTable, updateTableName, updateTableDisplayName, updateTableDescription } = useCampaignConfigEdit();
 
     if (tables.length === 0) {
         return (
@@ -30,19 +30,29 @@ export default function PassiveSensingForm() {
                             />
                             <div>
                                 {table.is_custom ? (
-                                    <SwitchingTextInput className="text-lg font-semibold text-gray-900 whitespace-nowrap" value={table.name} onChange={(value) => updateTableName(tableIndex, value)} />
+                                    <SwitchingTextInput className="text-lg font-semibold text-gray-900 whitespace-nowrap" value={table.display_name} onChange={(value) => updateTableDisplayName(tableIndex, value)} />
 
                                 ) : (
-                                    <div className="px-2 py-1.5 text-lg font-semibold text-gray-900 whitespace-nowrap">{table.name}</div>
+                                    <div className="px-2 py-1.5 text-lg font-semibold text-gray-900 whitespace-nowrap">{table.display_name}</div>
                                 )}
 
                             </div>
                         </div>
-                        <div className="flex flex-row items-center gap-2 mb-6">
-                            <label className="block text-sm font-medium text-gray-900">
-                                Description
-                            </label>
-                            <SwitchingTextInput sizing="sm" value={table.description ?? ''} onChange={(value) => updateTableDescription(tableIndex, value)} />
+                        <div className="mb-6">
+                            {table.is_custom && (
+                                <div className="flex flex-row items-center gap-2 mb-1">
+                                    <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
+                                        DB Table Name
+                                    </span>
+                                    <SwitchingTextInput sizing="sm" value={table.name ?? ''} onChange={(value) => updateTableName(tableIndex, value)} />
+                                </div>
+                            )}
+                            <div className="flex flex-row items-center gap-2">
+                                <span className="text-sm font-medium text-gray-900">
+                                    Description
+                                </span>
+                                <SwitchingTextInput sizing="sm" value={table.description ?? ''} onChange={(value) => updateTableDescription(tableIndex, value)} />
+                            </div>
                         </div>
                         <PassiveSensingConfigTable
                             tableIdx={tableIndex}
