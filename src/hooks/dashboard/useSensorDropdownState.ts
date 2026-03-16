@@ -22,12 +22,12 @@ const useSensorDropdownState = (
             return "Select Sensor";
         }
 
-        const tableName = campaignTables.get(displayedField?.campaign_table_id)?.name;
+        const displayName = campaignTables.get(displayedField?.campaign_table_id)?.display_name;
 
         if (selectedFieldIds.length == 1) {
-            return `${tableName} - ${displayedField?.name}`;
+            return `${displayName} - ${displayedField?.name}`;
         } else {
-            return `${tableName} - ${displayedField?.name} + ${selectedFieldIds.length - 1} more`;
+            return `${displayName} - ${displayedField?.name} + ${selectedFieldIds.length - 1} more`;
         }
     }, [selectedFieldIds, campaignTableFields, campaignTables]);
 

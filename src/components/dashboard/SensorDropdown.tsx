@@ -32,7 +32,7 @@ const SensorDropdown: React.FC<{
         >
             <div className="h-64 flex flex-row px-2 py-2 gap-2">
                 {/* Sensor table selection */}
-                <div className="min-w-60 flex flex-col">
+                <div className="min-w-50 flex flex-col">
                     <div className="overflow-y-auto grow scrollbar-thin">
                         {Array.from(campaignTables.values()).map((table) => (
                             <DropdownItem

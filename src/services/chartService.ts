@@ -71,7 +71,7 @@ export async function getSensorComparisonData(
 
     const fields = tables.flatMap(table => table.campaign_table_field).map(field => ({
         ...field,
-        table_name: tables.find(t => t.id === field.campaign_table_id)?.name ?? ''
+        table_name: tables.find(t => t.id === field.campaign_table_id)?.display_name ?? ''
     })).filter(field => field.table_name !== '')
 
     const data = await mapQuery(fields, field => {
