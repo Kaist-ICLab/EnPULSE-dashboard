@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { DeepRequired } from '@/utils/type';
 import { DATE_FORMAT } from '@/utils/date';
 import { UserDailyStatData } from '@/types/dashboard';
+import { Ok, Err } from '@/utils/type';
 
 export async function getCampaignDailySummary(uuids: string[], tableIds: number[], date: Date) {
     const { data: contactData, error: contactError } = await supabase
@@ -85,12 +86,14 @@ export async function getSensorComparisonData(
             column_name: field.name,
             bucket_unit: bucketSize,
         })
-    }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
+    }) as (Ok<BucketNumericalData[]> | Ok<BucketCategoricalData[]> | Err<string> | null)[]
+
+    const successfulData = data.filter(d => d?.ok === true).map(d => d?.data);
 
     return fields.map((field, idx) => {
         if (field.field_type == "categorical" || field.field_type == "text") {
             // Group data by timestamp
-            const rawCategoricalData = data[idx] as (BucketCategoricalData[] | null);
+            const rawCategoricalData = successfulData[idx] as BucketCategoricalData[] | null;
             const groupedData = groupByTimestamp(rawCategoricalData);
 
             return {
@@ -102,7 +105,7 @@ export async function getSensorComparisonData(
             }
 
         } else if (field.field_type === "bitmask") {
-            const rawCategoricalData = data[idx] as (BucketCategoricalData[] | null);
+            const rawCategoricalData = successfulData[idx] as BucketCategoricalData[] | null;
             const groupedData = groupByTimestampAndBitmask(rawCategoricalData);
             return {
                 title: `${field.display_name} - ${field.name}`,
@@ -112,7 +115,7 @@ export async function getSensorComparisonData(
                 value: groupedData ?? []
             };
         } else {
-            const numericalData = data[idx] as BucketNumericalData[]
+            const numericalData = successfulData[idx] as BucketNumericalData[] | null;
             return {
                 title: `${field.display_name} - ${field.name}`,
                 id: `${field.id}`,
@@ -146,10 +149,12 @@ export async function getPersonComparisonData(
             column_name: field.name,
             bucket_unit: bucketSize,
         })
-    }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
+    }) as (Ok<BucketNumericalData[]> | Ok<BucketCategoricalData[]> | Err<string> | null)[]
+
+    const successfulData = data.filter(d => d?.ok === true).map(d => d?.data);
 
     if (field.field_type == "categorical" || field.field_type == "text") {
-        const rawCategoricalData = data as (BucketCategoricalData[] | null)[]
+        const rawCategoricalData = successfulData as (BucketCategoricalData[] | null)[]
         return participants.map((p, idx) => (
             {
                 title: `P${p.pid}`,
@@ -160,7 +165,7 @@ export async function getPersonComparisonData(
             }
         ))
     } else if (field.field_type === "bitmask") {
-        const rawCategoricalData = data as (BucketCategoricalData[] | null)[];
+        const rawCategoricalData = successfulData as (BucketCategoricalData[] | null)[];
         return participants.map((p, idx) => ({
             title: `P${p.pid}`,
             id: p.uuid,
@@ -169,7 +174,7 @@ export async function getPersonComparisonData(
             value: groupByTimestampAndBitmask(rawCategoricalData[idx])
         }));
     } else {
-        const numericalData = data as (BucketNumericalData[] | null)[]
+        const numericalData = successfulData as (BucketNumericalData[] | null)[]
         return participants.map((p, idx) => (
             {
                 title: `P${p.pid}`,
@@ -205,10 +210,12 @@ export async function getDaysComparisonData(
             column_name: field.name,
             bucket_unit: bucketSize,
         })
-    }) as (BucketNumericalData[] | BucketCategoricalData[] | null)[]
+    }) as (Ok<BucketNumericalData[]> | Ok<BucketCategoricalData[]> | Err<string> | null)[]
+
+    const successfulData = data.filter(d => d?.ok === true).map(d => d?.data);
 
     if (field.field_type == "categorical" || field.field_type == "text") {
-        const categoricalData = data as (BucketCategoricalData[] | null)[]
+        const categoricalData = successfulData as (BucketCategoricalData[] | null)[]
         return dates.map((d, idx) => ({
             title: dayjs(d).format('YYYY-MM-DD'),
             id: dayjs(d).format('YYYY-MM-DD'),
@@ -218,7 +225,7 @@ export async function getDaysComparisonData(
         }
         ))
     } else if (field.field_type === "bitmask") {
-        const categoricalData = data as (BucketCategoricalData[] | null)[];
+        const categoricalData = successfulData as (BucketCategoricalData[] | null)[];
         return dates.map((d, idx) => ({
             title: dayjs(d).format('YYYY-MM-DD'),
             id: dayjs(d).format('YYYY-MM-DD'),
@@ -227,7 +234,7 @@ export async function getDaysComparisonData(
             value: groupByTimestampAndBitmask(categoricalData[idx] ?? [])
         }));
     } else {
-        const numericalData = data as (BucketNumericalData[] | null)[]
+        const numericalData = successfulData as (BucketNumericalData[] | null)[]
         return dates.map((d, idx) => ({
             title: dayjs(d).format('YYYY-MM-DD'),
             id: dayjs(d).format('YYYY-MM-DD'),
