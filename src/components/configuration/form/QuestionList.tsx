@@ -1,7 +1,7 @@
 'use client'
 
-import { Card, Select, Checkbox, Button, Label } from "flowbite-react";
-import { AnswerType, SurveyQuestion } from "@/types/survey";
+import { Card, Select, Checkbox, Button, Label, TextInput } from "flowbite-react";
+import { AnswerType, DeviceType, SurveyQuestion } from "@/types/survey";
 
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import SwitchingTextInput from "../../common/SwitchingTextInput";
@@ -13,6 +13,7 @@ const QuestionList: React.FC<{
 }> = ({ surveyIndex }) => {
     const { surveys } = useCampaignConfigEdit();
     const survey = surveys[surveyIndex];
+    const isWatch = survey?.device_type === DeviceType.Watch;
 
     const flatQuestions = useMemo(() => {
         const recursiveCallback = (questionList: SurveyQuestion[], basePath: number[], depth: number): { question: SurveyQuestion, questionPath: number[], depth: number, totalQuestions: number }[] => {
@@ -51,6 +52,7 @@ const QuestionList: React.FC<{
                         questionPath={questionPath}
                         totalQuestions={totalQuestions}
                         depth={depth}
+                        isWatch={isWatch}
                     />
                 </div>
             }
@@ -65,7 +67,8 @@ const QuestionCard: React.FC<{
     questionPath: number[];
     totalQuestions: number;
     depth: number;
-}> = ({ surveyIndex, question, questionPath, totalQuestions, depth }) => {
+    isWatch: boolean;
+}> = ({ surveyIndex, question, questionPath, totalQuestions, depth, isWatch }) => {
     const {
         removeSurveyQuestion,
         updateSurveyQuestion,
@@ -78,6 +81,7 @@ const QuestionCard: React.FC<{
         removeSurveyQuestionTrigger,
         updateSurveyQuestionTriggerExpression,
         addSurveyQuestion,
+        setNumberScaleRange,
     } = useCampaignConfigEdit();
 
     const answerTypeOptions: { value: AnswerType; label: string }[] = [
@@ -85,11 +89,18 @@ const QuestionCard: React.FC<{
         { value: 'number', label: 'Number' },
         { value: 'radio', label: 'Radio' },
         { value: 'checkbox', label: 'Checkbox' },
+        ...(isWatch ? [
+            { value: 'binary' as const, label: 'Binary' },
+            { value: 'numberscale' as const, label: 'Number Scale' },
+        ] : []),
     ];
 
     const needsOptions = question.answer_type === 'radio' || question.answer_type === 'checkbox';
     const options = question.survey_question_option || [];
     const pathKey = questionPath.join('-');
+    const scaleOptions = question.survey_question_option ?? [];
+    const scaleMin = scaleOptions.length ? Number(scaleOptions[0].display) : 0;
+    const scaleMax = scaleOptions.length ? Number(scaleOptions[scaleOptions.length - 1].display) : 10;
 
     return (
         <Card className="grow">
@@ -160,6 +171,34 @@ const QuestionCard: React.FC<{
                     Mandatory
                 </label>
             </div>
+
+            {question.answer_type === 'numberscale' && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                        Integer Range
+                    </label>
+                    <div className="flex flex-row items-center gap-2">
+                        <Label htmlFor={`scale-min-${pathKey}`} className="text-sm text-gray-700">Min</Label>
+                        <TextInput
+                            id={`scale-min-${pathKey}`}
+                            type="number"
+                            sizing="sm"
+                            value={scaleMin}
+                            onChange={(e) => setNumberScaleRange(surveyIndex, questionPath, Number(e.target.value), scaleMax)}
+                            className="w-24"
+                        />
+                        <Label htmlFor={`scale-max-${pathKey}`} className="text-sm text-gray-700 ml-2">Max</Label>
+                        <TextInput
+                            id={`scale-max-${pathKey}`}
+                            type="number"
+                            sizing="sm"
+                            value={scaleMax}
+                            onChange={(e) => setNumberScaleRange(surveyIndex, questionPath, scaleMin, Number(e.target.value))}
+                            className="w-24"
+                        />
+                    </div>
+                </div>
+            )}
 
             {needsOptions && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
@@ -233,38 +272,40 @@ const QuestionCard: React.FC<{
                 </div>
             )}
 
-            <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-gray-900">
-                        Triggers
-                    </label>
-                    <Button
-                        size="xs"
-                        color="light"
-                        onClick={() => addSurveyQuestionTrigger(surveyIndex, questionPath)}
-                    >
-                        <span className="icon-[material-symbols--add] w-4 h-4 mr-1"></span>
-                        Add Trigger
-                    </Button>
-                </div>
-                {(!question.survey_question_trigger || question.survey_question_trigger.length === 0) ? (
-                    <p className="text-sm text-gray-500 py-2">No triggers configured</p>
-                ) : (
-                    <div className="flex flex-col gap-4">
-                        {question.survey_question_trigger.map((trigger, triggerIndex) => (
-                            <TriggerCard
-                                key={triggerIndex}
-                                trigger={trigger}
-                                triggerIndex={triggerIndex}
-                                question={question}
-                                onRemove={() => removeSurveyQuestionTrigger(surveyIndex, questionPath, triggerIndex)}
-                                onUpdateExpression={(expression) => updateSurveyQuestionTriggerExpression(surveyIndex, questionPath, triggerIndex, expression)}
-                                onAddChildQuestion={() => addSurveyQuestion(surveyIndex, questionPath, triggerIndex)}
-                            />
-                        ))}
+            {!isWatch && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium text-gray-900">
+                            Triggers
+                        </label>
+                        <Button
+                            size="xs"
+                            color="light"
+                            onClick={() => addSurveyQuestionTrigger(surveyIndex, questionPath)}
+                        >
+                            <span className="icon-[material-symbols--add] w-4 h-4 mr-1"></span>
+                            Add Trigger
+                        </Button>
                     </div>
-                )}
-            </div>
+                    {(!question.survey_question_trigger || question.survey_question_trigger.length === 0) ? (
+                        <p className="text-sm text-gray-500 py-2">No triggers configured</p>
+                    ) : (
+                        <div className="flex flex-col gap-4">
+                            {question.survey_question_trigger.map((trigger, triggerIndex) => (
+                                <TriggerCard
+                                    key={triggerIndex}
+                                    trigger={trigger}
+                                    triggerIndex={triggerIndex}
+                                    question={question}
+                                    onRemove={() => removeSurveyQuestionTrigger(surveyIndex, questionPath, triggerIndex)}
+                                    onUpdateExpression={(expression) => updateSurveyQuestionTriggerExpression(surveyIndex, questionPath, triggerIndex, expression)}
+                                    onAddChildQuestion={() => addSurveyQuestion(surveyIndex, questionPath, triggerIndex)}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </Card>
     );
 };

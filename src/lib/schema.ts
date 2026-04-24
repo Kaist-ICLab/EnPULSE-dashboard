@@ -1131,6 +1131,8 @@ export type Database = {
                 Row: {
                     campaign_id: number
                     description: string
+                    device_type: number
+                    expire_after_ms: number | null
                     id: number
                     schedule_method: Json | null
                     title: string
@@ -1138,6 +1140,8 @@ export type Database = {
                 Insert: {
                     campaign_id: number
                     description: string
+                    device_type: number
+                    expire_after_ms?: number | null
                     id?: number
                     schedule_method?: Json | null
                     title: string
@@ -1145,6 +1149,8 @@ export type Database = {
                 Update: {
                     campaign_id?: number
                     description?: string
+                    device_type?: number
+                    expire_after_ms?: number | null
                     id?: number
                     schedule_method?: Json | null
                     title?: string
@@ -2005,7 +2011,13 @@ export type Database = {
         Enums: {
             field_role: "uid" | "timestamp" | "data" | "ignore"
             field_type: "categorical" | "numerical" | "datetime" | "text" | "bitmask"
-            survey_question_type: "checkbox" | "radio" | "text" | "number"
+            survey_question_type:
+            | "checkbox"
+            | "radio"
+            | "text"
+            | "number"
+            | "binary"
+            | "numberscale"
         }
         CompositeTypes: {
             [_ in never]: never
@@ -2138,7 +2150,14 @@ export const Constants = {
         Enums: {
             field_role: ["uid", "timestamp", "data", "ignore"],
             field_type: ["categorical", "numerical", "datetime", "text", "bitmask"],
-            survey_question_type: ["checkbox", "radio", "text", "number"],
+            survey_question_type: [
+                "checkbox",
+                "radio",
+                "text",
+                "number",
+                "binary",
+                "numberscale",
+            ],
         },
     },
 } as const

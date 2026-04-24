@@ -1,5 +1,5 @@
 import { CampaignTable, CampaignTableField, FetchedCampaign, FieldRole, FieldType, RemovedEntries } from "@/types/campaign";
-import { AnswerType, Expression, OperatorType, ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption, SurveyQuestionTrigger } from "@/types/survey";
+import { AnswerType, DeviceType, Expression, OperatorType, ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption, SurveyQuestionTrigger } from "@/types/survey";
 import { DATE_FORMAT } from "@/utils/date";
 import dayjs from "dayjs";
 import { WritableDraft } from "immer";
@@ -47,6 +47,7 @@ export interface CampaignConfigEditState extends ExportedCampaignConfig {
     removeSurvey: (index: number) => void;
     updateSurveyTitle: (index: number, title: string) => void;
     updateSurveyDescription: (index: number, description: string) => void;
+    updateSurveyDeviceType: (index: number, deviceType: DeviceType) => void;
     updateSurveyScheduleMethod: (index: number, scheduleMethod: ScheduleMethod) => void;
 
     /**
@@ -59,6 +60,7 @@ export interface CampaignConfigEditState extends ExportedCampaignConfig {
     addSurveyQuestion: (surveyIndex: number, questionPath: number[], triggerIndex?: number) => void;
     removeSurveyQuestion: (surveyIndex: number, questionPath: number[]) => void;
     updateSurveyQuestion: (surveyIndex: number, questionPath: number[], updates: Partial<SurveyQuestion>) => void;
+    setNumberScaleRange: (surveyIndex: number, questionPath: number[], min: number, max: number) => void;
     reorderSurveyQuestion: (surveyIndex: number, questionPath: number[], direction: 'up' | 'down') => void;
 
     addSurveyQuestionOption: (surveyIndex: number, questionPath: number[]) => void;
@@ -298,6 +300,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((
                 campaign_id: -1,
                 title: `Survey ${state.surveys.length + 1}`,
                 description: "",
+                device_type: DeviceType.Phone,
                 schedule_method: null,
                 survey_question: [],
             });
@@ -320,6 +323,53 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((
     updateSurveyDescription: (index: number, description: string) => {
         set((state) => {
             state.surveys[index].description = description;
+        });
+    },
+
+    updateSurveyDeviceType: (index: number, deviceType: DeviceType) => {
+        set((state) => {
+            const survey = state.surveys[index];
+            if (!survey) return;
+            if (survey.device_type === deviceType) return;
+
+            if (deviceType === DeviceType.Watch) {
+                // Watch does not support conditional triggers.
+                // Flatten all nested questions into the top-level list and drop triggers.
+                const flattened: SurveyQuestion[] = [];
+                const walk = (questions: SurveyQuestion[]) => {
+                    for (const q of questions) {
+                        const triggers = q.survey_question_trigger ?? [];
+                        for (const trigger of triggers) {
+                            state.removedEntries.trigger.push(trigger.id ?? -1);
+                        }
+                        const children = triggers.flatMap((t) => t.survey_question ?? []);
+                        q.survey_question_trigger = [];
+                        q.triggered_by = null;
+                        flattened.push(q);
+                        walk(children);
+                    }
+                };
+                walk(survey.survey_question);
+                survey.survey_question = flattened;
+            } else if (deviceType === DeviceType.Phone) {
+                // Phone does not support watch-only answer types. Convert to radio.
+                // numberscale already carries its options, so just retype it.
+                // binary is implicit Yes/No, so materialize those as options.
+                for (const q of survey.survey_question) {
+                    if (q.answer_type === 'binary') {
+                        (q.survey_question_option ?? []).forEach(o => state.removedEntries.option.push(o.id ?? -1));
+                        q.survey_question_option = [
+                            { question_id: q.id ?? -1, display: 'Yes', allow_free_response: false },
+                            { question_id: q.id ?? -1, display: 'No', allow_free_response: false },
+                        ];
+                        q.answer_type = 'radio';
+                    } else if (q.answer_type === 'numberscale') {
+                        q.answer_type = 'radio';
+                    }
+                }
+            }
+
+            survey.device_type = deviceType;
         });
     },
 
@@ -373,6 +423,20 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((
             // Apply updates directly to the draft question
             Object.assign(question, updates);
 
+            if (updates.answer_type && updates.answer_type !== prevAnswerType) {
+                if (updates.answer_type === 'binary') {
+                    (question.survey_question_option ?? []).forEach(o => state.removedEntries.option.push(o.id ?? -1));
+                    question.survey_question_option = [];
+                } else if (updates.answer_type === 'numberscale') {
+                    (question.survey_question_option ?? []).forEach(o => state.removedEntries.option.push(o.id ?? -1));
+                    question.survey_question_option = Array.from({ length: 11 }, (_, i) => ({
+                        question_id: question.id ?? -1,
+                        display: String(i),
+                        allow_free_response: false,
+                    }));
+                }
+            }
+
             // Ensure existing triggers remain valid after answer_type changes
             question.survey_question_trigger?.forEach((trigger) => {
                 trigger.expression = checkExpressionValidity(
@@ -381,6 +445,21 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((
                     trigger.expression as Expression
                 );
             });
+        });
+    },
+
+    setNumberScaleRange: (surveyIndex: number, questionPath: number[], min: number, max: number) => {
+        set((state) => {
+            const question = getQuestionFromPath(state.surveys[surveyIndex], questionPath);
+            if (!question) return;
+            const lo = Math.round(Math.min(min, max));
+            const hi = Math.round(Math.max(min, max));
+            (question.survey_question_option ?? []).forEach(o => state.removedEntries.option.push(o.id ?? -1));
+            question.survey_question_option = Array.from({ length: hi - lo + 1 }, (_, i) => ({
+                question_id: question.id ?? -1,
+                display: String(lo + i),
+                allow_free_response: false,
+            }));
         });
     },
 

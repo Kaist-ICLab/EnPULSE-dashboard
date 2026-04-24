@@ -1,12 +1,14 @@
 'use client'
 
-import { Card, Button } from "flowbite-react";
+import { DeviceType, Survey } from "@/types/survey";
+import { Button, Card, Label, Select } from "flowbite-react";
 import { useRouter } from "next/navigation";
-import { Survey } from "@/types/survey";
 
+import { useSurveyCardState } from "@/hooks/configuration/useSurveyCardState";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
-import ScheduleMethodConfig from "./ScheduleMethodConfig";
+import { Modal } from "../../common/Modal";
 import SwitchingTextInput from "../../common/SwitchingTextInput";
+import ScheduleMethodConfig from "./ScheduleMethodConfig";
 
 const SurveyCard: React.FC<{
     baseUrl: string;
@@ -15,6 +17,14 @@ const SurveyCard: React.FC<{
 }> = ({ baseUrl, survey, surveyIndex }) => {
     const router = useRouter();
     const { removeSurvey, updateSurveyTitle, updateSurveyDescription } = useCampaignConfigEdit();
+    const { pendingDeviceType, affectedQuestions, handleDeviceTypeChange, confirmDeviceTypeChange, cancelDeviceTypeChange } = useSurveyCardState(survey, surveyIndex);
+
+    const modalTitle = pendingDeviceType === DeviceType.Watch ? "Switch to Watch?" : "Switch to Phone?";
+    const modalMessage = pendingDeviceType === DeviceType.Watch
+        ? "Watch does not support conditional triggers. Switching will remove all triggers in this survey and flatten the remaining questions to the top level. This cannot be undone by switching back."
+        : "Phone does not support Binary or Number Scale questions. Switching will convert each of them to a Radio question. This cannot be undone by switching back.";
+    const modalConfirmLabel = pendingDeviceType === DeviceType.Watch ? "Remove Triggers and Switch" : "Convert Questions and Switch";
+
     return (
         <Card>
             <div className="flex items-start justify-between">
@@ -40,6 +50,20 @@ const SurveyCard: React.FC<{
                     sizing="sm"
                 />
             </div>
+            <div className="flex flex-row items-center gap-4">
+                <Label htmlFor={`device-type-${surveyIndex}`} className="block text-sm font-medium text-gray-900">
+                    Display On
+                </Label>
+                <Select
+                    id={`device-type-${surveyIndex}`}
+                    value={survey.device_type}
+                    onChange={(e) => handleDeviceTypeChange(Number(e.target.value) as DeviceType)}
+                    className="w-full max-w-xs"
+                >
+                    <option value={DeviceType.Phone}>Phone</option>
+                    <option value={DeviceType.Watch}>Watch (MicroEMA)</option>
+                </Select>
+            </div>
             <ScheduleMethodConfig
                 surveyIndex={surveyIndex}
                 scheduleMethod={survey.schedule_method}
@@ -54,6 +78,40 @@ const SurveyCard: React.FC<{
                     Edit Questions ({survey.survey_question?.length || 0})
                 </Button>
             </div>
+            {pendingDeviceType !== null && (
+                <Modal
+                    title={modalTitle}
+                    onClose={cancelDeviceTypeChange}
+                    className="w-full max-w-md"
+                >
+                    <div className="p-4 text-sm text-gray-700 flex flex-col gap-2">
+                        <p>{modalMessage}</p>
+                        <p className="font-medium text-gray-900">
+                            {pendingDeviceType === DeviceType.Watch
+                                ? "Questions with triggers that will be affected:"
+                                : "Questions that will be converted to Radio:"}
+                        </p>
+                        <ul className="list-disc pl-5 max-h-48 overflow-auto">
+                            {affectedQuestions.map((q, idx) => (
+                                <li key={idx} className="text-gray-700">
+                                    {q.question || <span className="italic text-gray-500">Untitled question</span>}
+                                    {pendingDeviceType === DeviceType.Phone && (
+                                        <span className="ml-1 text-xs text-gray-500">({q.answer_type})</span>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
+                        <Button color="gray" onClick={cancelDeviceTypeChange}>
+                            Cancel
+                        </Button>
+                        <Button color="red" onClick={confirmDeviceTypeChange}>
+                            {modalConfirmLabel}
+                        </Button>
+                    </div>
+                </Modal>
+            )}
         </Card>
     );
 };

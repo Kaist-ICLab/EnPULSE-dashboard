@@ -32,6 +32,11 @@ export type FetchedSurvey = Required<Survey> & {
 
 export type AnswerType = Database['public']['Enums']['survey_question_type']
 
+export enum DeviceType {
+    Phone = 0,
+    Watch = 1,
+}
+
 // Survey Schedule Methods
 export type ESM = {
     minInterval: number,
