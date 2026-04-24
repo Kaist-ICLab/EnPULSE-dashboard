@@ -149,7 +149,7 @@ const TimelineXAxis: React.FC<{
     }
 
     return (
-        <div className='ml-auto pr-1 flex flex-row justify-center items-center'>
+        <div className='flex flex-row justify-center items-center'>
             <div ref={containerRef} style={{ width: '100%', height: `${height}px` }}>
                 <svg
                     width={width}

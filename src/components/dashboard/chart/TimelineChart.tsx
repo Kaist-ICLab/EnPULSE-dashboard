@@ -16,6 +16,7 @@ interface TimelineChartProps {
     baseTime: number;
     data: TimelineDataPoint[];
     bucketSize: number;
+    isSelected: boolean;
     width: number;
     height: number;
 }
@@ -26,9 +27,11 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
     baseTime,
     data,
     bucketSize,
+    isSelected,
     width,
     height,
 }) => {
+    const chartHeight = chartType === 'categorical' ? height - 26 : height;
     const svgRef = useRef<SVGSVGElement>(null);
     const { getCategoryColor, uniqueCategories, handleLegendClick } = useChartLegendState(chartType, data);
     const {
@@ -44,7 +47,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
         tooltipOpen,
         hideTooltip,
         getColor,
-    } = usePlotState(data, chartType, bucketSize, baseTime, svgRef, width, height, fieldId);
+    } = usePlotState(data, chartType, bucketSize, baseTime, svgRef, width, chartHeight, fieldId);
 
 
     if (width === 0 || height === 0) {
@@ -53,21 +56,22 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
         );
     }
 
+
     return (
-        <div className="w-full flex flex-col justify-center items-center">
-            {chartType === 'categorical' && <CategoricalTimelineLegend
-                uniqueCategories={uniqueCategories}
-                getCategoryColor={getCategoryColor}
-                handleLegendClick={handleLegendClick}
-                fieldId={fieldId} />}
+        <div className="w-full flex flex-col justify-center items-center" onClick={e => e.stopPropagation()}>
             <div
-                className="w-full flex flex-col justify-center items-center relative border-1 border-gray-200"
+                className={`w-full flex flex-col justify-center items-center relative border-2 ${isSelected ? 'border-blue-200' : 'border-gray-200'}`}
                 style={{ height: `${height}px` }}
             >
+                {chartType === 'categorical' && <CategoricalTimelineLegend
+                    uniqueCategories={uniqueCategories}
+                    getCategoryColor={getCategoryColor}
+                    handleLegendClick={handleLegendClick}
+                    fieldId={fieldId} />}
                 <svg
                     ref={svgRef}
                     width={width}
-                    height={height}
+                    height={chartHeight}
                     onMouseMove={handleMouseMove}
                     onMouseLeave={hideTooltip}
                 >
@@ -75,7 +79,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
                         <TimelinePlot
                             chartType={chartType}
                             data={data}
-                            height={height}
+                            height={chartHeight}
                             timeScale={timeScale}
                             valueScale={valueScale}
                             barWidth={barWidth}
@@ -86,7 +90,7 @@ const TimelineChart: React.FC<TimelineChartProps> = ({
                             xScale={timeScale}
                             yScale={valueScale}
                             width={width}
-                            height={height}
+                            height={chartHeight}
                             handleSize={8}
                             brushDirection="horizontal"
                             onBrushEnd={handleBrushChange}

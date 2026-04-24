@@ -23,7 +23,7 @@ export const CategoricalTimelineLegend: React.FC<{
     if (uniqueCategories.length === 0) return null;
 
     return (
-        <div className="w-full flex justify-center text-xs bg-white/50">
+        <div className="w-full flex justify-center text-xs bg-gray-100/70">
             <LegendOrdinal
                 scale={ordinalScale}
                 labelFormat={(label) => label}

@@ -57,8 +57,8 @@ export function usePlotState(
             });
         }
 
-        const rangeTop = chartType === 'barcode' ? height : chartType === 'heatmap' ? height : (height * 0.95);
-        const rangeBottom = chartType === 'numerical' ? height * 0.05 : 0;
+        const rangeTop = (chartType === 'barcode' || chartType === 'heatmap') ? height : (height * 0.95);
+        const rangeBottom = (chartType === 'numerical') ? height * 0.05 : 0;
 
         return scaleLinear({
             domain: [minValue, maxValue],
