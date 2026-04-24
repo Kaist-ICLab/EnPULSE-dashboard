@@ -20,9 +20,19 @@ const ChartContainer: React.FC<{
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
 
-    // TODO: Currently it is bugged, should prevent update when it is dragged
     useEffect(() => {
-        setChartOrder(timelines.map((d) => d.id))
+        const incomingIds = timelines.map((d) => d.id);
+        setChartOrder((prev) => {
+            const incomingSet = new Set(incomingIds);
+            const prevSet = new Set(prev);
+            const preserved = prev.filter((id) => incomingSet.has(id));
+            const added = incomingIds.filter((id) => !prevSet.has(id));
+            const merged = [...preserved, ...added];
+            if (merged.length === prev.length && merged.every((id, i) => id === prev[i])) {
+                return prev;
+            }
+            return merged;
+        });
     }, [timelines])
 
     useEffect(() => {
