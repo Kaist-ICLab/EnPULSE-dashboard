@@ -1,17 +1,16 @@
 "use client"
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-import ActiveSensingForm from "@/components/configuration/form/ActiveSensingForm";
+import TriggerForm from "@/components/configuration/form/TriggerForm";
 import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
 import { useValidConfigState } from "@/hooks/configuration/useValidConfigState";
 import { useTemporalStore } from "@/hooks/useTemporalStore";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
-import { useEffect } from "react";
 
 const Page: React.FC = () => {
-    const pathname = usePathname();
     const router = useRouter();
-    const { isActiveSensingValid } = useValidConfigState();
+    const { isTriggerValid } = useValidConfigState();
     const { clear } = useTemporalStore(useCampaignConfigEdit, (state) => state);
 
     useEffect(() => {
@@ -20,10 +19,10 @@ const Page: React.FC = () => {
 
     return (
         <>
-            <ActiveSensingForm baseUrl={pathname} />
+            <TriggerForm />
             <PrevNextNavigation
-                onNextClick={() => router.push("/create/triggers")}
-                disabled={!isActiveSensingValid}
+                onNextClick={() => router.push("/create/confirm")}
+                disabled={!isTriggerValid}
             />
         </>
     );

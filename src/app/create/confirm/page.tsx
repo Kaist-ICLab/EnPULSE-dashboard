@@ -8,7 +8,7 @@ import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
 
 const ConfirmPage: React.FC = () => {
-    const { campaignName, tables, surveys } = useCampaignConfigEdit();
+    const { campaignName, tables, surveys, campaign_trigger } = useCampaignConfigEdit();
     const { updateCampaignConfig } = useUpdateCampaign((id) => { router.push(`/campaigns/${id}`); });
     const router = useRouter();
 
@@ -53,6 +53,27 @@ const ConfirmPage: React.FC = () => {
                                         <span className="text-gray-900">{survey.title || `Survey ${index + 1}`}</span>
                                         <span className="text-gray-600 text-sm">
                                             {survey.survey_question?.length || 0} questions
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+
+                    {/* Triggers */}
+                    <div className="mb-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Triggers</h3>
+                        {campaign_trigger.length === 0 ? (
+                            <p className="text-gray-500 text-sm">No triggers configured</p>
+                        ) : (
+                            <ul className="space-y-2">
+                                {campaign_trigger.map((trigger, index) => (
+                                    <li key={index} className="flex items-center justify-between py-2 border-b border-gray-200">
+                                        <span className="text-gray-900">{trigger.name || `Trigger ${index + 1}`}</span>
+                                        <span className="text-gray-600 text-sm">
+                                            {trigger.actions.length === 0
+                                                ? "no actions"
+                                                : trigger.actions.map(a => a.kind).join(", ")}
                                         </span>
                                     </li>
                                 ))}

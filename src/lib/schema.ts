@@ -468,6 +468,38 @@ export type Database = {
                     },
                 ]
             }
+            campaign_trigger: {
+                Row: {
+                    action: Json
+                    campaign_id: number
+                    condition: Json
+                    id: number
+                    name: string
+                }
+                Insert: {
+                    action: Json
+                    campaign_id: number
+                    condition: Json
+                    id?: number
+                    name?: string
+                }
+                Update: {
+                    action?: Json
+                    campaign_id?: number
+                    condition?: Json
+                    id?: number
+                    name?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "campaign_trigger_campaign_id_fkey"
+                        columns: ["campaign_id"]
+                        isOneToOne: false
+                        referencedRelation: "campaigns"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
             campaigns: {
                 Row: {
                     created_at: string
@@ -1132,7 +1164,7 @@ export type Database = {
                     campaign_id: number
                     description: string
                     device_type: number
-                    expire_after_ms: number | null
+                    expire_after_ms: number
                     id: number
                     schedule_method: Json | null
                     title: string
@@ -1141,7 +1173,7 @@ export type Database = {
                     campaign_id: number
                     description: string
                     device_type: number
-                    expire_after_ms?: number | null
+                    expire_after_ms?: number
                     id?: number
                     schedule_method?: Json | null
                     title: string
@@ -1150,7 +1182,7 @@ export type Database = {
                     campaign_id?: number
                     description?: string
                     device_type?: number
-                    expire_after_ms?: number | null
+                    expire_after_ms?: number
                     id?: number
                     schedule_method?: Json | null
                     title?: string
@@ -1168,6 +1200,7 @@ export type Database = {
             survey_question: {
                 Row: {
                     answer_type: Database["public"]["Enums"]["survey_question_type"]
+                    config: Json | null
                     id: number
                     is_mandatory: boolean
                     question: string
@@ -1176,6 +1209,7 @@ export type Database = {
                 }
                 Insert: {
                     answer_type: Database["public"]["Enums"]["survey_question_type"]
+                    config?: Json | null
                     id?: number
                     is_mandatory: boolean
                     question: string
@@ -1184,6 +1218,7 @@ export type Database = {
                 }
                 Update: {
                     answer_type?: Database["public"]["Enums"]["survey_question_type"]
+                    config?: Json | null
                     id?: number
                     is_mandatory?: boolean
                     question?: string

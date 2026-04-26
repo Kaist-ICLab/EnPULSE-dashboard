@@ -1,4 +1,5 @@
 import { FetchedSurvey, Survey } from "./survey";
+import { CampaignTrigger, FetchedCampaignTrigger } from "./trigger";
 import { Constants, Database } from "@/lib/schema";
 import { DeepRequired } from "@/utils/type";
 
@@ -11,10 +12,12 @@ export type Campaign = Database['public']['Tables']['campaigns']['Insert'] & {
     profiles: CampaignParticipant[];
     campaign_table: CampaignTable[];
     survey: Survey[];
+    campaign_trigger: CampaignTrigger[];
 }
 
-export type FetchedCampaign = DeepRequired<Omit<Campaign, 'survey'>> & {
+export type FetchedCampaign = DeepRequired<Omit<Campaign, 'survey' | 'campaign_trigger'>> & {
     survey: FetchedSurvey[];
+    campaign_trigger: FetchedCampaignTrigger[];
 }
 
 export type CampaignTable = Database['public']['Tables']['campaign_table']['Insert'] & {
@@ -37,4 +40,5 @@ export type RemovedEntries = {
     question: number[];
     option: number[];
     trigger: number[];
+    campaign_trigger: number[];
 }

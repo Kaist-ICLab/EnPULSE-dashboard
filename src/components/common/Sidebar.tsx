@@ -20,6 +20,7 @@ const DashboardSidebar: React.FC = () => {
         { name: "General", href: `${baseUrl}/settings/general` },
         { name: "Passive Sensing", href: `${baseUrl}/settings/passive-sensing` },
         { name: "Active Sensing", href: `${baseUrl}/settings/active-sensing` },
+        { name: "Triggers", href: `${baseUrl}/settings/triggers` },
     ], [baseUrl]);
 
     const [collapsed, setCollapsed] = useState(true);

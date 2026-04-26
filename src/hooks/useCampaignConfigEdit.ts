@@ -1,5 +1,6 @@
 import { CampaignTable, CampaignTableField, FetchedCampaign, FieldRole, FieldType, RemovedEntries } from "@/types/campaign";
 import { AnswerType, DeviceType, Expression, OperatorType, ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption, SurveyQuestionTrigger } from "@/types/survey";
+import { CampaignTrigger, TriggerAction, TriggerActionKind, TriggerCondition, defaultAction, defaultDetection } from "@/types/trigger";
 import { DATE_FORMAT } from "@/utils/date";
 import dayjs from "dayjs";
 import { WritableDraft } from "immer";
@@ -11,6 +12,7 @@ import { immer } from "zustand/middleware/immer";
 export interface ExportedCampaignConfig {
     tables: CampaignTable[];
     surveys: Survey[];
+    campaign_trigger: CampaignTrigger[];
 }
 
 export interface CampaignConfigEditState extends ExportedCampaignConfig {
@@ -72,6 +74,16 @@ export interface CampaignConfigEditState extends ExportedCampaignConfig {
     removeSurveyQuestionTrigger: (surveyIndex: number, questionPath: number[], triggerIndex: number) => void;
     updateSurveyQuestionTrigger: (surveyIndex: number, questionPath: number[], triggerIndex: number, updates: Partial<SurveyQuestionTrigger>) => void;
     updateSurveyQuestionTriggerExpression: (surveyIndex: number, questionPath: number[], triggerIndex: number, expression: Expression) => void;
+
+    // Sensor-driven campaign triggers (separate from in-survey conditional branching above).
+    addTrigger: () => void;
+    removeTrigger: (index: number) => void;
+    updateTriggerName: (index: number, name: string) => void;
+    setTriggerCondition: (index: number, condition: TriggerCondition) => void;
+    addTriggerAction: (triggerIndex: number, kind: TriggerActionKind) => void;
+    removeTriggerAction: (triggerIndex: number, actionIndex: number) => void;
+    updateTriggerAction: (triggerIndex: number, actionIndex: number, action: TriggerAction) => void;
+
     reset: () => void;
     /**
      * Set store state from a loaded campaign.
@@ -187,6 +199,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((
     campaignEndTime: dayjs().add(1, 'day').format(DATE_FORMAT),
     tables: [],
     surveys: [],
+    campaign_trigger: [],
     removedEntries: {
         table: [],
         field: [],
@@ -195,6 +208,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((
         question: [],
         option: [],
         trigger: [],
+        campaign_trigger: [],
     },
 
     setCampaignName: (name: string) => {
@@ -311,6 +325,15 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((
         set((state) => {
             state.removedEntries.survey.push(state.surveys[index].id ?? -1);
             state.surveys.splice(index, 1);
+
+            // Keep trigger surveyIndex references consistent with the new array.
+            state.campaign_trigger.forEach((t) => {
+                t.actions.forEach((a) => {
+                    if (a.kind === 'broadcast') return;
+                    if (a.surveyIndex === index) a.surveyIndex = -1;
+                    else if (a.surveyIndex > index) a.surveyIndex -= 1;
+                });
+            });
         });
     },
 
@@ -575,6 +598,61 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((
         });
     },
 
+    addTrigger: () => {
+        set((state) => {
+            state.campaign_trigger.push({
+                campaign_id: state.campaignId,
+                name: `Trigger ${state.campaign_trigger.length + 1}`,
+                condition: defaultDetection(),
+                actions: [],
+            });
+        });
+    },
+
+    removeTrigger: (index: number) => {
+        set((state) => {
+            const removed = state.campaign_trigger.splice(index, 1)[0];
+            if (removed?.id !== undefined && removed.id !== -1) {
+                state.removedEntries.campaign_trigger.push(removed.id);
+            }
+        });
+    },
+
+    updateTriggerName: (index: number, name: string) => {
+        set((state) => {
+            if (!state.campaign_trigger[index]) return;
+            state.campaign_trigger[index].name = name;
+        });
+    },
+
+    setTriggerCondition: (index: number, condition: TriggerCondition) => {
+        set((state) => {
+            if (!state.campaign_trigger[index]) return;
+            state.campaign_trigger[index].condition = condition;
+        });
+    },
+
+    addTriggerAction: (triggerIndex: number, kind: TriggerActionKind) => {
+        set((state) => {
+            if (!state.campaign_trigger[triggerIndex]) return;
+            state.campaign_trigger[triggerIndex].actions.push(defaultAction(kind));
+        });
+    },
+
+    removeTriggerAction: (triggerIndex: number, actionIndex: number) => {
+        set((state) => {
+            if (!state.campaign_trigger[triggerIndex]) return;
+            state.campaign_trigger[triggerIndex].actions.splice(actionIndex, 1);
+        });
+    },
+
+    updateTriggerAction: (triggerIndex: number, actionIndex: number, action: TriggerAction) => {
+        set((state) => {
+            if (!state.campaign_trigger[triggerIndex]?.actions[actionIndex]) return;
+            state.campaign_trigger[triggerIndex].actions[actionIndex] = action;
+        });
+    },
+
     updateSurveyQuestionTriggerExpression: (surveyIndex: number, questionPath: number[], triggerIndex: number, expression: Expression) => {
         set((state) => {
             const trigger = getTriggerFromPath(state.surveys[surveyIndex], questionPath, triggerIndex);
@@ -599,9 +677,11 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((
                 question: [],
                 option: [],
                 trigger: [],
+                campaign_trigger: [],
             }
             state.tables = [];
             state.surveys = [];
+            state.campaign_trigger = [];
         });
     },
 
@@ -615,6 +695,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((
             state.campaignPassword = "";
             state.tables = campaign.campaign_table;
             state.surveys = campaign.survey;
+            state.campaign_trigger = campaign.campaign_trigger;
             state.removedEntries = {
                 table: [],
                 field: [],
@@ -623,6 +704,7 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((
                 question: [],
                 option: [],
                 trigger: [],
+                campaign_trigger: [],
             };
         });
     },
@@ -657,8 +739,13 @@ const useCampaignConfigEdit = create<CampaignConfigEditState>()(temporal(immer((
                 });
             });
 
+            state.campaign_trigger.forEach((t) => {
+                state.removedEntries.campaign_trigger.push(t.id ?? -1);
+            });
+
             state.tables = config.tables;
             state.surveys = config.surveys;
+            state.campaign_trigger = config.campaign_trigger ?? [];
         });
     },
 })),

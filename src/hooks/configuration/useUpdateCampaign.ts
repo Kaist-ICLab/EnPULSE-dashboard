@@ -5,7 +5,7 @@ import { Campaign } from "@/types/campaign";
 import bcryptjs from "bcryptjs";
 
 export function useUpdateCampaign(onSuccess: (id: number) => void) {
-    const { campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, campaignPassword, tables, surveys, removedEntries } = useCampaignConfigEdit();
+    const { campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, campaignPassword, tables, surveys, campaign_trigger, removedEntries } = useCampaignConfigEdit();
 
     const updateCampaignConfig = useCallback(() => {
         const callback = async () => {
@@ -19,6 +19,7 @@ export function useUpdateCampaign(onSuccess: (id: number) => void) {
                     profiles: [],
                     campaign_table: tables,
                     survey: surveys,
+                    campaign_trigger,
                 }
 
                 const hash = campaignPassword.length > 0 ? await bcryptjs.hash(campaignPassword, 10) : null;
@@ -32,7 +33,7 @@ export function useUpdateCampaign(onSuccess: (id: number) => void) {
         }
 
         callback();
-    }, [campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, campaignPassword, tables, surveys, removedEntries, onSuccess]);
+    }, [campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, campaignPassword, tables, surveys, campaign_trigger, removedEntries, onSuccess]);
 
     return { updateCampaignConfig };
 }
