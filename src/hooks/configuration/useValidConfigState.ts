@@ -1,9 +1,9 @@
-import useCampaignConfigEdit from "../useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { useMemo } from "react";
 import { isTriggerComplete } from "@/types/trigger";
 
 export function useValidConfigState() {
-    const { campaignName, campaignPassword, campaign_trigger } = useCampaignConfigEdit();
+    const { campaignName, campaignPassword, campaign_trigger } = useCampaignConfigEdit((state) => state);
 
     const isInfoValid = useMemo(() => {
         return campaignName.length > 0 && campaignPassword.length > 0;

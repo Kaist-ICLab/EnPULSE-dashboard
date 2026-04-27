@@ -2,10 +2,10 @@ import { getCampaignDailySummary } from "@/services/chartService";
 import { useEffect, useMemo, useState } from "react";
 import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import { UserDailyStatData } from "@/types/dashboard";
-import useSectionState from "../useSectionState";
+import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 
 export const useUserDailyStat = (initialRowsPerPage: number) => {
-    const { date, lastManualSyncTime } = useSectionState()
+    const { date, lastManualSyncTime } = useSectionParamStore((state) => state);
     const { campaignParticipants, campaignTables } = useCampaignStore((state) => state);
 
     const [data, setData] = useState<UserDailyStatData[]>([])

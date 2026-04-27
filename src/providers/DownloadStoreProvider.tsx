@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect } from "react";
-import useDownloadState from "@/hooks/useDownloadState";
+import useDownloadStore from "@/stores/downloadStore";
 
 const DownloadInitProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { reset } = useDownloadState();
+    const { reset } = useDownloadStore();
     useEffect(() => {
         reset();
     }, [reset]);

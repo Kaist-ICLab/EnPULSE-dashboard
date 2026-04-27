@@ -1,7 +1,7 @@
 import { DnDItem, DragHandle } from "@/components/common/DnDList";
 import IconButton from "@/components/common/IconButton";
 import TimelineChart from "@/components/dashboard/chart/TimelineChart";
-import useSectionState from "@/hooks/useSectionState";
+import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 import { TimelineData } from "@/types/chart";
 import { ComparisonType } from "@/types/dashboard";
 import { ParentSize } from "@visx/responsive";
@@ -14,7 +14,7 @@ export const ChartItem: React.FC<{
     bucketSize: number;
     sectionType: ComparisonType;
 }> = ({ timeline, pinned, isSelected, setSelectedChart, bucketSize, sectionType }) => {
-    const { updatePinQuery, updateComparisonParams, comparisonParams } = useSectionState()
+    const { updatePinQuery, updateComparisonParams, comparisonParams } = useSectionParamStore((state) => state);
 
     if (!timeline) return
 

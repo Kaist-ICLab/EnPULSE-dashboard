@@ -2,12 +2,14 @@ import { ResponseStatus } from "@/types/response";
 import { DownloadFileRow } from "@/types/download";
 import { create } from "zustand";
 
-interface DownloadState {
+export type DownloadState = {
     downloadListStatus: ResponseStatus
     downloadList: DownloadFileRow[],
     selectedFieldIds: number[],
     selectedParticipantIds: string[],
+}
 
+export type DownloadAction = {
     reset: () => void;
     setSelectedFieldIds: (fieldId: number[]) => void;
     setSelectedParticipantIds: (participantId: string[]) => void;
@@ -20,7 +22,9 @@ interface DownloadState {
     setAllDownloadListItemsStatus: (status: ResponseStatus) => void;
 }
 
-export default create<DownloadState>((set) => ({
+export type DownloadStore = DownloadState & DownloadAction;
+
+const useDownloadStore = create<DownloadStore>((set) => ({
     downloadListStatus: null,
     downloadList: [],
     selectedFieldIds: [],
@@ -52,3 +56,5 @@ export default create<DownloadState>((set) => ({
         return { downloadList: newDownloadList };
     }),
 }));
+
+export default useDownloadStore;

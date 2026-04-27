@@ -3,7 +3,7 @@
 import { Card, Select, Checkbox, Button, Label, TextInput } from "flowbite-react";
 import { AnswerType, DeviceType, SurveyQuestion } from "@/types/survey";
 
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import SwitchingTextInput from "../../common/SwitchingTextInput";
 import TriggerCard from "./TriggerCard";
 import { useMemo } from "react";
@@ -11,7 +11,7 @@ import { useMemo } from "react";
 const QuestionList: React.FC<{
     surveyIndex: number;
 }> = ({ surveyIndex }) => {
-    const { surveys } = useCampaignConfigEdit();
+    const { surveys } = useCampaignConfigEdit((state) => state);
     const survey = surveys[surveyIndex];
     const isWatch = survey?.device_type === DeviceType.Watch;
 
@@ -82,7 +82,7 @@ const QuestionCard: React.FC<{
         updateSurveyQuestionTriggerExpression,
         addSurveyQuestion,
         setNumberScaleRange,
-    } = useCampaignConfigEdit();
+    } = useCampaignConfigEdit((state) => state);
 
     const answerTypeOptions: { value: AnswerType; label: string }[] = [
         { value: 'text', label: 'Text' },

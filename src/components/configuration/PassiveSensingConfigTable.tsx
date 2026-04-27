@@ -4,13 +4,13 @@ import { FieldRole, FieldRoleOption, FieldType, FieldTypeOption } from "@/types/
 import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import FieldMappingEditor from "./FieldMappingEditor";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import IconButton from "../common/IconButton";
 
 const PassiveSensingConfigTable: React.FC<{
     tableIdx: number;
 }> = ({ tableIdx }) => {
-    const { tables, addField, removeField, setField, setFieldMapping, setDailyCountMax } = useCampaignConfigEdit();
+    const { tables, addField, removeField, setField, setFieldMapping, setDailyCountMax } = useCampaignConfigEdit((state) => state);
     const currentTable = useMemo(() => tables[tableIdx], [tables, tableIdx]);
 
     const [fieldName, setFieldName] = useState('')

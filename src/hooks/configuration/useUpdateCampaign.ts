@@ -1,11 +1,11 @@
-import useCampaignConfigEdit from "../useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { deleteEntries, upsertCampaign } from "@/services/campaignService";
 import { useCallback } from "react";
 import { Campaign } from "@/types/campaign";
 import bcryptjs from "bcryptjs";
 
 export function useUpdateCampaign(onSuccess: (id: number) => void) {
-    const { campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, campaignPassword, tables, surveys, campaign_trigger, removedEntries } = useCampaignConfigEdit();
+    const { campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, campaignPassword, tables, surveys, campaign_trigger, removedEntries } = useCampaignConfigEdit((state) => state);
 
     const updateCampaignConfig = useCallback(() => {
         const callback = async () => {

@@ -5,7 +5,7 @@ import { Button, Card, Label, Select } from "flowbite-react";
 import { useRouter } from "next/navigation";
 
 import { useSurveyCardState } from "@/hooks/configuration/useSurveyCardState";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { Modal } from "../../common/Modal";
 import SwitchingTextInput from "../../common/SwitchingTextInput";
 import ScheduleMethodConfig from "./ScheduleMethodConfig";
@@ -16,7 +16,7 @@ const SurveyCard: React.FC<{
     surveyIndex: number;
 }> = ({ baseUrl, survey, surveyIndex }) => {
     const router = useRouter();
-    const { removeSurvey, updateSurveyTitle, updateSurveyDescription } = useCampaignConfigEdit();
+    const { removeSurvey, updateSurveyTitle, updateSurveyDescription } = useCampaignConfigEdit((state) => state);
     const { pendingDeviceType, affectedQuestions, handleDeviceTypeChange, confirmDeviceTypeChange, cancelDeviceTypeChange } = useSurveyCardState(survey, surveyIndex);
 
     const modalTitle = pendingDeviceType === DeviceType.Watch ? "Switch to Watch?" : "Switch to Phone?";

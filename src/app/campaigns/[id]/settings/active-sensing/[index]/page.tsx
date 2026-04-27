@@ -2,14 +2,14 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "flowbite-react";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import QuestionList from "@/components/configuration/form/QuestionList";
 
 export default function SurveyQuestionsPage() {
     const params = useParams();
     const router = useRouter();
     const surveyIndex = parseInt(params.index as string);
-    const { surveys } = useCampaignConfigEdit();
+    const { surveys } = useCampaignConfigEdit((state) => state);
 
     const survey = surveys[surveyIndex];
 

@@ -1,4 +1,4 @@
-import Header from "@/components/common/CampaignHeader";
+
 import Sidebar from "@/components/common/Sidebar";
 import TimeHeadline from "@/components/common/TimeHeadline";
 import CampaignStoreProvider from "@/providers/CampaignStoreProvider";
@@ -15,8 +15,8 @@ export default async function CampaignLayout({
 }>) {
     const { id } = await params;
     const campaignId = parseInt(id);
-
     let campaign: FetchedCampaign | null = null;
+
     try {
         campaign = await getCampaignInfo(campaignId);
     } catch {
@@ -29,12 +29,7 @@ export default async function CampaignLayout({
                 <Sidebar />
                 <div className="flex flex-col w-full items-stretch grow overflow-auto">
                     <TimeHeadline />
-                    <Header />
-                    <div className="flex flex-row grow w-full overflow-hidden">
-                        <main className="flex flex-col w-full items-stretch gap-4 grow overflow-auto p-4">
-                            {children}
-                        </main>
-                    </div>
+                    {children}
                 </div>
             </div>
         </CampaignStoreProvider >

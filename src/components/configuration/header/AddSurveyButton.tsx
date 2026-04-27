@@ -1,9 +1,9 @@
 'use client'
 import { Button } from "flowbite-react";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 
 export default function AddSurveyButton() {
-    const { addSurvey } = useCampaignConfigEdit();
+    const { addSurvey } = useCampaignConfigEdit((state) => state);
 
     return (
         <div className="flex items-center">

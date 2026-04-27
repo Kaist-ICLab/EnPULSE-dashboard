@@ -1,6 +1,6 @@
 'use client'
 
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { DeviceType } from "@/types/survey";
 import {
     TRIGGER_ACTION_KIND_LABEL,
@@ -35,7 +35,7 @@ const SurveyActionBody: React.FC<{
     action: Extract<TriggerAction, { kind: "ema" | "watch_ema" }>;
     onChange: (next: TriggerAction) => void;
 }> = ({ action, onChange }) => {
-    const { surveys } = useCampaignConfigEdit();
+    const { surveys } = useCampaignConfigEdit((state) => state);
     const expectedDeviceType = action.kind === "watch_ema" ? DeviceType.Watch : DeviceType.Phone;
     const eligibleSurveys = surveys
         .map((s, idx) => ({ s, idx }))

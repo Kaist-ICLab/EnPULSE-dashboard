@@ -1,9 +1,9 @@
 import { DeviceType, Survey, SurveyQuestion } from "@/types/survey";
 import { useState } from "react";
-import useCampaignConfigEdit from "../useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 
 export function useSurveyCardState(survey: Survey, surveyIndex: number) {
-    const { updateSurveyDeviceType } = useCampaignConfigEdit();
+    const { updateSurveyDeviceType } = useCampaignConfigEdit((state) => state);
     const [pendingDeviceType, setPendingDeviceType] = useState<DeviceType | null>(null);
     const currentDeviceType = (survey.device_type ?? DeviceType.Phone) as DeviceType;
 

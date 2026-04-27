@@ -6,12 +6,13 @@ import TriggerForm from "@/components/configuration/trigger/TriggerForm";
 import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
 import { useValidConfigState } from "@/hooks/configuration/useValidConfigState";
 import { useTemporalStore } from "@/hooks/useTemporalStore";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditStoreProvider";
 
 const Page: React.FC = () => {
     const router = useRouter();
     const { isTriggerValid } = useValidConfigState();
-    const { clear } = useTemporalStore(useCampaignConfigEdit, (state) => state);
+    const configEditStore = useCampaignConfigEditStoreApi();
+    const { clear } = useTemporalStore(configEditStore, (state) => state);
 
     useEffect(() => {
         clear();

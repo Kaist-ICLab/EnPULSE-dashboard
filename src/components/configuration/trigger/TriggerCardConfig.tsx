@@ -2,7 +2,7 @@
 
 import IconButton from "@/components/common/IconButton";
 import SwitchingTextInput from "@/components/common/SwitchingTextInput";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { defaultDetection, TRIGGER_ACTION_KIND_LABEL, TriggerActionKind } from "@/types/trigger";
 import { Card } from "flowbite-react";
 import ConditionTreeEditor from "./ConditionTreeEditor";
@@ -11,7 +11,7 @@ import { Dropdown, DropdownItem } from "flowbite-react";
 import { DeviceType } from "@/types/survey";
 
 const TriggerCardConfig: React.FC<{ index: number }> = ({ index }) => {
-    const { campaign_trigger, surveys, removeTrigger, updateTriggerName, setTriggerCondition, addTriggerAction } = useCampaignConfigEdit();
+    const { campaign_trigger, surveys, removeTrigger, updateTriggerName, setTriggerCondition, addTriggerAction } = useCampaignConfigEdit((state) => state);
     const trigger = campaign_trigger[index];
     if (!trigger) return null;
 

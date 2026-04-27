@@ -1,5 +1,5 @@
 "use client";
-import DownloadInitProvider from "@/components/DownloadInitProvider";
+import DownloadStoreProvider from "@/providers/DownloadStoreProvider";
 
 export default function DownloadDataLayout({
     children,
@@ -7,8 +7,8 @@ export default function DownloadDataLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <DownloadInitProvider>
+        <DownloadStoreProvider>
             {children}
-        </DownloadInitProvider>
+        </DownloadStoreProvider>
     );
 }

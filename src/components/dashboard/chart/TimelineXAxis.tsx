@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useState, useEffect, useCallback } from "react";
-import useSectionState from "@/hooks/useSectionState";
+import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 import { scaleTime } from '@visx/scale';
 import { AxisBottom } from '@visx/axis';
 import { Group } from '@visx/group';
@@ -10,7 +10,7 @@ import dayjs from "dayjs";
 const TimelineXAxis: React.FC<{
     width: number;
 }> = ({ width }) => {
-    const { timeRange, draggedTime, updateDraggedTime, updateTimeRangeAfterDrag } = useSectionState();
+    const { timeRange, draggedTime, updateDraggedTime, updateTimeRangeAfterDrag } = useSectionParamStore((state) => state);
     const currentTimeRange = useMemo(() => {
         return { start: timeRange.start + draggedTime, end: timeRange.end + draggedTime };
     }, [timeRange, draggedTime]);

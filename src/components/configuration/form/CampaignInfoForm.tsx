@@ -1,6 +1,6 @@
 'use client'
 import { Button, Card, TextInput, Tooltip } from "flowbite-react";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import useCampaignNameState from "@/hooks/configuration/useCampaignNameState";
 import PasswordForm from "./PasswordForm";
 
@@ -22,7 +22,7 @@ const CampaignInfoForm = () => {
         setCampaignDescription,
         campaignPassword,
         setCampaignPassword
-    } = useCampaignConfigEdit();
+    } = useCampaignConfigEdit((state) => state);
     const { campaignName, setCampaignName, status, isChanged, checkIsValidName } = useCampaignNameState();
 
     return (

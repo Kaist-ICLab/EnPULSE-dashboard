@@ -1,10 +1,10 @@
 'use client'
 
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import ActionBlock from "./ActionBlock";
 
 const TriggerActionList: React.FC<{ triggerIndex: number }> = ({ triggerIndex }) => {
-    const { campaign_trigger, removeTriggerAction, updateTriggerAction } = useCampaignConfigEdit();
+    const { campaign_trigger, removeTriggerAction, updateTriggerAction } = useCampaignConfigEdit((state) => state);
     const trigger = campaign_trigger[triggerIndex];
     if (!trigger) return null;
 

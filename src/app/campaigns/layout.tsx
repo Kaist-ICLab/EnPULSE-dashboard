@@ -12,6 +12,5 @@ export default async function CampaignLayout({
         <CampaignListStoreProvider campaignList={campaignList}>
             {children}
         </CampaignListStoreProvider >
-
     );
 }

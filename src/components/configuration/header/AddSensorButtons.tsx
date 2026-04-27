@@ -3,10 +3,10 @@ import { useState } from "react";
 import { Button, Card, Dropdown, DropdownItem, TextInput } from "flowbite-react";
 
 import { useTemplateTable } from "@/hooks/configuration/useTemplateTable";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 
 export default function AddSensorButtons() {
-    const { tables, addTable } = useCampaignConfigEdit();
+    const { tables, addTable } = useCampaignConfigEdit((state) => state);
     const { availableTemplateTables } = useTemplateTable(tables);
     const [isSensorInputVisible, setIsSensorInputVisible] = useState(false);
     const [sensorName, setSensorName] = useState("");

@@ -1,4 +1,3 @@
-"use client";
 import { ComparisonChart } from "@/components/dashboard/chart/ComparisonChart";
 import DailyOverviewTable from "@/components/dashboard/stat/DailyStatTable";
 // import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";

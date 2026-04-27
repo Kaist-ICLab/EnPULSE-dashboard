@@ -5,14 +5,15 @@ import ActiveSensingForm from "@/components/configuration/form/ActiveSensingForm
 import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
 import { useValidConfigState } from "@/hooks/configuration/useValidConfigState";
 import { useTemporalStore } from "@/hooks/useTemporalStore";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditStoreProvider";
 import { useEffect } from "react";
 
 const Page: React.FC = () => {
     const pathname = usePathname();
     const router = useRouter();
     const { isActiveSensingValid } = useValidConfigState();
-    const { clear } = useTemporalStore(useCampaignConfigEdit, (state) => state);
+    const configEditStore = useCampaignConfigEditStoreApi();
+    const { clear } = useTemporalStore(configEditStore, (state) => state);
 
     useEffect(() => {
         clear();

@@ -1,17 +1,17 @@
 "use client"
 import ChartContainer from "@/components/dashboard/chart/ChartContainer";
 import useTimeline from "@/hooks/chart/useTimeline";
+import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 import { ComparisonType } from "@/types/dashboard";
 import { Card, Spinner } from "flowbite-react";
 import { useMemo, useRef } from "react";
-import SensorDropdown from "../SensorDropdown";
-import useSectionState from "@/hooks/useSectionState";
-import SectionTypeSelect from "../SectionTypeSelect";
 import ParticipantDropdown from "../ParticipantDropdown";
+import SectionTypeSelect from "../SectionTypeSelect";
+import SensorDropdown from "../SensorDropdown";
 
 const ComparisonChart: React.FC = () => {
     const chartRef = useRef<HTMLDivElement>(null);
-    const { comparisonParams, updateComparisonParams, selectedSection, updateSelectedSection } = useSectionState()
+    const { comparisonParams, updateComparisonParams, selectedSection, updateSelectedSection } = useSectionParamStore((state) => state);
     const currentComparisonParams = useMemo(() => comparisonParams[selectedSection], [comparisonParams, selectedSection])
     const { timeline, bucketSize, loading, error } = useTimeline(selectedSection, (chartRef.current?.clientWidth || 0) - 88);
 
@@ -76,4 +76,4 @@ const ComprisonChartEmpty: React.FC<{
     </div>)
 }
 
-export { ComparisonChart }
+export { ComparisonChart };

@@ -3,7 +3,7 @@ import CampaignInfoForm from "@/components/configuration/form/CampaignInfoForm";
 import CampaignPeriodForm from "@/components/configuration/form/CampaignPeriodForm";
 import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
 import { useValidConfigState } from "@/hooks/configuration/useValidConfigState";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditStoreProvider";
 import { useTemporalStore } from "@/hooks/useTemporalStore";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -12,7 +12,8 @@ const Page: React.FC = () => {
     const router = useRouter();
     const { isInfoValid } = useValidConfigState();
 
-    const { clear } = useTemporalStore(useCampaignConfigEdit, (state) => state);
+    const configEditStore = useCampaignConfigEditStoreApi();
+    const { clear } = useTemporalStore(configEditStore, (state) => state);
 
     useEffect(() => {
         clear();

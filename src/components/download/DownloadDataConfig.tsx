@@ -1,5 +1,5 @@
 import useDownloadDataConfigState from "@/hooks/download/useDownloadDataConfigState";
-import useDownloadState from "@/hooks/useDownloadState";
+import useDownloadState from "@/stores/downloadStore";
 import dayjs from "dayjs";
 import { Button, Card } from "flowbite-react";
 import ParticipantDropdown from "../dashboard/ParticipantDropdown";

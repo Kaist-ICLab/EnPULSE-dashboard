@@ -1,8 +1,9 @@
-import useCampaignConfigEdit, { ExportedCampaignConfig } from "../useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
+import { ExportedCampaignConfig } from "@/stores/campaignConfigEditStore";
 import { useCallback } from "react";
 
 const useImportCampaignConfig = () => {
-    const { setCampaignUsingImportedConfig } = useCampaignConfigEdit();
+    const { setCampaignUsingImportedConfig } = useCampaignConfigEdit((state) => state);
 
     const readFileAsText = (file: File) =>
         new Promise<string>((resolve, reject) => {

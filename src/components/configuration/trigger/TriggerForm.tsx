@@ -1,11 +1,11 @@
 'use client'
 
 import { Button } from "flowbite-react";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import TriggerCardConfig from "./TriggerCardConfig";
 
 const TriggerForm: React.FC = () => {
-    const { campaign_trigger, addTrigger } = useCampaignConfigEdit();
+    const { campaign_trigger, addTrigger } = useCampaignConfigEdit((state) => state);
 
     return (
         <div className="w-full flex flex-col gap-4">

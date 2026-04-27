@@ -3,7 +3,7 @@ import TimelineXAxis from '@/components/dashboard/chart/TimelineXAxis';
 import { DnDProvider } from '@/components/common/DnDList';
 import { Button } from 'flowbite-react';
 import Link from 'next/link';
-import useSectionState from '@/hooks/useSectionState';
+import { useSectionParamStore } from '@/providers/SectionParamStoreProvider';
 import { TimelineData } from '@/types/chart';
 import { ComparisonType } from "@/types/dashboard";
 import { ChartItem } from './ChartItem';
@@ -13,7 +13,7 @@ const ChartContainer: React.FC<{
     timelines: TimelineData[];
     bucketSize: number;
 }> = ({ timelines, bucketSize }) => {
-    const { updateComparisonParams, chartPinQuery, updatePinQuery, selectedSection, updateSelectedSection, updateDate } = useSectionState()
+    const { updateComparisonParams, chartPinQuery, updatePinQuery, selectedSection, updateSelectedSection, updateDate } = useSectionParamStore((state) => state);
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
 

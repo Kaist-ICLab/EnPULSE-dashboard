@@ -3,7 +3,7 @@ import { DownloadFileRow } from "@/types/download";
 import { ResponseStatus } from "@/types/response";
 import { useCallback, useMemo, useState } from "react";
 import { useCampaignStore } from "@/providers/CampaignStoreProvider";
-import useDownloadState from "../useDownloadState";
+import useDownloadState from "../../stores/downloadStore";
 import dayjs from "dayjs";
 
 const MAX_GROUP_BYTES = 200 * 1024 * 1024; // 100MB

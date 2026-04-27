@@ -1,6 +1,6 @@
 import MainHeader from "@/components/common/MainHeader";
 import CampaignCreateSidebar from "@/components/configuration/CampaignCreateSidebar";
-import ConfigEditInitProvider from "@/components/ConfigEditInitProvider";
+import CampaignConfigEditStoreProvider from "@/providers/CampaignConfigEditStoreProvider";
 
 export default async function CampaignLayout({
     children,
@@ -8,7 +8,7 @@ export default async function CampaignLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <ConfigEditInitProvider isNewCampaign={true}>
+        <CampaignConfigEditStoreProvider isNewCampaign={true}>
             <div className="flex flex-col w-full items-stretch grow overflow-auto">
                 <MainHeader />
                 <div className="flex flex-row grow w-full overflow-hidden">
@@ -22,7 +22,6 @@ export default async function CampaignLayout({
                     </div>
                 </div>
             </div>
-
-        </ConfigEditInitProvider>
+        </CampaignConfigEditStoreProvider>
     );
 }

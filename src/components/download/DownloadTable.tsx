@@ -1,6 +1,6 @@
 import PreviewDataModal from "@/components/download/PreviewDataModal";
 import useDownloadListState from "@/hooks/download/useDownloadListState";
-import useDownloadState from "@/hooks/useDownloadState";
+import useDownloadState from "@/stores/downloadStore";
 import { DownloadFileRow } from "@/types/download";
 import dayjs from "dayjs";
 import { Card, Checkbox, Spinner } from "flowbite-react";

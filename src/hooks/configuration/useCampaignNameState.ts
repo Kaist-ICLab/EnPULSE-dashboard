@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import useCampaignConfigEdit from "../useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { checkCampaignNameValidity } from "@/services/campaignService";
 
 export default function useCampaignNameState() {
-    const { campaignName: campaignNameInHook, setCampaignName: setCampaignNameInHook, campaignId } = useCampaignConfigEdit();
+    const { campaignName: campaignNameInHook, setCampaignName: setCampaignNameInHook, campaignId } = useCampaignConfigEdit((state) => state);
     const [campaignName, setCampaignName] = useState(campaignNameInHook);
     const [status, setStatus] = useState<"loading" | "ok" | "error" | null>(null);
     const [isChanged, setIsChanged] = useState(false);

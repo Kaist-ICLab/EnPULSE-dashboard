@@ -3,7 +3,7 @@ import { ComparisonType } from "@/types/dashboard";
 import { useEffect, useState, useMemo } from "react";
 import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import { getPersonComparisonData, getDaysComparisonData, getSensorComparisonData } from "@/services/chartService";
-import useSectionState from "../useSectionState";
+import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 
 
 export default function useTimeline(secitonType: ComparisonType, chartWidth: number) {
@@ -13,7 +13,7 @@ export default function useTimeline(secitonType: ComparisonType, chartWidth: num
     const [error, setError] = useState<Error | null>(null);
 
     const { selectedCampaignId, campaignParticipants, campaignTables } = useCampaignStore((state) => state);
-    const { date, comparisonParams, timeRange, lastManualSyncTime } = useSectionState()
+    const { date, comparisonParams, timeRange, lastManualSyncTime } = useSectionParamStore((state) => state);
 
     const currentComparisonParams = useMemo(() => comparisonParams[secitonType], [comparisonParams, secitonType])
     const selectedFields = useMemo(() => {

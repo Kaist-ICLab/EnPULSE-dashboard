@@ -4,11 +4,11 @@ import { useRouter } from "next/navigation";
 import { useUpdateCampaign } from "@/hooks/configuration/useUpdateCampaign";
 
 import { Card } from "flowbite-react";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
 
 const ConfirmPage: React.FC = () => {
-    const { campaignName, tables, surveys, campaign_trigger } = useCampaignConfigEdit();
+    const { campaignName, tables, surveys, campaign_trigger } = useCampaignConfigEdit((state) => state);
     const { updateCampaignConfig } = useUpdateCampaign((id) => { router.push(`/campaigns/${id}`); });
     const router = useRouter();
 

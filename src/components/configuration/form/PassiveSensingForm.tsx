@@ -1,12 +1,12 @@
 'use client'
 import { Card } from "flowbite-react";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import PassiveSensingConfigTable from "../PassiveSensingConfigTable";
 import IconButton from "@/components/common/IconButton";
 import SwitchingTextInput from "@/components/common/SwitchingTextInput";
 
 export default function PassiveSensingForm() {
-    const { tables, removeTable, updateTableName, updateTableDisplayName, updateTableDescription } = useCampaignConfigEdit();
+    const { tables, removeTable, updateTableName, updateTableDisplayName, updateTableDescription } = useCampaignConfigEdit((state) => state);
 
     if (tables.length === 0) {
         return (
