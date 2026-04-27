@@ -4,8 +4,10 @@ import dayjs from "dayjs";
 import { Button, Card } from "flowbite-react";
 import ParticipantDropdown from "../dashboard/ParticipantDropdown";
 import SensorDropdown from "../dashboard/SensorDropdown";
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 
 const DownloadDataConfig = () => {
+    const { campaign } = useCampaignStore((state) => state);
     const { selectedParticipantIds, selectedFieldIds, setSelectedParticipantIds, setSelectedFieldIds } = useDownloadState();
     const {
         startDate,
@@ -52,6 +54,8 @@ const DownloadDataConfig = () => {
                             type="date"
                             className="mt-1 h-10 bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full px-2 py-1"
                             value={dayjs(startDate).format('YYYY-MM-DD')}
+                            min={dayjs(campaign?.start_time).format('YYYY-MM-DD')}
+                            max={dayjs(campaign?.end_time).format('YYYY-MM-DD')}
                             onChange={(e) => setStartDate(dayjs(e.target.value).toDate())}
                         />
                     </div>
@@ -61,6 +65,8 @@ const DownloadDataConfig = () => {
                             type="date"
                             className="mt-1 h-10 bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full px-2 py-1"
                             value={dayjs(endDate).format('YYYY-MM-DD')}
+                            min={dayjs(campaign?.start_time).format('YYYY-MM-DD')}
+                            max={dayjs(campaign?.end_time).format('YYYY-MM-DD')}
                             onChange={(e) => setEndDate(dayjs(e.target.value).toDate())}
                         />
                     </div>

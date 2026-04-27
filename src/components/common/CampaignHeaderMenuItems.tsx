@@ -37,8 +37,10 @@ export const DashboardHeaderMenuItems: React.FC = () => {
                 </Button>
                 <input
                     type="date"
-                    className="h-10 bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2 py-1"
+                    className="h-10 w-32 bg-white border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2 py-1"
                     value={dayjs(date).format('YYYY-MM-DD')}
+                    min={dayjs(campaign?.start_time).format('YYYY-MM-DD')}
+                    max={dayjs(campaign?.end_time).format('YYYY-MM-DD')}
                     onChange={(e) => {
                         const date = dayjs(e.target.value).startOf('day').toDate();
                         updateDate(date);
