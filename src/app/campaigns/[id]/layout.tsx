@@ -1,9 +1,10 @@
-import Sidebar from "@/components/common/Sidebar";
 import Header from "@/components/common/CampaignHeader";
-import { notFound } from "next/navigation";
-import { getCampaignList } from "@/services/campaignService";
-import CampaignInitProvider from "@/components/CampaignInitProvider";
+import Sidebar from "@/components/common/Sidebar";
 import TimeHeadline from "@/components/common/TimeHeadline";
+import CampaignStoreProvider from "@/providers/CampaignStoreProvider";
+import { getCampaignInfo } from "@/services/campaignService";
+import { FetchedCampaign } from "@/types/campaign";
+import { notFound } from "next/navigation";
 
 export default async function CampaignLayout({
     params,
@@ -13,18 +14,17 @@ export default async function CampaignLayout({
     children: React.ReactNode;
 }>) {
     const { id } = await params;
-    const campaigns = await getCampaignList();
     const campaignId = parseInt(id);
-    const currentCampaign = campaigns.find((campaign) => campaign.id === campaignId);
-    if (currentCampaign === undefined) {
+
+    let campaign: FetchedCampaign | null = null;
+    try {
+        campaign = await getCampaignInfo(campaignId);
+    } catch {
         notFound();
     }
 
     return (
-        <CampaignInitProvider
-            campaignId={campaignId}
-            campaigns={campaigns}
-        >
+        <CampaignStoreProvider campaignId={campaignId} campaign={campaign}>
             <div className="w-full h-screen bg-gray-50 flex flex-row">
                 <Sidebar />
                 <div className="flex flex-col w-full items-stretch grow overflow-auto">
@@ -37,7 +37,7 @@ export default async function CampaignLayout({
                     </div>
                 </div>
             </div>
-        </CampaignInitProvider >
+        </CampaignStoreProvider >
 
     );
 }

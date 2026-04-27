@@ -1,11 +1,11 @@
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import { getDownloadRowCount } from "@/services/downloadService";
 import dayjs from "dayjs";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import useCampaign from "../useCampaign";
 import useDownloadState from "../useDownloadState";
 
 export default function useDownloadDataConfigState() {
-    const { campaign, campaignParticipants, campaignTables } = useCampaign();
+    const { campaign, campaignParticipants, campaignTables } = useCampaignStore((state) => state);
     const {
         selectedFieldIds,
         selectedParticipantIds,

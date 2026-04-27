@@ -1,6 +1,6 @@
 'use client';
 
-import useCampaign from "@/hooks/useCampaign";
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import { useTemporalStore } from "@/hooks/useTemporalStore";
 import { useEffect, useRef } from "react";
@@ -9,7 +9,7 @@ const ConfigEditInitProvider: React.FC<{
     children: React.ReactNode,
     isNewCampaign: boolean,
 }> = ({ children, isNewCampaign }) => {
-    const { campaign } = useCampaign();
+    const { campaign } = useCampaignStore((state) => state);
     const { reset, setCampaign, setCampaignUsingImportedConfig } = useCampaignConfigEdit();
     const { clear } = useTemporalStore(useCampaignConfigEdit, (state) => state);
     const isInitializedRef = useRef(false);

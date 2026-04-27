@@ -1,6 +1,6 @@
 import { Dropdown, DropdownDivider, DropdownItem } from "flowbite-react";
-import useCampaign from "@/hooks/useCampaign";
 import useSensorDropdownState from "@/hooks/dashboard/useSensorDropdownState";
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 
 const SensorDropdown: React.FC<{
     className?: string;
@@ -9,7 +9,7 @@ const SensorDropdown: React.FC<{
     isMultipleSelection?: boolean,
     showSelectAllSensors?: boolean,
 }> = ({ className, selectedFieldIds, setSelectedFieldIds, isMultipleSelection = false, showSelectAllSensors = false }) => {
-    const { campaignTables, campaignTableFields } = useCampaign();
+    const { campaignTables, campaignTableFields } = useCampaignStore((state) => state);
     const {
         selectedSensor,
         setSelectedSensor,

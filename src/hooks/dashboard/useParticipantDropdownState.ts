@@ -1,5 +1,5 @@
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import useCampaign from "../useCampaign";
 
 export default function useParticipantDropdownState(
     selectedParticipantIds: string[],
@@ -9,7 +9,7 @@ export default function useParticipantDropdownState(
     const [batchIndex, _setBatchIndex] = useState(1);
     const [batchSize, _setBatchSize] = useState(1);
 
-    const { campaignParticipants } = useCampaign();
+    const { campaignParticipants } = useCampaignStore((state) => state);
 
     useEffect(() => {
         _setBatchIndex(1);

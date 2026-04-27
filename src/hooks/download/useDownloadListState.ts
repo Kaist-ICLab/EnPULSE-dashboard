@@ -2,7 +2,7 @@ import { getDownloadData } from "@/services/downloadService";
 import { DownloadFileRow } from "@/types/download";
 import { ResponseStatus } from "@/types/response";
 import { useCallback, useMemo, useState } from "react";
-import useCampaign from "../useCampaign";
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import useDownloadState from "../useDownloadState";
 import dayjs from "dayjs";
 
@@ -14,7 +14,7 @@ const sleep = async (ms: number) => new Promise((resolve) => setTimeout(resolve,
 
 
 export default function useDownloadListState() {
-    const { campaign, campaignTables, campaignTableFields } = useCampaign();
+    const { campaign, campaignTables, campaignTableFields } = useCampaignStore((state) => state);
     const { downloadList, selectedFieldIds, setDownloadListItemStatus, setAllDownloadListItemsStatus } = useDownloadState();
 
     const [previewStatus, setPreviewStatus] = useState<ResponseStatus>(null);

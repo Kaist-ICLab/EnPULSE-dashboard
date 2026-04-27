@@ -1,12 +1,12 @@
 "use client"
-import useUserDailyStat from "@/hooks/chart/useUserDailyStat";
-import React from "react";
-import { Button, Checkbox, Select, Spinner, Tooltip } from "flowbite-react";
 import { useDailyStatTableCheckedState } from "@/hooks/chart/useDailyStatTableCheckedState";
-import Link from "next/link";
+import useUserDailyStat from "@/hooks/chart/useUserDailyStat";
 import useSectionState from "@/hooks/useSectionState";
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import { ComparisonType } from "@/types/dashboard";
-import useCampaign from "@/hooks/useCampaign";
+import { Button, Checkbox, Select, Spinner, Tooltip } from "flowbite-react";
+import Link from "next/link";
+import React from "react";
 import DailyStatTableHeader from "./DailyStatTableHeader";
 import DailyStatTableRow from "./DailyStatTableRow";
 
@@ -21,7 +21,7 @@ const ChartTooltipContent: React.FC = () => {
 }
 
 const DailyOverviewTable: React.FC = () => {
-    const { campaignParticipants } = useCampaign()
+    const { campaignParticipants } = useCampaignStore((state) => state);
     const { updateComparisonParams, updateSelectedSection } = useSectionState()
 
     const { data, loading, maxDailyCount, tableNames, page, rowsPerPage, totalPage, setPage, setRowsPerPage } = useUserDailyStat(5);

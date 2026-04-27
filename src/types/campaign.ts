@@ -8,6 +8,14 @@ export type FieldRole = Database['public']['Enums']['field_role'];
 export const FieldRoleOption: readonly FieldRole[] = Constants.public.Enums.field_role;
 export const FieldTypeOption: readonly FieldType[] = Constants.public.Enums.field_type;
 
+export type CampaignListItem = {
+    id: number;
+    name: string;
+    description: string;
+    start_time: string;
+    end_time: string;
+}
+
 export type Campaign = Database['public']['Tables']['campaigns']['Insert'] & {
     profiles: CampaignParticipant[];
     campaign_table: CampaignTable[];

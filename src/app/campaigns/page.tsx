@@ -1,17 +1,13 @@
 "use client";
+import MainHeader from "@/components/common/MainHeader";
+import { useCampaignListStore } from "@/providers/CampaignListStoreProvider";
+import dayjs from "dayjs";
 import { Card } from "flowbite-react";
 import Link from "next/link";
-import useCampaign from "@/hooks/useCampaign";
-import { useEffect } from "react";
-import dayjs from "dayjs";
-import MainHeader from "@/components/common/MainHeader";
 
 // Campaign selection page
 const CampaignsPage: React.FC = () => {
-    const { campaignList, fetchCampaigns } = useCampaign();
-    useEffect(() => {
-        fetchCampaigns();
-    }, [fetchCampaigns]);
+    const campaignList = useCampaignListStore((state) => state.campaignList);
 
     const calculateProgress = (startTime: string, endTime: string): number => {
         const now = dayjs();

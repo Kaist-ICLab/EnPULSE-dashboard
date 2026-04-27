@@ -1,26 +1,31 @@
 "use client";
 import CampaignDropdown from "@/components/common/CampaignDropdown";
-import React from "react";
-import { Button } from "flowbite-react";
-import useSectionState from "@/hooks/useSectionState";
-import { usePathname } from "next/navigation";
-import dayjs from "dayjs";
-import useCampaign from "@/hooks/useCampaign";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
-import { useUpdateCampaign } from "@/hooks/configuration/useUpdateCampaign";
+import AddQuestionHeader from "@/components/configuration/header/AddQuestionHeader";
 import AddSensorButtons from "@/components/configuration/header/AddSensorButtons";
 import AddSurveyButton from "@/components/configuration/header/AddSurveyButton";
-import AddQuestionHeader from "@/components/configuration/header/AddQuestionHeader";
+import { useUpdateCampaign } from "@/hooks/configuration/useUpdateCampaign";
+import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import useSectionState from "@/hooks/useSectionState";
 import { useTemporalStore } from "@/hooks/useTemporalStore";
+import { useCampaignListStore } from "@/providers/CampaignListStoreProvider";
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
+import { getCampaignInfo, getCampaignList } from "@/services/campaignService";
+import dayjs from "dayjs";
+import { Button } from "flowbite-react";
+import { usePathname } from "next/navigation";
+import React from "react";
 import UndoRedoButtons from "../configuration/header/UndoRedoButtons";
 
 const Header: React.FC = () => {
     const { date, updateDate: setDate, addDaysToDate, initTimeRange, setLastManualSyncTime: setManualSyncTime } = useSectionState();
-    const { campaign, fetchCampaigns, selectCampaign } = useCampaign();
+    const { setCampaignList } = useCampaignListStore((state) => state);
+    const { campaign, setCampaign } = useCampaignStore((state) => state);
     const { pastStates } = useTemporalStore(useCampaignConfigEdit, (state) => state);
     const { updateCampaignConfig } = useUpdateCampaign(async (id) => {
-        await fetchCampaigns();
-        await selectCampaign(id, true);
+        const campaignList = await getCampaignList();
+        const currentCampaign = await getCampaignInfo(id);
+        setCampaignList(campaignList);
+        setCampaign(currentCampaign);
     });
 
     const pathname = usePathname();

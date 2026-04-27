@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect } from "react";
-import useCampaign from "@/hooks/useCampaign";
 import useSectionState, { comparisonTypes } from "@/hooks/useSectionState";
 import dayjs from "dayjs";
 import { getLocalDay } from "@/utils/date";
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 
 const SectionStateInitProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { campaign, campaignParticipants, campaignTableFields } = useCampaign();
+    const { campaign, campaignParticipants, campaignTableFields } = useCampaignStore((state) => state);
     const { updateComparisonParams, initTimeRange, updateDate } = useSectionState();
 
     useEffect(() => {

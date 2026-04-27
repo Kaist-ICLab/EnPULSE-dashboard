@@ -1,10 +1,10 @@
 "use client";
-import useCampaign from "@/hooks/useCampaign";
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import dayjs from "dayjs";
 import Link from "next/link";
 
 const TimeHeadline: React.FC = () => {
-    const { campaign } = useCampaign();
+    const { campaign } = useCampaignStore((state) => state);
 
     if (campaign && dayjs(campaign.start_time).toDate() >= new Date()) {
         return <div className="w-full text-center py-1 bg-blue-700 text-white ">

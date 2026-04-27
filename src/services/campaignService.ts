@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { Campaign, CampaignTable, CampaignTableField, FetchedCampaign, RemovedEntries } from '@/types/campaign';
+import { Campaign, CampaignListItem, CampaignTable, CampaignTableField, FetchedCampaign, RemovedEntries } from '@/types/campaign';
 import { FetchedSurveyQuestion, FetchedSurveyTrigger, Survey, SurveyQuestion, SurveyQuestionTrigger } from '@/types/survey';
 import { CampaignTrigger, TriggerCondition, loadActions, persistActions } from '@/types/trigger';
 import { Json } from '@/lib/schema';
@@ -27,13 +27,13 @@ function recursivelyFillSurveyId(surveyQuestion: SurveyQuestion[], surveyId: num
     recursivelyFillSurveyId(nextLevelQuestion, surveyId);
 }
 
-export const getCampaignList = async (): Promise<{ id: number, name: string, description: string, start_time: string, end_time: string }[]> => {
+export const getCampaignList = async (): Promise<Map<number, CampaignListItem>> => {
     const { data, error } = await supabase
         .from('campaigns')
         .select(`id, name, description, start_time, end_time`)
         .order('id')
     if (error) throw new Error(error.message);
-    return data;
+    return new Map(data.map((campaign) => [campaign.id, campaign]));
 }
 
 export const getCampaignInfo = async (campaignId: number): Promise<FetchedCampaign> => {
