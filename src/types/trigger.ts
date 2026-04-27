@@ -10,9 +10,35 @@ export const TRIGGER_SENSOR_KIND_LABEL: Record<TriggerSensorKind, string> = {
 
 // Hardcoded value enums per sensor — adjust to match what the EnPULSE Android library emits.
 export const TRIGGER_SENSOR_VALUES: Record<TriggerSensorKind, readonly string[]> = {
-    stress: ["low", "high"],
-    physical_activity: ["still", "walking", "running", "cycling", "in_vehicle"],
-    gesture: ["nod", "shake", "tap"],
+    stress: ["Low", "High"],
+    physical_activity: ["In Vehicle", "On Bicycle", "On Foot", "Running", "Still", "Tilting", "Unknown", "Walking"],
+    gesture: ["Alarm Clock",
+        "Blender In Use",
+        "Brushing Hair",
+        "Chopping",
+        "Clapping",
+        "Coughing",
+        "Drill In Use",
+        "Drinking",
+        "Grating",
+        "Hair Dryer In Use",
+        "Hammering",
+        "Knocking",
+        "Laughing",
+        "Microwave",
+        "Pouring Pitcher",
+        "Sanding",
+        "Scratching",
+        "Screwing",
+        "Shaver In Use",
+        "Toilet Flushing",
+        "Toothbrushing",
+        "Twisting Jar",
+        "Vacuum In Use",
+        "Washing Utensils",
+        "Washing Hands",
+        "Wiping With Rag",
+        "Other"],
 } as const;
 
 // Self-recursive: each `children`/`child` slot is itself a `TriggerCondition`,
@@ -50,8 +76,8 @@ export type BroadcastExtra = {
 // in the editable store. `useUpdateCampaign` resolves it to a real `survey.id` after
 // `upsertSurvey` returns. `surveyIndex === -1` means "not selected yet".
 export type TriggerAction =
-    | { kind: "ema"; surveyIndex: number }
-    | { kind: "watch_ema"; surveyIndex: number }
+    | { kind: "ema"; surveyIndex: number; minIntervalMillis: number }
+    | { kind: "watch_ema"; surveyIndex: number; minIntervalMillis: number }
     | {
         kind: "broadcast";
         // Intent action string the receiving app's <intent-filter android:name="..."/> matches on.
@@ -63,8 +89,8 @@ export type TriggerAction =
 
 // Shape stored in the `action` jsonb column of `campaign_trigger` (one element per stored array entry).
 export type PersistedTriggerAction =
-    | { kind: "ema"; survey_id: number }
-    | { kind: "watch_ema"; survey_id: number }
+    | { kind: "ema"; survey_id: number; minIntervalMillis: number }
+    | { kind: "watch_ema"; survey_id: number; minIntervalMillis: number }
     | {
         kind: "broadcast";
         action: string;
@@ -74,13 +100,13 @@ export type PersistedTriggerAction =
 
 export function persistAction(a: TriggerAction, surveyIds: number[]): PersistedTriggerAction {
     if (a.kind === "broadcast") return a;
-    return { kind: a.kind, survey_id: surveyIds[a.surveyIndex] };
+    return { kind: a.kind, survey_id: surveyIds[a.surveyIndex], minIntervalMillis: a.minIntervalMillis };
 }
 
 export function loadAction(persisted: PersistedTriggerAction, surveys: { id: number }[]): TriggerAction {
     if (persisted.kind === "broadcast") return persisted;
     const index = surveys.findIndex(s => s.id === persisted.survey_id);
-    return { kind: persisted.kind, surveyIndex: index };
+    return { kind: persisted.kind, surveyIndex: index, minIntervalMillis: persisted.minIntervalMillis };
 }
 
 export function persistActions(actions: TriggerAction[], surveyIds: number[]): PersistedTriggerAction[] {
@@ -117,7 +143,7 @@ export function defaultDetection(): TriggerCondition {
 
 export function defaultAction(kind: TriggerActionKind): TriggerAction {
     if (kind === "broadcast") return { kind: "broadcast", action: "", extras: [] };
-    return { kind, surveyIndex: -1 };
+    return { kind, surveyIndex: -1, minIntervalMillis: 0 };
 }
 
 export function defaultBroadcastExtra(): BroadcastExtra {

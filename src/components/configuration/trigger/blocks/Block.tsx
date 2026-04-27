@@ -5,6 +5,7 @@
 // Tailwind v4 cannot detect dynamically composed classes (e.g. `bg-${palette}-400`),
 // so each palette is a fixed object literal whose strings are statically present.
 
+
 const PALETTES = {
     amber: { border: "border-amber-500", header: "bg-amber-500", accent: "border-amber-500" },
     blue: { border: "border-blue-700", header: "bg-blue-700", accent: "border-blue-700" },
@@ -15,15 +16,26 @@ export type BlockPalette = keyof typeof PALETTES;
 
 export const Block: React.FC<{
     palette: BlockPalette;
-    label: React.ReactNode;
+    label: string;
+    switchOptions?: { label: string; value: string }[];
+    onLabelChange?: (value: string) => void;
+    wrapControl?: React.ReactNode;
     headerControls?: React.ReactNode;
     children?: React.ReactNode;
-}> = ({ palette, label, headerControls, children }) => {
+}> = ({ palette, label, switchOptions, onLabelChange, wrapControl, headerControls, children }) => {
     const p = PALETTES[palette];
     return (
         <div className={`rounded-md shadow-sm border ${p.border} overflow-hidden bg-white`}>
-            <div className={`flex items-center gap-2 px-3 py-1 ${p.header} text-white text-sm font-semibold`}>
-                <span className="grow">{label}</span>
+            <div className={`flex items-center gap-2 px-2 py-1 ${p.header} text-white font-semibold`}>
+                {(switchOptions && switchOptions.length > 0) ?
+                    <select className="border-none bg-transparent text-sm font-bold w-fit outline-none py-0.5" value={label} onChange={(e) => onLabelChange?.(e.target.value)}>{
+                        switchOptions.map((option) => <option className="text-black" key={option.value} value={option.value}>{option.label}</option>)}
+                    </select> :
+                    <span className="text-sm pl-1">{label}</span>
+                }
+                <span className="text-xs ml-auto">wrap with:</span>
+                {wrapControl && <div className="flex items-center gap-1 flex-wrap">{wrapControl}</div>}
+                <div className="h-5 w-1 ml-1 border-white border-l-1"></div>
                 {headerControls && <div className="flex items-center gap-1 flex-wrap">{headerControls}</div>}
             </div>
             {children !== undefined && (

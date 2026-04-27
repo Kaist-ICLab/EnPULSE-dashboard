@@ -1,12 +1,12 @@
 'use client'
 
-import { Select } from "flowbite-react";
 import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
 import { DeviceType } from "@/types/survey";
 import {
     TRIGGER_ACTION_KIND_LABEL,
     TriggerAction,
 } from "@/types/trigger";
+import { Select, TextInput } from "flowbite-react";
 import { Block, BlockHeaderButton } from "./blocks/Block";
 import BroadcastActionEditor from "./BroadcastActionEditor";
 
@@ -20,7 +20,7 @@ const ActionBlock: React.FC<{
         <Block
             palette="green"
             label={TRIGGER_ACTION_KIND_LABEL[action.kind]}
-            headerControls={<BlockHeaderButton danger onClick={onRemove}>×</BlockHeaderButton>}
+            wrapControl={<BlockHeaderButton danger onClick={onRemove}><span className="icon-[humbleicons--times] w-3 h-3"></span></BlockHeaderButton>}
         >
             {action.kind === "broadcast" ? (
                 <BroadcastActionEditor action={action} onChange={onChange} />
@@ -42,11 +42,11 @@ const SurveyActionBody: React.FC<{
         .filter(({ s }) => s.device_type === expectedDeviceType);
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
             <Select
-                sizing="sm"
+                sizing="md"
                 value={action.surveyIndex}
-                onChange={(e) => onChange({ kind: action.kind, surveyIndex: Number(e.target.value) })}
+                onChange={(e) => onChange({ kind: action.kind, surveyIndex: Number(e.target.value), minIntervalMillis: action.minIntervalMillis })}
             >
                 <option value={-1}>Select a survey…</option>
                 {eligibleSurveys.map(({ s, idx }) => (
@@ -58,6 +58,17 @@ const SurveyActionBody: React.FC<{
                     No {action.kind === "watch_ema" ? "Watch" : "Phone"} surveys configured.
                 </p>
             )}
+            <div className="flex flex-row items-center">
+                <span className="block text-sm text-gray-900 mr-4">Minimum Interval Between Surveys:</span>
+                <TextInput
+                    type="number"
+                    sizing="sm"
+                    value={action.minIntervalMillis}
+                    onChange={(e) => onChange({ kind: action.kind, surveyIndex: action.surveyIndex, minIntervalMillis: Number(e.target.value) })}
+
+                />
+                <span className="text-sm ml-1 text-gray-900">ms</span>
+            </div>
         </div>
     );
 };

@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import TriggerForm from "@/components/configuration/form/TriggerForm";
+import TriggerForm from "@/components/configuration/trigger/TriggerForm";
 import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
 import { useValidConfigState } from "@/hooks/configuration/useValidConfigState";
 import { useTemporalStore } from "@/hooks/useTemporalStore";

@@ -52,7 +52,7 @@ export default function AddSensorButtons() {
                         />
                     </div>
                     <div className="flex gap-4 items-center">
-                        <Button className="flex-2/3" onClick={() => { addTable({ campaign_id: -1, name: sensorName, description: sensorDescription, daily_count_max: 0, campaign_table_field: [], is_custom: true }); setIsSensorInputVisible(false); setSensorName(""); setSensorDescription(""); }}>
+                        <Button className="flex-2/3" onClick={() => { addTable({ campaign_id: -1, name: sensorName, display_name: sensorName, description: sensorDescription, daily_count_max: 0, campaign_table_field: [], is_custom: true }); setIsSensorInputVisible(false); setSensorName(""); setSensorDescription(""); }}>
                             Confirm
                         </Button>
                         <Button className="flex-1/3" color="gray" onClick={() => { setIsSensorInputVisible(false); setSensorName(""); setSensorDescription(""); }}>
