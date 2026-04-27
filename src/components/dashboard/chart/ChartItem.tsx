@@ -14,9 +14,16 @@ export const ChartItem: React.FC<{
     bucketSize: number;
     sectionType: ComparisonType;
 }> = ({ timeline, pinned, isSelected, setSelectedChart, bucketSize, sectionType }) => {
-    const { updatePinQuery, updateComparisonParams, comparisonParams } = useSectionParamStore((state) => state);
+    const { updatePinQuery, updateComparisonParams, comparisonParams, date } = useSectionParamStore((state) => state);
 
     if (!timeline) return
+
+    // In Days mode each chart is its own date; otherwise the chart should
+    // track the store's date so it doesn't snap back to the previously-fetched
+    // params.date during the brief window before new data arrives.
+    const baseTime = sectionType === ComparisonType.Days
+        ? timeline.params.date.getTime()
+        : date.getTime();
 
     return (
         <DnDItem id={timeline.id} className={`w-full flex flex-row justify-center items-center p-2`}>
@@ -56,7 +63,7 @@ export const ChartItem: React.FC<{
                                 isSelected={isSelected}
                                 fieldId={timeline.params.fieldId}
                                 chartType={timeline.chartType}
-                                baseTime={timeline.params.date.getTime()}
+                                baseTime={baseTime}
                                 data={timeline.value}
                                 bucketSize={bucketSize}
                                 width={Math.max(width, 0)}
