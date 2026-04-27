@@ -3,6 +3,7 @@
 import CampaignInfoForm from "@/components/configuration/form/CampaignInfoForm";
 import CampaignPeriodForm from "@/components/configuration/form/CampaignPeriodForm";
 import ConfigImportExportForm from "@/components/configuration/form/ConfigImportExportForm";
+import DangerZoneForm from "@/components/configuration/form/DangerZoneForm";
 
 const Page: React.FC = () => {
     return (
@@ -10,6 +11,7 @@ const Page: React.FC = () => {
             <CampaignInfoForm />
             <CampaignPeriodForm />
             <ConfigImportExportForm />
+            <DangerZoneForm />
         </div>
     )
 }

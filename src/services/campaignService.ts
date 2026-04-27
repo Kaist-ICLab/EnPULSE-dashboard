@@ -1,8 +1,8 @@
+import type { Json } from '@/lib/schema';
 import { supabase } from '@/lib/supabase';
 import { Campaign, CampaignListItem, CampaignTable, CampaignTableField, FetchedCampaign, RemovedEntries } from '@/types/campaign';
 import { FetchedSurveyQuestion, FetchedSurveyTrigger, Survey, SurveyQuestion, SurveyQuestionTrigger } from '@/types/survey';
 import { CampaignTrigger, TriggerCondition, loadActions, persistActions } from '@/types/trigger';
-import { Json } from '@/lib/schema';
 import { MakeOptional } from '@/utils/type';
 
 type SingleLevelSurveyQuestion = Omit<FetchedSurveyQuestion, 'survey_question_trigger'> & {
@@ -270,6 +270,15 @@ export const deleteEntries = async (removedEntries: RemovedEntries): Promise<voi
     await supabase.from('survey_question_option').delete().in('id', removedEntries.option);
     await supabase.from('survey_question_trigger').delete().in('id', removedEntries.trigger);
     await supabase.from('campaign_trigger').delete().in('id', removedEntries.campaign_trigger);
+}
+
+export const deleteCampaign = async (campaignId: number): Promise<void> => {
+    const { error } = await supabase
+        .from('campaigns')
+        .delete()
+        .eq('id', campaignId);
+
+    if (error) throw new Error(error.message);
 }
 
 export const checkCampaignNameValidity = async (campaignName: string, campaignId: number): Promise<boolean> => {
