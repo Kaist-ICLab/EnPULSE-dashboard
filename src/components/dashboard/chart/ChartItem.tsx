@@ -49,7 +49,7 @@ export const ChartItem: React.FC<{
                     ) : null}
                 </div>
 
-                <div className='flex flex-row justify-center items-center'>
+                <div className='h-[100px] flex flex-row justify-center items-center'>
                     <ParentSize>
                         {({ width }) => (
                             <TimelineChart
