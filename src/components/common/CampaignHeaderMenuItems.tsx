@@ -12,7 +12,7 @@ import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 import { getCampaignInfo, getCampaignList } from "@/services/campaignService";
 import dayjs from "dayjs";
-import { Button } from "flowbite-react";
+import { Button, Spinner } from "flowbite-react";
 import { usePathname } from "next/navigation";
 import React from "react";
 
@@ -72,7 +72,7 @@ export const SettingsHeaderMenuItems: React.FC = () => {
     const { setCampaign } = useCampaignStore((state) => state);
     const configEditStore = useCampaignConfigEditStoreApi();
     const { pastStates } = useTemporalStore(configEditStore, (state) => state);
-    const { updateCampaignConfig } = useUpdateCampaign(async (id) => {
+    const { isUpdating, updateCampaignConfig } = useUpdateCampaign(async (id) => {
         const campaignList = await getCampaignList();
         const currentCampaign = await getCampaignInfo(id);
         setCampaignList(campaignList);
@@ -90,8 +90,8 @@ export const SettingsHeaderMenuItems: React.FC = () => {
         {isQuestionPage && <AddQuestionHeader />}
         <div className="pl-4 border-l border-gray-200 flex items-center gap-4">
             <UndoRedoButtons />
-            <Button color="blue" onClick={updateCampaignConfig} disabled={pastStates.length === 0}>
-                <span className="icon-[material-symbols--save] w-6 h-6 mr-2"></span>Save
+            <Button color="blue" onClick={updateCampaignConfig} disabled={pastStates.length === 0 || isUpdating}>
+                {isUpdating ? <><Spinner size="sm" className="mr-2" /> Saving...</> : <><span className="icon-[material-symbols--save] w-6 h-6 mr-2"></span>Save</>}
             </Button>
         </div>
     </div>
