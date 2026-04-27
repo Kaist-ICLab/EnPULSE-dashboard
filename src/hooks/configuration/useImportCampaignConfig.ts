@@ -20,7 +20,6 @@ const useImportCampaignConfig = () => {
             const parsed = JSON.parse(raw) as ExportedCampaignConfig;
 
             setCampaignUsingImportedConfig(parsed);
-            console.log(useCampaignConfigEdit.getState());
         } catch {
             window.alert("Failed to import configuration file.");
         }

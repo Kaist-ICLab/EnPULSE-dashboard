@@ -119,7 +119,6 @@ export const upsertCampaignTrigger = async (
     campaignId: number,
     surveyIds: number[],
 ): Promise<void> => {
-    console.log(triggers)
     if (triggers.length === 0) return;
 
     const rows = triggers.map(t => {

@@ -1,4 +1,4 @@
-import NewCampaignTablesInitProvider from "@/components/ConfigEditInitProvider";
+import ConfigEditInitProvider from "@/components/ConfigEditInitProvider";
 
 export default async function SettingsLayout({
     children,
@@ -6,10 +6,10 @@ export default async function SettingsLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <NewCampaignTablesInitProvider isNewCampaign={false}>
+        <ConfigEditInitProvider isNewCampaign={false}>
             <div className="max-w-3xl">
                 {children}
             </div>
-        </NewCampaignTablesInitProvider>
+        </ConfigEditInitProvider>
     );
 }

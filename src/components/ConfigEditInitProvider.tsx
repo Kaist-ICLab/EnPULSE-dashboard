@@ -16,7 +16,7 @@ const ConfigEditInitProvider: React.FC<{
 
     useEffect(() => {
         if (isInitializedRef.current) return;
-        isInitializedRef.current = true;
+
 
         if (isNewCampaign) {
             reset();
@@ -32,8 +32,14 @@ const ConfigEditInitProvider: React.FC<{
                     window.alert("Failed to initialize imported configuration.");
                 }
             }
+
+            isInitializedRef.current = true;
         }
-        else if (campaign) setCampaign(campaign);
+        else if (campaign) {
+            setCampaign(campaign);
+            isInitializedRef.current = true;
+        }
+
         clear();
     }, [reset, setCampaign, campaign, isNewCampaign, clear, setCampaignUsingImportedConfig]);
 
