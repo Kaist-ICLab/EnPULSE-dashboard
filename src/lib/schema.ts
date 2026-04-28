@@ -70,6 +70,45 @@ export type Database = {
                 }
                 Relationships: []
             }
+            activity_recognition_sensor: {
+                Row: {
+                    activity_type: number
+                    created_at: string | null
+                    device_type: number
+                    elapsed_realtime_millis: number
+                    event_id: string
+                    probabilities: number[]
+                    received: string
+                    score: number
+                    timestamp: string
+                    uuid: string
+                }
+                Insert: {
+                    activity_type: number
+                    created_at?: string | null
+                    device_type: number
+                    elapsed_realtime_millis: number
+                    event_id: string
+                    probabilities: number[]
+                    received: string
+                    score: number
+                    timestamp: string
+                    uuid: string
+                }
+                Update: {
+                    activity_type?: number
+                    created_at?: string | null
+                    device_type?: number
+                    elapsed_realtime_millis?: number
+                    event_id?: string
+                    probabilities?: number[]
+                    received?: string
+                    score?: number
+                    timestamp?: string
+                    uuid?: string
+                }
+                Relationships: []
+            }
             ambient_light_sensor: {
                 Row: {
                     accuracy: number
@@ -716,6 +755,42 @@ export type Database = {
                 }
                 Relationships: []
             }
+            gesture_sensor: {
+                Row: {
+                    class_index: number
+                    created_at: string | null
+                    device_type: number
+                    event_id: string
+                    probabilities: number[]
+                    received: string
+                    score: number
+                    timestamp: string
+                    uuid: string
+                }
+                Insert: {
+                    class_index: number
+                    created_at?: string | null
+                    device_type: number
+                    event_id: string
+                    probabilities: number[]
+                    received: string
+                    score: number
+                    timestamp: string
+                    uuid: string
+                }
+                Update: {
+                    class_index?: number
+                    created_at?: string | null
+                    device_type?: number
+                    event_id?: string
+                    probabilities?: number[]
+                    received?: string
+                    score?: number
+                    timestamp?: string
+                    uuid?: string
+                }
+                Relationships: []
+            }
             heart_rate_sensor: {
                 Row: {
                     created_at: string | null
@@ -749,6 +824,51 @@ export type Database = {
                     hr_status?: number
                     ibi?: number[]
                     ibi_status?: number[]
+                    received?: string
+                    timestamp?: string
+                    uuid?: string
+                }
+                Relationships: []
+            }
+            imu_sensor: {
+                Row: {
+                    acc_x: number
+                    acc_y: number
+                    acc_z: number
+                    created_at: string | null
+                    device_type: number
+                    event_id: string
+                    gyro_x: number
+                    gyro_y: number
+                    gyro_z: number
+                    received: string
+                    timestamp: string
+                    uuid: string
+                }
+                Insert: {
+                    acc_x: number
+                    acc_y: number
+                    acc_z: number
+                    created_at?: string | null
+                    device_type: number
+                    event_id: string
+                    gyro_x: number
+                    gyro_y: number
+                    gyro_z: number
+                    received: string
+                    timestamp: string
+                    uuid: string
+                }
+                Update: {
+                    acc_x?: number
+                    acc_y?: number
+                    acc_z?: number
+                    created_at?: string | null
+                    device_type?: number
+                    event_id?: string
+                    gyro_x?: number
+                    gyro_y?: number
+                    gyro_z?: number
                     received?: string
                     timestamp?: string
                     uuid?: string
@@ -1159,6 +1279,42 @@ export type Database = {
                 }
                 Relationships: []
             }
+            stress_sensor: {
+                Row: {
+                    created_at: string | null
+                    device_type: number
+                    event_id: string
+                    is_high_stress: boolean
+                    probability: number
+                    received: string
+                    timestamp: string
+                    uuid: string
+                    window_start_ms: string
+                }
+                Insert: {
+                    created_at?: string | null
+                    device_type: number
+                    event_id: string
+                    is_high_stress: boolean
+                    probability: number
+                    received: string
+                    timestamp: string
+                    uuid: string
+                    window_start_ms: string
+                }
+                Update: {
+                    created_at?: string | null
+                    device_type?: number
+                    event_id?: string
+                    is_high_stress?: boolean
+                    probability?: number
+                    received?: string
+                    timestamp?: string
+                    uuid?: string
+                    window_start_ms?: string
+                }
+                Relationships: []
+            }
             survey: {
                 Row: {
                     campaign_id: number
@@ -1242,35 +1398,6 @@ export type Database = {
                     },
                 ]
             }
-            survey_question_option: {
-                Row: {
-                    allow_free_response: boolean
-                    display: string
-                    id: number
-                    question_id: number | null
-                }
-                Insert: {
-                    allow_free_response?: boolean
-                    display: string
-                    id?: number
-                    question_id?: number | null
-                }
-                Update: {
-                    allow_free_response?: boolean
-                    display?: string
-                    id?: number
-                    question_id?: number | null
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "survey_question_option_question_id_fkey"
-                        columns: ["question_id"]
-                        isOneToOne: false
-                        referencedRelation: "survey_question"
-                        referencedColumns: ["id"]
-                    },
-                ]
-            }
             survey_question_response: {
                 Row: {
                     actual_trigger_time: string
@@ -1324,19 +1451,19 @@ export type Database = {
             }
             survey_question_trigger: {
                 Row: {
-                    expression: Json | null
+                    expression: Json
                     id: number
-                    question_id: number | null
+                    question_id: number
                 }
                 Insert: {
-                    expression?: Json | null
+                    expression: Json
                     id?: number
-                    question_id?: number | null
+                    question_id: number
                 }
                 Update: {
-                    expression?: Json | null
+                    expression?: Json
                     id?: number
-                    question_id?: number | null
+                    question_id?: number
                 }
                 Relationships: [
                     {

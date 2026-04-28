@@ -1,7 +1,7 @@
 'use client'
 
 import { DeviceType, Survey } from "@/types/survey";
-import { Button, Card, Label, Select } from "flowbite-react";
+import { Button, Card, Label, Select, TextInput } from "flowbite-react";
 import { useRouter } from "next/navigation";
 
 import { useSurveyCardState } from "@/hooks/configuration/useSurveyCardState";
@@ -16,14 +16,12 @@ const SurveyCard: React.FC<{
     surveyIndex: number;
 }> = ({ baseUrl, survey, surveyIndex }) => {
     const router = useRouter();
-    const { removeSurvey, updateSurveyTitle, updateSurveyDescription } = useCampaignConfigEdit((state) => state);
+    const { removeSurvey, updateSurveyTitle, updateSurveyDescription, setSurveyExpireAfterMs } = useCampaignConfigEdit((state) => state);
     const { pendingDeviceType, affectedQuestions, handleDeviceTypeChange, confirmDeviceTypeChange, cancelDeviceTypeChange } = useSurveyCardState(survey, surveyIndex);
 
-    const modalTitle = pendingDeviceType === DeviceType.Watch ? "Switch to Watch?" : "Switch to Phone?";
-    const modalMessage = pendingDeviceType === DeviceType.Watch
-        ? "Watch does not support conditional triggers. Switching will remove all triggers in this survey and flatten the remaining questions to the top level. This cannot be undone by switching back."
-        : "Phone does not support Binary or Number Scale questions. Switching will convert each of them to a Radio question. This cannot be undone by switching back.";
-    const modalConfirmLabel = pendingDeviceType === DeviceType.Watch ? "Remove Triggers and Switch" : "Convert Questions and Switch";
+    const modalTitle = "Switch to Watch?";
+    const modalMessage = "Watch does not support conditional triggers. Switching will remove all triggers in this survey and flatten the remaining questions to the top level. This cannot be undone by switching back.";
+    const modalConfirmLabel = "Remove Triggers and Switch";
 
     return (
         <Card>
@@ -64,6 +62,23 @@ const SurveyCard: React.FC<{
                     <option value={DeviceType.Watch}>Watch (MicroEMA)</option>
                 </Select>
             </div>
+            {
+                survey.device_type === DeviceType.Watch && (
+                    <div className="flex flex-row items-center gap-4">
+                        <Label htmlFor={`device-type-${surveyIndex}`} className="block text-sm font-medium text-gray-900">
+                            Expiration Time (ms)
+                        </Label>
+                        <TextInput
+                            id={`expiration-time-${surveyIndex}`}
+                            type="number"
+                            value={survey.expire_after_ms}
+                            onChange={(e) => setSurveyExpireAfterMs(surveyIndex, Number(e.target.value))}
+                            className="w-full max-w-xs"
+                        />
+                    </div>
+                )
+            }
+
             <ScheduleMethodConfig
                 surveyIndex={surveyIndex}
                 scheduleMethod={survey.schedule_method}
@@ -87,17 +102,12 @@ const SurveyCard: React.FC<{
                     <div className="p-4 text-sm text-gray-700 flex flex-col gap-2">
                         <p>{modalMessage}</p>
                         <p className="font-medium text-gray-900">
-                            {pendingDeviceType === DeviceType.Watch
-                                ? "Questions with triggers that will be affected:"
-                                : "Questions that will be converted to Radio:"}
+                            Questions with triggers that will be affected:
                         </p>
                         <ul className="list-disc pl-5 max-h-48 overflow-auto">
                             {affectedQuestions.map((q, idx) => (
                                 <li key={idx} className="text-gray-700">
                                     {q.question || <span className="italic text-gray-500">Untitled question</span>}
-                                    {pendingDeviceType === DeviceType.Phone && (
-                                        <span className="ml-1 text-xs text-gray-500">({q.answer_type})</span>
-                                    )}
                                 </li>
                             ))}
                         </ul>

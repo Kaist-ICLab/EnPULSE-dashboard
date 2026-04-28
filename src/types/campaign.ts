@@ -46,7 +46,6 @@ export type RemovedEntries = {
     mapping: number[];
     survey: number[];
     question: number[];
-    option: number[];
     trigger: number[];
     campaign_trigger: number[];
 }

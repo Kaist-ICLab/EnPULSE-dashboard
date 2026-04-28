@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, Select, Checkbox, Button, Label, TextInput } from "flowbite-react";
-import { AnswerType, DeviceType, SurveyQuestion } from "@/types/survey";
+import { AnswerType, DeviceType, OptionQuestionConfig, NumberScaleQuestionConfig, SurveyQuestion } from "@/types/survey";
 
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import SwitchingTextInput from "../../common/SwitchingTextInput";
@@ -82,6 +82,8 @@ const QuestionCard: React.FC<{
         updateSurveyQuestionTriggerExpression,
         addSurveyQuestion,
         setNumberScaleRange,
+        setNumberScaleLabel,
+        setFreeResponseConfig,
     } = useCampaignConfigEdit((state) => state);
 
     const answerTypeOptions: { value: AnswerType; label: string }[] = [
@@ -89,18 +91,18 @@ const QuestionCard: React.FC<{
         { value: 'number', label: 'Number' },
         { value: 'radio', label: 'Radio' },
         { value: 'checkbox', label: 'Checkbox' },
-        ...(isWatch ? [
-            { value: 'binary' as const, label: 'Binary' },
-            { value: 'numberscale' as const, label: 'Number Scale' },
-        ] : []),
+        { value: 'binary', label: 'Binary' },
+        { value: 'numberscale', label: 'Number Scale' },
     ];
 
     const needsOptions = question.answer_type === 'radio' || question.answer_type === 'checkbox';
-    const options = question.survey_question_option || [];
+    const config = (question.config ?? {}) as Partial<OptionQuestionConfig & NumberScaleQuestionConfig>;
+    const options = (config as OptionQuestionConfig).options ?? [];
     const pathKey = questionPath.join('-');
-    const scaleOptions = question.survey_question_option ?? [];
-    const scaleMin = scaleOptions.length ? Number(scaleOptions[0].display) : 0;
-    const scaleMax = scaleOptions.length ? Number(scaleOptions[scaleOptions.length - 1].display) : 10;
+    const scaleMin = config.min ?? 0;
+    const scaleMax = config.max ?? 10;
+    const scaleMinLabel = config.minLabel ?? '';
+    const scaleMaxLabel = config.maxLabel ?? '';
 
     return (
         <Card className="grow">
@@ -170,15 +172,25 @@ const QuestionCard: React.FC<{
                 <label htmlFor={`mandatory-${pathKey}`} className="text-sm font-medium text-gray-900">
                     Mandatory
                 </label>
+                {(question.answer_type === 'radio' || question.answer_type === 'checkbox') && (
+                    <>
+                        <Checkbox
+                            id={`allow-free-response-${pathKey}`}
+                            checked={(config as OptionQuestionConfig).allowFreeResponse}
+                            className="ml-2"
+                            onChange={(e) => setFreeResponseConfig(surveyIndex, questionPath, e.target.checked, (config as OptionQuestionConfig).freeResponsePrefix ?? '')}
+                        />
+                        <label htmlFor={`allow-free-response-${pathKey}`} className="text-sm font-medium text-gray-900">
+                            Allow free response
+                        </label>
+                    </>
+                )}
             </div>
 
             {question.answer_type === 'numberscale' && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                    <label className="block text-sm font-medium text-gray-900 mb-2">
-                        Integer Range
-                    </label>
+                <div className="flex flex-col gap-4 mt-4 pt-4 border-t border-gray-200">
                     <div className="flex flex-row items-center gap-2">
-                        <Label htmlFor={`scale-min-${pathKey}`} className="text-sm text-gray-700">Min</Label>
+                        <Label htmlFor={`scale-min-${pathKey}`} className="text-sm text-gray-700 w-7">Min</Label>
                         <TextInput
                             id={`scale-min-${pathKey}`}
                             type="number"
@@ -187,7 +199,19 @@ const QuestionCard: React.FC<{
                             onChange={(e) => setNumberScaleRange(surveyIndex, questionPath, Number(e.target.value), scaleMax)}
                             className="w-24"
                         />
-                        <Label htmlFor={`scale-max-${pathKey}`} className="text-sm text-gray-700 ml-2">Max</Label>
+                        <Label htmlFor={`scale-min-${pathKey}`} className="text-sm text-gray-700 ml-2 w-28">Min number label</Label>
+                        <TextInput
+                            id={`scale-min-${pathKey}`}
+                            type="text"
+                            sizing="sm"
+                            value={scaleMinLabel}
+                            onChange={(e) => setNumberScaleLabel(surveyIndex, questionPath, e.target.value, scaleMaxLabel)}
+                            className="grow"
+                        />
+
+                    </div>
+                    <div className="flex flex-row items-center gap-2">
+                        <Label htmlFor={`scale-max-${pathKey}`} className="text-sm text-gray-700 w-7">Max</Label>
                         <TextInput
                             id={`scale-max-${pathKey}`}
                             type="number"
@@ -195,6 +219,15 @@ const QuestionCard: React.FC<{
                             value={scaleMax}
                             onChange={(e) => setNumberScaleRange(surveyIndex, questionPath, scaleMin, Number(e.target.value))}
                             className="w-24"
+                        />
+                        <Label htmlFor={`scale-max-${pathKey}`} className="text-sm text-gray-700 ml-2 w-28">Max number label</Label>
+                        <TextInput
+                            id={`scale-max-${pathKey}`}
+                            type="text"
+                            sizing="sm"
+                            value={scaleMaxLabel}
+                            onChange={(e) => setNumberScaleLabel(surveyIndex, questionPath, scaleMinLabel, e.target.value)}
+                            className="grow"
                         />
                     </div>
                 </div>
@@ -227,23 +260,12 @@ const QuestionCard: React.FC<{
                                         title="Remove option"
                                     ></span>
                                     <div className="flex flex-col gap-1 grow">
-                                        <div >
-
+                                        <div>
                                             <SwitchingTextInput
-                                                value={option.display}
-                                                onChange={(value: string) => updateSurveyQuestionOption(surveyIndex, questionPath, optionIndex, { display: value })}
+                                                value={option}
+                                                onChange={(value) => updateSurveyQuestionOption(surveyIndex, questionPath, optionIndex, value)}
                                                 sizing="sm"
                                                 className="flex-1"
-                                            />
-                                        </div>
-                                        <div className="flex items-center gap-2 pl-2">
-                                            <Label htmlFor={`allow-free-response-${questionPath.join('-')}-${optionIndex}`} className="text-sm font-light text-gray-500">
-                                                Allow free text response
-                                            </Label>
-                                            <Checkbox
-                                                id={`allow-free-response-${questionPath.join('-')}-${optionIndex}`}
-                                                checked={option.allow_free_response}
-                                                onChange={(e) => updateSurveyQuestionOption(surveyIndex, questionPath, optionIndex, { allow_free_response: e.target.checked })}
                                             />
                                         </div>
                                     </div>
@@ -267,6 +289,17 @@ const QuestionCard: React.FC<{
                                 </div>
 
                             ))}
+                        </div>
+                    )}
+                    {(config as OptionQuestionConfig).allowFreeResponse && (
+                        <div className="flex items-center gap-2 w-full bg-gray-100 rounded-lg p-2 mt-2">
+                            <Label htmlFor={`free-response-prefix-${pathKey}`} className="text-sm text-gray-700 w-42">Free response prefix: </Label>
+                            <SwitchingTextInput
+                                id={`free-response-prefix-${pathKey}`}
+                                value={(config as OptionQuestionConfig).freeResponsePrefix ?? ''}
+                                onChange={(value) => setFreeResponseConfig(surveyIndex, questionPath, (config as OptionQuestionConfig).allowFreeResponse, value)}
+                                sizing="sm"
+                            />
                         </div>
                     )}
                 </div>

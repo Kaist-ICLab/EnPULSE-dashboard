@@ -4,9 +4,10 @@ import { TextInput } from "flowbite-react";
 const SwitchingTextInput: React.FC<{
     value: string;
     onChange: (value: string) => void;
+    id?: string;
     className?: string;
     sizing?: "sm" | "md" | "lg";
-}> = ({ value, onChange, className = "", sizing = "md" }) => {
+}> = ({ value, onChange, id, className = "", sizing = "md" }) => {
     const [text, setText] = useState(value);
     const [isEditing, setIsEditing] = useState(false);
 
@@ -25,7 +26,7 @@ const SwitchingTextInput: React.FC<{
         <div className={`flex w-full gap-2 ${className}`}>
             {isEditing ? (
                 <div className="flex w-full gap-2">
-                    <TextInput sizing={sizing} value={text} onChange={(e) => setText(e.target.value)} onBlur={() => { setIsEditing(false); onChange(text); }} onKeyDown={(e) => {
+                    <TextInput id={id} sizing={sizing} value={text} onChange={(e) => setText(e.target.value)} onBlur={() => { setIsEditing(false); onChange(text); }} onKeyDown={(e) => {
                         if (e.key === 'Enter') { setIsEditing(false); onChange(text); };
                         if (e.key === 'Escape') { setIsEditing(false); setText(value); };
                     }} className="grow" autoFocus />

@@ -22,22 +22,19 @@ export function useSurveyCardState(survey: Survey, surveyIndex: number) {
         return affected;
     };
 
-    const collectWatchOnlyAnswerTypeQuestions = (questions: SurveyQuestion[]): SurveyQuestion[] => {
-        return questions.filter(q => q.answer_type === 'binary' || q.answer_type === 'numberscale');
-    };
-
     const affectedQuestions = pendingDeviceType === DeviceType.Watch
         ? collectQuestionsWithTriggers(survey.survey_question ?? [])
-        : pendingDeviceType === DeviceType.Phone
-            ? collectWatchOnlyAnswerTypeQuestions(survey.survey_question ?? [])
-            : [];
+        : [];
 
     const handleDeviceTypeChange = (nextDeviceType: DeviceType) => {
         if (nextDeviceType === currentDeviceType) return;
 
+        // Only Phone→Watch needs confirmation: triggers will be flattened.
+        // Watch→Phone is a no-op for question types now that binary/numberscale
+        // are cross-device.
         const affected = nextDeviceType === DeviceType.Watch
             ? collectQuestionsWithTriggers(survey.survey_question ?? [])
-            : collectWatchOnlyAnswerTypeQuestions(survey.survey_question ?? []);
+            : [];
 
         if (affected.length > 0) {
             setPendingDeviceType(nextDeviceType);

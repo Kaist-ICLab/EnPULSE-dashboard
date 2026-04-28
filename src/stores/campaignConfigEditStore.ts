@@ -1,5 +1,5 @@
 import { CampaignTable, CampaignTableField, FetchedCampaign, FieldRole, FieldType, RemovedEntries } from "@/types/campaign";
-import { AnswerType, DeviceType, Expression, OperatorType, ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionOption, SurveyQuestionTrigger } from "@/types/survey";
+import { AnswerType, DeviceType, Expression, OperatorType, QuestionConfig, ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionTrigger } from "@/types/survey";
 import { CampaignTrigger, TriggerAction, TriggerActionKind, TriggerCondition, defaultAction, defaultDetection } from "@/types/trigger";
 import { DATE_FORMAT } from "@/utils/date";
 import dayjs from "dayjs";
@@ -63,12 +63,15 @@ export type CampaignConfigEditActions = {
     addSurveyQuestion: (surveyIndex: number, questionPath: number[], triggerIndex?: number) => void;
     removeSurveyQuestion: (surveyIndex: number, questionPath: number[]) => void;
     updateSurveyQuestion: (surveyIndex: number, questionPath: number[], updates: Partial<SurveyQuestion>) => void;
+    setFreeResponseConfig: (surveyIndex: number, questionPath: number[], allowFreeResponse: boolean, freeResponsePrefix: string) => void;
+    setSurveyExpireAfterMs: (surveyIndex: number, expireAfterMs: number) => void;
     setNumberScaleRange: (surveyIndex: number, questionPath: number[], min: number, max: number) => void;
+    setNumberScaleLabel: (surveyIndex: number, questionPath: number[], minLabel: string, maxLabel: string) => void;
     reorderSurveyQuestion: (surveyIndex: number, questionPath: number[], direction: 'up' | 'down') => void;
 
     addSurveyQuestionOption: (surveyIndex: number, questionPath: number[]) => void;
     removeSurveyQuestionOption: (surveyIndex: number, questionPath: number[], optionIndex: number) => void;
-    updateSurveyQuestionOption: (surveyIndex: number, questionPath: number[], optionIndex: number, updates: Partial<SurveyQuestionOption>) => void;
+    updateSurveyQuestionOption: (surveyIndex: number, questionPath: number[], optionIndex: number, value: string) => void;
     reorderSurveyQuestionOption: (surveyIndex: number, questionPath: number[], optionIndex: number, direction: 'up' | 'down') => void;
 
     addSurveyQuestionTrigger: (surveyIndex: number, questionPath: number[]) => void;
@@ -150,6 +153,8 @@ function getValueType(answerType: AnswerType, op: OperatorType) {
             return op === 'Empty' ? null : 'string';
         case 'number':
         case 'radio':
+        case 'binary':
+        case 'numberscale':
             return 'number';
         case 'checkbox':
             return op === 'Contains' ? 'number' : 'array';
@@ -158,13 +163,16 @@ function getValueType(answerType: AnswerType, op: OperatorType) {
     }
 }
 
-function checkExpressionValidity(prevAnswerType: AnswerType, answerType: AnswerType, expression: Expression | null | undefined): Expression | null | undefined {
+function checkExpressionValidity(prevAnswerType: AnswerType, answerType: AnswerType, expression: Expression): Expression {
     if (!expression) return expression;
 
     if (answerType === 'text' && !['Empty', 'Equal', 'NotEqual'].includes(expression.op)) {
         return { op: 'Equal', value: '' } as Expression;
     }
-    if ((answerType === 'number' || answerType === 'radio') && !['Equal', 'NotEqual', 'GreaterThan', 'GreaterThanOrEqual', 'LessThan', 'LessThanOrEqual'].includes(expression.op)) {
+    if ((answerType === 'number' || answerType === 'radio' || answerType === 'numberscale') && !['Equal', 'NotEqual', 'GreaterThan', 'GreaterThanOrEqual', 'LessThan', 'LessThanOrEqual'].includes(expression.op)) {
+        return { op: 'Equal', value: 0 } as Expression;
+    }
+    if (answerType === 'binary' && !['Equal', 'NotEqual'].includes(expression.op)) {
         return { op: 'Equal', value: 0 } as Expression;
     }
     if (answerType === 'checkbox' && !['Equal', 'NotEqual', 'Contains'].includes(expression.op)) {
@@ -187,10 +195,29 @@ function emptyRemovedEntries(): RemovedEntries {
         mapping: [],
         survey: [],
         question: [],
-        option: [],
         trigger: [],
         campaign_trigger: [],
     };
+}
+
+// Read options from a question's config, when the answer_type carries them
+// (radio/checkbox). Returns undefined for types that don't have options.
+function configOptions(q: SurveyQuestion): string[] | undefined {
+    const cfg = q.config as { options?: string[] } | null | undefined;
+    return cfg?.options;
+}
+
+// Build a fresh QuestionConfig for a given answer_type when the user toggles
+// type. Drops fields that don't apply and seeds defaults for types that need
+// them.
+function defaultConfigForType(answerType: AnswerType): QuestionConfig {
+    if (answerType === 'radio' || answerType === 'checkbox') {
+        return { options: [], allowFreeResponse: false, freeResponsePrefix: '' };
+    }
+    if (answerType === 'numberscale') {
+        return { min: 0, max: 10, minLabel: '', maxLabel: '' };
+    }
+    return {};
 }
 
 function getDefaultState(): CampaignConfigEditState {
@@ -392,20 +419,9 @@ export const createCampaignConfigEditStore = (
                     };
                     walk(survey.survey_question);
                     survey.survey_question = flattened;
-                } else if (deviceType === DeviceType.Phone) {
-                    for (const q of survey.survey_question) {
-                        if (q.answer_type === 'binary') {
-                            (q.survey_question_option ?? []).forEach(o => state.removedEntries.option.push(o.id ?? -1));
-                            q.survey_question_option = [
-                                { question_id: q.id ?? -1, display: 'Yes', allow_free_response: false },
-                                { question_id: q.id ?? -1, display: 'No', allow_free_response: false },
-                            ];
-                            q.answer_type = 'radio';
-                        } else if (q.answer_type === 'numberscale') {
-                            q.answer_type = 'radio';
-                        }
-                    }
                 }
+                // Phone branch: binary and numberscale are now cross-device, so
+                // there's no auto-conversion. Triggers stay as-is.
 
                 survey.device_type = deviceType;
             });
@@ -432,7 +448,7 @@ export const createCampaignConfigEditStore = (
                     question: `Question ${(targetArray.length || 0) + 1}`,
                     answer_type: 'text',
                     is_mandatory: false,
-                    survey_question_option: [],
+                    config: defaultConfigForType('text'),
                     survey_question_trigger: [],
                 });
             });
@@ -461,17 +477,10 @@ export const createCampaignConfigEditStore = (
                 Object.assign(question, updates);
 
                 if (updates.answer_type && updates.answer_type !== prevAnswerType) {
-                    if (updates.answer_type === 'binary') {
-                        (question.survey_question_option ?? []).forEach(o => state.removedEntries.option.push(o.id ?? -1));
-                        question.survey_question_option = [];
-                    } else if (updates.answer_type === 'numberscale') {
-                        (question.survey_question_option ?? []).forEach(o => state.removedEntries.option.push(o.id ?? -1));
-                        question.survey_question_option = Array.from({ length: 11 }, (_, i) => ({
-                            question_id: question.id ?? -1,
-                            display: String(i),
-                            allow_free_response: false,
-                        }));
-                    }
+                    // Reshape config for the new type. Existing options/min/max
+                    // are dropped; if the user is just toggling between
+                    // option-bearing types they'll re-author.
+                    question.config = defaultConfigForType(updates.answer_type);
                 }
 
                 question.survey_question_trigger?.forEach((trigger) => {
@@ -484,18 +493,33 @@ export const createCampaignConfigEditStore = (
             });
         },
 
+        setFreeResponseConfig: (surveyIndex: number, questionPath: number[], allowFreeResponse: boolean, freeResponsePrefix: string) => {
+            set((state) => {
+                const question = getQuestionFromPath(state.surveys[surveyIndex], questionPath);
+                if (!question) return;
+                question.config = { ...(question.config as object), allowFreeResponse, freeResponsePrefix } as QuestionConfig;
+            });
+        },
+
+        setSurveyExpireAfterMs: (surveyIndex: number, expireAfterMs: number) => {
+            set((state) => {
+                state.surveys[surveyIndex].expire_after_ms = expireAfterMs;
+            });
+        },
+
         setNumberScaleRange: (surveyIndex: number, questionPath: number[], min: number, max: number) => {
             set((state) => {
                 const question = getQuestionFromPath(state.surveys[surveyIndex], questionPath);
                 if (!question) return;
-                const lo = Math.round(Math.min(min, max));
-                const hi = Math.round(Math.max(min, max));
-                (question.survey_question_option ?? []).forEach(o => state.removedEntries.option.push(o.id ?? -1));
-                question.survey_question_option = Array.from({ length: hi - lo + 1 }, (_, i) => ({
-                    question_id: question.id ?? -1,
-                    display: String(lo + i),
-                    allow_free_response: false,
-                }));
+                question.config = { ...(question.config as object), min, max } as QuestionConfig;
+            });
+        },
+
+        setNumberScaleLabel: (surveyIndex: number, questionPath: number[], minLabel: string, maxLabel: string) => {
+            set((state) => {
+                const question = getQuestionFromPath(state.surveys[surveyIndex], questionPath);
+                if (!question) return;
+                question.config = { ...(question.config as object), minLabel, maxLabel } as QuestionConfig;
             });
         },
 
@@ -515,12 +539,10 @@ export const createCampaignConfigEditStore = (
             set((state) => {
                 const question = getQuestionFromPath(state.surveys[surveyIndex], questionPath);
                 if (!question) return;
+                const options = configOptions(question);
+                if (!options) return;
 
-                question.survey_question_option.push({
-                    question_id: -1,
-                    display: `Option ${question.survey_question_option.length + 1}`,
-                    allow_free_response: false,
-                });
+                options.push(`Option ${options.length + 1}`);
             });
         },
 
@@ -528,18 +550,21 @@ export const createCampaignConfigEditStore = (
             set((state) => {
                 const question = getQuestionFromPath(state.surveys[surveyIndex], questionPath);
                 if (!question) return;
+                const options = configOptions(question);
+                if (!options) return;
 
-                const removedOptionId = question.survey_question_option.splice(optionIndex, 1)[0].id ?? -1;
-                state.removedEntries.option.push(removedOptionId);
+                options.splice(optionIndex, 1);
             });
         },
 
-        updateSurveyQuestionOption: (surveyIndex: number, questionPath: number[], optionIndex: number, updates: Partial<SurveyQuestionOption>) => {
+        updateSurveyQuestionOption: (surveyIndex: number, questionPath: number[], optionIndex: number, value: string) => {
             set((state) => {
                 const question = getQuestionFromPath(state.surveys[surveyIndex], questionPath);
                 if (!question) return;
+                const options = configOptions(question);
+                if (!options) return;
 
-                question.survey_question_option[optionIndex] = { ...question.survey_question_option[optionIndex], ...updates };
+                options[optionIndex] = value;
             });
         },
 
@@ -547,10 +572,10 @@ export const createCampaignConfigEditStore = (
             set((state) => {
                 const question = getQuestionFromPath(state.surveys[surveyIndex], questionPath);
                 if (!question) return;
+                const options = configOptions(question);
+                if (!options) return;
 
-                const options = question.survey_question_option;
                 const newIndex = direction === 'up' ? optionIndex - 1 : optionIndex + 1;
-
                 if (newIndex < 0 || newIndex >= options.length) {
                     return;
                 }
@@ -565,8 +590,9 @@ export const createCampaignConfigEditStore = (
                 if (!question) return;
 
                 const newTrigger: SurveyQuestionTrigger = {
+                    id: -1,
                     question_id: -1,
-                    expression: { op: 'Equal', value: question.answer_type in ['radio', 'checkbox'] && question.survey_question_option.length > 0 ? 0 : '' } as Expression,
+                    expression: { op: 'Equal', value: 0 } as Expression,
                     survey_question: [],
                 };
 
@@ -580,10 +606,6 @@ export const createCampaignConfigEditStore = (
                     default:
                         newTrigger.expression = { op: 'Equal', value: 0 }
                         break;
-                }
-
-                if (!question.survey_question_trigger) {
-                    question.survey_question_trigger = [];
                 }
 
                 question.survey_question_trigger.push(newTrigger);
@@ -678,9 +700,6 @@ export const createCampaignConfigEditStore = (
                 const walkQuestions = (questions: SurveyQuestion[]) => {
                     questions.forEach((q) => {
                         state.removedEntries.question.push(q.id ?? -1);
-                        q.survey_question_option.forEach((o) => {
-                            state.removedEntries.option.push(o.id ?? -1);
-                        });
                         q.survey_question_trigger.forEach((tr) => {
                             state.removedEntries.trigger.push(tr.id ?? -1);
                             walkQuestions(tr.survey_question);
