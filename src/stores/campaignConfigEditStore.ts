@@ -23,7 +23,10 @@ export type CampaignConfigEditState = ExportedCampaignConfig & {
     campaignStartTime: string;
     campaignEndTime: string;
     removedEntries: RemovedEntries;
+    questionClipboard: QuestionClipboard | null;
 }
+
+type QuestionClipboard = Omit<SurveyQuestion, 'id' | 'survey_id' | 'triggered_by' | 'survey_question_trigger'>;
 
 export type CampaignConfigEditActions = {
     // Campaign basic information
@@ -78,6 +81,15 @@ export type CampaignConfigEditActions = {
     removeSurveyQuestionTrigger: (surveyIndex: number, questionPath: number[], triggerIndex: number) => void;
     updateSurveyQuestionTrigger: (surveyIndex: number, questionPath: number[], triggerIndex: number, updates: Partial<SurveyQuestionTrigger>) => void;
     updateSurveyQuestionTriggerExpression: (surveyIndex: number, questionPath: number[], triggerIndex: number, expression: Expression) => void;
+
+    // Question clipboard. `copy` snapshots a question (and its trigger
+    // subtree). `paste` REPLACES the question at `targetQuestionPath` with a
+    // fresh clone of the clipboard — every id reset to -1 — and queues the
+    // replaced question's subtree for deletion on save. Always paste a new
+    // entity, never re-parent the live one — that would break the
+    // survey_question.triggered_by single-parent FK.
+    copySurveyQuestion: (surveyIndex: number, questionPath: number[]) => void;
+    pasteSurveyQuestion: (surveyIndex: number, targetQuestionPath: number[]) => void;
 
     // Sensor-driven campaign triggers (separate from in-survey conditional branching above).
     addTrigger: () => void;
@@ -232,6 +244,7 @@ function getDefaultState(): CampaignConfigEditState {
         surveys: [],
         campaign_trigger: [],
         removedEntries: emptyRemovedEntries(),
+        questionClipboard: null,
     };
 }
 
@@ -247,6 +260,17 @@ function getStateFromCampaign(campaign: FetchedCampaign): CampaignConfigEditStat
         surveys: campaign.survey,
         campaign_trigger: campaign.campaign_trigger,
         removedEntries: emptyRemovedEntries(),
+        questionClipboard: null,
+    };
+}
+
+
+function cloneQuestionAsNew(q: QuestionClipboard): QuestionClipboard {
+    return {
+        answer_type: q.answer_type,
+        config: q.config,
+        question: q.question,
+        is_mandatory: q.is_mandatory,
     };
 }
 
@@ -692,6 +716,43 @@ export const createCampaignConfigEditStore = (
                 const trigger = getTriggerFromPath(state.surveys[surveyIndex], questionPath, triggerIndex);
                 if (!trigger) return;
                 trigger.expression = expression;
+            });
+        },
+
+        copySurveyQuestion: (surveyIndex: number, questionPath: number[]) => {
+            set((state) => {
+                const survey = state.surveys[surveyIndex];
+                if (!survey) return;
+                const source = getQuestionFromPath(survey, questionPath);
+                if (!source) return;
+                state.questionClipboard = cloneQuestionAsNew(source);
+            });
+        },
+
+        pasteSurveyQuestion: (surveyIndex: number, targetQuestionPath: number[]) => {
+            set((state) => {
+                if (!state.questionClipboard) return;
+                const survey = state.surveys[surveyIndex];
+                if (!survey) return;
+                if (targetQuestionPath.length === 0) return;
+
+                const { arr, idx } = getQuestionArrayAndIndexFromPath(survey, targetQuestionPath);
+                if (!arr || idx < 0 || idx >= arr.length) return;
+
+                // Queue the replaced question and its entire trigger subtree
+                // for deletion on save. The fresh clone has id=-1 throughout
+                // and will be inserted as a new row chain.
+                const collectIds = (q: SurveyQuestion) => {
+                    if (q.id != null && q.id !== -1) state.removedEntries.question.push(q.id);
+                    q.survey_question_trigger.forEach(t => {
+                        if (t.id != null && t.id !== -1) state.removedEntries.trigger.push(t.id);
+                        t.survey_question.forEach(collectIds);
+                    });
+                };
+                collectIds(arr[idx]);
+
+                // Clone the clipboard so repeated pastes don't share references.
+                arr[idx] = { ...cloneQuestionAsNew(state.questionClipboard), id: -1, survey_id: -1, triggered_by: null, survey_question_trigger: [] };
             });
         },
 

@@ -19,7 +19,7 @@ const TriggerCard: React.FC<TriggerCardProps> = ({
     question,
     onRemove,
     onUpdateExpression,
-    onAddChildQuestion
+    onAddChildQuestion,
 }) => {
     return (
         <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">

@@ -23,7 +23,7 @@ const QuestionList: React.FC<{
                 return [{ question, questionPath, depth, totalQuestions: questionList.length }, ...directChildren];
             });
         };
-        return recursiveCallback(survey.survey_question || [], [], 0);
+        return recursiveCallback(survey?.survey_question || [], [], 0);
     }, [survey]);
 
     if (!survey) {
@@ -55,8 +55,7 @@ const QuestionList: React.FC<{
                         isWatch={isWatch}
                     />
                 </div>
-            }
-            )}
+            })}
         </div>
     );
 };
@@ -84,7 +83,11 @@ const QuestionCard: React.FC<{
         setNumberScaleRange,
         setNumberScaleLabel,
         setFreeResponseConfig,
+        copySurveyQuestion,
+        pasteSurveyQuestion,
+        questionClipboard,
     } = useCampaignConfigEdit((state) => state);
+    const canPasteHere = questionClipboard !== null;
 
     const answerTypeOptions: { value: AnswerType; label: string }[] = [
         { value: 'text', label: 'Text' },
@@ -128,6 +131,18 @@ const QuestionCard: React.FC<{
 
                 </div>
                 <div className="flex items-center gap-2 ml-2">
+                    <span
+                        className="icon-[material-symbols--content-copy-outline] w-5 h-5 cursor-pointer text-gray-500 hover:text-blue-500"
+                        onClick={() => copySurveyQuestion(surveyIndex, questionPath)}
+                        title="Copy question"
+                    ></span>
+                    {canPasteHere && (
+                        <span
+                            className="icon-[material-symbols--content-paste] w-5 h-5 cursor-pointer text-gray-500 hover:text-blue-500"
+                            onClick={() => pasteSurveyQuestion(surveyIndex, questionPath)}
+                            title={`Paste over with: ${questionClipboard?.question || 'copied question'}`}
+                        ></span>
+                    )}
                     {questionPath[questionPath.length - 1] > 0 && (
                         <span
                             className="icon-[material-symbols--arrow-upward] w-5 h-5 cursor-pointer text-gray-500 hover:text-blue-500"
