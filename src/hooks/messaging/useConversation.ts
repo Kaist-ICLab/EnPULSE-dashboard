@@ -1,4 +1,4 @@
-import { getAnnouncement, getMessages, subscribeMessageUpdate } from '@/services/messageService';
+// import { getAnnouncement, getMessages, subscribeMessageUpdate } from '@/services/messageService';
 import { Message } from '@/types/message';
 import { useEffect, useState, useCallback } from 'react';
 
@@ -15,38 +15,38 @@ export const useConversation = (sessionId: number | null) => {
     }, [conversation])
 
     useEffect(() => {
-        async function loadConversation() {
-            if (!sessionId) return
+        // async function loadConversation() {
+        //     if (!sessionId) return
 
-            try {
-                const messages = await getMessages(sessionId)
-                const announcement = await getAnnouncement(sessionId)
+        //     try {
+        //         const messages = await getMessages(sessionId)
+        //         const announcement = await getAnnouncement(sessionId)
 
-                setAnnouncement(announcement)
-                setConversation(messages)
-            } catch {
-                setError(new Error())
-            }
+        //         setAnnouncement(announcement)
+        //         setConversation(messages)
+        //     } catch {
+        //         setError(new Error())
+        //     }
 
-            setLoading(false)
-        }
+        //     setLoading(false)
+        // }
 
-        if (!sessionId) {
-            setConversation(null);
-            setAnnouncement(null);
-            setLoading(false)
-            return;
-        }
+        // if (!sessionId) {
+        //     setConversation(null);
+        //     setAnnouncement(null);
+        //     setLoading(false)
+        //     return;
+        // }
 
-        setLoading(true);
-        setError(null);
-        loadConversation()
+        // setLoading(true);
+        // setError(null);
+        // loadConversation()
     }, [sessionId])
 
     useEffect(() => {
-        if (!sessionId) return;
-        const unsubscribe = subscribeMessageUpdate(sessionId, patchMessages);
-        return () => unsubscribe();
+        // if (!sessionId) return;
+        // const unsubscribe = subscribeMessageUpdate(sessionId, patchMessages);
+        // return () => unsubscribe();
     }, [sessionId, patchMessages])
 
     return {

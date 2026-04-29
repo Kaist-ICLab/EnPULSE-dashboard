@@ -10,7 +10,7 @@ export default async function CampaignLayout({
     params,
     children,
 }: Readonly<{
-    params: { id: string };
+    params: Promise<{ id: string }>;
     children: React.ReactNode;
 }>) {
     const { id } = await params;

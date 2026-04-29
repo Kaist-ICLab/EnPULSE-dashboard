@@ -7,7 +7,7 @@ export default async function DashboardLayout({
     params,
     children,
 }: Readonly<{
-    params: { id: string };
+    params: Promise<{ id: string }>;
     children: React.ReactNode;
 }>) {
 
