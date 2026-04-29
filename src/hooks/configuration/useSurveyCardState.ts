@@ -1,5 +1,5 @@
 import { DeviceType, Survey, SurveyQuestion } from "@/types/survey";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 
 export function useSurveyCardState(survey: Survey, surveyIndex: number) {
@@ -21,6 +21,19 @@ export function useSurveyCardState(survey: Survey, surveyIndex: number) {
         walk(questions);
         return affected;
     };
+
+    const _countNestedQuestions = useCallback((questions: SurveyQuestion[]): number => {
+        let count = questions.length;
+        for (const q of questions) {
+            for (const t of q.survey_question_trigger ?? []) {
+                count += _countNestedQuestions(t.survey_question ?? []);
+            }
+        }
+
+        return count;
+    }, []);
+
+    const nestedQuestionCount = useMemo(() => _countNestedQuestions(survey.survey_question ?? []), [survey.survey_question, _countNestedQuestions]);
 
     const affectedQuestions = pendingDeviceType === DeviceType.Watch
         ? collectQuestionsWithTriggers(survey.survey_question ?? [])
@@ -53,6 +66,7 @@ export function useSurveyCardState(survey: Survey, surveyIndex: number) {
 
     return {
         pendingDeviceType,
+        nestedQuestionCount,
         affectedQuestions,
         handleDeviceTypeChange,
         confirmDeviceTypeChange,

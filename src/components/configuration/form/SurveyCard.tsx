@@ -17,7 +17,7 @@ const SurveyCard: React.FC<{
 }> = ({ baseUrl, survey, surveyIndex }) => {
     const router = useRouter();
     const { removeSurvey, updateSurveyTitle, updateSurveyDescription, setSurveyExpireAfterMs } = useCampaignConfigEdit((state) => state);
-    const { pendingDeviceType, affectedQuestions, handleDeviceTypeChange, confirmDeviceTypeChange, cancelDeviceTypeChange } = useSurveyCardState(survey, surveyIndex);
+    const { pendingDeviceType, nestedQuestionCount, affectedQuestions, handleDeviceTypeChange, confirmDeviceTypeChange, cancelDeviceTypeChange } = useSurveyCardState(survey, surveyIndex);
 
     const modalTitle = "Switch to Watch?";
     const modalMessage = "Watch does not support conditional triggers. Switching will remove all triggers in this survey and flatten the remaining questions to the top level. This cannot be undone by switching back.";
@@ -90,7 +90,7 @@ const SurveyCard: React.FC<{
                     className="w-full"
                 >
                     <span className="icon-[material-symbols--edit] mr-2"></span>
-                    Edit Questions ({survey.survey_question?.length || 0})
+                    Edit Questions ({nestedQuestionCount})
                 </Button>
             </div>
             {pendingDeviceType !== null && (
