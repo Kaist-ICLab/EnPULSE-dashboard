@@ -5,8 +5,11 @@ import { useEffect, useState, useCallback } from 'react';
 export const useConversation = (sessionId: number | null) => {
     const [conversation, setConversation] = useState<Message[] | null>(null);
     const [announcement, setAnnouncement] = useState<Message | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
+    // const [loading, setLoading] = useState(true);
+    // const [error, setError] = useState<Error | null>(null);
+
+    const loading = true;
+    const error = null;
 
     const patchMessages = useCallback((newInfo: Message) => {
         if (!conversation) return;
