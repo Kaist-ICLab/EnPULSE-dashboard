@@ -62,7 +62,6 @@ const TriggerCardConfig: React.FC<{ index: number }> = ({ index }) => {
                         })}
                     </Dropdown>
                 </div>
-
                 <TriggerActionList triggerIndex={index} />
             </section>
         </Card>

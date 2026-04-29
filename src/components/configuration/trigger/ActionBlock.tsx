@@ -20,7 +20,7 @@ const ActionBlock: React.FC<{
         <Block
             palette="green"
             label={TRIGGER_ACTION_KIND_LABEL[action.kind]}
-            wrapControl={<BlockHeaderButton danger onClick={onRemove}><span className="icon-[humbleicons--times] w-3 h-3"></span></BlockHeaderButton>}
+            headerControls={<BlockHeaderButton danger onClick={onRemove}><span className="icon-[humbleicons--times] w-3 h-3"></span></BlockHeaderButton>}
         >
             {action.kind === "broadcast" ? (
                 <BroadcastActionEditor action={action} onChange={onChange} />

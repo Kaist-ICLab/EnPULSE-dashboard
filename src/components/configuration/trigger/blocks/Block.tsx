@@ -33,9 +33,13 @@ export const Block: React.FC<{
                     </select> :
                     <span className="text-sm pl-1">{label}</span>
                 }
-                <span className="text-xs ml-auto">wrap with:</span>
-                {wrapControl && <div className="flex items-center gap-1 flex-wrap">{wrapControl}</div>}
-                <div className="h-5 w-1 ml-1 border-white border-l-1"></div>
+                <span className="grow"></span>
+
+                {wrapControl && <>
+                    <span className="text-xs ml-auto">wrap with:</span>
+                    <div className="flex items-center gap-1 flex-wrap">{wrapControl}</div>
+                    {headerControls && <div className="h-5 w-1 ml-1 border-white border-l-1"></div>}
+                </>}
                 {headerControls && <div className="flex items-center gap-1 flex-wrap">{headerControls}</div>}
             </div>
             {children !== undefined && (
