@@ -11,6 +11,7 @@ import { useCampaignListStore } from "@/providers/CampaignListStoreProvider";
 import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 import { getCampaignInfo, getCampaignList } from "@/services/campaignService";
+import { notify } from "@/utils/notify";
 import dayjs from "dayjs";
 import { Button, Spinner } from "flowbite-react";
 import { usePathname } from "next/navigation";
@@ -73,10 +74,14 @@ export const SettingsHeaderMenuItems: React.FC = () => {
     const configEditStore = useCampaignConfigEditStoreApi();
     const { pastStates } = useTemporalStore(configEditStore, (state) => state);
     const { isUpdating, updateCampaignConfig } = useUpdateCampaign(async (id) => {
-        const campaignList = await getCampaignList();
-        const currentCampaign = await getCampaignInfo(id);
-        setCampaignList(campaignList);
-        setCampaign(currentCampaign);
+        try {
+            const campaignList = await getCampaignList();
+            const currentCampaign = await getCampaignInfo(id);
+            setCampaignList(campaignList);
+            setCampaign(currentCampaign);
+        } catch {
+            notify.error("Failed to refresh campaign data after save.");
+        }
     });
 
     const pathname = usePathname();

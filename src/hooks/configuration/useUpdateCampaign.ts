@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { Campaign } from "@/types/campaign";
 import bcryptjs from "bcryptjs";
 import { useTemporalStore } from "../useTemporalStore";
+import { notify } from "@/utils/notify";
 
 export function useUpdateCampaign(onSuccess: (id: number) => void) {
     const { campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, campaignPassword, tables, surveys, campaign_trigger, removedEntries } = useCampaignConfigEdit((state) => state);
@@ -12,6 +13,7 @@ export function useUpdateCampaign(onSuccess: (id: number) => void) {
 
     const updateCampaignConfig = useCallback(() => {
         const callback = async () => {
+            let upsertedCampaignId: number;
             try {
                 const campaign: Campaign = {
                     id: campaignId,
@@ -27,12 +29,15 @@ export function useUpdateCampaign(onSuccess: (id: number) => void) {
 
                 const hash = campaignPassword.length > 0 ? await bcryptjs.hash(campaignPassword, 10) : null;
 
-                const upsertedCampaignId = await upsertCampaign(campaign, hash);
+                upsertedCampaignId = await upsertCampaign(campaign, hash);
                 await deleteEntries(removedEntries);
-                onSuccess(upsertedCampaignId);
             } catch (error) {
-                console.error(error);
+                notify.error(`Failed to save campaign: ${error instanceof Error ? error.message : "Unknown error"}`);
+                return;
             }
+
+            notify.success("Campaign saved");
+            onSuccess(upsertedCampaignId);
         }
 
         clear();

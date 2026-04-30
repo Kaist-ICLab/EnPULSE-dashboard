@@ -4,6 +4,7 @@ import { Modal } from "@/components/common/Modal";
 import { useCampaignListStore } from "@/providers/CampaignListStoreProvider";
 import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import { deleteCampaign, getCampaignList } from "@/services/campaignService";
+import { notify } from "@/utils/notify";
 import { Button, Card, Spinner, TextInput } from "flowbite-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -15,7 +16,6 @@ const DangerZoneForm = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [confirmationName, setConfirmationName] = useState("");
     const [isDeleting, setIsDeleting] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const campaignName = campaign?.name ?? "";
     const canDelete = confirmationName === campaignName && !isDeleting;
@@ -25,23 +25,21 @@ const DangerZoneForm = () => {
 
         setIsModalOpen(false);
         setConfirmationName("");
-        setErrorMessage(null);
     }
 
     const handleDelete = async () => {
         if (!campaign?.id || !canDelete) return;
 
         setIsDeleting(true);
-        setErrorMessage(null);
 
         try {
             await deleteCampaign(campaign.id);
             setCampaignList(await getCampaignList());
+            notify.success(`Campaign "${campaignName}" removed`);
             router.replace("/campaigns");
             router.refresh();
-        } catch (error) {
-            console.error(error);
-            setErrorMessage("Failed to delete the campaign. Please try again.");
+        } catch {
+            notify.error("Failed to remove the campaign — please try again.");
         } finally {
             setIsDeleting(false);
         }
@@ -83,7 +81,6 @@ const DangerZoneForm = () => {
                                 disabled={isDeleting}
                             />
                         </div>
-                        {errorMessage && <p className="text-sm text-red-700">{errorMessage}</p>}
                         <div className="flex justify-end gap-2">
                             <Button color="gray" onClick={closeModal} disabled={isDeleting}>
                                 Cancel

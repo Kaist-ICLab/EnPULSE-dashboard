@@ -9,6 +9,7 @@ import {
     createCampaignConfigEditStore,
 } from "@/stores/campaignConfigEditStore";
 import { FetchedCampaign } from "@/types/campaign";
+import { notify } from "@/utils/notify";
 
 type Store = ReturnType<typeof createCampaignConfigEditStore>;
 
@@ -35,7 +36,7 @@ export const CampaignConfigEditStoreProvider: React.FC<{
                     const parsed = JSON.parse(pendingRawConfig) as ExportedCampaignConfig;
                     store.getState().setCampaignUsingImportedConfig(parsed);
                 } catch {
-                    window.alert("Failed to initialize imported configuration.");
+                    notify.error("Failed to initialize imported configuration.");
                 }
             }
         }

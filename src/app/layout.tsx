@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Roboto } from 'next/font/google';
 import "./globals.css";
 import { ThemeConfig } from "flowbite-react";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
     title: "Create Next App",
@@ -27,6 +28,7 @@ export default function RootLayout({
                 suppressHydrationWarning
             >
                 <ThemeConfig dark={false} />
+                <Toaster position="bottom-right" richColors closeButton />
                 {children}
             </body>
         </html>

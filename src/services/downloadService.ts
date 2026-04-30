@@ -36,10 +36,7 @@ export async function getDownloadData(participant: string, fields: string[], dat
     if (isPreview) supabasePromise = supabasePromise.limit(10);
     const { data, error } = await supabasePromise;
 
-    if (error) {
-        console.error(error);
-        return [];
-    }
+    if (error) throw new Error(error.message);
 
     return data;
 }

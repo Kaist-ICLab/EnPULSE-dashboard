@@ -1,5 +1,6 @@
 import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import { getDownloadRowCount } from "@/services/downloadService";
+import { notify } from "@/utils/notify";
 import dayjs from "dayjs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useDownloadState from "../../stores/downloadStore";
@@ -39,17 +40,22 @@ export default function useDownloadDataConfigState() {
         const tables = selectedTableIds.map(id => campaignTables.get(id)?.name ?? "");
         setDownloadList([]);
         setDownloadListStatus("loading");
-        const rowCounts = await getDownloadRowCount(selectedParticipantIds, startDate, endDate, tables);
-        setDownloadList(rowCounts.map(row => ({
-            isChecked: false,
-            downloadStatus: null,
-            table: row.table,
-            uuid: row.uuid,
-            pid: campaignParticipants.get(row.uuid)?.pid ?? 0,
-            date: row.date,
-            count: row.count,
-        })));
-        setDownloadListStatus("ok");
+        try {
+            const rowCounts = await getDownloadRowCount(selectedParticipantIds, startDate, endDate, tables);
+            setDownloadList(rowCounts.map(row => ({
+                isChecked: false,
+                downloadStatus: null,
+                table: row.table,
+                uuid: row.uuid,
+                pid: campaignParticipants.get(row.uuid)?.pid ?? 0,
+                date: row.date,
+                count: row.count,
+            })));
+            setDownloadListStatus("ok");
+        } catch (error) {
+            notify.error(`Failed to load download list: ${error instanceof Error ? error.message : "Unknown error"}`);
+            setDownloadListStatus("error");
+        }
     }, [selectedParticipantIds, startDate, endDate, selectedTableIds, campaignTables, campaignParticipants, setDownloadListStatus, setDownloadList]);
 
     return {

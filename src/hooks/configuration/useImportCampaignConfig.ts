@@ -1,5 +1,6 @@
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { ExportedCampaignConfig } from "@/stores/campaignConfigEditStore";
+import { notify } from "@/utils/notify";
 import { useCallback } from "react";
 
 const useImportCampaignConfig = () => {
@@ -21,8 +22,9 @@ const useImportCampaignConfig = () => {
             const parsed = JSON.parse(raw) as ExportedCampaignConfig;
 
             setCampaignUsingImportedConfig(parsed);
+            notify.success("Configuration imported");
         } catch {
-            window.alert("Failed to import configuration file.");
+            notify.error("Failed to import configuration file.");
         }
     }, [setCampaignUsingImportedConfig]);
 
