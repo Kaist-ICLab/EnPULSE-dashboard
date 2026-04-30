@@ -57,7 +57,7 @@ export function usePlotState(
             });
         }
 
-        const rangeTop = (chartType === 'barcode' || chartType === 'heatmap') ? height : (height * 0.95);
+        const rangeTop = (chartType === 'barcode' || chartType === 'heatmap' || chartType === 'survey_events') ? height : (height * 0.95);
         const rangeBottom = (chartType === 'numerical') ? height * 0.05 : 0;
 
         return scaleLinear({

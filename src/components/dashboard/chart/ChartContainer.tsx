@@ -39,6 +39,9 @@ const ChartContainer: React.FC<{
             case ComparisonType.Participants:
                 return timelines.find(t => t.params.uuid === chartPinQuery.uuid)?.id || null
             case ComparisonType.Sensors:
+                if (chartPinQuery.questionId !== null) {
+                    return timelines.find(t => t.params.questionId === chartPinQuery.questionId)?.id || null
+                }
                 return timelines.find(t => t.params.fieldId === chartPinQuery.fieldId)?.id || null
             default:
                 return null
@@ -76,9 +79,14 @@ const ChartContainer: React.FC<{
                                             className="flex flex-row gap-1 text-base px-3"
                                             onClick={() => {
                                                 const params = timelines.find(t => t.id === selectedChart)!.params
-                                                updateComparisonParams(type as ComparisonType, { uuid: [params.uuid], fieldId: [params.fieldId] })
+                                                const isSurvey = params.questionId !== undefined
+                                                updateComparisonParams(type as ComparisonType, {
+                                                    uuid: [params.uuid],
+                                                    fieldId: isSurvey ? [] : [params.fieldId],
+                                                    questionId: isSurvey ? [params.questionId!] : [],
+                                                })
                                                 updateDate(params.date)
-                                                updatePinQuery(params)
+                                                updatePinQuery({ ...params, questionId: params.questionId ?? null })
                                                 updateSelectedSection(type as ComparisonType)
                                                 setSelectedChart(null)
                                             }}

@@ -2,9 +2,11 @@ import { DnDItem, DragHandle } from "@/components/common/DnDList";
 import IconButton from "@/components/common/IconButton";
 import TimelineChart from "@/components/dashboard/chart/TimelineChart";
 import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
-import { TimelineData } from "@/types/chart";
+import { TimelineData, TimelineSurveyEventPoint } from "@/types/chart";
 import { ComparisonType } from "@/types/dashboard";
 import { ParentSize } from "@visx/responsive";
+import { useState } from "react";
+import { SurveyDistributionModal } from "./SurveyDistributionModal";
 
 export const ChartItem: React.FC<{
     timeline: TimelineData;
@@ -15,6 +17,7 @@ export const ChartItem: React.FC<{
     sectionType: ComparisonType;
 }> = ({ timeline, pinned, isSelected, setSelectedChart, bucketSize, sectionType }) => {
     const { updatePinQuery, updateComparisonParams, comparisonParams, date } = useSectionParamStore((state) => state);
+    const [distributionOpen, setDistributionOpen] = useState(false);
 
     if (!timeline) return
 
@@ -24,6 +27,8 @@ export const ChartItem: React.FC<{
     const baseTime = sectionType === ComparisonType.Days
         ? timeline.params.date.getTime()
         : date.getTime();
+
+    const isSurvey = timeline.chartType === 'survey_events';
 
     return (
         <DnDItem id={timeline.id} className={`w-full flex flex-row justify-center items-center p-2`}>
@@ -42,13 +47,28 @@ export const ChartItem: React.FC<{
                     <span className="truncate mr-2">{timeline.title}</span>
                     <IconButton size="md" hoverColor="gray" className={`mr-0.5 ${pinned ? 'icon-[mdi--pin-off]' : 'icon-[mdi--pin]'}`} onClick={(e) => {
                         e.stopPropagation();
-                        updatePinQuery(pinned ? { date: null, uuid: null, fieldId: null } : timeline.params)
+                        updatePinQuery(pinned ? { date: null, uuid: null, fieldId: null, questionId: null } : { ...timeline.params, questionId: timeline.params.questionId ?? null })
                         setSelectedChart(pinned ? null : timeline.id);
                     }} />
-                    {sectionType === ComparisonType.Sensors || sectionType === ComparisonType.Participants ? (
+                    {isSurvey && (
+                        <IconButton
+                            size="md"
+                            hoverColor="gray"
+                            className="icon-[mdi--chart-bar] mr-0.5"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setDistributionOpen(true);
+                            }}
+                        />
+                    )}
+                    {!isSurvey && (sectionType === ComparisonType.Sensors || sectionType === ComparisonType.Participants) ? (
                         <IconButton size="md" hoverColor="gray" className={`icon-[mdi--eye-off]`} onClick={() => {
                             if (sectionType === ComparisonType.Sensors) {
-                                updateComparisonParams(sectionType, { fieldId: comparisonParams[sectionType].fieldId.filter(fieldId => fieldId !== timeline.params.fieldId) })
+                                if (timeline.params.questionId !== undefined) {
+                                    updateComparisonParams(sectionType, { questionId: comparisonParams[sectionType].questionId.filter(questionId => questionId !== timeline.params.questionId) })
+                                } else {
+                                    updateComparisonParams(sectionType, { fieldId: comparisonParams[sectionType].fieldId.filter(fieldId => fieldId !== timeline.params.fieldId) })
+                                }
                             } else if (sectionType === ComparisonType.Participants) {
                                 updateComparisonParams(sectionType, { uuid: comparisonParams[sectionType].uuid.filter(uuid => uuid !== timeline.params.uuid) })
                             }
@@ -73,6 +93,15 @@ export const ChartItem: React.FC<{
                     </ParentSize>
                 </div>
             </div>
+            {isSurvey && (
+                <SurveyDistributionModal
+                    open={distributionOpen}
+                    onClose={() => setDistributionOpen(false)}
+                    events={timeline.value as TimelineSurveyEventPoint[]}
+                    chartTitle={timeline.title}
+                    participantUuid={timeline.params.uuid}
+                />
+            )}
         </DnDItem >
     )
 }

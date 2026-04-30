@@ -1,8 +1,9 @@
-import { ChartType, TimelineCategoricalPoint, TimelineDataPoint, TimelineHeatmapPoint, TimelineNumericalPoint } from "@/types/chart";
+import { ChartType, TimelineCategoricalPoint, TimelineDataPoint, TimelineHeatmapPoint, TimelineNumericalPoint, TimelineSurveyEventPoint } from "@/types/chart";
 import { useNumericalPlotState } from "./useNumericalPlotState";
 import { useCategoricalPlotState } from "./useCategoricalPlotState";
 import { useBarcodePlotState } from "./useBarcodePlotState";
 import { useHeatmapPlotState } from "./useHeatmapPlotState";
+import { useSurveyEventsPlotState } from "./useSurveyEventsPlotState";
 import { colors } from "@/utils/timelineUtils";
 
 export function useVaryingPlotState(
@@ -36,6 +37,10 @@ export function useVaryingPlotState(
         fieldId
     );
 
+    const { getTooltipData: surveyEventsGetTooltipData, getColor: surveyEventsGetColor } = useSurveyEventsPlotState(
+        chartType === 'survey_events' ? (data as TimelineSurveyEventPoint[]) : []
+    );
+
     if (chartType === 'numerical') {
         return {
             minValue: numericalMinValue,
@@ -63,6 +68,13 @@ export function useVaryingPlotState(
             maxValue: heatmapMaxValue,
             getTooltipData: heatmapGetTooltipData,
             getColor: heatmapGetColor,
+        }
+    } else if (chartType === 'survey_events') {
+        return {
+            minValue: 0,
+            maxValue: 1,
+            getTooltipData: surveyEventsGetTooltipData,
+            getColor: surveyEventsGetColor,
         }
     } else {
         return {

@@ -24,7 +24,7 @@ const DailyOverviewTable: React.FC = () => {
     const { campaignParticipants } = useCampaignStore((state) => state);
     const { updateComparisonParams, updateSelectedSection } = useSectionParamStore((state) => state);
 
-    const { data, loading, maxDailyCount, tableNames, page, rowsPerPage, totalPage, setPage, setRowsPerPage } = useUserDailyStat(5);
+    const { data, loading, maxDailyCount, columns, page, rowsPerPage, totalPage, setPage, setRowsPerPage } = useUserDailyStat(5);
     const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } = useDailyStatTableCheckedState(data);
 
     return (
@@ -49,14 +49,6 @@ const DailyOverviewTable: React.FC = () => {
                             </Link>
                         )
                     }
-                    {
-                        // checkCount >= 1 && (
-                        //     <Button color="blue" size="sm" className="flex flex-row gap-1 text-base px-3" onClick={() => openMessageModal(data.filter((_, i) => checkedState[i]).map(v => ({ email: campaignParticipants.get(v.uuid)?.email ?? '', uuid: v.uuid })))}>
-                        //         <span className="w-5 h-5 mt-0.5 icon-[material-symbols--send]"></span>
-                        //         <span>Send</span>
-                        //     </Button>
-                        // )
-                    }
                     <Tooltip content={<ChartTooltipContent />} trigger="click">
                         <button className="text-gray-500">
                             <span className="mt-1 w-6 h-6 icon-[mingcute--question-fill]"></span>
@@ -74,10 +66,9 @@ const DailyOverviewTable: React.FC = () => {
                         <colgroup>
                             <col className="w-[40px]" />
                             <col className="w-[50px]" />
-                            {/* <col className="w-[120px]" /> */}
-                            {tableNames.map((name) => ([
-                                <col key={`${name}-col-dailycount`} className="w-[140px]" />,
-                                <col key={`${name}-col-timeline`} className="w-[160px]" />
+                            {columns.map((col) => ([
+                                <col key={`${col.kind}-${col.id}-col-dailycount`} className="w-[140px]" />,
+                                <col key={`${col.kind}-${col.id}-col-timeline`} className="w-[160px]" />
                             ]))}
                         </colgroup>
                         <thead className="uppercase text-gray-500 border-t border-gray-200 bg-gray-50 text-xs">
@@ -86,15 +77,20 @@ const DailyOverviewTable: React.FC = () => {
                                     <Checkbox checked={isAllChecked} onChange={toggleAllChecked} />
                                 </DailyStatTableHeader>
                                 <DailyStatTableHeader className="text-left" rowSpan={2}>PID</DailyStatTableHeader>
-                                {/* <DailyStatTableHeader className="text-left w-12" rowSpan={2}>Contacts</DailyStatTableHeader> */}
-                                {tableNames.map((name) => (
-                                    <DailyStatTableHeader key={`${name}-th`} className="py-0 text-center" colSpan={2}>{name}</DailyStatTableHeader>
+                                {columns.map((col) => (
+                                    <DailyStatTableHeader
+                                        key={`${col.kind}-${col.id}-th`}
+                                        className={`py-0 text-center ${col.kind === 'survey' ? 'border-l-2 border-l-blue-200' : ''}`}
+                                        colSpan={2}
+                                    >
+                                        {col.kind === 'survey' ? <span className="text-blue-600">{col.name}</span> : col.name}
+                                    </DailyStatTableHeader>
                                 ))}
                             </tr>
                             <tr className="border-b border-l border-gray-200 h-[30px]">
-                                {tableNames.map((name) => ([
-                                    <DailyStatTableHeader key={`${name}-th-dailycount`} className="py-0 text-center">DAILY COUNT</DailyStatTableHeader>,
-                                    <DailyStatTableHeader key={`${name}-th-timeline`} className="py-0 text-center">DAILY TIMELINE</DailyStatTableHeader>
+                                {columns.map((col) => ([
+                                    <DailyStatTableHeader key={`${col.kind}-${col.id}-th-dailycount`} className="py-0 text-center">DAILY COUNT</DailyStatTableHeader>,
+                                    <DailyStatTableHeader key={`${col.kind}-${col.id}-th-timeline`} className="py-0 text-center">DAILY TIMELINE</DailyStatTableHeader>
                                 ]))}
                             </tr>
                         </thead>
@@ -104,7 +100,9 @@ const DailyOverviewTable: React.FC = () => {
                                     key={`row-${row.uuid}`}
                                     pid={campaignParticipants.get(row.uuid)?.pid ?? 0}
                                     contacts={row.contacts}
+                                    columns={columns}
                                     tables={row.tables}
+                                    surveys={row.surveys}
                                     maxValue={maxDailyCount}
                                     isSelected={checkedState[index]}
                                     toggleChecked={() => toggleChecked(index)}

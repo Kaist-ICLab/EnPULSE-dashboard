@@ -2,7 +2,7 @@ import { TimelineData } from "@/types/chart";
 import { ComparisonType } from "@/types/dashboard";
 import { useEffect, useState, useMemo } from "react";
 import { useCampaignStore } from "@/providers/CampaignStoreProvider";
-import { getPersonComparisonData, getDaysComparisonData, getSensorComparisonData } from "@/services/chartService";
+import { flattenSurveyQuestions, getDaysComparisonData, getPersonComparisonData, getSensorComparisonData, getSurveyQuestionDaysComparisonData, getSurveyQuestionPersonComparisonData, getSurveyQuestionSensorComparisonData } from "@/services/chartService";
 import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 
 
@@ -12,7 +12,7 @@ export default function useTimeline(secitonType: ComparisonType, chartWidth: num
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
 
-    const { selectedCampaignId, campaignParticipants, campaignTables } = useCampaignStore((state) => state);
+    const { selectedCampaignId, campaign, campaignParticipants, campaignTables } = useCampaignStore((state) => state);
     const { date, comparisonParams, timeRange, lastManualSyncTime } = useSectionParamStore((state) => state);
 
     const currentComparisonParams = useMemo(() => comparisonParams[secitonType], [comparisonParams, secitonType])
@@ -23,6 +23,9 @@ export default function useTimeline(secitonType: ComparisonType, chartWidth: num
         }))).filter(table => table.campaign_table_field.length > 0)
     }, [currentComparisonParams, campaignTables])
     const selectedUuids = useMemo(() => currentComparisonParams.uuid.map(v => campaignParticipants.get(v)).filter(v => v !== undefined), [currentComparisonParams, campaignParticipants])
+
+    const flatQuestions = useMemo(() => flattenSurveyQuestions(campaign?.survey ?? []), [campaign?.survey])
+    const selectedQuestions = useMemo(() => currentComparisonParams.questionId.map(qid => flatQuestions.get(qid)).filter(q => q !== undefined), [currentComparisonParams, flatQuestions])
 
     function getBucketSize(intervalInSec: number) {
         // unit: seconds
@@ -49,7 +52,7 @@ export default function useTimeline(secitonType: ComparisonType, chartWidth: num
     }
 
     useEffect(() => {
-        if (!selectedCampaignId || !currentComparisonParams.uuid || !date || !currentComparisonParams.fieldId) return;
+        if (!selectedCampaignId || !currentComparisonParams.uuid || !date) return;
 
         const intervalInSec = (timeRange.end - timeRange.start) / 1000 / chartWidth; // seconds per pixel
         const pixelPerBucket = 10 // Change this value to change the bucket size
@@ -60,22 +63,39 @@ export default function useTimeline(secitonType: ComparisonType, chartWidth: num
         setError(null);
 
         async function fetchData() {
-            let data: TimelineData[] = [];
+            let sensorPromise: Promise<TimelineData[]> = Promise.resolve([]);
+            let surveyPromise: Promise<TimelineData[]> = Promise.resolve([]);
+
             if (secitonType === ComparisonType.Sensors) {
-                data = await getSensorComparisonData(date, selectedUuids[0], selectedFields, timeRange, bucketString);
+                if (selectedFields.length > 0) {
+                    sensorPromise = getSensorComparisonData(date, selectedUuids[0], selectedFields, timeRange, bucketString);
+                }
+                if (selectedQuestions.length > 0) {
+                    surveyPromise = getSurveyQuestionSensorComparisonData(date, selectedUuids[0], selectedQuestions, timeRange);
+                }
             } else if (secitonType === ComparisonType.Participants) {
-                data = await getPersonComparisonData(date, selectedUuids, selectedFields[0], timeRange, bucketString);
+                // One target source: prefer question if set, else field.
+                if (selectedQuestions.length > 0) {
+                    surveyPromise = getSurveyQuestionPersonComparisonData(date, selectedUuids, selectedQuestions[0], timeRange);
+                } else if (selectedFields.length > 0) {
+                    sensorPromise = getPersonComparisonData(date, selectedUuids, selectedFields[0], timeRange, bucketString);
+                }
             } else if (secitonType === ComparisonType.Days) {
-                data = await getDaysComparisonData(date, selectedUuids[0], selectedFields[0], timeRange, bucketString);
+                if (selectedQuestions.length > 0) {
+                    surveyPromise = getSurveyQuestionDaysComparisonData(date, selectedUuids[0], selectedQuestions[0], timeRange);
+                } else if (selectedFields.length > 0) {
+                    sensorPromise = getDaysComparisonData(date, selectedUuids[0], selectedFields[0], timeRange, bucketString);
+                }
             }
 
-            setTimeline(data);
+            const [sensorData, surveyData] = await Promise.all([sensorPromise, surveyPromise]);
+            setTimeline([...sensorData, ...surveyData]);
             setBucketSize(bucketSize * 1000);
             setLoading(false);
         }
 
         fetchData();
-    }, [selectedCampaignId, currentComparisonParams, timeRange, selectedFields, selectedUuids, secitonType, chartWidth, date, lastManualSyncTime]);
+    }, [selectedCampaignId, currentComparisonParams, timeRange, selectedFields, selectedQuestions, selectedUuids, secitonType, chartWidth, date, lastManualSyncTime]);
 
     return { timeline, bucketSize, loading, error };
 }   

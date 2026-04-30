@@ -1,8 +1,9 @@
-import { ChartType, TimelinePlotProps, TimelineDataPoint, TimelineNumericalPoint, TimelineCategoricalPoint, TimelineHeatmapPoint } from "@/types/chart";
+import { ChartType, TimelinePlotProps, TimelineDataPoint, TimelineNumericalPoint, TimelineCategoricalPoint, TimelineHeatmapPoint, TimelineSurveyEventPoint } from "@/types/chart";
 import { NumericalTimelinePlot } from "./NumericalTimelinePlot";
 import { CategoricalTimelinePlot } from "./CategoricalTimelinePlot";
 import { BarcodeTimelinePlot } from "./BarcodeTimelinePlot";
 import { HeatmapTimelinePlot } from "./HeatmapTimelinePlot";
+import { SurveyEventsTimelinePlot } from "./SurveyEventsTimelinePlot";
 
 export const TimelinePlot: React.FC<TimelinePlotProps<TimelineDataPoint> & {
     chartType: ChartType;
@@ -39,6 +40,15 @@ export const TimelinePlot: React.FC<TimelinePlotProps<TimelineDataPoint> & {
         } else if (chartType === 'heatmap') {
             return <HeatmapTimelinePlot
                 data={data as TimelineHeatmapPoint[]}
+                height={height}
+                timeScale={timeScale}
+                valueScale={valueScale}
+                barWidth={barWidth}
+                getColor={getColor}
+            />
+        } else if (chartType === 'survey_events') {
+            return <SurveyEventsTimelinePlot
+                data={data as TimelineSurveyEventPoint[]}
                 height={height}
                 timeScale={timeScale}
                 valueScale={valueScale}

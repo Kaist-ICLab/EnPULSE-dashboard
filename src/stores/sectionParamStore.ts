@@ -59,7 +59,7 @@ function getInitialComparisonParams(
 ): { [key in ComparisonType]: ComparisonParams } {
     const firstUuid = campaign?.profiles.slice(0, 1).map(p => p.uuid) ?? [];
     return comparisonTypes.reduce((acc, type) => {
-        acc[type] = { uuid: firstUuid, fieldId: [] };
+        acc[type] = { uuid: firstUuid, fieldId: [], questionId: [] };
         return acc;
     }, {} as { [key in ComparisonType]: ComparisonParams });
 }
@@ -73,7 +73,7 @@ export const createSectionParamStore = (
         selectedSection: ComparisonType.Sensors,
         comparisonParams: getInitialComparisonParams(campaign),
         timeRange: { start: 0, end: DAY },
-        chartPinQuery: { date: null, uuid: null, fieldId: null },
+        chartPinQuery: { date: null, uuid: null, fieldId: null, questionId: null },
         draggedTime: 0,
 
         setLastManualSyncTime: (time: number) => {
@@ -104,7 +104,14 @@ export const createSectionParamStore = (
             set((state) => ({
                 date: params.date,
                 selectedSection: section,
-                comparisonParams: { ...state.comparisonParams, [section]: { uuid: [params.uuid], fieldId: [params.fieldId] } }
+                comparisonParams: {
+                    ...state.comparisonParams,
+                    [section]: {
+                        uuid: [params.uuid],
+                        fieldId: params.questionId !== undefined ? [] : [params.fieldId],
+                        questionId: params.questionId !== undefined ? [params.questionId] : [],
+                    }
+                }
             }))
         },
 
@@ -157,7 +164,7 @@ export const createSectionParamStore = (
 
         initPinQuery: () => {
             set(() => ({
-                chartPinQuery: { date: null, uuid: null, fieldId: null }
+                chartPinQuery: { date: null, uuid: null, fieldId: null, questionId: null }
             }))
         },
 

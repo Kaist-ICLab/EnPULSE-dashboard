@@ -44,6 +44,7 @@ const DownloadDataConfig = () => {
                             setSelectedFieldIds={setSelectedFieldIds}
                             isMultipleSelection={true}
                             showSelectAllSensors={true}
+                            showSurveys={false}
                         />
                     </div>
                 </div>

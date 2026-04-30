@@ -28,7 +28,9 @@ const ComparisonChart: React.FC = () => {
                 <div className="flex flex-row ml-auto gap-2">
                     <SensorDropdown
                         selectedFieldIds={currentComparisonParams.fieldId}
+                        selectedQuestionIds={currentComparisonParams.questionId}
                         setSelectedFieldIds={(fieldId: number[]) => updateComparisonParams(selectedSection, { fieldId })}
+                        setSelectedQuestionIds={(questionId: number[]) => updateComparisonParams(selectedSection, { questionId })}
                         isMultipleSelection={selectedSection === ComparisonType.Sensors}
                     />
                     <ParticipantDropdown
@@ -53,7 +55,10 @@ const ComparisonChart: React.FC = () => {
                             bucketSize={bucketSize}
                         />
                     ) : (
-                        <ComprisonChartEmpty isUuidEmpty={currentComparisonParams.uuid.length === 0} isFieldIdEmpty={currentComparisonParams.fieldId.length === 0} />
+                        <ComprisonChartEmpty
+                            isUuidEmpty={currentComparisonParams.uuid.length === 0}
+                            isFieldIdEmpty={currentComparisonParams.fieldId.length === 0 && currentComparisonParams.questionId.length === 0}
+                        />
                     )}
                 </div>
             </div>
