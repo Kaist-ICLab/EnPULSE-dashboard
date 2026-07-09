@@ -400,8 +400,7 @@ const stepSensor: TemplateCampaignTable = {
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
         { name: "steps", field_role: "data", field_type: "numerical" },
-        { name: "start_time", field_role: "data", field_type: "datetime" },
-        { name: "end_time", field_role: "data", field_type: "datetime" },
+        { name: "duration", field_role: "data", field_type: "numerical" },
         { name: "device_type", field_role: "ignore", field_type: "categorical" },
         { name: "received", field_role: "ignore", field_type: "datetime" },
     ],
@@ -437,6 +436,50 @@ const wifiScanSensor: TemplateCampaignTable = {
     ],
 }
 
+const sleepSensor: TemplateCampaignTable = {
+    name: "sleep_sensor",
+    display_name: "Sleep",
+    description: "Sleep sensor",
+    campaign_table_field: [
+        { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
+        { name: "duration", field_role: "data", field_type: "numerical" },
+        { name: "sleep_score", field_role: "data", field_type: "numerical" },
+        { name: "stages", field_role: "ignore", field_type: "text" },
+        { name: "device_type", field_role: "ignore", field_type: "categorical" },
+        { name: "received", field_role: "ignore", field_type: "datetime" },
+    ],
+};
+
+const exerciseSensor: TemplateCampaignTable = {
+    name: "exercise_sensor",
+    display_name: "Exercise",
+    description: "Exercise sensor",
+    campaign_table_field: [
+        { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
+        { name: "duration", field_role: "data", field_type: "numerical" },
+        { name: "exercise_type", field_role: "data", field_type: "categorical" },
+        { name: "custom_title", field_role: "data", field_type: "categorical" },
+        { name: "calories", field_role: "data", field_type: "numerical" },
+        { name: "distance", field_role: "data", field_type: "numerical" },
+        { name: "count", field_role: "data", field_type: "numerical" },
+        { name: "mean_heart_rate", field_role: "data", field_type: "numerical" },
+        { name: "max_heart_rate", field_role: "data", field_type: "numerical" },
+        { name: "min_heart_rate", field_role: "data", field_type: "numerical" },
+        { name: "altitude_gain", field_role: "data", field_type: "numerical" },
+        { name: "altitude_loss", field_role: "data", field_type: "numerical" },
+        { name: "mean_cadence", field_role: "data", field_type: "numerical" },
+        { name: "max_cadence", field_role: "data", field_type: "numerical" },
+        { name: "mean_power", field_role: "data", field_type: "numerical" },
+        { name: "max_power", field_role: "data", field_type: "numerical" },
+        { name: "mean_speed", field_role: "data", field_type: "numerical" },
+        { name: "max_speed", field_role: "data", field_type: "numerical" },
+        { name: "mean_rpm", field_role: "data", field_type: "numerical" },
+        { name: "max_rpm", field_role: "data", field_type: "numerical" },
+        { name: "device_type", field_role: "ignore", field_type: "categorical" },
+        { name: "received", field_role: "ignore", field_type: "datetime" },
+    ],
+};
+
 export function useTemplateTable(selectedTables: CampaignTable[]) {
     const selectedTemplateTables = useMemo(() => selectedTables.filter(t => !t.is_custom), [selectedTables]);
 
@@ -468,6 +511,8 @@ export function useTemplateTable(selectedTables: CampaignTable[]) {
             stressSensor,
             userInteractionSensor,
             wifiScanSensor,
+            sleepSensor,
+            exerciseSensor,
         ]
 
         return templateTable
