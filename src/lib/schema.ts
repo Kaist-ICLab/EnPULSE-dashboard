@@ -539,6 +539,35 @@ export type Database = {
                     },
                 ]
             }
+            campaign_webapp: {
+                Row: {
+                    campaign_id: number
+                    id: number
+                    name: string
+                    url: string
+                }
+                Insert: {
+                    campaign_id: number
+                    id?: number
+                    name: string
+                    url: string
+                }
+                Update: {
+                    campaign_id?: number
+                    id?: number
+                    name?: string
+                    url?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "campaign_webapp_campaign_id_fkey"
+                        columns: ["campaign_id"]
+                        isOneToOne: false
+                        referencedRelation: "campaigns"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
             campaigns: {
                 Row: {
                     created_at: string
@@ -722,6 +751,51 @@ export type Database = {
                 }
                 Relationships: []
             }
+            ecg_sensor: {
+                Row: {
+                    created_at: string | null
+                    device_type: number
+                    ecg_mv: number
+                    event_id: string
+                    lead_off: number
+                    max_threshold_mv: number
+                    min_threshold_mv: number
+                    ppg_green: number
+                    received: string
+                    sequence: number
+                    timestamp: string
+                    uuid: string
+                }
+                Insert: {
+                    created_at?: string | null
+                    device_type: number
+                    ecg_mv: number
+                    event_id: string
+                    lead_off: number
+                    max_threshold_mv: number
+                    min_threshold_mv: number
+                    ppg_green: number
+                    received: string
+                    sequence: number
+                    timestamp: string
+                    uuid: string
+                }
+                Update: {
+                    created_at?: string | null
+                    device_type?: number
+                    ecg_mv?: number
+                    event_id?: string
+                    lead_off?: number
+                    max_threshold_mv?: number
+                    min_threshold_mv?: number
+                    ppg_green?: number
+                    received?: string
+                    sequence?: number
+                    timestamp?: string
+                    uuid?: string
+                }
+                Relationships: []
+            }
             eda_sensor: {
                 Row: {
                     created_at: string | null
@@ -750,6 +824,90 @@ export type Database = {
                     received?: string
                     skin_conductance?: number
                     status?: number
+                    timestamp?: string
+                    uuid?: string
+                }
+                Relationships: []
+            }
+            exercise_sensor: {
+                Row: {
+                    altitude_gain: number | null
+                    altitude_loss: number | null
+                    calories: number
+                    count: number | null
+                    created_at: string | null
+                    custom_title: string | null
+                    device_type: number
+                    distance: number | null
+                    duration: number
+                    event_id: string
+                    exercise_type: string
+                    max_cadence: number | null
+                    max_heart_rate: number | null
+                    max_power: number | null
+                    max_rpm: number | null
+                    max_speed: number | null
+                    mean_cadence: number | null
+                    mean_heart_rate: number | null
+                    mean_power: number | null
+                    mean_rpm: number | null
+                    mean_speed: number | null
+                    min_heart_rate: number | null
+                    received: string
+                    timestamp: string
+                    uuid: string
+                }
+                Insert: {
+                    altitude_gain?: number | null
+                    altitude_loss?: number | null
+                    calories: number
+                    count?: number | null
+                    created_at?: string | null
+                    custom_title?: string | null
+                    device_type: number
+                    distance?: number | null
+                    duration: number
+                    event_id: string
+                    exercise_type: string
+                    max_cadence?: number | null
+                    max_heart_rate?: number | null
+                    max_power?: number | null
+                    max_rpm?: number | null
+                    max_speed?: number | null
+                    mean_cadence?: number | null
+                    mean_heart_rate?: number | null
+                    mean_power?: number | null
+                    mean_rpm?: number | null
+                    mean_speed?: number | null
+                    min_heart_rate?: number | null
+                    received: string
+                    timestamp: string
+                    uuid: string
+                }
+                Update: {
+                    altitude_gain?: number | null
+                    altitude_loss?: number | null
+                    calories?: number
+                    count?: number | null
+                    created_at?: string | null
+                    custom_title?: string | null
+                    device_type?: number
+                    distance?: number | null
+                    duration?: number
+                    event_id?: string
+                    exercise_type?: string
+                    max_cadence?: number | null
+                    max_heart_rate?: number | null
+                    max_power?: number | null
+                    max_rpm?: number | null
+                    max_speed?: number | null
+                    mean_cadence?: number | null
+                    mean_heart_rate?: number | null
+                    mean_power?: number | null
+                    mean_rpm?: number | null
+                    mean_speed?: number | null
+                    min_heart_rate?: number | null
+                    received?: string
                     timestamp?: string
                     uuid?: string
                 }
@@ -1243,14 +1401,49 @@ export type Database = {
                 }
                 Relationships: []
             }
+            sleep_sensor: {
+                Row: {
+                    created_at: string | null
+                    device_type: number
+                    duration: number
+                    event_id: string
+                    received: string
+                    sleep_score: number | null
+                    stages: Json
+                    timestamp: string
+                    uuid: string
+                }
+                Insert: {
+                    created_at?: string | null
+                    device_type: number
+                    duration: number
+                    event_id: string
+                    received: string
+                    sleep_score?: number | null
+                    stages?: Json
+                    timestamp: string
+                    uuid: string
+                }
+                Update: {
+                    created_at?: string | null
+                    device_type?: number
+                    duration?: number
+                    event_id?: string
+                    received?: string
+                    sleep_score?: number | null
+                    stages?: Json
+                    timestamp?: string
+                    uuid?: string
+                }
+                Relationships: []
+            }
             step_sensor: {
                 Row: {
                     created_at: string | null
                     device_type: number
-                    end_time: number
+                    duration: number
                     event_id: string
                     received: string
-                    start_time: number
                     steps: number
                     timestamp: string
                     uuid: string
@@ -1258,10 +1451,9 @@ export type Database = {
                 Insert: {
                     created_at?: string | null
                     device_type: number
-                    end_time: number
+                    duration: number
                     event_id: string
                     received: string
-                    start_time: number
                     steps: number
                     timestamp: string
                     uuid: string
@@ -1269,10 +1461,9 @@ export type Database = {
                 Update: {
                     created_at?: string | null
                     device_type?: number
-                    end_time?: number
+                    duration?: number
                     event_id?: string
                     received?: string
-                    start_time?: number
                     steps?: number
                     timestamp?: string
                     uuid?: string
