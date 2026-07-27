@@ -480,6 +480,23 @@ const exerciseSensor: TemplateCampaignTable = {
     ],
 };
 
+const ecgSensor: TemplateCampaignTable = {
+    name: "ecg_sensor",
+    display_name: "ECG",
+    description: "ECG sensor",
+    campaign_table_field: [
+        { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
+        { name: "ecg_mv", field_role: "data", field_type: "numerical" },
+        { name: "lead_off", field_role: "data", field_type: "categorical" },
+        { name: "sequence", field_role: "ignore", field_type: "numerical" },
+        { name: "ppg_green", field_role: "data", field_type: "numerical" },
+        { name: "max_threshold_mv", field_role: "data", field_type: "numerical" },
+        { name: "min_threshold_mv", field_role: "data", field_type: "numerical" },
+        { name: "device_type", field_role: "ignore", field_type: "categorical" },
+        { name: "received", field_role: "ignore", field_type: "datetime" },
+    ],
+};
+
 export function useTemplateTable(selectedTables: CampaignTable[]) {
     const selectedTemplateTables = useMemo(() => selectedTables.filter(t => !t.is_custom), [selectedTables]);
 
@@ -513,6 +530,7 @@ export function useTemplateTable(selectedTables: CampaignTable[]) {
             wifiScanSensor,
             sleepSensor,
             exerciseSensor,
+            ecgSensor,
         ]
 
         return templateTable
