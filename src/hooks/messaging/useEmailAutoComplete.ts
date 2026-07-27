@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 
 import { useMemo } from "react";
-import useCampaign from "../useCampaign";
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import { CampaignParticipant } from "@/types/campaign";
 
 export default function useEmailAutoComplete(
@@ -10,7 +10,7 @@ export default function useEmailAutoComplete(
     setSendTo: Dispatch<SetStateAction<CampaignParticipant[]>>,
     onInit: () => void,
 ) {
-    const { campaignParticipants } = useCampaign();
+    const { campaignParticipants } = useCampaignStore((state) => state);
     const [focusIndex, setFocusIndex] = useState(-1);
 
     const suggestions = useMemo(() => {

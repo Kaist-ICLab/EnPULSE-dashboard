@@ -1,7 +1,7 @@
 'use client'
 
 import { Select, TextInput, Dropdown, DropdownItem, Checkbox } from "flowbite-react";
-import { SurveyQuestion, Expression, SurveyQuestionOption, OperatorType, AnswerType, UnaryExpression } from "@/types/survey";
+import { SurveyQuestion, Expression, OperatorType, AnswerType, UnaryExpression } from "@/types/survey";
 import useExpressionState from "@/hooks/configuration/useExpressionState";
 
 interface ExpressionBuilderProps {
@@ -32,10 +32,9 @@ const ExpressionBuilder: React.FC<ExpressionBuilderProps> = ({ expression, quest
             {
                 expressionState.op !== 'Empty' && (
                     <ValueSelector
-                        answerType={question.answer_type}
+                        question={question}
                         op={expressionState.op}
                         value={expressionState.value}
-                        options={question.survey_question_option ?? []}
                         onChange={(value) => setExpression({ op: expressionState.op, value: value } as Expression)}
                     />
                 )
@@ -44,13 +43,33 @@ const ExpressionBuilder: React.FC<ExpressionBuilderProps> = ({ expression, quest
     )
 };
 
+const BINARY_OPTIONS: string[] = ['Yes', 'No'];
+
+function getOptionsForType(question: SurveyQuestion): string[] {
+    const cfg = question.config as { options?: string[]; min?: number; max?: number; step?: number } | null | undefined;
+    const answerType: AnswerType = question.answer_type;
+    if (answerType === 'binary') return BINARY_OPTIONS;
+    if (answerType === 'numberscale') {
+        const lo = cfg?.min ?? 0;
+        const hi = cfg?.max ?? 10;
+        const step = cfg?.step ?? 1;
+        const out: string[] = [];
+        for (let v = lo; v <= hi; v += step) {
+            out.push(String(v));
+        }
+        return out;
+    }
+    return cfg?.options ?? [];
+}
+
 const ValueSelector: React.FC<{
-    answerType: AnswerType;
+    question: SurveyQuestion;
     op: OperatorType;
     value: string | number | number[];
-    options: SurveyQuestionOption[];
     onChange: (value: string | number | number[]) => void;
-}> = ({ answerType, op, value, options, onChange }) => {
+}> = ({ question, op, value, onChange }) => {
+    const answerType = question.answer_type;
+
     if (answerType === 'text' && op !== 'Empty') {
         return (
             <TextInput
@@ -67,7 +86,10 @@ const ValueSelector: React.FC<{
             />
         )
     }
-    else if (answerType === 'radio' || (answerType === 'checkbox' && op === 'Contains')) {
+
+    const options = getOptionsForType(question);
+
+    if (answerType === 'radio' || answerType === 'binary' || answerType === 'numberscale' || (answerType === 'checkbox' && op === 'Contains')) {
         return (
             <Select
                 value={value as number}
@@ -76,7 +98,7 @@ const ValueSelector: React.FC<{
             >
                 {options.map((option, idx) => (
                     <option key={idx} value={idx}>
-                        {option.display}
+                        {option}
                     </option>
                 ))}
             </Select>
@@ -85,11 +107,11 @@ const ValueSelector: React.FC<{
     else {
         const valueArray = value as number[];
         return (
-            <Dropdown dismissOnClick={false} label={valueArray.length > 0 ? valueArray.map(v => options[v].display).join(', ') : 'No option selected'}>
+            <Dropdown dismissOnClick={false} label={valueArray.length > 0 ? valueArray.map(v => options[v]).join(', ') : 'No option selected'}>
                 {options.map((option, idx) => (
                     <DropdownItem key={idx} value={idx} onClick={() => onChange(valueArray.includes(idx) ? valueArray.filter((v) => v !== idx) : [...valueArray, idx])}>
                         <Checkbox checked={valueArray.includes(idx)} onChange={() => { }} />
-                        <span className="ml-2">{option.display}</span>
+                        <span className="ml-2">{option}</span>
                     </DropdownItem>
                 ))}
             </Dropdown>

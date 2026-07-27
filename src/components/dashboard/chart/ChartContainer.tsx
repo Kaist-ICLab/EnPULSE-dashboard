@@ -1,44 +1,36 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import TimelineXAxis from '@/components/dashboard/chart/TimelineXAxis';
 import { DnDProvider } from '@/components/common/DnDList';
 import { Button } from 'flowbite-react';
 import Link from 'next/link';
-import useSectionState from '@/hooks/useSectionState';
+import { useSectionParamStore } from '@/providers/SectionParamStoreProvider';
 import { TimelineData } from '@/types/chart';
 import { ComparisonType } from "@/types/dashboard";
 import { ChartItem } from './ChartItem';
+import { ParentSize } from '@visx/responsive';
 
 const ChartContainer: React.FC<{
     timelines: TimelineData[];
     bucketSize: number;
 }> = ({ timelines, bucketSize }) => {
-    const widthReduction = 80;
-    const chartContainerRef = useRef<HTMLDivElement>(null);
-
-    const [chartWidth, setChartWidth] = useState(0);
-    const { updateComparisonParams, chartPinQuery, updatePinQuery, selectedSection, updateSelectedSection, updateDate } = useSectionState()
+    const { updateComparisonParams, chartPinQuery, updatePinQuery, selectedSection, updateSelectedSection, updateDate } = useSectionParamStore((state) => state);
     const [selectedChart, setSelectedChart] = useState<string | null>(null);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
 
-    // TODO: Currently it is bugged, should prevent update when it is dragged
     useEffect(() => {
-        setChartOrder(timelines.map((d) => d.id))
-    }, [timelines])
-
-    useEffect(() => {
-        if (chartContainerRef.current) {
-            setChartWidth(chartContainerRef.current.offsetWidth - widthReduction);
-
-            const updateSize = () => {
-                if (chartContainerRef.current) {
-                    setChartWidth(chartContainerRef.current.offsetWidth - widthReduction);
-                }
+        const incomingIds = timelines.map((d) => d.id);
+        setChartOrder((prev) => {
+            const incomingSet = new Set(incomingIds);
+            const prevSet = new Set(prev);
+            const preserved = prev.filter((id) => incomingSet.has(id));
+            const added = incomingIds.filter((id) => !prevSet.has(id));
+            const merged = [...preserved, ...added];
+            if (merged.length === prev.length && merged.every((id, i) => id === prev[i])) {
+                return prev;
             }
-            updateSize();
-            window.addEventListener('resize', updateSize);
-            return () => window.removeEventListener('resize', updateSize);
-        }
-    }, [chartContainerRef])
+            return merged;
+        });
+    }, [timelines])
 
     const pinnedChart = useMemo(() => {
         switch (selectedSection) {
@@ -47,6 +39,9 @@ const ChartContainer: React.FC<{
             case ComparisonType.Participants:
                 return timelines.find(t => t.params.uuid === chartPinQuery.uuid)?.id || null
             case ComparisonType.Sensors:
+                if (chartPinQuery.questionId !== null) {
+                    return timelines.find(t => t.params.questionId === chartPinQuery.questionId)?.id || null
+                }
                 return timelines.find(t => t.params.fieldId === chartPinQuery.fieldId)?.id || null
             default:
                 return null
@@ -60,7 +55,7 @@ const ChartContainer: React.FC<{
     }
 
     return (
-        <div className="w-full" ref={chartContainerRef}>
+        <div className="w-full">
             <div className="py-2 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                     <div>
@@ -73,21 +68,27 @@ const ChartContainer: React.FC<{
                             <div className="text-gray-500">No chart selected</div>
                         )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 h-8">
                         {selectedChart && (
                             <>
                                 <span className="font-medium text-gray-700">Compare with other:</span>
                                 {Object.entries(comparisonName).map(([type, value]) => (
                                     selectedSection !== type && <Link key={type} href={`./dashboard/#${type}-comparison-chart`}>
                                         <Button
-                                            size="md"
+                                            size="xs"
                                             className="flex flex-row gap-1 text-base px-3"
                                             onClick={() => {
                                                 const params = timelines.find(t => t.id === selectedChart)!.params
-                                                updateComparisonParams(type as ComparisonType, { uuid: [params.uuid], fieldId: [params.fieldId] })
+                                                const isSurvey = params.questionId !== undefined
+                                                updateComparisonParams(type as ComparisonType, {
+                                                    uuid: [params.uuid],
+                                                    fieldId: isSurvey ? [] : [params.fieldId],
+                                                    questionId: isSurvey ? [params.questionId!] : [],
+                                                })
                                                 updateDate(params.date)
-                                                updatePinQuery(params)
+                                                updatePinQuery({ ...params, questionId: params.questionId ?? null })
                                                 updateSelectedSection(type as ComparisonType)
+                                                setSelectedChart(null)
                                             }}
                                         >
                                             <span>{value}</span>
@@ -100,37 +101,40 @@ const ChartContainer: React.FC<{
                     </div>
                 </div>
             </div>
-            {timelines.filter(d => d.id === pinnedChart).map((timeline) =>
+            {timelines.filter(d => d.id === pinnedChart).map((timeline, idx) =>
                 <ChartItem
-                    key={timeline.id}
+                    key={idx}
                     timeline={timeline}
                     pinned={true}
                     isSelected={selectedChart === timeline.id}
                     setSelectedChart={(p) => setSelectedChart(p)}
                     bucketSize={bucketSize}
-                    width={Math.max(chartWidth - 160, 0)}
+                    sectionType={selectedSection}
                 />
             )}
             <DnDProvider
                 items={chartOrder.filter(id => id !== pinnedChart)}
                 onItemsChange={setChartOrder}
             >
-                {chartOrder.filter(id => id !== pinnedChart).map((id) => (
+                {chartOrder.filter(id => id !== pinnedChart).map((id, idx) => (
                     <ChartItem
-                        key={id}
+                        key={idx}
                         timeline={timelines.find(d => d.id === id)!}
                         pinned={pinnedChart === id}
                         isSelected={selectedChart === id}
                         setSelectedChart={(p) => setSelectedChart(p)}
                         bucketSize={bucketSize}
-                        width={chartWidth}
+                        sectionType={selectedSection}
                     />
                 ))}
             </DnDProvider>
-            <div className='flex flex-row justify-end items-end'>
-                <TimelineXAxis
-                    width={chartWidth}
-                />
+            <div className='w-full flex flex-row px-2'>
+                <div className='w-7 shrink-0' />
+                <div className='grow min-w-0'>
+                    <ParentSize>
+                        {({ width }) => <TimelineXAxis width={width} />}
+                    </ParentSize>
+                </div>
             </div>
         </div>
     )

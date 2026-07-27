@@ -1,8 +1,9 @@
-import useCampaignConfigEdit from "../useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { useMemo } from "react";
+import { isTriggerComplete } from "@/types/trigger";
 
 export function useValidConfigState() {
-    const { campaignName, campaignPassword } = useCampaignConfigEdit();
+    const { campaignName, campaignPassword, campaign_trigger } = useCampaignConfigEdit((state) => state);
 
     const isInfoValid = useMemo(() => {
         return campaignName.length > 0 && campaignPassword.length > 0;
@@ -12,14 +13,18 @@ export function useValidConfigState() {
 
     const isActiveSensingValid = true
 
+    const isTriggerValid = useMemo(() => {
+        return campaign_trigger.every(isTriggerComplete);
+    }, [campaign_trigger]);
+
     const isAccessible = useMemo(() => {
         const isAccessible = [true]
-        for (const isValid of [isInfoValid, isPassiveSensingValid, isActiveSensingValid]) {
+        for (const isValid of [isInfoValid, isPassiveSensingValid, isActiveSensingValid, isTriggerValid]) {
             isAccessible.push(isAccessible[isAccessible.length - 1] && isValid);
         }
 
         return isAccessible;
-    }, [isInfoValid, isPassiveSensingValid, isActiveSensingValid]);
+    }, [isInfoValid, isPassiveSensingValid, isActiveSensingValid, isTriggerValid]);
 
-    return { isInfoValid, isPassiveSensingValid, isActiveSensingValid, isAccessible };
+    return { isInfoValid, isPassiveSensingValid, isActiveSensingValid, isTriggerValid, isAccessible };
 }

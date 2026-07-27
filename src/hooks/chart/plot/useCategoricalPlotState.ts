@@ -1,10 +1,10 @@
 import { useMemo, useCallback } from "react";
 import { formatTime } from "@/utils/timelineUtils";
 import { TimelineCategoricalPoint } from "@/types/chart";
-import useCampaign from "@/hooks/useCampaign";
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 
 export function useCategoricalPlotState(data: TimelineCategoricalPoint[], bucketSize: number, fieldId: number) {
-    const { campaignTableFieldMapping } = useCampaign();
+    const { campaignTableFieldMapping } = useCampaignStore((state) => state);
     // Calculate max stack value (sum of all counts for a timestamp)
     const maxValue = useMemo(() => {
         // For each timestamp, sum all counts from the value array

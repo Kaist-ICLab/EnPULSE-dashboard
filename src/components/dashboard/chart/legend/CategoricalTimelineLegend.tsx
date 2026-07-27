@@ -1,7 +1,7 @@
 
 import { LegendItem, LegendLabel, LegendOrdinal } from '@visx/legend';
 import { scaleOrdinal } from '@visx/scale';
-import useCampaign from '@/hooks/useCampaign';
+import { useCampaignStore } from '@/providers/CampaignStoreProvider';
 import { useMemo } from 'react';
 
 export const CategoricalTimelineLegend: React.FC<{
@@ -10,7 +10,7 @@ export const CategoricalTimelineLegend: React.FC<{
     getCategoryColor: (category: string) => string,
     handleLegendClick: (category: string) => void,
 }> = ({ fieldId, uniqueCategories, getCategoryColor, handleLegendClick }) => {
-    const { campaignTableFieldMapping } = useCampaign();
+    const { campaignTableFieldMapping } = useCampaignStore((state) => state);
     const mapping = useMemo(() => {
         return campaignTableFieldMapping.get(fieldId);
     }, [campaignTableFieldMapping, fieldId]);
@@ -23,7 +23,7 @@ export const CategoricalTimelineLegend: React.FC<{
     if (uniqueCategories.length === 0) return null;
 
     return (
-        <div className="w-full flex justify-center text-xs bg-white/50">
+        <div className="w-full flex justify-center text-xs bg-gray-100/70">
             <LegendOrdinal
                 scale={ordinalScale}
                 labelFormat={(label) => label}

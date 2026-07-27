@@ -1,10 +1,10 @@
 import { useMemo, useCallback } from "react";
 import { formatTime, colors } from "@/utils/timelineUtils";
 import { TimelineCategoricalPoint } from "@/types/chart";
-import useCampaign from "@/hooks/useCampaign";
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 
 export function useBarcodePlotState(data: TimelineCategoricalPoint[], bucketSize: number, fieldId: number) {
-    const { campaignTableFieldMapping } = useCampaign();
+    const { campaignTableFieldMapping } = useCampaignStore((state) => state);
 
     const mapping = useMemo(() => {
         return campaignTableFieldMapping.get(fieldId);

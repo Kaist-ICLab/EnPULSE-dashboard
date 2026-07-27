@@ -1,12 +1,12 @@
 'use client'
 
 import SurveyCard from "./SurveyCard";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 
 const ActiveSensingForm: React.FC<{
     baseUrl: string;
 }> = ({ baseUrl }) => {
-    const { surveys } = useCampaignConfigEdit();
+    const { surveys } = useCampaignConfigEdit((state) => state);
 
     if (surveys.length === 0) {
         return (

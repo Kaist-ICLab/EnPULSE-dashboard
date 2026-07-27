@@ -1,9 +1,9 @@
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import dayjs from "dayjs";
 import { Card, TextInput } from "flowbite-react";
 
 const CampaignPeriodForm = () => {
-    const { campaignStartTime, campaignEndTime, setCampaignStartTime, setCampaignEndTime } = useCampaignConfigEdit();
+    const { campaignStartTime, campaignEndTime, setCampaignStartTime, setCampaignEndTime } = useCampaignConfigEdit((state) => state);
 
     return (
         <Card>

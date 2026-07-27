@@ -1,6 +1,8 @@
 import { ScaleLinear, ScaleTime } from "@visx/vendor/d3-scale";
 
-export type ChartType = "numerical" | "categorical" | "barcode" | "heatmap"
+export type ChartType =
+    | "numerical" | "categorical" | "barcode" | "heatmap"
+    | "survey_events"
 
 export interface TimelineNumericalPoint {
     timestamp: number;
@@ -19,7 +21,24 @@ export interface TimelineHeatmapPoint {
     value: { bitIndex: number, count: number }[];
 }
 
-export type TimelineDataPoint = TimelineNumericalPoint | TimelineCategoricalPoint | TimelineHeatmapPoint;
+// One survey response event. Several events (possibly from different questions)
+// share the same chart, with one row per questionId. `rawResponse` is preserved
+// for downstream distribution analysis.
+export type SurveyAnswerType =
+    | "checkbox" | "radio" | "text" | "number" | "binary" | "numberscale";
+
+export interface TimelineSurveyEventPoint {
+    timestamp: number;
+    questionId: number;
+    questionTitle: string;
+    answerType: SurveyAnswerType;
+    response: string;
+    rawResponse: unknown;
+}
+
+export type TimelineDataPoint =
+    | TimelineNumericalPoint | TimelineCategoricalPoint | TimelineHeatmapPoint
+    | TimelineSurveyEventPoint;
 
 export interface TimelineData {
     id: string;
@@ -41,6 +60,7 @@ export interface TimelinePlotProps<T extends TimelineDataPoint> {
 export type TimelineParams = {
     uuid: string,
     fieldId: number,
+    questionId?: number,
     date: Date,
 }
 

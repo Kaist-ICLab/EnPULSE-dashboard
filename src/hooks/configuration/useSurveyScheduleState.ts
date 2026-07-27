@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { ScheduleMethod, ESM } from "@/types/survey";
-import useCampaignConfigEdit from "../useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 
 function useSurveyScheduleState(surveyIndex: number, initialScheduleMethod: ScheduleMethod | null) {
-    const { updateSurveyScheduleMethod } = useCampaignConfigEdit();
+    const { updateSurveyScheduleMethod } = useCampaignConfigEdit((state) => state);
     const [methodType, setMethodType] = useState<'none' | 'esm' | 'fixed'>(() => {
         if (!initialScheduleMethod) return 'none';
         if ('minInterval' in initialScheduleMethod) return 'esm';

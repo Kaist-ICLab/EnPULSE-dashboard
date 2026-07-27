@@ -1,33 +1,23 @@
-"use client";
 import { ComparisonChart } from "@/components/dashboard/chart/ComparisonChart";
 import DailyOverviewTable from "@/components/dashboard/stat/DailyStatTable";
-import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
-import { CampaignParticipant } from "@/types/campaign";
-import { useEffect, useState } from "react";
+// import SendMessageFloatingModal from "@/components/messaging/SendMessageFloatingModal";
+// import { CampaignParticipant } from "@/types/campaign";
 
 const Page = () => {
-    const [lastLoaded, setLastLoaded] = useState<Date | null>(null)
-    const [sendTo, setSendTo] = useState<CampaignParticipant[]>([]);
-    const [messageModalVisible, setMessageModalVisible] = useState<boolean>(false);
-
-    useEffect(() => {
-        setLastLoaded(new Date())
-    }, [])
+    // const [sendTo, setSendTo] = useState<CampaignParticipant[]>([]);
+    // const [messageModalVisible, setMessageModalVisible] = useState<boolean>(false);
 
     return (
         <>
-            <DailyOverviewTable
-                syncTime={lastLoaded}
-                openMessageModal={(sendTo: CampaignParticipant[]) => { setSendTo(sendTo); setMessageModalVisible(true); }}
-            />
+            <DailyOverviewTable />
 
             <ComparisonChart />
 
             {
-                messageModalVisible && <SendMessageFloatingModal
-                    initialSendTo={sendTo}
-                    onClose={() => setMessageModalVisible(false)}
-                />
+                // messageModalVisible && <SendMessageFloatingModal
+                //     initialSendTo={sendTo}
+                //     onClose={() => setMessageModalVisible(false)}
+                // />
             }
         </>
     );

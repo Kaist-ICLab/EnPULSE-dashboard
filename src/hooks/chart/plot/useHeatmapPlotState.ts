@@ -1,14 +1,14 @@
-import { useMemo, useCallback } from "react";
-import { formatTime, colors } from "@/utils/timelineUtils";
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import { TimelineHeatmapPoint } from "@/types/chart";
-import useCampaign from "@/hooks/useCampaign";
+import { colors, formatTime } from "@/utils/timelineUtils";
+import { useCallback, useMemo } from "react";
 
 export function useHeatmapPlotState(
     data: TimelineHeatmapPoint[],
     bucketSize: number,
     fieldId: number,
 ) {
-    const { campaignTableFieldMapping } = useCampaign();
+    const { campaignTableFieldMapping } = useCampaignStore((state) => state);
     const mapping = useMemo(() => {
         return campaignTableFieldMapping.get(fieldId);
     }, [campaignTableFieldMapping, fieldId]);

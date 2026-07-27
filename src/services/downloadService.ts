@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { mapQuery } from "@/lib/supabaseHelper";
 import dayjs from "dayjs";
 import { DATE_FORMAT } from "@/utils/date";
+import { Ok } from "@/utils/type";
 
 export async function getDownloadRowCount(participants: string[], startDate: Date, endDate: Date, tables: string[]) {
     const data = await mapQuery(tables, table => {
@@ -13,9 +14,9 @@ export async function getDownloadRowCount(participants: string[], startDate: Dat
         })
             .order('uuid', { ascending: true })
             .order('day', { ascending: true })
-    }) as { count: number, day: string, uuid: string }[][]
+    }) as Ok<{ count: number, day: string, uuid: string }[]>[]
 
-    return tables.flatMap((val, idx) => data[idx].map(d => ({
+    return tables.flatMap((val, idx) => data[idx].data.map(d => ({
         table: val,
         uuid: d.uuid,
         date: new Date(d.day),
@@ -35,10 +36,7 @@ export async function getDownloadData(participant: string, fields: string[], dat
     if (isPreview) supabasePromise = supabasePromise.limit(10);
     const { data, error } = await supabasePromise;
 
-    if (error) {
-        console.error(error);
-        return [];
-    }
+    if (error) throw new Error(error.message);
 
     return data;
 }

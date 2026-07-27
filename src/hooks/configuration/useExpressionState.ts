@@ -25,6 +25,10 @@ export default function useExpressionState(answerType: AnswerType, expression: E
             operators.push({ value: 'Empty', display: "isEmpty" });
         }
 
+        else if (answerType === 'binary') {
+            // Yes/No isn't ordered — only equality operators apply.
+        }
+
         else {
             operators.push({ value: 'GreaterThan', display: ">" }, { value: 'GreaterThanOrEqual', display: "≥" }, { value: 'LessThan', display: "<" }, { value: 'LessThanOrEqual', display: "≤" });
         }
@@ -32,7 +36,7 @@ export default function useExpressionState(answerType: AnswerType, expression: E
     }, [answerType]);
 
     const usesIndex = useMemo(() => {
-        if (answerType === 'text' || answerType === 'number' || answerType === 'checkbox') return false;
+        if (answerType === 'text' || answerType === 'number' || answerType === 'checkbox' || answerType === 'binary') return false;
         return ['GreaterThan', 'GreaterThanOrEqual', 'LessThan', 'LessThanOrEqual'].includes(expressionState.op);
     }, [answerType, expressionState]);
 

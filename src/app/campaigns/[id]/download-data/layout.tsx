@@ -1,5 +1,6 @@
 "use client";
-import DownloadInitProvider from "@/components/DownloadInitProvider";
+import DownloadStoreProvider from "@/providers/DownloadStoreProvider";
+import { CampaignHeader } from "@/components/common/CampaignHeader";
 
 export default function DownloadDataLayout({
     children,
@@ -7,8 +8,13 @@ export default function DownloadDataLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <DownloadInitProvider>
-            {children}
-        </DownloadInitProvider>
+        <DownloadStoreProvider>
+            <CampaignHeader />
+            <div className="flex flex-row grow w-full overflow-hidden">
+                <main className="flex flex-col w-full items-stretch gap-4 grow overflow-auto p-4">
+                    {children}
+                </main>
+            </div>
+        </DownloadStoreProvider>
     );
 }

@@ -3,10 +3,10 @@ import { useState } from "react";
 import { Button, Card, Dropdown, DropdownItem, TextInput } from "flowbite-react";
 
 import { useTemplateTable } from "@/hooks/configuration/useTemplateTable";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 
 export default function AddSensorButtons() {
-    const { tables, addTable } = useCampaignConfigEdit();
+    const { tables, addTable } = useCampaignConfigEdit((state) => state);
     const { availableTemplateTables } = useTemplateTable(tables);
     const [isSensorInputVisible, setIsSensorInputVisible] = useState(false);
     const [sensorName, setSensorName] = useState("");
@@ -52,7 +52,7 @@ export default function AddSensorButtons() {
                         />
                     </div>
                     <div className="flex gap-4 items-center">
-                        <Button className="flex-2/3" onClick={() => { addTable({ campaign_id: -1, name: sensorName, description: sensorDescription, daily_count_max: 0, campaign_table_field: [], is_custom: true }); setIsSensorInputVisible(false); setSensorName(""); setSensorDescription(""); }}>
+                        <Button className="flex-2/3" onClick={() => { addTable({ campaign_id: -1, name: sensorName, display_name: sensorName, description: sensorDescription, daily_count_max: 0, campaign_table_field: [], is_custom: true }); setIsSensorInputVisible(false); setSensorName(""); setSensorDescription(""); }}>
                             Confirm
                         </Button>
                         <Button className="flex-1/3" color="gray" onClick={() => { setIsSensorInputVisible(false); setSensorName(""); setSensorDescription(""); }}>

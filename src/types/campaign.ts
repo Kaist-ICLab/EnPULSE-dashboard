@@ -1,4 +1,5 @@
 import { FetchedSurvey, Survey } from "./survey";
+import { CampaignTrigger, FetchedCampaignTrigger } from "./trigger";
 import { Constants, Database } from "@/lib/schema";
 import { DeepRequired } from "@/utils/type";
 
@@ -7,14 +8,24 @@ export type FieldRole = Database['public']['Enums']['field_role'];
 export const FieldRoleOption: readonly FieldRole[] = Constants.public.Enums.field_role;
 export const FieldTypeOption: readonly FieldType[] = Constants.public.Enums.field_type;
 
+export type CampaignListItem = {
+    id: number;
+    name: string;
+    description: string;
+    start_time: string;
+    end_time: string;
+}
+
 export type Campaign = Database['public']['Tables']['campaigns']['Insert'] & {
     profiles: CampaignParticipant[];
     campaign_table: CampaignTable[];
     survey: Survey[];
+    campaign_trigger: CampaignTrigger[];
 }
 
-export type FetchedCampaign = DeepRequired<Omit<Campaign, 'survey'>> & {
+export type FetchedCampaign = DeepRequired<Omit<Campaign, 'survey' | 'campaign_trigger'>> & {
     survey: FetchedSurvey[];
+    campaign_trigger: FetchedCampaignTrigger[];
 }
 
 export type CampaignTable = Database['public']['Tables']['campaign_table']['Insert'] & {
@@ -35,6 +46,6 @@ export type RemovedEntries = {
     mapping: number[];
     survey: number[];
     question: number[];
-    option: number[];
     trigger: number[];
+    campaign_trigger: number[];
 }

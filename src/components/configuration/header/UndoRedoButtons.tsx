@@ -1,11 +1,12 @@
 "use client";
 import { useTemporalStore } from "@/hooks/useTemporalStore";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditStoreProvider";
 import { useEffect } from "react";
 import { Tooltip, Kbd } from "flowbite-react";
 
 const UndoRedoButtons: React.FC = () => {
-    const { pastStates, futureStates, undo, redo } = useTemporalStore(useCampaignConfigEdit, (state) => state);
+    const configEditStore = useCampaignConfigEditStoreApi();
+    const { pastStates, futureStates, undo, redo } = useTemporalStore(configEditStore, (state) => state);
 
     useEffect(() => {
         const isEditableTarget = (target: EventTarget | null) => {

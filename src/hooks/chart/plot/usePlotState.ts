@@ -1,4 +1,4 @@
-import useSectionState from "@/hooks/useSectionState";
+import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 import { useMemo, useEffect, useCallback } from "react";
 import { TimelineDataPoint } from "@/types/chart";
 import { ChartType } from "@/types/chart";
@@ -18,7 +18,7 @@ export function usePlotState(
     height: number,
     fieldId: number,
 ) {
-    const { timeRange, draggedTime, updateTimeRange, initTimeRange } = useSectionState();
+    const { timeRange, draggedTime, updateTimeRange, initTimeRange } = useSectionParamStore((state) => state);
     const { minValue, maxValue, getTooltipData, getColor } = useVaryingPlotState(data, chartType, bucketSize, fieldId);
     const currentTimeRange = useMemo(() => {
         return { start: timeRange.start + draggedTime, end: timeRange.end + draggedTime };
@@ -57,8 +57,8 @@ export function usePlotState(
             });
         }
 
-        const rangeTop = chartType === 'barcode' ? height : chartType === 'heatmap' ? height : (height * 0.95);
-        const rangeBottom = chartType === 'numerical' ? height * 0.05 : 0;
+        const rangeTop = (chartType === 'barcode' || chartType === 'heatmap' || chartType === 'survey_events') ? height : (height * 0.95);
+        const rangeBottom = (chartType === 'numerical') ? height * 0.05 : 0;
 
         return scaleLinear({
             domain: [minValue, maxValue],

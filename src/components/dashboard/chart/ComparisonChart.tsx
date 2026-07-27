@@ -1,17 +1,17 @@
 "use client"
 import ChartContainer from "@/components/dashboard/chart/ChartContainer";
 import useTimeline from "@/hooks/chart/useTimeline";
+import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 import { ComparisonType } from "@/types/dashboard";
 import { Card, Spinner } from "flowbite-react";
 import { useMemo, useRef } from "react";
-import SensorDropdown from "../SensorDropdown";
-import useSectionState from "@/hooks/useSectionState";
-import SectionTypeSelect from "../SectionTypeSelect";
 import ParticipantDropdown from "../ParticipantDropdown";
+import SectionTypeSelect from "../SectionTypeSelect";
+import SensorDropdown from "../SensorDropdown";
 
 const ComparisonChart: React.FC = () => {
     const chartRef = useRef<HTMLDivElement>(null);
-    const { comparisonParams, updateComparisonParams, selectedSection, updateSelectedSection } = useSectionState()
+    const { comparisonParams, updateComparisonParams, selectedSection, updateSelectedSection } = useSectionParamStore((state) => state);
     const currentComparisonParams = useMemo(() => comparisonParams[selectedSection], [comparisonParams, selectedSection])
     const { timeline, bucketSize, loading, error } = useTimeline(selectedSection, (chartRef.current?.clientWidth || 0) - 88);
 
@@ -28,7 +28,9 @@ const ComparisonChart: React.FC = () => {
                 <div className="flex flex-row ml-auto gap-2">
                     <SensorDropdown
                         selectedFieldIds={currentComparisonParams.fieldId}
+                        selectedQuestionIds={currentComparisonParams.questionId}
                         setSelectedFieldIds={(fieldId: number[]) => updateComparisonParams(selectedSection, { fieldId })}
+                        setSelectedQuestionIds={(questionId: number[]) => updateComparisonParams(selectedSection, { questionId })}
                         isMultipleSelection={selectedSection === ComparisonType.Sensors}
                     />
                     <ParticipantDropdown
@@ -36,18 +38,6 @@ const ComparisonChart: React.FC = () => {
                         setSelectedParticipantIds={(uuid: string[]) => updateComparisonParams(selectedSection, { uuid })}
                         isMultipleSelection={selectedSection === ComparisonType.Participants}
                     />
-                    {/* <div className="w-full sm:w-32">
-                            <input
-                                type="date"
-                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                                value={dayjs(date).format('YYYY-MM-DD')}
-                                onChange={(e) => {
-                                    const date = dayjs(e.target.value).startOf('day').toDate();
-                                    updateSectionParams(sectionType, { date })
-                                    initTimeRange(sectionType)
-                                }}
-                            />
-                        </div> */}
                 </div>
             </div>
             <div className="w-full">
@@ -57,17 +47,38 @@ const ComparisonChart: React.FC = () => {
                     </div>
                     }
                     {error && (
-                        <p className="text-red-500 font-medium">Failed to load data: {error.message}</p>
+                        <div className="text-red-500 font-medium">Failed to load data: {error.message}</div>
                     )}
-                    {timeline.length > 0 && <ChartContainer
-                        timelines={timeline}
-                        bucketSize={bucketSize}
-                    />
-                    }
+                    {timeline.length > 0 ? (
+                        <ChartContainer
+                            timelines={timeline}
+                            bucketSize={bucketSize}
+                        />
+                    ) : (
+                        <ComprisonChartEmpty
+                            isUuidEmpty={currentComparisonParams.uuid.length === 0}
+                            isFieldIdEmpty={currentComparisonParams.fieldId.length === 0 && currentComparisonParams.questionId.length === 0}
+                        />
+                    )}
                 </div>
             </div>
         </Card>
     )
 }
 
-export { ComparisonChart }
+const ComprisonChartEmpty: React.FC<{
+    isUuidEmpty: boolean;
+    isFieldIdEmpty: boolean;
+}> = ({ isUuidEmpty, isFieldIdEmpty }) => {
+    return (<div className="text-gray-500 font-medium bg-gray-100 min-h-48 w-full rounded-lg flex items-center justify-center">
+        {
+            (isUuidEmpty !== isFieldIdEmpty) ? (
+                <>Select at least one {isFieldIdEmpty ? "sensor" : "participant"} to view data</>
+            ) : (
+                <>Select at least one sensor and participants to view data</>
+            )
+        }
+    </div>)
+}
+
+export { ComparisonChart };

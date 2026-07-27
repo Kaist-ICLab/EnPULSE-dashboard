@@ -1,15 +1,16 @@
-import useCampaign from '@/hooks/useCampaign';
+
 import useSendMessage from '@/hooks/messaging/useSendMessage';
-import React, { useState } from 'react';
-import EmailAutocompleteInput from './EmailAutocompleteInput';
+import { useCampaignStore } from '@/providers/CampaignStoreProvider';
 import { CampaignParticipant } from '@/types/campaign';
 import { Button } from 'flowbite-react';
+import React, { useState } from 'react';
+import EmailAutocompleteInput from './EmailAutocompleteInput';
 
 const SendMessageFloatingModal: React.FC<{
     initialSendTo: CampaignParticipant[],
     onClose: () => void;
 }> = ({ initialSendTo = [], onClose }) => {
-    const { selectedCampaignId } = useCampaign();
+    const { selectedCampaignId } = useCampaignStore((state) => state);
     const [sendTo, setSendTo] = useState(initialSendTo);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');

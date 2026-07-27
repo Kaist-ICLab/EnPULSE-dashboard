@@ -4,13 +4,13 @@ import { FieldRole, FieldRoleOption, FieldType, FieldTypeOption } from "@/types/
 import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import FieldMappingEditor from "./FieldMappingEditor";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import IconButton from "../common/IconButton";
 
 const PassiveSensingConfigTable: React.FC<{
     tableIdx: number;
 }> = ({ tableIdx }) => {
-    const { tables, addField, removeField, setField, setFieldMapping, setDailyCountMax } = useCampaignConfigEdit();
+    const { tables, addField, removeField, setField, setFieldMapping, setDailyCountMax } = useCampaignConfigEdit((state) => state);
     const currentTable = useMemo(() => tables[tableIdx], [tables, tableIdx]);
 
     const [fieldName, setFieldName] = useState('')
@@ -53,10 +53,15 @@ const PassiveSensingConfigTable: React.FC<{
                                             />
                                         )}
                                         {(field.field_type === 'categorical' || field.field_type === 'bitmask') && field.field_role === 'data' && (
-                                            <IconButton
-                                                onClick={() => setEditingFieldIdx(fieldIdx)}
-                                                className="icon-[material-symbols--settings]"
-                                            />
+                                            <div className="relative">
+                                                <IconButton
+                                                    onClick={() => setEditingFieldIdx(fieldIdx)}
+                                                    className="icon-[material-symbols--settings]"
+                                                />
+                                                {(field.campaign_table_field_mapping?.length ?? 0) > 0 && (
+                                                    <span className="absolute -top-0.75 -right-0.75 h-1.5 w-1.5 rounded-full bg-blue-500" />
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 </TableCell>

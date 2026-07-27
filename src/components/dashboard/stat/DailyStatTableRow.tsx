@@ -1,6 +1,7 @@
-import { Tooltip } from "flowbite-react";
+import { Checkbox, Tooltip } from "flowbite-react";
 import DailyStatTableCell from "./DailyStatTableCell";
 import React from "react";
+import { DailyStatColumn } from "@/hooks/chart/useUserDailyStat";
 
 const getLevelColor = (level: number, max: number): string => {
     const levels = [
@@ -14,7 +15,6 @@ const getLevelColor = (level: number, max: number): string => {
     return levels[Math.max(0, Math.min(4, Math.floor(level / max * 5)))];
 }
 
-// TODO: Tooltip is very laggy when there are many of them... how to optimize?
 const Timeline: React.FC<{ values: number[], max: number }> = ({ values, max }) => {
     return (
         <div className="flex gap-0.5 justify-center items-center">
@@ -57,30 +57,41 @@ const DailyCount: React.FC<{
 }
 
 const DailyStatTableRow: React.FC<{
-    email: string;
+    pid: number;
     contacts: number;
+    columns: DailyStatColumn[];
     tables: { table_id: number, totalCount: number, counts: number[] }[];
-    maxValue: Map<number, number>;
+    surveys: { survey_id: number, totalCount: number, counts: number[] }[];
+    maxValue: Map<string, number>;
     isSelected: boolean;
     toggleChecked: () => void;
-}> = ({ email, contacts, tables, maxValue, isSelected = false, toggleChecked }) => {
+}> = ({ pid, columns, tables, surveys, maxValue, isSelected = false, toggleChecked }) => {
     return (
         <tr className={`border-b border-gray-200 border-l text-sm ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}`} onClick={toggleChecked}>
             <DailyStatTableCell>
-                <input type="checkbox" className="w-4 h-4" checked={isSelected} onChange={toggleChecked} />
+                <Checkbox checked={isSelected} onChange={toggleChecked} />
             </DailyStatTableCell>
-            <DailyStatTableCell>{email}</DailyStatTableCell>
-            <DailyStatTableCell>{contacts} Contacts</DailyStatTableCell>
-            {tables.map((table) => (
-                [<DailyStatTableCell key={`${table.table_id}-dailycount`}>
-                    <Tooltip content={`${table.totalCount} ${maxValue.get(table.table_id) ? ` / ${maxValue.get(table.table_id)}` : ''}`}>
-                        <DailyCount value={table.totalCount} max={maxValue.get(table.table_id) ?? 0} />
-                    </Tooltip>
-                </DailyStatTableCell>,
-                <DailyStatTableCell key={`${table.table_id}-timeline`}>
-                    <Timeline values={table.counts} max={maxValue.get(table.table_id) ?? 0 / table.counts.length} />
-                </DailyStatTableCell>]
-            ))}
+            <DailyStatTableCell>P{pid}</DailyStatTableCell>
+            {columns.map((col) => {
+                const key = `${col.kind}-${col.id}`;
+                const max = maxValue.get(key) ?? 0;
+                const entry = col.kind === 'sensor'
+                    ? tables.find(t => t.table_id === col.id)
+                    : surveys.find(s => s.survey_id === col.id);
+                const totalCount = entry?.totalCount ?? 0;
+                const counts = entry?.counts ?? [];
+                const borderClass = col.kind === 'survey' ? 'border-l-2 border-l-blue-200' : '';
+                return [
+                    <DailyStatTableCell key={`${key}-dailycount`} className={borderClass}>
+                        <Tooltip content={`${totalCount}${max ? ` / ${max}` : ''}`}>
+                            <DailyCount value={totalCount} max={max} />
+                        </Tooltip>
+                    </DailyStatTableCell>,
+                    <DailyStatTableCell key={`${key}-timeline`}>
+                        <Timeline values={counts} max={max} />
+                    </DailyStatTableCell>
+                ];
+            })}
         </tr>
     );
 }

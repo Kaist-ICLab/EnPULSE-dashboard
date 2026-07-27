@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "flowbite-react";
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit, useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditStoreProvider";
 import QuestionList from "@/components/configuration/form/QuestionList";
 import { useTemporalStore } from "@/hooks/useTemporalStore";
 import { useEffect } from "react";
@@ -11,8 +11,9 @@ export default function SurveyQuestionsPage() {
     const params = useParams();
     const router = useRouter();
     const surveyIndex = parseInt(params.index as string);
-    const { surveys } = useCampaignConfigEdit();
-    const { clear } = useTemporalStore(useCampaignConfigEdit, (state) => state);
+    const { surveys } = useCampaignConfigEdit((state) => state);
+    const configEditStore = useCampaignConfigEditStoreApi();
+    const { clear } = useTemporalStore(configEditStore, (state) => state);
 
     useEffect(() => {
         clear();

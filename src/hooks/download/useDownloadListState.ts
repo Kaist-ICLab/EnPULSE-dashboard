@@ -2,8 +2,9 @@ import { getDownloadData } from "@/services/downloadService";
 import { DownloadFileRow } from "@/types/download";
 import { ResponseStatus } from "@/types/response";
 import { useCallback, useMemo, useState } from "react";
-import useCampaign from "../useCampaign";
-import useDownloadState from "../useDownloadState";
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
+import useDownloadState from "../../stores/downloadStore";
+import { notify } from "@/utils/notify";
 import dayjs from "dayjs";
 
 const MAX_GROUP_BYTES = 200 * 1024 * 1024; // 100MB
@@ -14,7 +15,7 @@ const sleep = async (ms: number) => new Promise((resolve) => setTimeout(resolve,
 
 
 export default function useDownloadListState() {
-    const { campaign, campaignTables, campaignTableFields } = useCampaign();
+    const { campaign, campaignTables, campaignTableFields } = useCampaignStore((state) => state);
     const { downloadList, selectedFieldIds, setDownloadListItemStatus, setAllDownloadListItemsStatus } = useDownloadState();
 
     const [previewStatus, setPreviewStatus] = useState<ResponseStatus>(null);
@@ -78,10 +79,13 @@ export default function useDownloadListState() {
             const { fileName, csv } = await downloadAndBuildFile(idx, row);
             const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
             triggerFileDownload(blob, fileName);
+        } catch (error) {
+            notify.error(`Failed to download data: ${error instanceof Error ? error.message : "Unknown error"}`);
         } finally {
+            setDownloadListItemStatus(idx, null);
         }
 
-    }, [downloadAndBuildFile, triggerFileDownload]);
+    }, [downloadAndBuildFile, triggerFileDownload, setDownloadListItemStatus]);
 
     const downloadAllData = useCallback(async () => {
         downloadList.forEach((row, idx) => row.isChecked && setDownloadListItemStatus(idx, "loading"));
@@ -137,6 +141,9 @@ export default function useDownloadListState() {
             }
 
             await flushZipGroup();
+            notify.success("Download ready");
+        } catch (error) {
+            notify.error(`Failed to download data: ${error instanceof Error ? error.message : "Unknown error"}`);
         } finally {
             setAllDownloadListItemsStatus(null);
         }
@@ -149,10 +156,15 @@ export default function useDownloadListState() {
     const generatePreviewData = useCallback(async (row: DownloadFileRow) => {
         setPreviewStatus("loading");
         const fields = getFieldsForRow(row);
-        const data = await getDownloadData(row.uuid, fields, row.date, row.table, true);
-        setPreviewData(data);
-        setSelectedPreviewRow(row);
-        setPreviewStatus("ok");
+        try {
+            const data = await getDownloadData(row.uuid, fields, row.date, row.table, true);
+            setPreviewData(data);
+            setSelectedPreviewRow(row);
+            setPreviewStatus("ok");
+        } catch (error) {
+            notify.error(`Failed to load preview: ${error instanceof Error ? error.message : "Unknown error"}`);
+            setPreviewStatus("error");
+        }
     }, [getFieldsForRow]);
 
     const selectedDataCount = useMemo(() => {

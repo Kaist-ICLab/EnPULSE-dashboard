@@ -70,6 +70,45 @@ export type Database = {
                 }
                 Relationships: []
             }
+            activity_recognition_sensor: {
+                Row: {
+                    activity_type: number
+                    created_at: string | null
+                    device_type: number
+                    elapsed_realtime_millis: number
+                    event_id: string
+                    probabilities: number[]
+                    received: string
+                    score: number
+                    timestamp: string
+                    uuid: string
+                }
+                Insert: {
+                    activity_type: number
+                    created_at?: string | null
+                    device_type: number
+                    elapsed_realtime_millis: number
+                    event_id: string
+                    probabilities: number[]
+                    received: string
+                    score: number
+                    timestamp: string
+                    uuid: string
+                }
+                Update: {
+                    activity_type?: number
+                    created_at?: string | null
+                    device_type?: number
+                    elapsed_realtime_millis?: number
+                    event_id?: string
+                    probabilities?: number[]
+                    received?: string
+                    score?: number
+                    timestamp?: string
+                    uuid?: string
+                }
+                Relationships: []
+            }
             ambient_light_sensor: {
                 Row: {
                     accuracy: number
@@ -329,6 +368,7 @@ export type Database = {
                     campaign_id: number
                     daily_count_max: number
                     description: string
+                    display_name: string
                     id: number
                     is_custom: boolean
                     name: string
@@ -337,6 +377,7 @@ export type Database = {
                     campaign_id: number
                     daily_count_max: number
                     description?: string
+                    display_name: string
                     id?: number
                     is_custom?: boolean
                     name: string
@@ -345,6 +386,7 @@ export type Database = {
                     campaign_id?: number
                     daily_count_max?: number
                     description?: string
+                    display_name?: string
                     id?: number
                     is_custom?: boolean
                     name?: string
@@ -462,6 +504,38 @@ export type Database = {
                         isOneToOne: false
                         referencedRelation: "profiles"
                         referencedColumns: ["uuid"]
+                    },
+                ]
+            }
+            campaign_trigger: {
+                Row: {
+                    action: Json
+                    campaign_id: number
+                    condition: Json
+                    id: number
+                    name: string
+                }
+                Insert: {
+                    action: Json
+                    campaign_id: number
+                    condition: Json
+                    id?: number
+                    name?: string
+                }
+                Update: {
+                    action?: Json
+                    campaign_id?: number
+                    condition?: Json
+                    id?: number
+                    name?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "campaign_trigger_campaign_id_fkey"
+                        columns: ["campaign_id"]
+                        isOneToOne: false
+                        referencedRelation: "campaigns"
+                        referencedColumns: ["id"]
                     },
                 ]
             }
@@ -681,6 +755,42 @@ export type Database = {
                 }
                 Relationships: []
             }
+            gesture_sensor: {
+                Row: {
+                    class_index: number
+                    created_at: string | null
+                    device_type: number
+                    event_id: string
+                    probabilities: number[]
+                    received: string
+                    score: number
+                    timestamp: string
+                    uuid: string
+                }
+                Insert: {
+                    class_index: number
+                    created_at?: string | null
+                    device_type: number
+                    event_id: string
+                    probabilities: number[]
+                    received: string
+                    score: number
+                    timestamp: string
+                    uuid: string
+                }
+                Update: {
+                    class_index?: number
+                    created_at?: string | null
+                    device_type?: number
+                    event_id?: string
+                    probabilities?: number[]
+                    received?: string
+                    score?: number
+                    timestamp?: string
+                    uuid?: string
+                }
+                Relationships: []
+            }
             heart_rate_sensor: {
                 Row: {
                     created_at: string | null
@@ -714,6 +824,51 @@ export type Database = {
                     hr_status?: number
                     ibi?: number[]
                     ibi_status?: number[]
+                    received?: string
+                    timestamp?: string
+                    uuid?: string
+                }
+                Relationships: []
+            }
+            imu_sensor: {
+                Row: {
+                    acc_x: number
+                    acc_y: number
+                    acc_z: number
+                    created_at: string | null
+                    device_type: number
+                    event_id: string
+                    gyro_x: number
+                    gyro_y: number
+                    gyro_z: number
+                    received: string
+                    timestamp: string
+                    uuid: string
+                }
+                Insert: {
+                    acc_x: number
+                    acc_y: number
+                    acc_z: number
+                    created_at?: string | null
+                    device_type: number
+                    event_id: string
+                    gyro_x: number
+                    gyro_y: number
+                    gyro_z: number
+                    received: string
+                    timestamp: string
+                    uuid: string
+                }
+                Update: {
+                    acc_x?: number
+                    acc_y?: number
+                    acc_z?: number
+                    created_at?: string | null
+                    device_type?: number
+                    event_id?: string
+                    gyro_x?: number
+                    gyro_y?: number
+                    gyro_z?: number
                     received?: string
                     timestamp?: string
                     uuid?: string
@@ -997,16 +1152,19 @@ export type Database = {
                 Row: {
                     campaign_id: number | null
                     email: string
+                    pid: number
                     uuid: string
                 }
                 Insert: {
                     campaign_id?: number | null
                     email: string
+                    pid?: number
                     uuid: string
                 }
                 Update: {
                     campaign_id?: number | null
                     email?: string
+                    pid?: number
                     uuid?: string
                 }
                 Relationships: [
@@ -1121,10 +1279,48 @@ export type Database = {
                 }
                 Relationships: []
             }
+            stress_sensor: {
+                Row: {
+                    created_at: string | null
+                    device_type: number
+                    event_id: string
+                    is_high_stress: boolean
+                    probability: number
+                    received: string
+                    timestamp: string
+                    uuid: string
+                    window_start_ms: string
+                }
+                Insert: {
+                    created_at?: string | null
+                    device_type: number
+                    event_id: string
+                    is_high_stress: boolean
+                    probability: number
+                    received: string
+                    timestamp: string
+                    uuid: string
+                    window_start_ms: string
+                }
+                Update: {
+                    created_at?: string | null
+                    device_type?: number
+                    event_id?: string
+                    is_high_stress?: boolean
+                    probability?: number
+                    received?: string
+                    timestamp?: string
+                    uuid?: string
+                    window_start_ms?: string
+                }
+                Relationships: []
+            }
             survey: {
                 Row: {
                     campaign_id: number
                     description: string
+                    device_type: number
+                    expire_after_ms: number
                     id: number
                     schedule_method: Json | null
                     title: string
@@ -1132,6 +1328,8 @@ export type Database = {
                 Insert: {
                     campaign_id: number
                     description: string
+                    device_type: number
+                    expire_after_ms?: number
                     id?: number
                     schedule_method?: Json | null
                     title: string
@@ -1139,6 +1337,8 @@ export type Database = {
                 Update: {
                     campaign_id?: number
                     description?: string
+                    device_type?: number
+                    expire_after_ms?: number
                     id?: number
                     schedule_method?: Json | null
                     title?: string
@@ -1156,6 +1356,7 @@ export type Database = {
             survey_question: {
                 Row: {
                     answer_type: Database["public"]["Enums"]["survey_question_type"]
+                    config: Json | null
                     id: number
                     is_mandatory: boolean
                     question: string
@@ -1164,6 +1365,7 @@ export type Database = {
                 }
                 Insert: {
                     answer_type: Database["public"]["Enums"]["survey_question_type"]
+                    config?: Json | null
                     id?: number
                     is_mandatory: boolean
                     question: string
@@ -1172,6 +1374,7 @@ export type Database = {
                 }
                 Update: {
                     answer_type?: Database["public"]["Enums"]["survey_question_type"]
+                    config?: Json | null
                     id?: number
                     is_mandatory?: boolean
                     question?: string
@@ -1191,35 +1394,6 @@ export type Database = {
                         columns: ["triggered_by"]
                         isOneToOne: false
                         referencedRelation: "survey_question_trigger"
-                        referencedColumns: ["id"]
-                    },
-                ]
-            }
-            survey_question_option: {
-                Row: {
-                    allow_free_response: boolean
-                    display: string
-                    id: number
-                    question_id: number | null
-                }
-                Insert: {
-                    allow_free_response?: boolean
-                    display: string
-                    id?: number
-                    question_id?: number | null
-                }
-                Update: {
-                    allow_free_response?: boolean
-                    display?: string
-                    id?: number
-                    question_id?: number | null
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "survey_question_option_question_id_fkey"
-                        columns: ["question_id"]
-                        isOneToOne: false
-                        referencedRelation: "survey_question"
                         referencedColumns: ["id"]
                     },
                 ]
@@ -1277,19 +1451,19 @@ export type Database = {
             }
             survey_question_trigger: {
                 Row: {
-                    expression: Json | null
+                    expression: Json
                     id: number
-                    question_id: number | null
+                    question_id: number
                 }
                 Insert: {
-                    expression?: Json | null
+                    expression: Json
                     id?: number
-                    question_id?: number | null
+                    question_id: number
                 }
                 Update: {
-                    expression?: Json | null
+                    expression?: Json
                     id?: number
-                    question_id?: number | null
+                    question_id?: number
                 }
                 Relationships: [
                     {
@@ -1999,7 +2173,13 @@ export type Database = {
         Enums: {
             field_role: "uid" | "timestamp" | "data" | "ignore"
             field_type: "categorical" | "numerical" | "datetime" | "text" | "bitmask"
-            survey_question_type: "checkbox" | "radio" | "text" | "number"
+            survey_question_type:
+            | "checkbox"
+            | "radio"
+            | "text"
+            | "number"
+            | "binary"
+            | "numberscale"
         }
         CompositeTypes: {
             [_ in never]: never
@@ -2132,7 +2312,14 @@ export const Constants = {
         Enums: {
             field_role: ["uid", "timestamp", "data", "ignore"],
             field_type: ["categorical", "numerical", "datetime", "text", "bitmask"],
-            survey_question_type: ["checkbox", "radio", "text", "number"],
+            survey_question_type: [
+                "checkbox",
+                "radio",
+                "text",
+                "number",
+                "binary",
+                "numberscale",
+            ],
         },
     },
 } as const

@@ -1,4 +1,4 @@
-import useCampaignConfigEdit from "@/hooks/useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { useParams, useRouter } from "next/navigation";
 import { Button, Select } from "flowbite-react";
 
@@ -6,7 +6,7 @@ export default function AddQuestionHeader() {
     const params = useParams();
     const router = useRouter();
     const currentSurveyIndex = parseInt(params.index as string);
-    const { surveys, addSurveyQuestion } = useCampaignConfigEdit();
+    const { surveys, addSurveyQuestion } = useCampaignConfigEdit((state) => state);
 
     const handleSurveySelect = (index: number) => {
         router.push(`./${index}`);

@@ -1,9 +1,12 @@
+import type { Json } from '@/lib/schema';
 import { supabase } from '@/lib/supabase';
-import { Campaign, CampaignTable, CampaignTableField, FetchedCampaign, RemovedEntries } from '@/types/campaign';
+import { Campaign, CampaignListItem, CampaignTable, CampaignTableField, FetchedCampaign, RemovedEntries } from '@/types/campaign';
 import { FetchedSurveyQuestion, FetchedSurveyTrigger, Survey, SurveyQuestion, SurveyQuestionTrigger } from '@/types/survey';
+import { CampaignTrigger, TriggerCondition, loadActions, persistActions } from '@/types/trigger';
 import { MakeOptional } from '@/utils/type';
 
-type SingleLevelSurveyQuestion = Omit<FetchedSurveyQuestion, 'survey_question_trigger'> & {
+type SingleLevelSurveyQuestion = Omit<FetchedSurveyQuestion, 'survey_question_trigger' | 'config'> & {
+    config: unknown;
     survey_question_trigger: (Omit<FetchedSurveyTrigger, 'survey_question'> & { survey_question?: SingleLevelSurveyQuestion[] })[];
 }
 
@@ -25,19 +28,19 @@ function recursivelyFillSurveyId(surveyQuestion: SurveyQuestion[], surveyId: num
     recursivelyFillSurveyId(nextLevelQuestion, surveyId);
 }
 
-export const getCampaignList = async (): Promise<{ id: number, name: string, description: string, start_time: string, end_time: string }[]> => {
+export const getCampaignList = async (): Promise<Map<number, CampaignListItem>> => {
     const { data, error } = await supabase
         .from('campaigns')
         .select(`id, name, description, start_time, end_time`)
         .order('id')
     if (error) throw new Error(error.message);
-    return data;
+    return new Map(data.map((campaign) => [campaign.id, campaign]));
 }
 
 export const getCampaignInfo = async (campaignId: number): Promise<FetchedCampaign> => {
     const { data, error } = await supabase
         .from('campaigns')
-        .select(`*, profiles(*), survey(*, survey_question(*, survey_question_trigger!survey_question_trigger_question_id_fkey(*), survey_question_option(*))),campaign_table(*, campaign_table_field(*, campaign_table_field_mapping(*)))`)
+        .select(`*, profiles(*), survey(*, survey_question(*, survey_question_trigger!survey_question_trigger_question_id_fkey(*))), campaign_table(*, campaign_table_field(*, campaign_table_field_mapping(*))), campaign_trigger(*)`)
         .eq('id', campaignId)
         .single()
 
@@ -49,7 +52,17 @@ export const getCampaignInfo = async (campaignId: number): Promise<FetchedCampai
         s.survey_question = topLevelSurveyQuestion;
     })
 
-    return data as FetchedCampaign;
+    // Convert persisted action shape ({survey_id}) to in-memory shape ({surveyIndex}).
+    // The index is into data.survey, which is the same array that ends up in the store.
+    // `loadActions` accepts either an array (current shape) or a single object
+    // (pre-multi-action rows) so old data still rehydrates.
+    data.campaign_trigger = data.campaign_trigger.map((row: typeof data.campaign_trigger[number]) => ({
+        ...row,
+        condition: row.condition as unknown as TriggerCondition,
+        actions: loadActions(row.action, data.survey),
+    }));
+
+    return data as unknown as FetchedCampaign;
 }
 
 export const upsertCampaign = async (campaign: Campaign, passwordHash: string | null, insertChildTables: boolean = true): Promise<number> => {
@@ -57,11 +70,13 @@ export const upsertCampaign = async (campaign: Campaign, passwordHash: string | 
 
     const campaignTable = structuredClone(campaign.campaign_table);
     const survey = structuredClone(campaign.survey);
+    const triggers = structuredClone(campaign.campaign_trigger);
 
-    const insertedCampaign: MakeOptional<Campaign, 'campaign_table' | 'survey' | 'profiles'> = structuredClone(campaign);
+    const insertedCampaign: MakeOptional<Campaign, 'campaign_table' | 'survey' | 'profiles' | 'campaign_trigger'> = structuredClone(campaign);
     delete insertedCampaign.campaign_table;
     delete insertedCampaign.survey;
     delete insertedCampaign.profiles;
+    delete insertedCampaign.campaign_trigger;
 
     const { data, error } = await supabase
         .from('campaigns')
@@ -82,14 +97,54 @@ export const upsertCampaign = async (campaign: Campaign, passwordHash: string | 
         if (credentialTableError) throw new Error(credentialTableError.message);
     }
 
-    if (insertChildTables && (campaignTable.length > 0 || survey.length > 0)) {
+    if (insertChildTables) {
         campaignTable.forEach(ct => { ct.campaign_id = campaignId })
         survey.forEach(s => { s.campaign_id = campaignId })
+        triggers.forEach(t => { t.campaign_id = campaignId })
 
-        await Promise.all([upsertCampaignTable(campaignTable), upsertSurvey(survey)]);
+        const [, surveyIds] = await Promise.all([
+            upsertCampaignTable(campaignTable),
+            upsertSurvey(survey),
+        ]);
+
+        if (triggers.length > 0) {
+            await upsertCampaignTrigger(triggers, campaignId, surveyIds);
+        }
     }
 
     return data[0].id;
+}
+
+export const upsertCampaignTrigger = async (
+    triggers: CampaignTrigger[],
+    campaignId: number,
+    surveyIds: number[],
+): Promise<void> => {
+    if (triggers.length === 0) return;
+
+    const rows = triggers.map(t => {
+        const row: {
+            id?: number;
+            campaign_id: number;
+            name: string;
+            condition: Json;
+            action: Json;
+        } = {
+            id: t.id,
+            campaign_id: campaignId,
+            name: t.name ?? "",
+            condition: t.condition as Json,
+            // Column is named `action` (singular) but stores a JSON array of persisted actions.
+            action: persistActions(t.actions, surveyIds) as Json,
+        };
+        if (row.id === -1 || row.id === undefined) delete row.id;
+        return row;
+    });
+
+    const { error } = await supabase
+        .from('campaign_trigger')
+        .upsert(rows, { defaultToNull: false });
+    if (error) throw new Error(error.message);
 }
 
 export const upsertCampaignTable = async (campaignTable: CampaignTable[], insertChildTables: boolean = true): Promise<void> => {
@@ -136,8 +191,8 @@ export const upsertCampaignTableField = async (campaignTableField: CampaignTable
     }
 }
 
-export const upsertSurvey = async (survey: Survey[], insertChildTables: boolean = true): Promise<void> => {
-    if (survey.length === 0) return;
+export const upsertSurvey = async (survey: Survey[], insertChildTables: boolean = true): Promise<number[]> => {
+    if (survey.length === 0) return [];
     survey.filter(s => s.id === -1).forEach(s => delete s.id);
 
     const insertedSurvey: MakeOptional<Survey, 'survey_question'>[] = structuredClone(survey);
@@ -154,16 +209,22 @@ export const upsertSurvey = async (survey: Survey[], insertChildTables: boolean 
         const surveyQuestions = propagatedSurvey.flatMap(s => s.survey_question);
         await upsertSurveyQuestion(surveyQuestions, insertChildTables);
     }
+
+    return insertedId;
 }
 
 export const upsertSurveyQuestion = async (surveyQuestion: SurveyQuestion[], insertChildTables: boolean = true): Promise<void> => {
     if (surveyQuestion.length === 0) return;
     surveyQuestion.filter(sq => sq.id === -1).forEach(sq => delete sq.id);
 
-    const insertedSurveyQuestion: MakeOptional<SurveyQuestion, 'survey_question_option' | 'survey_question_trigger'>[] = structuredClone(surveyQuestion);
+    type InsertRow = MakeOptional<Omit<SurveyQuestion, 'config'>, 'survey_question_trigger'> & { config: Json };
+    const insertedSurveyQuestion: InsertRow[] = (structuredClone(surveyQuestion) as SurveyQuestion[]).map(sq => ({
+        ...sq,
+        config: (sq.config ?? {}) as unknown as Json,
+    }));
     const propagatedSurveyQuestion: SurveyQuestion[] = structuredClone(surveyQuestion);
 
-    insertedSurveyQuestion.forEach(sq => { delete sq.survey_question_option; delete sq.survey_question_trigger });
+    insertedSurveyQuestion.forEach(sq => { delete sq.survey_question_trigger });
 
     const { data, error } = await supabase.from('survey_question').upsert(insertedSurveyQuestion, { defaultToNull: false }).select()
     if (error) throw new Error(error.message);
@@ -171,28 +232,26 @@ export const upsertSurveyQuestion = async (surveyQuestion: SurveyQuestion[], ins
 
     if (insertChildTables) {
         propagatedSurveyQuestion.forEach((sq, idx) => {
-            sq.survey_question_option.forEach(sqo => {
-                sqo.question_id = insertedId[idx]
-            })
             sq.survey_question_trigger.forEach(st => {
                 st.question_id = insertedId[idx]
             })
         })
-        const surveyQuestionOptions = propagatedSurveyQuestion.flatMap(sq => sq.survey_question_option);
         const surveyQuestionTriggers = propagatedSurveyQuestion.flatMap(sq => sq.survey_question_trigger);
-        await supabase.from('survey_question_option').upsert(surveyQuestionOptions, { defaultToNull: false }).select()
         await upsertSurveyTrigger(surveyQuestionTriggers, insertChildTables);
     }
 }
 
 export const upsertSurveyTrigger = async (surveyTrigger: SurveyQuestionTrigger[], insertChildTables: boolean = true): Promise<void> => {
     if (surveyTrigger.length === 0) return;
-    surveyTrigger.filter(st => st.id === -1).forEach(st => delete st.id);
 
-    const insertedSurveyTrigger: MakeOptional<SurveyQuestionTrigger, 'survey_question'>[] = structuredClone(surveyTrigger);
-    const propagatedSurveyTrigger: SurveyQuestionTrigger[] = structuredClone(surveyTrigger);
-
+    type InsertRow = MakeOptional<SurveyQuestionTrigger, 'survey_question' | 'id'>;
+    const insertedSurveyTrigger: InsertRow[] = structuredClone(surveyTrigger);
+    insertedSurveyTrigger.filter(st => st.id === -1).forEach(st => delete st.id);
     insertedSurveyTrigger.forEach(st => delete st.survey_question);
+
+    console.log(insertedSurveyTrigger);
+
+    const propagatedSurveyTrigger: SurveyQuestionTrigger[] = structuredClone(surveyTrigger);
 
     const { data, error } = await supabase.from('survey_question_trigger').upsert(insertedSurveyTrigger, { defaultToNull: false }).select()
     if (error) throw new Error(error.message);
@@ -211,8 +270,17 @@ export const deleteEntries = async (removedEntries: RemovedEntries): Promise<voi
     await supabase.from('campaign_table_field_mapping').delete().in('id', removedEntries.mapping);
     await supabase.from('survey').delete().in('id', removedEntries.survey);
     await supabase.from('survey_question').delete().in('id', removedEntries.question);
-    await supabase.from('survey_question_option').delete().in('id', removedEntries.option);
     await supabase.from('survey_question_trigger').delete().in('id', removedEntries.trigger);
+    await supabase.from('campaign_trigger').delete().in('id', removedEntries.campaign_trigger);
+}
+
+export const deleteCampaign = async (campaignId: number): Promise<void> => {
+    const { error } = await supabase
+        .from('campaigns')
+        .delete()
+        .eq('id', campaignId);
+
+    if (error) throw new Error(error.message);
 }
 
 export const checkCampaignNameValidity = async (campaignName: string, campaignId: number): Promise<boolean> => {

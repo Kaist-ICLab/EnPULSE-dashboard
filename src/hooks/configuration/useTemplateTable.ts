@@ -2,11 +2,15 @@ import { useMemo } from "react";
 import { CampaignTable, CampaignTableField } from "@/types/campaign";
 
 type TemplateCampaignTable = Omit<CampaignTable, 'id' | 'campaign_id' | 'daily_count_max' | 'is_custom' | 'campaign_table_field'> & {
-    campaign_table_field: Omit<CampaignTableField, 'id' | 'campaign_table_id' | 'campaign_table_field_mapping'>[];
+    campaign_table_field: (Omit<CampaignTableField, 'id' | 'campaign_table_id' | 'campaign_table_field_mapping'> & {
+        campaign_table_field_mapping?: { display: string; value: string }[]
+    }
+    )[];
 }
 
 const accelerometerSensor: TemplateCampaignTable = {
     name: "accelerometer_sensor",
+    display_name: "Accelerometer",
     description: "Accelerometer sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -20,6 +24,7 @@ const accelerometerSensor: TemplateCampaignTable = {
 
 const ambientLightSensor: TemplateCampaignTable = {
     name: "ambient_light_sensor",
+    display_name: "Ambient Light",
     description: "Ambient light sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -32,6 +37,7 @@ const ambientLightSensor: TemplateCampaignTable = {
 
 const appListChangeSensor: TemplateCampaignTable = {
     name: "app_list_change_sensor",
+    display_name: "App List Change",
     description: "App list change sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -44,6 +50,7 @@ const appListChangeSensor: TemplateCampaignTable = {
 
 const appUsageLogSensor: TemplateCampaignTable = {
     name: "app_usage_log_sensor",
+    display_name: "App Usage Log",
     description: "App usage log sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -55,8 +62,36 @@ const appUsageLogSensor: TemplateCampaignTable = {
     ],
 };
 
+const activityRecognitionSensor: TemplateCampaignTable = {
+    name: "activity_recognition_sensor",
+    display_name: "Activity Recognition",
+    description: "Activity recognition sensor",
+    campaign_table_field: [
+        { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
+        { name: "elapsed_realtime_millis", field_role: "data", field_type: "numerical" },
+        {
+            name: "activity_type", field_role: "data", field_type: "categorical",
+            campaign_table_field_mapping: [
+                { display: "In Vehicle", value: "0" },
+                { display: "On Bicycle", value: "1" },
+                { display: "On Foot", value: "2" },
+                { display: "Still", value: "3" },
+                { display: "Unknown", value: "4" },
+                { display: "Tilting", value: "5" },
+                { display: "Walking", value: "6" },
+                { display: "Running", value: "8" },
+            ]
+        },
+        { name: "score", field_role: "data", field_type: "numerical" },
+        { name: "probabilities", field_role: "ignore", field_type: "categorical" },
+        { name: "device_type", field_role: "ignore", field_type: "categorical" },
+        { name: "received", field_role: "ignore", field_type: "datetime" },
+    ],
+};
+
 const batterySensor: TemplateCampaignTable = {
     name: "battery_sensor",
+    display_name: "Battery",
     description: "Battery sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -71,6 +106,7 @@ const batterySensor: TemplateCampaignTable = {
 
 const bluetoothScanSensor: TemplateCampaignTable = {
     name: "bluetooth_scan_sensor",
+    display_name: "Bluetooth Scan",
     description: "Bluetooth scan sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -89,6 +125,7 @@ const bluetoothScanSensor: TemplateCampaignTable = {
 
 const callLogSensor: TemplateCampaignTable = {
     name: "call_log_sensor",
+    display_name: "Call Log",
     description: "Call log sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -102,6 +139,7 @@ const callLogSensor: TemplateCampaignTable = {
 
 const connectivitySensor: TemplateCampaignTable = {
     name: "connectivity_sensor",
+    display_name: "Connectivity",
     description: "Connectivity sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -116,6 +154,7 @@ const connectivitySensor: TemplateCampaignTable = {
 
 const dataTrafficSensor: TemplateCampaignTable = {
     name: "data_traffic_sensor",
+    display_name: "Data Traffic",
     description: "Data traffic sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -130,6 +169,7 @@ const dataTrafficSensor: TemplateCampaignTable = {
 
 const deviceModeSensor: TemplateCampaignTable = {
     name: "device_mode_sensor",
+    display_name: "Device Mode",
     description: "Device mode sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -142,6 +182,7 @@ const deviceModeSensor: TemplateCampaignTable = {
 
 const edaSensor: TemplateCampaignTable = {
     name: "eda_sensor",
+    display_name: "Electrodermal Activity",
     description: "Electrodermal activity sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -152,8 +193,53 @@ const edaSensor: TemplateCampaignTable = {
     ],
 };
 
+const gestureSensor: TemplateCampaignTable = {
+    name: "gesture_sensor",
+    display_name: "Gesture",
+    description: "Gesture sensor",
+    campaign_table_field: [
+        { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
+        {
+            name: "class_index", field_role: "data", field_type: "categorical", campaign_table_field_mapping: [
+                { display: "Alarm Clock", value: "0" },
+                { display: "Blender In Use", value: "1" },
+                { display: "Brushing Hair", value: "2" },
+                { display: "Chopping", value: "3" },
+                { display: "Clapping", value: "4" },
+                { display: "Coughing", value: "5" },
+                { display: "Drill In Use", value: "6" },
+                { display: "Drinking", value: "7" },
+                { display: "Grating", value: "8" },
+                { display: "Hair Dryer In Use", value: "9" },
+                { display: "Hammering", value: "10" },
+                { display: "Knocking", value: "11" },
+                { display: "Laughing", value: "12" },
+                { display: "Microwave", value: "13" },
+                { display: "Pouring Pitcher", value: "14" },
+                { display: "Sanding", value: "15" },
+                { display: "Scratching", value: "16" },
+                { display: "Screwing", value: "17" },
+                { display: "Shaver In Use", value: "18" },
+                { display: "Toilet Flushing", value: "19" },
+                { display: "Toothbrushing", value: "20" },
+                { display: "Twisting Jar", value: "21" },
+                { display: "Vacuum In Use", value: "22" },
+                { display: "Washing Utensils", value: "23" },
+                { display: "Washing Hands", value: "24" },
+                { display: "Wiping With Rag", value: "25" },
+                { display: "Other", value: "26" },
+            ]
+        },
+        { name: "score", field_role: "data", field_type: "numerical" },
+        { name: "probabilities", field_role: "ignore", field_type: "categorical" },
+        { name: "device_type", field_role: "ignore", field_type: "categorical" },
+        { name: "received", field_role: "ignore", field_type: "datetime" },
+    ],
+};
+
 const heartRateSensor: TemplateCampaignTable = {
     name: "heart_rate_sensor",
+    display_name: "Heart Rate",
     description: "Heart rate sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -166,8 +252,26 @@ const heartRateSensor: TemplateCampaignTable = {
     ],
 };
 
+const imuSensor: TemplateCampaignTable = {
+    name: "imu_sensor",
+    display_name: "IMU",
+    description: "IMU sensor",
+    campaign_table_field: [
+        { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
+        { name: "acc_x", field_role: "data", field_type: "numerical" },
+        { name: "acc_y", field_role: "data", field_type: "numerical" },
+        { name: "acc_z", field_role: "data", field_type: "numerical" },
+        { name: "gyro_x", field_role: "data", field_type: "numerical" },
+        { name: "gyro_y", field_role: "data", field_type: "numerical" },
+        { name: "gyro_z", field_role: "data", field_type: "numerical" },
+        { name: "device_type", field_role: "ignore", field_type: "categorical" },
+        { name: "received", field_role: "ignore", field_type: "datetime" },
+    ],
+};
+
 const locationSensor: TemplateCampaignTable = {
     name: "location_sensor",
+    display_name: "Location",
     description: "Location sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -183,6 +287,7 @@ const locationSensor: TemplateCampaignTable = {
 
 const mediaSensor: TemplateCampaignTable = {
     name: "media_sensor",
+    display_name: "Media",
     description: "Media sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -202,6 +307,7 @@ const mediaSensor: TemplateCampaignTable = {
 
 const messageLogSensor: TemplateCampaignTable = {
     name: "message_log_sensor",
+    display_name: "Message Log",
     description: "Message log sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -215,6 +321,7 @@ const messageLogSensor: TemplateCampaignTable = {
 
 const notificationSensor: TemplateCampaignTable = {
     name: "notification_sensor",
+    display_name: "Notification",
     description: "Notification sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -231,6 +338,7 @@ const notificationSensor: TemplateCampaignTable = {
 
 const ppgSensor: TemplateCampaignTable = {
     name: "ppg_sensor",
+    display_name: "PPG",
     description: "PPG sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -247,6 +355,7 @@ const ppgSensor: TemplateCampaignTable = {
 
 const screenSensor: TemplateCampaignTable = {
     name: "screen_sensor",
+    display_name: "Screen",
     description: "Screen sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -258,6 +367,7 @@ const screenSensor: TemplateCampaignTable = {
 
 const skinTemperatureSensor: TemplateCampaignTable = {
     name: "skin_temperature_sensor",
+    display_name: "Skin Temperature",
     description: "Skin temperature sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -269,14 +379,28 @@ const skinTemperatureSensor: TemplateCampaignTable = {
     ],
 };
 
+const stressSensor: TemplateCampaignTable = {
+    name: "stress_sensor",
+    display_name: "Stress",
+    description: "Stress sensor",
+    campaign_table_field: [
+        { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
+        { name: "window_start_ms", field_role: "ignore", field_type: "datetime" },
+        { name: "probability", field_role: "data", field_type: "numerical" },
+        { name: "is_high_stress", field_role: "data", field_type: "categorical" },
+        { name: "device_type", field_role: "ignore", field_type: "categorical" },
+        { name: "received", field_role: "ignore", field_type: "datetime" },
+    ],
+};
+
 const stepSensor: TemplateCampaignTable = {
     name: "step_sensor",
+    display_name: "Step",
     description: "Step sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
         { name: "steps", field_role: "data", field_type: "numerical" },
-        { name: "start_time", field_role: "data", field_type: "datetime" },
-        { name: "end_time", field_role: "data", field_type: "datetime" },
+        { name: "duration", field_role: "data", field_type: "numerical" },
         { name: "device_type", field_role: "ignore", field_type: "categorical" },
         { name: "received", field_role: "ignore", field_type: "datetime" },
     ],
@@ -284,6 +408,7 @@ const stepSensor: TemplateCampaignTable = {
 
 const userInteractionSensor: TemplateCampaignTable = {
     name: "user_interaction_sensor",
+    display_name: "User Interaction",
     description: "User interaction sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -298,6 +423,7 @@ const userInteractionSensor: TemplateCampaignTable = {
 
 const wifiScanSensor: TemplateCampaignTable = {
     name: "wifi_scan_sensor",
+    display_name: "WiFi Scan",
     description: "WiFi scan sensor",
     campaign_table_field: [
         { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
@@ -310,11 +436,56 @@ const wifiScanSensor: TemplateCampaignTable = {
     ],
 }
 
+const sleepSensor: TemplateCampaignTable = {
+    name: "sleep_sensor",
+    display_name: "Sleep",
+    description: "Sleep sensor",
+    campaign_table_field: [
+        { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
+        { name: "duration", field_role: "data", field_type: "numerical" },
+        { name: "sleep_score", field_role: "data", field_type: "numerical" },
+        { name: "stages", field_role: "ignore", field_type: "text" },
+        { name: "device_type", field_role: "ignore", field_type: "categorical" },
+        { name: "received", field_role: "ignore", field_type: "datetime" },
+    ],
+};
+
+const exerciseSensor: TemplateCampaignTable = {
+    name: "exercise_sensor",
+    display_name: "Exercise",
+    description: "Exercise sensor",
+    campaign_table_field: [
+        { name: "timestamp", field_role: "timestamp", field_type: "datetime" },
+        { name: "duration", field_role: "data", field_type: "numerical" },
+        { name: "exercise_type", field_role: "data", field_type: "categorical" },
+        { name: "custom_title", field_role: "data", field_type: "categorical" },
+        { name: "calories", field_role: "data", field_type: "numerical" },
+        { name: "distance", field_role: "data", field_type: "numerical" },
+        { name: "count", field_role: "data", field_type: "numerical" },
+        { name: "mean_heart_rate", field_role: "data", field_type: "numerical" },
+        { name: "max_heart_rate", field_role: "data", field_type: "numerical" },
+        { name: "min_heart_rate", field_role: "data", field_type: "numerical" },
+        { name: "altitude_gain", field_role: "data", field_type: "numerical" },
+        { name: "altitude_loss", field_role: "data", field_type: "numerical" },
+        { name: "mean_cadence", field_role: "data", field_type: "numerical" },
+        { name: "max_cadence", field_role: "data", field_type: "numerical" },
+        { name: "mean_power", field_role: "data", field_type: "numerical" },
+        { name: "max_power", field_role: "data", field_type: "numerical" },
+        { name: "mean_speed", field_role: "data", field_type: "numerical" },
+        { name: "max_speed", field_role: "data", field_type: "numerical" },
+        { name: "mean_rpm", field_role: "data", field_type: "numerical" },
+        { name: "max_rpm", field_role: "data", field_type: "numerical" },
+        { name: "device_type", field_role: "ignore", field_type: "categorical" },
+        { name: "received", field_role: "ignore", field_type: "datetime" },
+    ],
+};
+
 export function useTemplateTable(selectedTables: CampaignTable[]) {
     const selectedTemplateTables = useMemo(() => selectedTables.filter(t => !t.is_custom), [selectedTables]);
 
     const availableTemplateTables = useMemo<CampaignTable[]>(() => {
         const templateTable: TemplateCampaignTable[] = [
+            activityRecognitionSensor,
             accelerometerSensor,
             ambientLightSensor,
             appListChangeSensor,
@@ -326,7 +497,9 @@ export function useTemplateTable(selectedTables: CampaignTable[]) {
             dataTrafficSensor,
             deviceModeSensor,
             edaSensor,
+            gestureSensor,
             heartRateSensor,
+            imuSensor,
             locationSensor,
             mediaSensor,
             messageLogSensor,
@@ -335,8 +508,11 @@ export function useTemplateTable(selectedTables: CampaignTable[]) {
             screenSensor,
             skinTemperatureSensor,
             stepSensor,
+            stressSensor,
             userInteractionSensor,
             wifiScanSensor,
+            sleepSensor,
+            exerciseSensor,
         ]
 
         return templateTable
@@ -352,7 +528,11 @@ export function useTemplateTable(selectedTables: CampaignTable[]) {
                     ...field,
                     id: -1,
                     campaign_table_id: -1,
-                    campaign_table_field_mapping: [],
+                    campaign_table_field_mapping: field.campaign_table_field_mapping?.map((mapping) => ({
+                        ...mapping,
+                        id: -1,
+                        field_id: -1,
+                    })) ?? [],
                 })),
             }))
     }, [selectedTemplateTables]);

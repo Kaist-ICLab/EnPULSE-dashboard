@@ -1,4 +1,4 @@
-import useCampaignConfigEdit from "../useCampaignConfigEdit";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { useCallback } from "react";
 import dayjs from "dayjs";
 import { DATE_FORMAT } from "@/utils/date";
@@ -43,7 +43,7 @@ const getSuggestedFileName = (campaignName: string) => {
 };
 
 const useExportCampaignConfig = () => {
-    const { campaignName, tables, surveys } = useCampaignConfigEdit();
+    const { campaignName, tables, surveys } = useCampaignConfigEdit((state) => state);
 
     const exportCampaignConfig = useCallback(async () => {
         const configToExport = {

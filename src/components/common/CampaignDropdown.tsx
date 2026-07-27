@@ -1,6 +1,7 @@
 'use client';
 
-import useCampaign from '@/hooks/useCampaign';
+import { useCampaignListStore } from '@/providers/CampaignListStoreProvider';
+import { useCampaignStore } from '@/providers/CampaignStoreProvider';
 import { Dropdown, DropdownDivider, DropdownHeader, DropdownItem } from 'flowbite-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -8,7 +9,8 @@ import { useMemo, useRef, useState } from 'react';
 
 const CampaignDropdown: React.FC = () => {
     const router = useRouter();
-    const { campaignList, selectedCampaignId } = useCampaign();
+    const campaignList = useCampaignListStore((state) => state.campaignList);
+    const selectedCampaignId = useCampaignStore((state) => state.selectedCampaignId);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const submenuCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
