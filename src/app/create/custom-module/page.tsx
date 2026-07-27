@@ -1,17 +1,13 @@
 "use client"
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-import ActiveSensingForm from "@/components/configuration/form/ActiveSensingForm";
 import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
-import { useValidConfigState } from "@/hooks/configuration/useValidConfigState";
 import { useTemporalStore } from "@/hooks/useTemporalStore";
 import { useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditStoreProvider";
 import { useEffect } from "react";
 
-const Page: React.FC = () => {
-    const pathname = usePathname();
+const CustomModulePage: React.FC = () => {
     const router = useRouter();
-    const { isActiveSensingValid } = useValidConfigState();
     const configEditStore = useCampaignConfigEditStoreApi();
     const { clear } = useTemporalStore(configEditStore, (state) => state);
 
@@ -21,13 +17,12 @@ const Page: React.FC = () => {
 
     return (
         <>
-            <ActiveSensingForm baseUrl={pathname} />
             <PrevNextNavigation
-                onNextClick={() => router.push("/create/custom-module")}
-                disabled={!isActiveSensingValid}
+                onNextClick={() => router.push("/create/triggers")}
+                nextLabel="Next"
             />
         </>
-    );
+    )
 }
 
-export default Page;
+export default CustomModulePage;
