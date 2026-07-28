@@ -410,7 +410,7 @@ export const createCampaignConfigEditStore = (
                 // Keep trigger surveyIndex references consistent with the new array.
                 state.campaign_trigger.forEach((t) => {
                     t.actions.forEach((a) => {
-                        if (a.kind === 'broadcast') return;
+                        if (a.kind === 'broadcast' || a.kind === 'notification') return;
                         if (a.surveyIndex === index) a.surveyIndex = -1;
                         else if (a.surveyIndex > index) a.surveyIndex -= 1;
                     });

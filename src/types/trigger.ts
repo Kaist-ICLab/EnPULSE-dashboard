@@ -118,7 +118,7 @@ export function persistAction(a: TriggerAction, surveyIds: number[]): PersistedT
 }
 
 export function loadAction(persisted: PersistedTriggerAction, surveys: { id: number }[]): TriggerAction {
-    if (persisted.kind === "broadcast") return persisted;
+    if (persisted.kind === "broadcast" || persisted.kind === "notification") return persisted;
     const index = surveys.findIndex(s => s.id === persisted.survey_id);
     return { kind: persisted.kind, surveyIndex: index, minIntervalMillis: persisted.minIntervalMillis };
 }
@@ -157,6 +157,7 @@ export function defaultDetection(): TriggerCondition {
 
 export function defaultAction(kind: TriggerActionKind): TriggerAction {
     if (kind === "broadcast") return { kind: "broadcast", action: "", extras: [] };
+    if (kind === "notification") return { kind: "notification", title: "", description: "" };
     return { kind, surveyIndex: -1, minIntervalMillis: 0 };
 }
 
