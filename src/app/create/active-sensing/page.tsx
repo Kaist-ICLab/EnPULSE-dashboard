@@ -23,7 +23,7 @@ const Page: React.FC = () => {
         <>
             <ActiveSensingForm baseUrl={pathname} />
             <PrevNextNavigation
-                onNextClick={() => router.push("/create/custom-module")}
+                onNextClick={() => router.push("/create/webapp")}
                 disabled={!isActiveSensingValid}
             />
         </>

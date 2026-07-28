@@ -50,12 +50,13 @@ export type TriggerCondition =
     | { type: "or"; children: TriggerCondition[] }
     | { type: "not"; child: TriggerCondition };
 
-export type TriggerActionKind = "ema" | "watch_ema" | "broadcast";
+export type TriggerActionKind = "ema" | "watch_ema" | "broadcast" | "notification";
 
 export const TRIGGER_ACTION_KIND_LABEL: Record<TriggerActionKind, string> = {
     ema: "EMA",
     watch_ema: "Smartwatch EMA",
     broadcast: "Broadcast",
+    notification: "Notification",
 };
 
 // One key/value pair attached to the Android Intent's Bundle. `value` is always
@@ -85,7 +86,13 @@ export type TriggerAction =
         // Optional explicit-broadcast target package; recommended on Android 8+.
         targetPackage?: string;
         extras: BroadcastExtra[];
-    };
+    }
+    | {
+        kind: "notification";
+        title: string;
+        description: string;
+        url?: string;
+    }
 
 // Shape stored in the `action` jsonb column of `campaign_trigger` (one element per stored array entry).
 export type PersistedTriggerAction =
@@ -96,10 +103,17 @@ export type PersistedTriggerAction =
         action: string;
         targetPackage?: string;
         extras: BroadcastExtra[];
-    };
+    }
+    | {
+        kind: "notification";
+        title: string;
+        description: string;
+        url?: string;
+    }
 
 export function persistAction(a: TriggerAction, surveyIds: number[]): PersistedTriggerAction {
     if (a.kind === "broadcast") return a;
+    if (a.kind === "notification") return a;
     return { kind: a.kind, survey_id: surveyIds[a.surveyIndex], minIntervalMillis: a.minIntervalMillis };
 }
 
@@ -185,6 +199,8 @@ export function isActionComplete(a: TriggerAction): boolean {
             return a.surveyIndex >= 0;
         case "broadcast":
             return a.action.trim().length > 0 && a.extras.every(isExtraValueValid);
+        case "notification":
+            return a.title.trim().length > 0 && a.description.trim().length > 0;
     }
 }
 

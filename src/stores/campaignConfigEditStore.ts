@@ -1,4 +1,4 @@
-import { CampaignTable, CampaignTableField, FetchedCampaign, FieldRole, FieldType, RemovedEntries } from "@/types/campaign";
+import { CampaignTable, CampaignTableField, CampaignWebapp, FetchedCampaign, FieldRole, FieldType, RemovedEntries } from "@/types/campaign";
 import { AnswerType, DeviceType, Expression, OperatorType, QuestionConfig, ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionTrigger } from "@/types/survey";
 import { CampaignTrigger, TriggerAction, TriggerActionKind, TriggerCondition, defaultAction, defaultDetection } from "@/types/trigger";
 import { DATE_FORMAT } from "@/utils/date";
@@ -13,6 +13,7 @@ export interface ExportedCampaignConfig {
     tables: CampaignTable[];
     surveys: Survey[];
     campaign_trigger: CampaignTrigger[];
+    webapps: CampaignWebapp[];
 }
 
 export type CampaignConfigEditState = ExportedCampaignConfig & {
@@ -99,6 +100,12 @@ export type CampaignConfigEditActions = {
     addTriggerAction: (triggerIndex: number, kind: TriggerActionKind) => void;
     removeTriggerAction: (triggerIndex: number, actionIndex: number) => void;
     updateTriggerAction: (triggerIndex: number, actionIndex: number, action: TriggerAction) => void;
+
+    // Web apps
+    addWebapp: (webapp: CampaignWebapp) => void;
+    removeWebapp: (index: number) => void;
+    updateWebappName: (index: number, name: string) => void;
+    updateWebappUrl: (index: number, url: string) => void;
 
     setCampaignUsingImportedConfig: (config: ExportedCampaignConfig) => void;
 }
@@ -209,6 +216,7 @@ function emptyRemovedEntries(): RemovedEntries {
         question: [],
         trigger: [],
         campaign_trigger: [],
+        webapp: [],
     };
 }
 
@@ -243,6 +251,7 @@ function getDefaultState(): CampaignConfigEditState {
         tables: [],
         surveys: [],
         campaign_trigger: [],
+        webapps: [],
         removedEntries: emptyRemovedEntries(),
         questionClipboard: null,
     };
@@ -259,6 +268,7 @@ function getStateFromCampaign(campaign: FetchedCampaign): CampaignConfigEditStat
         tables: campaign.campaign_table,
         surveys: campaign.survey,
         campaign_trigger: campaign.campaign_trigger,
+        webapps: campaign.campaign_webapp,
         removedEntries: emptyRemovedEntries(),
         questionClipboard: null,
     };
@@ -711,6 +721,31 @@ export const createCampaignConfigEditStore = (
             });
         },
 
+        addWebapp: (webapp: CampaignWebapp) => {
+            set((state) => {
+                state.webapps.push(webapp);
+            });
+        },
+
+        removeWebapp: (index: number) => {
+            set((state) => {
+                state.removedEntries.webapp.push(state.webapps[index].id ?? -1);
+                state.webapps.splice(index, 1);
+            });
+        },
+
+        updateWebappName: (index: number, name: string) => {
+            set((state) => {
+                state.webapps[index].name = name;
+            });
+        },
+
+        updateWebappUrl: (index: number, url: string) => {
+            set((state) => {
+                state.webapps[index].url = url;
+            });
+        },
+
         updateSurveyQuestionTriggerExpression: (surveyIndex: number, questionPath: number[], triggerIndex: number, expression: Expression) => {
             set((state) => {
                 const trigger = getTriggerFromPath(state.surveys[surveyIndex], questionPath, triggerIndex);
@@ -787,9 +822,14 @@ export const createCampaignConfigEditStore = (
                     state.removedEntries.campaign_trigger.push(t.id ?? -1);
                 });
 
+                state.webapps.forEach((w) => {
+                    state.removedEntries.webapp.push(w.id ?? -1);
+                });
+
                 state.tables = config.tables;
                 state.surveys = config.surveys;
                 state.campaign_trigger = config.campaign_trigger ?? [];
+                state.webapps = config.webapps ?? [];
             });
         },
     })),

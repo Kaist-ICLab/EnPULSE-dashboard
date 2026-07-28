@@ -7,7 +7,7 @@ import { useTemporalStore } from "../useTemporalStore";
 import { notify } from "@/utils/notify";
 
 export function useUpdateCampaign(onSuccess: (id: number) => void) {
-    const { campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, campaignPassword, tables, surveys, campaign_trigger, removedEntries } = useCampaignConfigEdit((state) => state);
+    const { campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, campaignPassword, tables, surveys, campaign_trigger, webapps, removedEntries } = useCampaignConfigEdit((state) => state);
     const { clear } = useTemporalStore(useCampaignConfigEditStoreApi(), (state) => state);
     const [isUpdating, setIsUpdating] = useState(false);
 
@@ -25,6 +25,7 @@ export function useUpdateCampaign(onSuccess: (id: number) => void) {
                     campaign_table: tables,
                     survey: surveys,
                     campaign_trigger,
+                    campaign_webapp: webapps,
                 }
 
                 const hash = campaignPassword.length > 0 ? await bcryptjs.hash(campaignPassword, 10) : null;
@@ -45,7 +46,7 @@ export function useUpdateCampaign(onSuccess: (id: number) => void) {
         callback().finally(() => {
             setIsUpdating(false);
         });
-    }, [campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, campaignPassword, tables, surveys, campaign_trigger, removedEntries, onSuccess, clear]);
+    }, [campaignId, campaignName, campaignDescription, campaignStartTime, campaignEndTime, campaignPassword, tables, surveys, campaign_trigger, webapps, removedEntries, onSuccess, clear]);
 
     return { isUpdating, updateCampaignConfig };
 }

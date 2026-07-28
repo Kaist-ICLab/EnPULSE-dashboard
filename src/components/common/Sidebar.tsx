@@ -20,13 +20,14 @@ const DashboardSidebar: React.FC = () => {
         { name: "General", href: `${baseUrl}/settings/general` },
         { name: "Passive Sensing", href: `${baseUrl}/settings/passive-sensing` },
         { name: "Active Sensing", href: `${baseUrl}/settings/active-sensing` },
+        { name: "Web App", href: `${baseUrl}/settings/webapp` },
         { name: "Triggers", href: `${baseUrl}/settings/triggers` },
     ], [baseUrl]);
 
     const [collapsed, setCollapsed] = useState(true);
 
     return (
-        <Sidebar className="h-screen border-r-1 border-gray-300 bg-white" collapsed={collapsed}>
+        <Sidebar className="h-screen border-r border-gray-300 bg-white" collapsed={collapsed}>
             <SidebarItems>
                 <SidebarItemGroup className="mt-0 pt-0 border-t-0">
                     <SidebarItem key={`menu-collapse`} onClick={() => setCollapsed(!collapsed)} icon={SidebarIcon({ icon: collapsed ? "icon-[pajamas--expand-left]" : "icon-[pajamas--expand-right]" })} className={`text-sm cursor-pointer`}>

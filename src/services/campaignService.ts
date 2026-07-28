@@ -1,6 +1,6 @@
 import type { Json } from '@/lib/schema';
 import { supabase } from '@/lib/supabase';
-import { Campaign, CampaignListItem, CampaignTable, CampaignTableField, FetchedCampaign, RemovedEntries } from '@/types/campaign';
+import { Campaign, CampaignListItem, CampaignTable, CampaignTableField, CampaignWebapp, FetchedCampaign, RemovedEntries } from '@/types/campaign';
 import { FetchedSurveyQuestion, FetchedSurveyTrigger, Survey, SurveyQuestion, SurveyQuestionTrigger } from '@/types/survey';
 import { CampaignTrigger, TriggerCondition, loadActions, persistActions } from '@/types/trigger';
 import { MakeOptional } from '@/utils/type';
@@ -40,7 +40,7 @@ export const getCampaignList = async (): Promise<Map<number, CampaignListItem>> 
 export const getCampaignInfo = async (campaignId: number): Promise<FetchedCampaign> => {
     const { data, error } = await supabase
         .from('campaigns')
-        .select(`*, profiles(*), survey(*, survey_question(*, survey_question_trigger!survey_question_trigger_question_id_fkey(*))), campaign_table(*, campaign_table_field(*, campaign_table_field_mapping(*))), campaign_trigger(*)`)
+        .select(`*, profiles(*), survey(*, survey_question(*, survey_question_trigger!survey_question_trigger_question_id_fkey(*))), campaign_table(*, campaign_table_field(*, campaign_table_field_mapping(*))), campaign_trigger(*), campaign_webapp(*)`)
         .eq('id', campaignId)
         .single()
 
@@ -71,12 +71,15 @@ export const upsertCampaign = async (campaign: Campaign, passwordHash: string | 
     const campaignTable = structuredClone(campaign.campaign_table);
     const survey = structuredClone(campaign.survey);
     const triggers = structuredClone(campaign.campaign_trigger);
+    const webapps = structuredClone(campaign.campaign_webapp);
 
-    const insertedCampaign: MakeOptional<Campaign, 'campaign_table' | 'survey' | 'profiles' | 'campaign_trigger'> = structuredClone(campaign);
+    let insertedCampaign: MakeOptional<Campaign, 'campaign_table' | 'survey' | 'profiles' | 'campaign_trigger' | 'campaign_webapp'> = structuredClone(campaign);
     delete insertedCampaign.campaign_table;
     delete insertedCampaign.survey;
     delete insertedCampaign.profiles;
     delete insertedCampaign.campaign_trigger;
+    delete insertedCampaign.campaign_webapp;
+    insertedCampaign = insertedCampaign as Omit<Campaign, 'campaign_table' | 'survey' | 'profiles' | 'campaign_trigger' | 'campaign_webapp'>;
 
     const { data, error } = await supabase
         .from('campaigns')
@@ -101,10 +104,12 @@ export const upsertCampaign = async (campaign: Campaign, passwordHash: string | 
         campaignTable.forEach(ct => { ct.campaign_id = campaignId })
         survey.forEach(s => { s.campaign_id = campaignId })
         triggers.forEach(t => { t.campaign_id = campaignId })
+        webapps.forEach(w => { w.campaign_id = campaignId })
 
         const [, surveyIds] = await Promise.all([
             upsertCampaignTable(campaignTable),
             upsertSurvey(survey),
+            upsertCampaignWebapp(webapps),
         ]);
 
         if (triggers.length > 0) {
@@ -264,6 +269,19 @@ export const upsertSurveyTrigger = async (surveyTrigger: SurveyQuestionTrigger[]
     }
 }
 
+export const upsertCampaignWebapp = async (webapps: CampaignWebapp[]): Promise<void> => {
+    if (webapps.length === 0) return;
+    webapps.filter(w => w.id === -1).forEach(w => delete w.id);
+
+    const insertedWebapps: CampaignWebapp[] = structuredClone(webapps);
+
+    const { error } = await supabase
+        .from('campaign_webapp')
+        .upsert(insertedWebapps, { defaultToNull: false })
+
+    if (error) throw new Error(error.message);
+}
+
 export const deleteEntries = async (removedEntries: RemovedEntries): Promise<void> => {
     await supabase.from('campaign_table').delete().in('id', removedEntries.table);
     await supabase.from('campaign_table_field').delete().in('id', removedEntries.field);
@@ -272,6 +290,7 @@ export const deleteEntries = async (removedEntries: RemovedEntries): Promise<voi
     await supabase.from('survey_question').delete().in('id', removedEntries.question);
     await supabase.from('survey_question_trigger').delete().in('id', removedEntries.trigger);
     await supabase.from('campaign_trigger').delete().in('id', removedEntries.campaign_trigger);
+    await supabase.from('campaign_webapp').delete().in('id', removedEntries.webapp);
 }
 
 export const deleteCampaign = async (campaignId: number): Promise<void> => {

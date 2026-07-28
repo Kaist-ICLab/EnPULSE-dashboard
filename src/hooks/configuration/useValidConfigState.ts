@@ -13,18 +13,20 @@ export function useValidConfigState() {
 
     const isActiveSensingValid = true
 
+    const isWebappValid = true
+
     const isTriggerValid = useMemo(() => {
         return campaign_trigger.every(isTriggerComplete);
     }, [campaign_trigger]);
 
     const isAccessible = useMemo(() => {
         const isAccessible = [true]
-        for (const isValid of [isInfoValid, isPassiveSensingValid, isActiveSensingValid, isTriggerValid]) {
+        for (const isValid of [isInfoValid, isPassiveSensingValid, isActiveSensingValid, isWebappValid, isTriggerValid]) {
             isAccessible.push(isAccessible[isAccessible.length - 1] && isValid);
         }
 
         return isAccessible;
-    }, [isInfoValid, isPassiveSensingValid, isActiveSensingValid, isTriggerValid]);
+    }, [isInfoValid, isPassiveSensingValid, isActiveSensingValid, isWebappValid, isTriggerValid]);
 
-    return { isInfoValid, isPassiveSensingValid, isActiveSensingValid, isTriggerValid, isAccessible };
+    return { isInfoValid, isPassiveSensingValid, isActiveSensingValid, isWebappValid, isTriggerValid, isAccessible };
 }

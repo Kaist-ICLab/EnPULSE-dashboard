@@ -21,6 +21,7 @@ export type Campaign = Database['public']['Tables']['campaigns']['Insert'] & {
     campaign_table: CampaignTable[];
     survey: Survey[];
     campaign_trigger: CampaignTrigger[];
+    campaign_webapp: CampaignWebapp[];
 }
 
 export type FetchedCampaign = DeepRequired<Omit<Campaign, 'survey' | 'campaign_trigger'>> & {
@@ -40,6 +41,8 @@ export type CampaignTableFieldMapping = Database['public']['Tables']['campaign_t
 
 export type CampaignParticipant = Database['public']['Tables']['profiles']['Insert']
 
+export type CampaignWebapp = Database['public']['Tables']['campaign_webapp']['Insert']
+
 export type RemovedEntries = {
     table: number[];
     field: number[];
@@ -48,4 +51,5 @@ export type RemovedEntries = {
     question: number[];
     trigger: number[];
     campaign_trigger: number[];
+    webapp: number[];
 }
