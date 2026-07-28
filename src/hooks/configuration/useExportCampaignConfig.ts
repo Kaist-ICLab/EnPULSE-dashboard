@@ -43,12 +43,13 @@ const getSuggestedFileName = (campaignName: string) => {
 };
 
 const useExportCampaignConfig = () => {
-    const { campaignName, tables, surveys } = useCampaignConfigEdit((state) => state);
+    const { campaignName, tables, surveys, webapps } = useCampaignConfigEdit((state) => state);
 
     const exportCampaignConfig = useCallback(async () => {
         const configToExport = {
             tables,
             surveys,
+            webapps,
         };
         const normalizedConfigToExport = setAllIdFieldsToMinusOne(configToExport);
 
@@ -93,7 +94,7 @@ const useExportCampaignConfig = () => {
         }
 
         triggerBrowserDownload();
-    }, [campaignName, tables, surveys]);
+    }, [campaignName, tables, surveys, webapps]);
 
     return { exportCampaignConfig };
 };

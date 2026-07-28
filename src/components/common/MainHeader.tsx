@@ -3,6 +3,7 @@ import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import AddSensorButtons from "@/components/configuration/header/AddSensorButtons";
 import AddSurveyButton from "@/components/configuration/header/AddSurveyButton";
+import AddWebappButton from "@/components/configuration/header/AddWebappButton";
 import Link from "next/link";
 import AddQuestionHeader from "../configuration/header/AddQuestionHeader";
 import { Button, Dropdown, DropdownItem } from "flowbite-react";
@@ -17,6 +18,7 @@ const CampaignCreateHeader: React.FC = () => {
     const isPassiveSensingPage = pathname.includes('/passive-sensing');
     const isActiveSensingPage = pathname.includes('/active-sensing');
     const isQuestionPage = pathname.match(/\/active-sensing\/\d+$/) !== null;
+    const isWebappPage = pathname.includes('/webapp');
 
     return (
         <div className="w-full min-h-14 flex items-center border-b border-gray-200 px-4 relative bg-gray-50">
@@ -69,6 +71,7 @@ const CampaignCreateHeader: React.FC = () => {
                 {isPassiveSensingPage && <AddSensorButtons />}
                 {isActiveSensingPage && !isQuestionPage && <AddSurveyButton />}
                 {isQuestionPage && <AddQuestionHeader />}
+                {isWebappPage && <AddWebappButton />}
                 {!isMainCampaignPage && <div className="ml-4 pl-4 border-l border-gray-200 flex items-center py-4"><UndoRedoButtons /></div>}
             </div>
         </div>

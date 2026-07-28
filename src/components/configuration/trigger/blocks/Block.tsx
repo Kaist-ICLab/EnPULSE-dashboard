@@ -38,7 +38,7 @@ export const Block: React.FC<{
                 {wrapControl && <>
                     <span className="text-xs ml-auto">wrap with:</span>
                     <div className="flex items-center gap-1 flex-wrap">{wrapControl}</div>
-                    {headerControls && <div className="h-5 w-1 ml-1 border-white border-l-1"></div>}
+                    {headerControls && <div className="h-5 w-1 ml-1 border-white border-l"></div>}
                 </>}
                 {headerControls && <div className="flex items-center gap-1 flex-wrap">{headerControls}</div>}
             </div>

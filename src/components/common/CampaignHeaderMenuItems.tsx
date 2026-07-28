@@ -3,6 +3,7 @@
 import AddQuestionHeader from "@/components/configuration/header/AddQuestionHeader";
 import AddSensorButtons from "@/components/configuration/header/AddSensorButtons";
 import AddSurveyButton from "@/components/configuration/header/AddSurveyButton";
+import AddWebappButton from "@/components/configuration/header/AddWebappButton";
 import UndoRedoButtons from "@/components/configuration/header/UndoRedoButtons";
 import { useUpdateCampaign } from "@/hooks/configuration/useUpdateCampaign";
 import { useTemporalStore } from "@/hooks/useTemporalStore";
@@ -88,11 +89,13 @@ export const SettingsHeaderMenuItems: React.FC = () => {
     const isPassiveSensingPage = pathname?.includes("/passive-sensing");
     const isActiveSensingPage = pathname?.includes("/active-sensing");
     const isQuestionPage = !!pathname?.match(/\/active-sensing\/\d+$/);
+    const isWebappPage = pathname?.includes("/webapp");
 
     return (<div className="flex items-center gap-4 ml-auto">
         {isPassiveSensingPage && <AddSensorButtons />}
         {isActiveSensingPage && !isQuestionPage && <AddSurveyButton />}
         {isQuestionPage && <AddQuestionHeader />}
+        {isWebappPage && <AddWebappButton />}
         <div className="pl-4 border-l border-gray-200 flex items-center gap-4">
             <UndoRedoButtons />
             <Button color="blue" onClick={updateCampaignConfig} disabled={pastStates.length === 0 || isUpdating}>

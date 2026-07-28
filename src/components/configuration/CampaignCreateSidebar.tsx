@@ -11,7 +11,7 @@ const DashboardSidebar: React.FC = () => {
         { name: "Campaign Information", href: `/create/general` },
         { name: "Passive Sensing", href: `/create/passive-sensing` },
         { name: "Active Sensing", href: `/create/active-sensing` },
-        { name: "Custom Module", href: `/create/custom-module` },
+        { name: "Web App", href: `/create/webapp` },
         { name: "Triggers", href: `/create/triggers` },
         { name: "Confirm Configuration", href: `/create/confirm` },
     ];
@@ -20,7 +20,7 @@ const DashboardSidebar: React.FC = () => {
         if (pathname.includes('/general')) return 0;
         if (pathname.includes('/passive-sensing')) return 1;
         if (pathname.includes('/active-sensing')) return 2;
-        if (pathname.includes('/custom-module')) return 3;
+        if (pathname.includes('/webapp')) return 3;
         if (pathname.includes('/triggers')) return 4;
         if (pathname.includes('/confirm')) return 5;
         return 0;

@@ -2,36 +2,10 @@
 
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { DeviceType } from "@/types/survey";
-import {
-    TRIGGER_ACTION_KIND_LABEL,
-    TriggerAction,
-} from "@/types/trigger";
+import { TriggerAction } from "@/types/trigger";
 import { Select, TextInput } from "flowbite-react";
-import { Block, BlockHeaderButton } from "./blocks/Block";
-import BroadcastActionEditor from "./BroadcastActionEditor";
 
-// One action rendered as a green block. The body content depends on the action kind.
-const ActionBlock: React.FC<{
-    action: TriggerAction;
-    onChange: (next: TriggerAction) => void;
-    onRemove: () => void;
-}> = ({ action, onChange, onRemove }) => {
-    return (
-        <Block
-            palette="green"
-            label={TRIGGER_ACTION_KIND_LABEL[action.kind]}
-            headerControls={<BlockHeaderButton danger onClick={onRemove}><span className="icon-[humbleicons--times] w-3 h-3"></span></BlockHeaderButton>}
-        >
-            {action.kind === "broadcast" ? (
-                <BroadcastActionEditor action={action} onChange={onChange} />
-            ) : (
-                <SurveyActionBody action={action} onChange={onChange} />
-            )}
-        </Block>
-    );
-};
-
-const SurveyActionBody: React.FC<{
+const SurveyAction: React.FC<{
     action: Extract<TriggerAction, { kind: "ema" | "watch_ema" }>;
     onChange: (next: TriggerAction) => void;
 }> = ({ action, onChange }) => {
@@ -73,4 +47,4 @@ const SurveyActionBody: React.FC<{
     );
 };
 
-export default ActionBlock;
+export default SurveyAction;

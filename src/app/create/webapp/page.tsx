@@ -1,13 +1,16 @@
 "use client"
 import { useRouter } from "next/navigation";
 
+import WebappForm from "@/components/configuration/form/WebappForm";
 import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
+import { useValidConfigState } from "@/hooks/configuration/useValidConfigState";
 import { useTemporalStore } from "@/hooks/useTemporalStore";
 import { useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditStoreProvider";
 import { useEffect } from "react";
 
-const CustomModulePage: React.FC = () => {
+const WebappPage: React.FC = () => {
     const router = useRouter();
+    const { isWebappValid } = useValidConfigState();
     const configEditStore = useCampaignConfigEditStoreApi();
     const { clear } = useTemporalStore(configEditStore, (state) => state);
 
@@ -17,12 +20,13 @@ const CustomModulePage: React.FC = () => {
 
     return (
         <>
+            <WebappForm />
             <PrevNextNavigation
                 onNextClick={() => router.push("/create/triggers")}
-                nextLabel="Next"
+                disabled={!isWebappValid}
             />
         </>
     )
 }
 
-export default CustomModulePage;
+export default WebappPage;
