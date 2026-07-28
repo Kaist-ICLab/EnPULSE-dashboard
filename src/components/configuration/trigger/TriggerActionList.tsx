@@ -1,7 +1,7 @@
 'use client'
 
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
-import ActionBlock from "./ActionBlock";
+import ActionBlock from "./action/ActionBlock";
 
 const TriggerActionList: React.FC<{ triggerIndex: number }> = ({ triggerIndex }) => {
     const { campaign_trigger, removeTriggerAction, updateTriggerAction } = useCampaignConfigEdit((state) => state);

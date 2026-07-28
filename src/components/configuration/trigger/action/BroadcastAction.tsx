@@ -11,7 +11,7 @@ import {
 } from "@/types/trigger";
 import IconButton from "@/components/common/IconButton";
 
-const BroadcastActionEditor: React.FC<{
+const BroadcastAction: React.FC<{
     action: Extract<TriggerAction, { kind: "broadcast" }>;
     onChange: (next: TriggerAction) => void;
 }> = ({ action, onChange }) => {
@@ -144,4 +144,4 @@ const ExtraRow: React.FC<{
     );
 };
 
-export default BroadcastActionEditor;
+export default BroadcastAction;
