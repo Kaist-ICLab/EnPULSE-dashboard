@@ -80,7 +80,7 @@ export default function useDownloadListState() {
             const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
             triggerFileDownload(blob, fileName);
         } catch (error) {
-            notify.error(`Failed to download data: ${error instanceof Error ? error.message : "Unknown error"}`);
+            notify.error("Failed to download data", error instanceof Error ? error.message : "Unknown error");
         } finally {
             setDownloadListItemStatus(idx, null);
         }
@@ -143,7 +143,7 @@ export default function useDownloadListState() {
             await flushZipGroup();
             notify.success("Download ready");
         } catch (error) {
-            notify.error(`Failed to download data: ${error instanceof Error ? error.message : "Unknown error"}`);
+            notify.error("Failed to download data", error instanceof Error ? error.message : "Unknown error");
         } finally {
             setAllDownloadListItemsStatus(null);
         }
@@ -162,7 +162,7 @@ export default function useDownloadListState() {
             setSelectedPreviewRow(row);
             setPreviewStatus("ok");
         } catch (error) {
-            notify.error(`Failed to load preview: ${error instanceof Error ? error.message : "Unknown error"}`);
+            notify.error("Failed to load preview", error instanceof Error ? error.message : "Unknown error");
             setPreviewStatus("error");
         }
     }, [getFieldsForRow]);

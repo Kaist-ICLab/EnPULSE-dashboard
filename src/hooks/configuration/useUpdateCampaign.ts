@@ -33,7 +33,7 @@ export function useUpdateCampaign(onSuccess: (id: number) => void) {
                 upsertedCampaignId = await upsertCampaign(campaign, hash);
                 await deleteEntries(removedEntries);
             } catch (error) {
-                notify.error(`Failed to save campaign: ${error instanceof Error ? error.message : "Unknown error"}`);
+                notify.error("Failed to save campaign", error instanceof Error ? error.message : "Unknown error");
                 return;
             }
 
