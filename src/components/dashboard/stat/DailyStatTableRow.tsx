@@ -22,10 +22,10 @@ const Timeline: React.FC<{ values: number[], max: number }> = ({ values, max }) 
                 level > 0 ? (
                     <Tooltip key={i} content={`${level}`} trigger="hover">
                         <div
-                            className={`w-[9px] h-[30px] ${getLevelColor(level, max)}`}
+                            className={`w-2 h-6 ${getLevelColor(level, max)}`}
                         />
                     </Tooltip>
-                ) : (<div key={i} className="w-[9px] h-[30px] bg-gray-100" />)
+                ) : (<div key={i} className="w-2 h-6 bg-gray-100" />)
             ))}
         </div>
     );
@@ -80,9 +80,9 @@ const DailyStatTableRow: React.FC<{
                     : surveys.find(s => s.survey_id === col.id);
                 const totalCount = entry?.totalCount ?? 0;
                 const counts = entry?.counts ?? [];
-                const borderClass = col.kind === 'survey' ? 'border-l-2 border-l-blue-200' : '';
+
                 return [
-                    <DailyStatTableCell key={`${key}-dailycount`} className={borderClass}>
+                    <DailyStatTableCell key={`${key}-dailycount`}>
                         <Tooltip content={`${totalCount}${max ? ` / ${max}` : ''}`}>
                             <DailyCount value={totalCount} max={max} />
                         </Tooltip>
@@ -96,4 +96,4 @@ const DailyStatTableRow: React.FC<{
     );
 }
 
-export default React.memo(DailyStatTableRow)
+export default DailyStatTableRow;

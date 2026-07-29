@@ -62,7 +62,7 @@ export async function getCampaignDailySummary(uuids: string[], tableIds: number[
 
 // Survey response daily summary — counts distinct (uuid, survey_id, survey_start_time)
 // per uuid per survey per 3-hour time slot for the given date.
-const SURVEY_TIME_SLOT_COUNT = 8; // 24h / 3h
+const SURVEY_TIME_SLOT_COUNT = 12; // 24h / 3h
 const SURVEY_TIME_SLOT_MS = (24 * 60 * 60 * 1000) / SURVEY_TIME_SLOT_COUNT;
 
 export async function getCampaignSurveyDailySummary(

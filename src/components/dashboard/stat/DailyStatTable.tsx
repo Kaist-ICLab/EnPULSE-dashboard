@@ -64,15 +64,15 @@ const DailyOverviewTable: React.FC = () => {
                 {data.length > 0 ? (
                     <table className="table-fixed w-full max-w-fit">
                         <colgroup>
-                            <col className="w-[40px]" />
-                            <col className="w-[50px]" />
+                            <col className="w-10" />
+                            <col className="w-12.5" />
                             {columns.map((col) => ([
-                                <col key={`${col.kind}-${col.id}-col-dailycount`} className="w-[140px]" />,
-                                <col key={`${col.kind}-${col.id}-col-timeline`} className="w-[160px]" />
+                                <col key={`${col.kind}-${col.id}-col-dailycount`} className="w-32" />,
+                                <col key={`${col.kind}-${col.id}-col-timeline`} className="w-32" />
                             ]))}
                         </colgroup>
                         <thead className="uppercase text-gray-500 border-t border-gray-200 bg-gray-50 text-xs">
-                            <tr className="border-b border-l border-gray-200 h-[30px]">
+                            <tr className="border-b border-l border-gray-200 h-7.5">
                                 <DailyStatTableHeader className="text-left" rowSpan={2}>
                                     <Checkbox checked={isAllChecked} onChange={toggleAllChecked} />
                                 </DailyStatTableHeader>
@@ -80,14 +80,14 @@ const DailyOverviewTable: React.FC = () => {
                                 {columns.map((col) => (
                                     <DailyStatTableHeader
                                         key={`${col.kind}-${col.id}-th`}
-                                        className={`py-0 text-center ${col.kind === 'survey' ? 'border-l-2 border-l-blue-200' : ''}`}
+                                        className={`py-0 text-center`}
                                         colSpan={2}
                                     >
-                                        {col.kind === 'survey' ? <span className="text-blue-600">{col.name}</span> : col.name}
+                                        {col.name}
                                     </DailyStatTableHeader>
                                 ))}
                             </tr>
-                            <tr className="border-b border-l border-gray-200 h-[30px]">
+                            <tr className="border-b border-l border-gray-200 h-7.5">
                                 {columns.map((col) => ([
                                     <DailyStatTableHeader key={`${col.kind}-${col.id}-th-dailycount`} className="py-0 text-center">DAILY COUNT</DailyStatTableHeader>,
                                     <DailyStatTableHeader key={`${col.kind}-${col.id}-th-timeline`} className="py-0 text-center">DAILY TIMELINE</DailyStatTableHeader>
