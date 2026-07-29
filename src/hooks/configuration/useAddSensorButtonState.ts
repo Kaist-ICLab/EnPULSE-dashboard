@@ -6,7 +6,7 @@ import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvid
 
 export default function useAddSensorButtonState() {
     const { tables, addTable } = useCampaignConfigEdit((state) => state);
-    const { selectedTemplateTables, availableTemplateTables } = useTemplateTable(tables);
+    const { availableTemplateTables } = useTemplateTable(tables);
 
     const [isSensorInputVisible, setIsSensorInputVisible] = useState(false);
     const [sensorName, setSensorName] = useState("");
@@ -16,11 +16,7 @@ export default function useAddSensorButtonState() {
     const queryResultTables = useMemo(() => {
         return availableTemplateTables
             .filter((table) => table.display_name.toLowerCase().includes(sensorNameQuery.toLowerCase()))
-            .map((table) => ({
-                ...table,
-                isSelected: selectedTemplateTables.some((selectedTable) => selectedTable.id === table.id),
-            }))
-    }, [availableTemplateTables, selectedTemplateTables, sensorNameQuery]);
+    }, [availableTemplateTables, sensorNameQuery]);
 
     const setCustomSensorInputVisibility = useCallback((visibility: boolean) => {
         setIsSensorInputVisible(visibility);

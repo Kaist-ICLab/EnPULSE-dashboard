@@ -473,5 +473,5 @@ export function useTemplateTable(selectedTables: CampaignTable[]) {
             }))
     }, [selectedTemplateTables]);
 
-    return { selectedTemplateTables, availableTemplateTables };
+    return { availableTemplateTables };
 }
