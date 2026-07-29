@@ -101,9 +101,9 @@ const ChartContainer: React.FC<{
                     </div>
                 </div>
             </div>
-            {timelines.filter(d => d.id === pinnedChart).map((timeline, idx) =>
+            {timelines.filter(d => d.id === pinnedChart).map((timeline) =>
                 <ChartItem
-                    key={idx}
+                    key={timeline.id}
                     timeline={timeline}
                     pinned={true}
                     isSelected={selectedChart === timeline.id}
@@ -116,9 +116,9 @@ const ChartContainer: React.FC<{
                 items={chartOrder.filter(id => id !== pinnedChart)}
                 onItemsChange={setChartOrder}
             >
-                {chartOrder.filter(id => id !== pinnedChart).map((id, idx) => (
+                {chartOrder.filter(id => id !== pinnedChart).map((id) => (
                     <ChartItem
-                        key={idx}
+                        key={id}
                         timeline={timelines.find(d => d.id === id)!}
                         pinned={pinnedChart === id}
                         isSelected={selectedChart === id}
