@@ -119,10 +119,10 @@ const DailyOverviewTable: React.FC = () => {
                     />
                 </div>
             </div>
-            {
-                checkCount == 1 ? (
-                    <div className="flex flex-row items-center justify-between bg-blue-100 text-gray-700 p-2 my-4 rounded-lg">
-                        {checkCount == 1 ? "Participant" : `${checkCount} Participants`} selected
+            <div className={`flex flex-row items-center justify-between text-gray-700 h-10 px-3 my-4 rounded-lg ${checkCount === 0 ? 'bg-gray-100' : 'bg-blue-100'}`}>
+                {checkCount > 0 ? (
+                    <>
+                        {(checkCount == 1) ? "Participant" : `${checkCount} Participants`} selected
                         <Link href={`./dashboard/#timeline-overview-comparison-chart`}>
                             <Button
                                 color="blue" size="2xs" className="flex flex-row gap-1 text-base px-2.5 py-1"
@@ -134,13 +134,11 @@ const DailyOverviewTable: React.FC = () => {
                                 <span className="text-sm">Timeline Overview</span>
                             </Button>
                         </Link>
-                    </div>
+                    </>
                 ) : (
-                    <div className="flex flex-row items-center justify-between text-gray-700 bg-gray-100 p-2 mt-2 mb-4 rounded-lg h-11">
-                        No participant selected
-                    </div>
-                )
-            }
+                    <span>No participant selected</span>
+                )}
+            </div>
             <div className="overflow-auto w-full relative">
                 {loading && <div className="absolute w-full h-full flex justify-center items-center bg-white/50 backdrop-blur-sm rounded-lg" >
                     <Spinner size="xl" />
