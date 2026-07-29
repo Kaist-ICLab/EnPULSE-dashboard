@@ -31,7 +31,7 @@ export const ChartItem: React.FC<{
     const isSurvey = timeline.chartType === 'survey_events';
 
     return (
-        <DnDItem id={timeline.id} className={`w-full flex flex-row justify-center items-center p-2`}>
+        <DnDItem id={timeline.id} className={`w-full flex flex-row justify-center items-center py-2`}>
             <div className='shrink-0 flex items-center' onClick={() => {
                 setSelectedChart(isSelected ? null : timeline.id);
             }} >
@@ -43,7 +43,7 @@ export const ChartItem: React.FC<{
                 setSelectedChart(isSelected ? null : timeline.id);
             }}>
                 <div className={`w-fit flex flex-row justify-center items-center h-8 px-2 rounded-tl-md rounded-tr-md ${isSelected ? 'bg-blue-200' : 'bg-gray-200 hover:bg-gray-300'}`}>
-                    {pinned ? <span className="text-blue-600 w-5 h-5 icon-[mdi--pin] translate-y-0.25" /> : null}
+                    {pinned ? <span className="text-blue-600 w-5 h-5 icon-[mdi--pin] translate-y-px" /> : null}
                     <span className="truncate mr-2">{timeline.title}</span>
                     <IconButton size="md" hoverColor="gray" className={`mr-0.5 ${pinned ? 'icon-[mdi--pin-off]' : 'icon-[mdi--pin]'}`} onClick={(e) => {
                         e.stopPropagation();
@@ -76,7 +76,7 @@ export const ChartItem: React.FC<{
                     ) : null}
                 </div>
 
-                <div className='h-[100px] flex flex-row justify-center items-center'>
+                <div className='h-25 flex flex-row justify-center items-center'>
                     <ParentSize>
                         {({ width }) => (
                             <TimelineChart
