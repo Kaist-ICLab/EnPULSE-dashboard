@@ -3,7 +3,7 @@ import useDownloadState from "@/stores/downloadStore";
 import dayjs from "dayjs";
 import { Button, Card } from "flowbite-react";
 import ParticipantDropdown from "../dashboard/ParticipantDropdown";
-import SensorDropdown from "../dashboard/SensorDropdown";
+import SensorFieldDropdown from "../dashboard/SensorFieldDropdown";
 import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 
 const DownloadDataConfig = () => {
@@ -38,7 +38,7 @@ const DownloadDataConfig = () => {
                     </div>
                     <div className="w-1/2">
                         <label className="text-sm font-medium text-gray-700">Sensors</label>
-                        <SensorDropdown
+                        <SensorFieldDropdown
                             className="mt-1"
                             selectedFieldIds={selectedFieldIds}
                             setSelectedFieldIds={setSelectedFieldIds}

@@ -114,8 +114,6 @@ const DailyOverviewTable: React.FC = () => {
                         selectedQuestionIds={selectedQuestionIds}
                         setSelectedFieldIds={setSelectedFieldIds}
                         setSelectedQuestionIds={setSelectedQuestionIds}
-                        isMultipleSelection
-                        showSelectAllSensors
                     />
                 </div>
             </div>

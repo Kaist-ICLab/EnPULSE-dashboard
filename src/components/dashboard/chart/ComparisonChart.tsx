@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useMemo, useRef, useState } from "react";
 import ParticipantDropdown from "../ParticipantDropdown";
 import SectionTypeSelect from "../SectionTypeSelect";
-import SensorDropdown from "../SensorDropdown";
+import SensorFieldDropdown from "../SensorFieldDropdown";
 
 const ComparisonChart: React.FC = () => {
     const chartRef = useRef<HTMLDivElement>(null);
@@ -34,7 +34,7 @@ const ComparisonChart: React.FC = () => {
                     />
                 </div>
                 <div className="flex flex-row ml-auto gap-2">
-                    <SensorDropdown
+                    <SensorFieldDropdown
                         selectedFieldIds={currentComparisonParams.fieldId}
                         selectedQuestionIds={currentComparisonParams.questionId}
                         setSelectedFieldIds={(fieldId: number[]) => updateComparisonParams(selectedSection, { fieldId })}
