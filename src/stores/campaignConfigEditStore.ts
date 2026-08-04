@@ -106,7 +106,7 @@ export type CampaignConfigEditActions = {
     removeWebapp: (index: number) => void;
     updateWebappName: (index: number, name: string) => void;
     updateWebappUrl: (index: number, url: string) => void;
-    updateWebappIcon: (index: number, iconUrl: string) => void;
+    updateWebappIcon: (index: number, iconPath: string) => void;
 
     setCampaignUsingImportedConfig: (config: ExportedCampaignConfig) => void;
 }
@@ -747,9 +747,9 @@ export const createCampaignConfigEditStore = (
             });
         },
 
-        updateWebappIcon: (index: number, iconUrl: string) => {
+        updateWebappIcon: (index: number, iconPath: string) => {
             set((state) => {
-                state.webapps[index].icon_url = iconUrl;
+                state.webapps[index].icon_path = iconPath;
             });
         },
 

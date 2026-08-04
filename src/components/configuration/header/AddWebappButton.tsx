@@ -10,7 +10,7 @@ export default function AddWebappButton() {
     const [isInputVisible, setIsInputVisible] = useState(false);
     const [name, setName] = useState("");
     const [url, setUrl] = useState("");
-    const [iconUrl, setIconUrl] = useState("");
+    const [iconPath, setIconUrl] = useState("");
 
     const reset = () => { setIsInputVisible(false); setName(""); setUrl(""); setIconUrl(""); };
 
@@ -25,7 +25,7 @@ export default function AddWebappButton() {
                 <Card className="absolute right-6 top-20 z-10 shadow-lg min-w-96">
                     <div className="flex gap-4 items-center mb-4">
                         <span className="text-sm font-medium text-gray-900 whitespace-nowrap">Icon</span>
-                        <IconUploadInput value={iconUrl} onChange={setIconUrl} size="sm" />
+                        <IconUploadInput value={iconPath} onChange={setIconUrl} size="sm" />
                     </div>
 
                     <div className="flex gap-4 items-center mb-4">
@@ -50,7 +50,7 @@ export default function AddWebappButton() {
                         />
                     </div>
                     <div className="flex gap-4 items-center">
-                        <Button className="flex-2/3" onClick={() => { addWebapp({ campaign_id: -1, name, url, icon_url: iconUrl }); reset(); }} disabled={name.trim().length === 0 || url.trim().length === 0 || iconUrl.trim().length === 0}>
+                        <Button className="flex-2/3" onClick={() => { addWebapp({ campaign_id: -1, name, url, icon_path: iconPath }); reset(); }} disabled={name.trim().length === 0 || url.trim().length === 0 || iconPath.trim().length === 0}>
                             Confirm
                         </Button>
                         <Button className="flex-1/3" color="gray" onClick={reset}>

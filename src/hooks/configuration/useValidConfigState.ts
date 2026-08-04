@@ -14,7 +14,7 @@ export function useValidConfigState() {
     const isActiveSensingValid = true
 
     const isWebappValid = useMemo(() => {
-        return webapps.every((webapp) => !!webapp.icon_url);
+        return webapps.every((webapp) => !!webapp.icon_path);
     }, [webapps]);
 
     const isTriggerValid = useMemo(() => {

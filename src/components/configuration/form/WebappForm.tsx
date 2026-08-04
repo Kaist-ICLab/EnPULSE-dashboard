@@ -28,7 +28,7 @@ export default function WebappForm() {
                                 size="lg"
                                 className="icon-[humbleicons--times]"
                             />
-                            <IconUploadInput size="sm" value={webapp.icon_url} onChange={(value) => updateWebappIcon(webappIndex, value)} />
+                            <IconUploadInput size="sm" value={webapp.icon_path} onChange={(value) => updateWebappIcon(webappIndex, value)} />
                             <SwitchingTextInput className="text-lg font-semibold text-gray-900 whitespace-nowrap" value={webapp.name} onChange={(value) => updateWebappName(webappIndex, value)} />
                         </div>
                         <div className="flex flex-row items-center gap-2">
