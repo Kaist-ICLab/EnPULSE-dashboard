@@ -1,7 +1,8 @@
-import { Checkbox, Tooltip } from "flowbite-react";
+import { Tooltip } from "flowbite-react";
 import DailyStatTableCell from "./DailyStatTableCell";
 import React from "react";
 import { DailyStatColumn } from "@/hooks/chart/useUserDailyStat";
+import { UserDailyStatData } from "@/types/dashboard";
 
 const getLevelColor = (level: number, max: number): string => {
     const levels = [
@@ -44,8 +45,8 @@ const DailyCount: React.FC<{
                 : `${value}`;
 
     return (
-        <div className="flex items-center gap-1">
-            <div className="relative h-1 w-22 bg-blue-100 rounded-full ">
+        <div className="flex items-center gap-1 h-6">
+            <div className="relative h-1 w-20 bg-blue-100 rounded-full ">
                 <div className={`absolute left-0 top-0 h-full bg-blue-500 rounded-full`}
                     style={{ width: `${percentage}%` }} />
             </div>
@@ -57,40 +58,37 @@ const DailyCount: React.FC<{
 }
 
 const DailyStatTableRow: React.FC<{
-    pid: number;
-    contacts: number;
-    columns: DailyStatColumn[];
-    tables: { table_id: number, totalCount: number, counts: number[] }[];
-    surveys: { survey_id: number, totalCount: number, counts: number[] }[];
+    row: DailyStatColumn;
+    data: UserDailyStatData[];
     maxValue: Map<string, number>;
-    isSelected: boolean;
-    toggleChecked: () => void;
-}> = ({ pid, columns, tables, surveys, maxValue, isSelected = false, toggleChecked }) => {
+    displayMode: 'count' | 'timeline';
+}> = ({ row, data, maxValue, displayMode }) => {
+    const key = `${row.kind}-${row.id}`;
+    const max = maxValue.get(key) ?? 0;
+
     return (
-        <tr className={`border-b border-gray-200 border-l text-sm ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}`} onClick={toggleChecked}>
-            <DailyStatTableCell>
-                <Checkbox checked={isSelected} onChange={toggleChecked} />
+        <tr className="border-b border-gray-200 border-l text-sm hover:bg-gray-50">
+            <DailyStatTableCell className="text-left">
+                <span className="block truncate font-medium text-gray-900" title={row.name}>{row.name}</span>
             </DailyStatTableCell>
-            <DailyStatTableCell>P{pid}</DailyStatTableCell>
-            {columns.map((col) => {
-                const key = `${col.kind}-${col.id}`;
-                const max = maxValue.get(key) ?? 0;
-                const entry = col.kind === 'sensor'
-                    ? tables.find(t => t.table_id === col.id)
-                    : surveys.find(s => s.survey_id === col.id);
+            {data.map((participant) => {
+                const entry = row.kind === 'sensor'
+                    ? participant.tables.find(t => t.table_id === row.id)
+                    : participant.surveys.find(s => s.survey_id === row.id);
                 const totalCount = entry?.totalCount ?? 0;
                 const counts = entry?.counts ?? [];
 
-                return [
-                    <DailyStatTableCell key={`${key}-dailycount`}>
-                        <Tooltip content={`${totalCount}${max ? ` / ${max}` : ''}`}>
-                            <DailyCount value={totalCount} max={max} />
-                        </Tooltip>
-                    </DailyStatTableCell>,
-                    <DailyStatTableCell key={`${key}-timeline`}>
-                        <Timeline values={counts} max={max} />
+                return (
+                    <DailyStatTableCell key={`${key}-${participant.uuid}`}>
+                        {displayMode === 'count' ? (
+                            <Tooltip content={`${totalCount}${max ? ` / ${max}` : ''}`}>
+                                <DailyCount value={totalCount} max={max} />
+                            </Tooltip>
+                        ) : (
+                            <Timeline values={counts} max={max} />
+                        )}
                     </DailyStatTableCell>
-                ];
+                );
             })}
         </tr>
     );

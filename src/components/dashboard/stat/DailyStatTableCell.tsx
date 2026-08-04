@@ -3,7 +3,7 @@ const DailyStatTableCell: React.FC<{
     className?: string;
 }> = ({ children, className }) => {
     return (
-        <td className={`p-2 border-r border-gray-200 ${className ?? ''}`}>{children}</td>
+        <td className={`px-2 py-1.5 border-r border-gray-200 ${className ?? ''}`}>{children}</td>
     );
 }
 

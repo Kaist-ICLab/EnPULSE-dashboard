@@ -1,20 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
-import TimelineXAxis from '@/components/dashboard/chart/TimelineXAxis';
 import { DnDProvider } from '@/components/common/DnDList';
-import { Button } from 'flowbite-react';
-import Link from 'next/link';
+import TimelineXAxis from '@/components/dashboard/chart/TimelineXAxis';
 import { useSectionParamStore } from '@/providers/SectionParamStoreProvider';
 import { TimelineData } from '@/types/chart';
 import { ComparisonType } from "@/types/dashboard";
-import { ChartItem } from './ChartItem';
 import { ParentSize } from '@visx/responsive';
+import { useEffect, useMemo, useState } from 'react';
+import { ChartItem } from './ChartItem';
 
 const ChartContainer: React.FC<{
     timelines: TimelineData[];
     bucketSize: number;
-}> = ({ timelines, bucketSize }) => {
-    const { updateComparisonParams, chartPinQuery, updatePinQuery, selectedSection, updateSelectedSection, updateDate } = useSectionParamStore((state) => state);
-    const [selectedChart, setSelectedChart] = useState<string | null>(null);
+    selectedChart: string | null;
+    setSelectedChart: (chartId: string | null) => void;
+}> = ({ timelines, bucketSize, selectedChart, setSelectedChart }) => {
+    const { chartPinQuery, selectedSection } = useSectionParamStore((state) => state);
     const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
 
     useEffect(() => {
@@ -48,59 +47,8 @@ const ChartContainer: React.FC<{
         }
     }, [selectedSection, timelines, chartPinQuery])
 
-    const comparisonName = {
-        [ComparisonType.Participants]: "Participants",
-        [ComparisonType.Sensors]: "Sensors",
-        [ComparisonType.Days]: "Days"
-    }
-
     return (
         <div className="w-full">
-            <div className="py-2 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                    <div>
-                        {selectedChart ? (
-                            <div className="flex items-center gap-2">
-                                <span className="font-medium text-gray-700">Selected Chart:</span>
-                                <span className="text-gray-600">{timelines.find(t => t.id === selectedChart)?.title}</span>
-                            </div>
-                        ) : (
-                            <div className="text-gray-500">No chart selected</div>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-2 h-8">
-                        {selectedChart && (
-                            <>
-                                <span className="font-medium text-gray-700">Compare with other:</span>
-                                {Object.entries(comparisonName).map(([type, value]) => (
-                                    selectedSection !== type && <Link key={type} href={`./dashboard/#${type}-comparison-chart`}>
-                                        <Button
-                                            size="xs"
-                                            className="flex flex-row gap-1 text-base px-3"
-                                            onClick={() => {
-                                                const params = timelines.find(t => t.id === selectedChart)!.params
-                                                const isSurvey = params.questionId !== undefined
-                                                updateComparisonParams(type as ComparisonType, {
-                                                    uuid: [params.uuid],
-                                                    fieldId: isSurvey ? [] : [params.fieldId],
-                                                    questionId: isSurvey ? [params.questionId!] : [],
-                                                })
-                                                updateDate(params.date)
-                                                updatePinQuery({ ...params, questionId: params.questionId ?? null })
-                                                updateSelectedSection(type as ComparisonType)
-                                                setSelectedChart(null)
-                                            }}
-                                        >
-                                            <span>{value}</span>
-                                        </Button>
-                                    </Link>
-
-                                ))}
-                            </>
-                        )}
-                    </div>
-                </div>
-            </div>
             {timelines.filter(d => d.id === pinnedChart).map((timeline) =>
                 <ChartItem
                     key={timeline.id}
