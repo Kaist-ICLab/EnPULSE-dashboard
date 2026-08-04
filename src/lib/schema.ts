@@ -542,18 +542,21 @@ export type Database = {
             campaign_webapp: {
                 Row: {
                     campaign_id: number
+                    icon_url: string | null
                     id: number
                     name: string
                     url: string
                 }
                 Insert: {
                     campaign_id: number
+                    icon_url?: string | null
                     id?: number
                     name: string
                     url: string
                 }
                 Update: {
                     campaign_id?: number
+                    icon_url?: string | null
                     id?: number
                     name?: string
                     url?: string

@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { isTriggerComplete } from "@/types/trigger";
 
 export function useValidConfigState() {
-    const { campaignName, campaignPassword, campaign_trigger } = useCampaignConfigEdit((state) => state);
+    const { campaignName, campaignPassword, campaign_trigger, webapps } = useCampaignConfigEdit((state) => state);
 
     const isInfoValid = useMemo(() => {
         return campaignName.length > 0 && campaignPassword.length > 0;
@@ -13,7 +13,9 @@ export function useValidConfigState() {
 
     const isActiveSensingValid = true
 
-    const isWebappValid = true
+    const isWebappValid = useMemo(() => {
+        return webapps.every((webapp) => !!webapp.icon_url);
+    }, [webapps]);
 
     const isTriggerValid = useMemo(() => {
         return campaign_trigger.every(isTriggerComplete);

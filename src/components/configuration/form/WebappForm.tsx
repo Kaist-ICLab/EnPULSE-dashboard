@@ -3,9 +3,10 @@ import { Card } from "flowbite-react";
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import IconButton from "@/components/common/IconButton";
 import SwitchingTextInput from "@/components/common/SwitchingTextInput";
+import IconUploadInput from "@/components/common/IconUploadInput";
 
 export default function WebappForm() {
-    const { webapps, removeWebapp, updateWebappName, updateWebappUrl } = useCampaignConfigEdit((state) => state);
+    const { webapps, removeWebapp, updateWebappName, updateWebappUrl, updateWebappIcon } = useCampaignConfigEdit((state) => state);
 
     if (webapps.length === 0) {
         return (
@@ -27,6 +28,7 @@ export default function WebappForm() {
                                 size="lg"
                                 className="icon-[humbleicons--times]"
                             />
+                            <IconUploadInput size="sm" value={webapp.icon_url} onChange={(value) => updateWebappIcon(webappIndex, value)} />
                             <SwitchingTextInput className="text-lg font-semibold text-gray-900 whitespace-nowrap" value={webapp.name} onChange={(value) => updateWebappName(webappIndex, value)} />
                         </div>
                         <div className="flex flex-row items-center gap-2">
