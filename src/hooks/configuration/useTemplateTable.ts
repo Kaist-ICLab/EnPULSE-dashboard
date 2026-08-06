@@ -325,8 +325,11 @@ const stressSensor: TemplateCampaignTable = {
     description: "Stress sensor",
     campaign_table_field: [
         { name: "window_start_ms", field_role: "ignore", field_type: "datetime" },
-        { name: "probability", field_role: "data", field_type: "numerical" },
-        { name: "is_high_stress", field_role: "data", field_type: "categorical" },
+        { name: "window_end_ms", field_role: "ignore", field_type: "datetime" },
+        { name: "rmssd", field_role: "data", field_type: "numerical" },
+        { name: "ibi_count", field_role: "data", field_type: "numerical" },
+        { name: "threshold", field_role: "data", field_type: "numerical" },
+        { name: "is_stressed", field_role: "data", field_type: "categorical" },
     ],
 };
 
