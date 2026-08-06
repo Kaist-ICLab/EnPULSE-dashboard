@@ -1,7 +1,8 @@
 'use client'
 
 import { TriggerAction } from "@/types/trigger";
-import { Label, TextInput } from "flowbite-react";
+import { DeviceType } from "@/types/survey";
+import { Label, Select, TextInput } from "flowbite-react";
 
 const NotificationAction: React.FC<{
     action: Extract<TriggerAction, { kind: "notification" }>;
@@ -42,6 +43,29 @@ const NotificationAction: React.FC<{
                         onChange({ ...action, url: v.length > 0 ? v : undefined });
                     }}
                 />
+            </div>
+
+            <div className="flex flex-col gap-1">
+                <Label className="text-xs font-medium text-gray-700">Show On</Label>
+                <Select
+                    sizing="sm"
+                    value={action.deviceType}
+                    onChange={(e) => onChange({ ...action, deviceType: Number(e.target.value) as DeviceType })}
+                >
+                    <option value={DeviceType.Phone}>Phone</option>
+                    <option value={DeviceType.Watch}>Watch</option>
+                </Select>
+            </div>
+
+            <div className="flex flex-row items-center">
+                <span className="block text-sm text-gray-900 mr-4">Minimum Interval Between Notifications:</span>
+                <TextInput
+                    type="number"
+                    sizing="sm"
+                    value={action.minIntervalMillis}
+                    onChange={(e) => onChange({ ...action, minIntervalMillis: Number(e.target.value) })}
+                />
+                <span className="text-sm ml-1 text-gray-900">ms</span>
             </div>
         </div>
     );

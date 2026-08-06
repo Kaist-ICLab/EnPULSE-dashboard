@@ -1,4 +1,5 @@
 import { Database } from "@/lib/schema";
+import { DeviceType } from "@/types/survey";
 
 export type TriggerSensorKind = "stress" | "physical_activity" | "gesture" | "timing";
 
@@ -103,6 +104,10 @@ export type TriggerAction =
         title: string;
         description: string;
         url?: string;
+        // Which device the notification is shown on — same re-fire throttle semantics as the
+        // ema/watch_ema actions' minIntervalMillis.
+        deviceType: DeviceType;
+        minIntervalMillis: number;
     }
 
 // Shape stored in the `action` jsonb column of `campaign_trigger` (one element per stored array entry).
@@ -120,6 +125,8 @@ export type PersistedTriggerAction =
         title: string;
         description: string;
         url?: string;
+        deviceType: DeviceType;
+        minIntervalMillis: number;
     }
 
 export function persistAction(a: TriggerAction, surveyIds: number[]): PersistedTriggerAction {
@@ -183,7 +190,7 @@ export function findTimingConditionValues(condition: TriggerCondition): string[]
 
 export function defaultAction(kind: TriggerActionKind): TriggerAction {
     if (kind === "broadcast") return { kind: "broadcast", action: "", extras: [] };
-    if (kind === "notification") return { kind: "notification", title: "", description: "" };
+    if (kind === "notification") return { kind: "notification", title: "", description: "", deviceType: DeviceType.Phone, minIntervalMillis: 0 };
     return { kind, surveyIndex: -1, minIntervalMillis: 0 };
 }
 
