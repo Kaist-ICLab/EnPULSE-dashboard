@@ -1,13 +1,16 @@
 'use client'
 
+import { useMemo } from "react";
 import { Select } from "flowbite-react";
 import {
     TRIGGER_SENSOR_KIND_LABEL,
-    TRIGGER_SENSOR_VALUES,
     TriggerCondition,
     TriggerSensorKind,
     defaultDetection,
+    getTriggerSensorValues,
 } from "@/types/trigger";
+import { getTimingScheduleValues } from "@/types/timingSchedule";
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { Block, BlockHeaderButton, BlockSlot } from "./blocks/Block";
 
 const ConditionTreeEditor: React.FC<{
@@ -19,7 +22,14 @@ const ConditionTreeEditor: React.FC<{
     const wrapInNot = () => onChange({ type: "not", child: condition });
     const wrapInGroup = (op: "and" | "or") => onChange({ type: op, children: [condition] });
 
+    // Following the precedent TriggerCardConfig.tsx already sets (pulling `surveys` straight
+    // from the store), pull `tables` here rather than prop-drilling it down — "timing"'s value
+    // list is dynamic (the campaign's own named schedules), unlike the other sensors' static enums.
+    const tables = useCampaignConfigEdit((state) => state.tables);
+    const timingScheduleValues = useMemo(() => getTimingScheduleValues(tables), [tables]);
+
     if (condition.type === "detection") {
+        const values = getTriggerSensorValues(condition.sensor, timingScheduleValues);
         return (
             <Block
                 palette="blue"
@@ -39,19 +49,28 @@ const ConditionTreeEditor: React.FC<{
                 switchOptions={
                     (Object.keys(TRIGGER_SENSOR_KIND_LABEL) as TriggerSensorKind[]).map((s) => ({ label: TRIGGER_SENSOR_KIND_LABEL[s], value: s }))
                 }
-                onLabelChange={(value) => onChange({ ...condition, sensor: value as TriggerSensorKind, value: TRIGGER_SENSOR_VALUES[value as TriggerSensorKind][0] })}
+                onLabelChange={(value) => {
+                    const nextValues = getTriggerSensorValues(value as TriggerSensorKind, timingScheduleValues);
+                    onChange({ ...condition, sensor: value as TriggerSensorKind, value: nextValues[0] ?? "" });
+                }}
             >
                 <div className="flex flex-row items-center gap-2 flex-wrap">
                     <span className="text-gray-700 text-sm">{TRIGGER_SENSOR_KIND_LABEL[condition.sensor]} equals</span>
-                    <Select
-                        sizing="sm"
-                        value={condition.value}
-                        onChange={(e) => onChange({ ...condition, value: e.target.value })}
-                    >
-                        {TRIGGER_SENSOR_VALUES[condition.sensor].map((v) => (
-                            <option key={v} value={v}>{v}</option>
-                        ))}
-                    </Select>
+                    {values.length === 0 ? (
+                        <span className="text-amber-600 text-sm italic">
+                            No timing schedules defined yet — add one under Passive Sensing.
+                        </span>
+                    ) : (
+                        <Select
+                            sizing="sm"
+                            value={condition.value}
+                            onChange={(e) => onChange({ ...condition, value: e.target.value })}
+                        >
+                            {values.map((v) => (
+                                <option key={v} value={v}>{v}</option>
+                            ))}
+                        </Select>
+                    )}
                 </div>
             </Block>
         );

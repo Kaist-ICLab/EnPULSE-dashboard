@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { CampaignTable, CampaignTableField } from "@/types/campaign";
+import { TIMING_SENSOR_TABLE_NAME, serializeTimingScheduleConfig } from "@/types/timingSchedule";
 
 type TemplateCampaignTable = Omit<CampaignTable, 'id' | 'campaign_id' | 'daily_count_max' | 'is_custom' | 'campaign_table_field'> & {
     campaign_table_field: (Omit<CampaignTableField, 'id' | 'campaign_table_id' | 'campaign_table_field_mapping'> & {
@@ -415,6 +416,16 @@ const ecgSensor: TemplateCampaignTable = {
     ],
 };
 
+// Not a sensor that logs rows — this row exists purely to carry named timing schedules in its
+// `config` column, read by the client's TimingSensor. See src/types/timingSchedule.ts.
+const timingSensor: TemplateCampaignTable = {
+    name: TIMING_SENSOR_TABLE_NAME,
+    display_name: "Timing Schedules",
+    description: "Named schedules the client's TimingSensor fires on",
+    campaign_table_field: [],
+    config: serializeTimingScheduleConfig([]),
+};
+
 export function useTemplateTable(selectedTables: CampaignTable[]) {
     const selectedTemplateTables = useMemo(() => selectedTables.filter(t => !t.is_custom), [selectedTables]);
 
@@ -449,6 +460,7 @@ export function useTemplateTable(selectedTables: CampaignTable[]) {
             sleepSensor,
             exerciseSensor,
             ecgSensor,
+            timingSensor,
         ]
 
         return templateTable

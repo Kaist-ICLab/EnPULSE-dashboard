@@ -1,15 +1,18 @@
 import { Database } from "@/lib/schema";
 
-export type TriggerSensorKind = "stress" | "physical_activity" | "gesture";
+export type TriggerSensorKind = "stress" | "physical_activity" | "gesture" | "timing";
 
 export const TRIGGER_SENSOR_KIND_LABEL: Record<TriggerSensorKind, string> = {
     stress: "Stress",
     physical_activity: "Physical Activity",
     gesture: "Gesture",
+    timing: "Timing",
 };
 
 // Hardcoded value enums per sensor — adjust to match what the EnPULSE Android library emits.
-export const TRIGGER_SENSOR_VALUES: Record<TriggerSensorKind, readonly string[]> = {
+// "timing" is deliberately excluded: its values are the campaign's own named schedules
+// (campaign_table.config on the timing_sensor row), not a fixed enum — see getTriggerSensorValues.
+export const STATIC_TRIGGER_SENSOR_VALUES: Record<Exclude<TriggerSensorKind, "timing">, readonly string[]> = {
     stress: ["Low", "High"],
     physical_activity: ["In Vehicle", "On Bicycle", "On Foot", "Running", "Still", "Tilting", "Unknown", "Walking"],
     gesture: ["Alarm Clock",
@@ -40,6 +43,14 @@ export const TRIGGER_SENSOR_VALUES: Record<TriggerSensorKind, readonly string[]>
         "Wiping With Rag",
         "Other"],
 } as const;
+
+// `timingScheduleValues` comes from the campaign's `timing_sensor` campaign_table row's
+// `config` array (see `getTimingScheduleValues` in `src/types/timingSchedule.ts`) — kept as a
+// plain function parameter, rather than importing that module here, to avoid this file (a
+// generic trigger/condition model) depending on the timing-specific config schema.
+export function getTriggerSensorValues(sensor: TriggerSensorKind, timingScheduleValues: string[]): readonly string[] {
+    return sensor === "timing" ? timingScheduleValues : STATIC_TRIGGER_SENSOR_VALUES[sensor];
+}
 
 // Self-recursive: each `children`/`child` slot is itself a `TriggerCondition`,
 // so AND / OR / NOT can be nested arbitrarily — e.g. `(A AND B) OR C`,
@@ -152,7 +163,22 @@ export type FetchedCampaignTrigger =
     };
 
 export function defaultDetection(): TriggerCondition {
-    return { type: "detection", sensor: "stress", value: TRIGGER_SENSOR_VALUES.stress[0] };
+    return { type: "detection", sensor: "stress", value: STATIC_TRIGGER_SENSOR_VALUES.stress[0] };
+}
+
+// Collects every `value` from `detection` leaves gated on the "timing" sensor, anywhere in the
+// tree. Used to detect which schedules a trigger references (e.g. to warn before a rename, or
+// to recognize triggers the guided "Schedule a Survey" flow itself produced).
+export function findTimingConditionValues(condition: TriggerCondition): string[] {
+    switch (condition.type) {
+        case "detection":
+            return condition.sensor === "timing" ? [condition.value] : [];
+        case "and":
+        case "or":
+            return condition.children.flatMap(findTimingConditionValues);
+        case "not":
+            return findTimingConditionValues(condition.child);
+    }
 }
 
 export function defaultAction(kind: TriggerActionKind): TriggerAction {

@@ -2,8 +2,10 @@
 import { Card } from "flowbite-react";
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import PassiveSensingConfigTable from "../PassiveSensingConfigTable";
+import TimingScheduleForm from "./TimingScheduleForm";
 import IconButton from "@/components/common/IconButton";
 import SwitchingTextInput from "@/components/common/SwitchingTextInput";
+import { TIMING_SENSOR_TABLE_NAME } from "@/types/timingSchedule";
 import { useEffect, useRef, useState } from "react";
 
 export default function PassiveSensingForm() {
@@ -104,9 +106,13 @@ export default function PassiveSensingForm() {
                                     <SwitchingTextInput sizing="sm" value={table.description ?? ''} onChange={(value) => updateTableDescription(tableIndex, value)} />
                                 </div>
                             </div>
-                            <PassiveSensingConfigTable
-                                tableIdx={tableIndex}
-                            />
+                            {table.name === TIMING_SENSOR_TABLE_NAME ? (
+                                <TimingScheduleForm />
+                            ) : (
+                                <PassiveSensingConfigTable
+                                    tableIdx={tableIndex}
+                                />
+                            )}
                         </div>
 
                     </Card>

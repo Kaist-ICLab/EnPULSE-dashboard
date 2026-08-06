@@ -1,6 +1,7 @@
 import { CampaignTable, CampaignTableField, CampaignWebapp, FetchedCampaign, FieldRole, FieldType, RemovedEntries } from "@/types/campaign";
-import { AnswerType, DeviceType, Expression, OperatorType, QuestionConfig, ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionTrigger } from "@/types/survey";
+import { AnswerType, DeviceType, Expression, OperatorType, QuestionConfig, Survey, SurveyQuestion, SurveyQuestionTrigger } from "@/types/survey";
 import { CampaignTrigger, TriggerAction, TriggerActionKind, TriggerCondition, defaultAction, defaultDetection } from "@/types/trigger";
+import { Json } from "@/lib/schema";
 import { DATE_FORMAT } from "@/utils/date";
 import dayjs from "dayjs";
 import { WritableDraft } from "immer";
@@ -48,6 +49,11 @@ export type CampaignConfigEditActions = {
     removeField: (tableIndex: number, fieldIdx: number) => void;
     setField: (tableIndex: number, fieldIdx: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void;
     setFieldMapping: (tableIndex: number, fieldIdx: number, mapping: { value: string, display: string }[]) => void;
+    upsertTableConfigByName: (
+        name: string,
+        template: Omit<CampaignTable, 'config' | 'campaign_table_field'>,
+        updateConfig: (current: Json | null) => Json,
+    ) => void;
 
     // Active sensing
     addSurvey: () => void;
@@ -55,7 +61,6 @@ export type CampaignConfigEditActions = {
     updateSurveyTitle: (index: number, title: string) => void;
     updateSurveyDescription: (index: number, description: string) => void;
     updateSurveyDeviceType: (index: number, deviceType: DeviceType) => void;
-    updateSurveyScheduleMethod: (index: number, scheduleMethod: ScheduleMethod) => void;
 
     /**
      * Update/remove/reorder questions at any nesting level using a "question path".
@@ -94,6 +99,9 @@ export type CampaignConfigEditActions = {
 
     // Sensor-driven campaign triggers (separate from in-survey conditional branching above).
     addTrigger: () => void;
+    // One-shot creation pre-populated with a condition + single action — used by the guided
+    // "Schedule a Survey" flow to generate a complete Detection("timing", ...) trigger in one call.
+    addTriggerWithConditionAndAction: (name: string, condition: TriggerCondition, action: TriggerAction) => void;
     removeTrigger: (index: number) => void;
     updateTriggerName: (index: number, name: string) => void;
     setTriggerCondition: (index: number, condition: TriggerCondition) => void;
@@ -390,6 +398,31 @@ export const createCampaignConfigEditStore = (
             });
         },
 
+        // Generic "ensure a campaign_table row named `name` exists (creating it from `template`
+        // if not), then apply `updateConfig` to its current `config`" — done as ONE atomic
+        // mutation specifically so the "does this row exist yet?" check always runs against the
+        // live store state, never a React-memoized snapshot. If that check instead lived in a
+        // hook (comparing a `useMemo`'d row index), two calls issued before React re-renders and
+        // refreshes the memo would both see "doesn't exist" and each create a separate row with
+        // the same name — this was a real bug for the timing_sensor row (see git history).
+        // Deliberately unaware of "timing schedules" as a concept — `config` is generic
+        // per-sensor configuration; interpretation lives in src/types/timingSchedule.ts and
+        // src/hooks/configuration/useTimingScheduleState.ts.
+        upsertTableConfigByName: (
+            name: string,
+            template: Omit<CampaignTable, 'config' | 'campaign_table_field'>,
+            updateConfig: (current: Json | null) => Json,
+        ) => {
+            set((state) => {
+                const table = state.tables.find((t) => t.name === name);
+                if (table) {
+                    table.config = updateConfig(table.config ?? null);
+                } else {
+                    state.tables.push({ ...template, campaign_table_field: [], config: updateConfig(null) });
+                }
+            });
+        },
+
         addSurvey: () => {
             set((state) => {
                 state.surveys.push({
@@ -397,7 +430,6 @@ export const createCampaignConfigEditStore = (
                     title: `Survey ${state.surveys.length + 1}`,
                     description: "",
                     device_type: DeviceType.Phone,
-                    schedule_method: null,
                     survey_question: [],
                 });
             });
@@ -459,12 +491,6 @@ export const createCampaignConfigEditStore = (
                 // there's no auto-conversion. Triggers stay as-is.
 
                 survey.device_type = deviceType;
-            });
-        },
-
-        updateSurveyScheduleMethod: (index: number, scheduleMethod: ScheduleMethod) => {
-            set((state) => {
-                state.surveys[index].schedule_method = scheduleMethod;
             });
         },
 
@@ -674,6 +700,17 @@ export const createCampaignConfigEditStore = (
                     name: `Trigger ${state.campaign_trigger.length + 1}`,
                     condition: defaultDetection(),
                     actions: [],
+                });
+            });
+        },
+
+        addTriggerWithConditionAndAction: (name: string, condition: TriggerCondition, action: TriggerAction) => {
+            set((state) => {
+                state.campaign_trigger.push({
+                    campaign_id: state.campaignId,
+                    name,
+                    condition,
+                    actions: [action],
                 });
             });
         },

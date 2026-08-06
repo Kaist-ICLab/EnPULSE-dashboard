@@ -1,6 +1,6 @@
 import { FetchedSurvey, Survey } from "./survey";
 import { CampaignTrigger, FetchedCampaignTrigger } from "./trigger";
-import { Constants, Database } from "@/lib/schema";
+import { Constants, Database, Json } from "@/lib/schema";
 import { DeepRequired } from "@/utils/type";
 
 export type FieldType = Database['public']['Enums']['field_type'];
@@ -24,13 +24,23 @@ export type Campaign = Database['public']['Tables']['campaigns']['Insert'] & {
     campaign_webapp: CampaignWebapp[];
 }
 
-export type FetchedCampaign = DeepRequired<Omit<Campaign, 'survey' | 'campaign_trigger'>> & {
+export type FetchedCampaign = DeepRequired<Omit<Campaign, 'survey' | 'campaign_trigger' | 'campaign_table'>> & {
     survey: FetchedSurvey[];
     campaign_trigger: FetchedCampaignTrigger[];
+    campaign_table: FetchedCampaignTable[];
 }
 
 export type CampaignTable = Database['public']['Tables']['campaign_table']['Insert'] & {
     campaign_table_field: CampaignTableField[];
+}
+
+// `config` is a generic, sensor-defined `Json` blob (see src/types/timingSchedule.ts for the
+// timing_sensor interpretation of it) — its recursive index-signature shape makes `DeepRequired`
+// blow up ("Type instantiation is excessively deep") if it's left inside the `DeepRequired` call
+// above, the same reason `survey`/`campaign_trigger` (which also carry raw `Json` columns) are
+// excluded from it and given their own narrowed `Fetched*` type instead.
+export type FetchedCampaignTable = DeepRequired<Omit<CampaignTable, 'config'>> & {
+    config: Json | null;
 }
 
 export type CampaignTableField = Database['public']['Tables']['campaign_table_field']['Insert'] & {

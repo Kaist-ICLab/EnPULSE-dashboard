@@ -366,6 +366,7 @@ export type Database = {
             campaign_table: {
                 Row: {
                     campaign_id: number
+                    config: Json | null
                     daily_count_max: number
                     description: string
                     display_name: string
@@ -375,6 +376,7 @@ export type Database = {
                 }
                 Insert: {
                     campaign_id: number
+                    config?: Json | null
                     daily_count_max: number
                     description?: string
                     display_name: string
@@ -384,6 +386,7 @@ export type Database = {
                 }
                 Update: {
                     campaign_id?: number
+                    config?: Json | null
                     daily_count_max?: number
                     description?: string
                     display_name?: string

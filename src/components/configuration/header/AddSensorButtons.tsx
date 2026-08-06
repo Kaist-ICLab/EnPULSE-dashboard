@@ -14,7 +14,8 @@ export default function AddSensorButtons() {
         setSensorDescription,
         queryResultTables,
         addCustomSensorAsIs,
-        addSensor
+        addSensor,
+        isCustomSensorNameReserved,
     } = useAddSensorButtonState();
 
     return (
@@ -78,8 +79,13 @@ export default function AddSensorButtons() {
                             onChange={(e) => setSensorDescription(e.target.value)}
                         />
                     </div>
+                    {isCustomSensorNameReserved && (
+                        <p className="text-sm text-red-600 mb-2">
+                            &quot;timing_sensor&quot; is a reserved name (used by the Timing Schedules feature) — choose another.
+                        </p>
+                    )}
                     <div className="flex gap-4 items-center">
-                        <Button className="flex-2/3" onClick={() => { addCustomSensorAsIs(); setCustomSensorInputVisibility(false) }}>
+                        <Button className="flex-2/3" disabled={isCustomSensorNameReserved} onClick={() => { addCustomSensorAsIs(); setCustomSensorInputVisibility(false) }}>
                             Confirm
                         </Button>
                         <Button className="flex-1/3" color="gray" onClick={() => { setCustomSensorInputVisibility(false) }}>

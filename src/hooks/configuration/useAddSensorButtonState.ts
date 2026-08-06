@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 
 import { useTemplateTable } from "@/hooks/configuration/useTemplateTable";
 import { CampaignTable } from "@/types/campaign";
+import { TIMING_SENSOR_TABLE_NAME } from "@/types/timingSchedule";
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 
 export default function useAddSensorButtonState() {
@@ -28,7 +29,16 @@ export default function useAddSensorButtonState() {
         addTable(table);
     }, [addTable]);
 
+    // The client looks up the timing_sensor row by exact `name` — a custom sensor typed with
+    // that same name would collide with (or silently shadow) it, so block the add rather than
+    // let it through.
+    const isCustomSensorNameReserved = useMemo(
+        () => sensorName.trim().toLowerCase() === TIMING_SENSOR_TABLE_NAME,
+        [sensorName]
+    );
+
     const addCustomSensorAsIs = useCallback(() => {
+        if (isCustomSensorNameReserved) return;
         addTable({
             campaign_id: -1,
             name: sensorName,
@@ -38,7 +48,11 @@ export default function useAddSensorButtonState() {
             campaign_table_field: [],
             is_custom: true
         });
-    }, [addTable, sensorName, sensorDescription]);
+    }, [addTable, sensorName, sensorDescription, isCustomSensorNameReserved]);
 
-    return { queryResultTables, isSensorInputVisible, sensorName, setSensorName, sensorDescription, setSensorDescription, sensorNameQuery, setSensorNameQuery, setCustomSensorInputVisibility, addCustomSensorAsIs, addSensor };
+    return {
+        queryResultTables, isSensorInputVisible, sensorName, setSensorName, sensorDescription, setSensorDescription,
+        sensorNameQuery, setSensorNameQuery, setCustomSensorInputVisibility, addCustomSensorAsIs, addSensor,
+        isCustomSensorNameReserved,
+    };
 }

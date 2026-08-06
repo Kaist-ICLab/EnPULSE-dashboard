@@ -1,11 +1,10 @@
 import { useCallback, useMemo } from "react";
-import { CampaignTable } from "@/types/campaign";
-import { DeepRequired } from "@/utils/type";
+import { FetchedCampaignTable } from "@/types/campaign";
 import { FetchedSurvey, FetchedSurveyQuestion } from "@/types/survey";
 
 const useSensorDropdownState = (
     selectedFieldIds: number[],
-    campaignTables: Map<number, DeepRequired<CampaignTable>>,
+    campaignTables: Map<number, FetchedCampaignTable>,
     setSelectedFieldIds: (fieldIds: number[]) => void,
     selectedQuestionIds: number[],
     surveys: FetchedSurvey[],

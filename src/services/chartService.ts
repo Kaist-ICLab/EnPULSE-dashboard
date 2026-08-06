@@ -1,9 +1,8 @@
 import { supabase } from '@/lib/supabase';
 import { BucketCategoricalData, BucketNumericalData, groupByTimestamp, groupByTimestampAndBitmask, mapQuery } from '@/lib/supabaseHelper';
-import { CampaignParticipant, CampaignTable } from '@/types/campaign';
+import { CampaignParticipant, FetchedCampaignTable } from '@/types/campaign';
 import { ChartType, TimelineData, TimelineSurveyEventPoint } from '@/types/chart';
 import dayjs from 'dayjs';
-import { DeepRequired } from '@/utils/type';
 import { DATE_FORMAT } from '@/utils/date';
 import { UserDailyStatData } from '@/types/dashboard';
 import { Ok, Err } from '@/utils/type';
@@ -368,7 +367,7 @@ export async function getSurveyQuestionDaysComparisonData(
 export async function getSensorComparisonData(
     date: Date,
     participant: CampaignParticipant | undefined,
-    tables: DeepRequired<CampaignTable>[],
+    tables: FetchedCampaignTable[],
     timeRange: { start: number, end: number },
     bucketSize: string,
 ): Promise<TimelineData[]> {
@@ -436,7 +435,7 @@ export async function getSensorComparisonData(
 
 export async function getPersonComparisonData(
     date: Date, participants: CampaignParticipant[],
-    table: DeepRequired<CampaignTable> | undefined,
+    table: FetchedCampaignTable | undefined,
     timeRange: { start: number, end: number },
     bucketSize: string,
 ): Promise<TimelineData[]> {
@@ -496,7 +495,7 @@ export async function getPersonComparisonData(
 
 export async function getDaysComparisonData(
     date: Date, participant: CampaignParticipant | undefined,
-    table: DeepRequired<CampaignTable> | undefined,
+    table: FetchedCampaignTable | undefined,
     timeRange: { start: number, end: number },
     bucketSize: string,
 ): Promise<TimelineData[]> {

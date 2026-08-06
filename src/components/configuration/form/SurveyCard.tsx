@@ -8,7 +8,6 @@ import { useSurveyCardState } from "@/hooks/configuration/useSurveyCardState";
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { Modal } from "../../common/Modal";
 import SwitchingTextInput from "../../common/SwitchingTextInput";
-import ScheduleMethodConfig from "./ScheduleMethodConfig";
 
 const SurveyCard: React.FC<{
     baseUrl: string;
@@ -79,10 +78,6 @@ const SurveyCard: React.FC<{
                 )
             }
 
-            <ScheduleMethodConfig
-                surveyIndex={surveyIndex}
-                scheduleMethod={survey.schedule_method}
-            />
             <div className="mt-4">
                 <Button
                     color="blue"
