@@ -1,6 +1,7 @@
-import { CampaignTable, CampaignTableField, FetchedCampaign, FieldRole, FieldType, RemovedEntries } from "@/types/campaign";
-import { AnswerType, DeviceType, Expression, OperatorType, QuestionConfig, ScheduleMethod, Survey, SurveyQuestion, SurveyQuestionTrigger } from "@/types/survey";
+import { CampaignTable, CampaignTableField, CampaignWebapp, FetchedCampaign, FieldRole, FieldType, RemovedEntries } from "@/types/campaign";
+import { AnswerType, DeviceType, Expression, OperatorType, QuestionConfig, Survey, SurveyQuestion, SurveyQuestionTrigger } from "@/types/survey";
 import { CampaignTrigger, TriggerAction, TriggerActionKind, TriggerCondition, defaultAction, defaultDetection } from "@/types/trigger";
+import { Json } from "@/lib/schema";
 import { DATE_FORMAT } from "@/utils/date";
 import dayjs from "dayjs";
 import { WritableDraft } from "immer";
@@ -13,6 +14,7 @@ export interface ExportedCampaignConfig {
     tables: CampaignTable[];
     surveys: Survey[];
     campaign_trigger: CampaignTrigger[];
+    webapps: CampaignWebapp[];
 }
 
 export type CampaignConfigEditState = ExportedCampaignConfig & {
@@ -47,6 +49,11 @@ export type CampaignConfigEditActions = {
     removeField: (tableIndex: number, fieldIdx: number) => void;
     setField: (tableIndex: number, fieldIdx: number, fieldName: 'role' | 'type', fieldValue: FieldRole | FieldType) => void;
     setFieldMapping: (tableIndex: number, fieldIdx: number, mapping: { value: string, display: string }[]) => void;
+    upsertTableConfigByName: (
+        name: string,
+        template: Omit<CampaignTable, 'config' | 'campaign_table_field'>,
+        updateConfig: (current: Json | null) => Json,
+    ) => void;
 
     // Active sensing
     addSurvey: () => void;
@@ -54,7 +61,6 @@ export type CampaignConfigEditActions = {
     updateSurveyTitle: (index: number, title: string) => void;
     updateSurveyDescription: (index: number, description: string) => void;
     updateSurveyDeviceType: (index: number, deviceType: DeviceType) => void;
-    updateSurveyScheduleMethod: (index: number, scheduleMethod: ScheduleMethod) => void;
 
     /**
      * Update/remove/reorder questions at any nesting level using a "question path".
@@ -93,12 +99,22 @@ export type CampaignConfigEditActions = {
 
     // Sensor-driven campaign triggers (separate from in-survey conditional branching above).
     addTrigger: () => void;
+    // One-shot creation pre-populated with a condition + single action — used by the guided
+    // "Schedule a Survey" flow to generate a complete Detection("timing", ...) trigger in one call.
+    addTriggerWithConditionAndAction: (name: string, condition: TriggerCondition, action: TriggerAction) => void;
     removeTrigger: (index: number) => void;
     updateTriggerName: (index: number, name: string) => void;
     setTriggerCondition: (index: number, condition: TriggerCondition) => void;
     addTriggerAction: (triggerIndex: number, kind: TriggerActionKind) => void;
     removeTriggerAction: (triggerIndex: number, actionIndex: number) => void;
     updateTriggerAction: (triggerIndex: number, actionIndex: number, action: TriggerAction) => void;
+
+    // Web apps
+    addWebapp: (webapp: CampaignWebapp) => void;
+    removeWebapp: (index: number) => void;
+    updateWebappName: (index: number, name: string) => void;
+    updateWebappUrl: (index: number, url: string) => void;
+    updateWebappIcon: (index: number, iconPath: string) => void;
 
     setCampaignUsingImportedConfig: (config: ExportedCampaignConfig) => void;
 }
@@ -209,6 +225,7 @@ function emptyRemovedEntries(): RemovedEntries {
         question: [],
         trigger: [],
         campaign_trigger: [],
+        webapp: [],
     };
 }
 
@@ -243,6 +260,7 @@ function getDefaultState(): CampaignConfigEditState {
         tables: [],
         surveys: [],
         campaign_trigger: [],
+        webapps: [],
         removedEntries: emptyRemovedEntries(),
         questionClipboard: null,
     };
@@ -259,6 +277,7 @@ function getStateFromCampaign(campaign: FetchedCampaign): CampaignConfigEditStat
         tables: campaign.campaign_table,
         surveys: campaign.survey,
         campaign_trigger: campaign.campaign_trigger,
+        webapps: campaign.campaign_webapp,
         removedEntries: emptyRemovedEntries(),
         questionClipboard: null,
     };
@@ -379,6 +398,31 @@ export const createCampaignConfigEditStore = (
             });
         },
 
+        // Generic "ensure a campaign_table row named `name` exists (creating it from `template`
+        // if not), then apply `updateConfig` to its current `config`" — done as ONE atomic
+        // mutation specifically so the "does this row exist yet?" check always runs against the
+        // live store state, never a React-memoized snapshot. If that check instead lived in a
+        // hook (comparing a `useMemo`'d row index), two calls issued before React re-renders and
+        // refreshes the memo would both see "doesn't exist" and each create a separate row with
+        // the same name — this was a real bug for the timing_sensor row (see git history).
+        // Deliberately unaware of "timing schedules" as a concept — `config` is generic
+        // per-sensor configuration; interpretation lives in src/types/timingSchedule.ts and
+        // src/hooks/configuration/useTimingScheduleState.ts.
+        upsertTableConfigByName: (
+            name: string,
+            template: Omit<CampaignTable, 'config' | 'campaign_table_field'>,
+            updateConfig: (current: Json | null) => Json,
+        ) => {
+            set((state) => {
+                const table = state.tables.find((t) => t.name === name);
+                if (table) {
+                    table.config = updateConfig(table.config ?? null);
+                } else {
+                    state.tables.push({ ...template, campaign_table_field: [], config: updateConfig(null) });
+                }
+            });
+        },
+
         addSurvey: () => {
             set((state) => {
                 state.surveys.push({
@@ -386,7 +430,6 @@ export const createCampaignConfigEditStore = (
                     title: `Survey ${state.surveys.length + 1}`,
                     description: "",
                     device_type: DeviceType.Phone,
-                    schedule_method: null,
                     survey_question: [],
                 });
             });
@@ -400,7 +443,7 @@ export const createCampaignConfigEditStore = (
                 // Keep trigger surveyIndex references consistent with the new array.
                 state.campaign_trigger.forEach((t) => {
                     t.actions.forEach((a) => {
-                        if (a.kind === 'broadcast') return;
+                        if (a.kind === 'broadcast' || a.kind === 'notification') return;
                         if (a.surveyIndex === index) a.surveyIndex = -1;
                         else if (a.surveyIndex > index) a.surveyIndex -= 1;
                     });
@@ -448,12 +491,6 @@ export const createCampaignConfigEditStore = (
                 // there's no auto-conversion. Triggers stay as-is.
 
                 survey.device_type = deviceType;
-            });
-        },
-
-        updateSurveyScheduleMethod: (index: number, scheduleMethod: ScheduleMethod) => {
-            set((state) => {
-                state.surveys[index].schedule_method = scheduleMethod;
             });
         },
 
@@ -667,6 +704,17 @@ export const createCampaignConfigEditStore = (
             });
         },
 
+        addTriggerWithConditionAndAction: (name: string, condition: TriggerCondition, action: TriggerAction) => {
+            set((state) => {
+                state.campaign_trigger.push({
+                    campaign_id: state.campaignId,
+                    name,
+                    condition,
+                    actions: [action],
+                });
+            });
+        },
+
         removeTrigger: (index: number) => {
             set((state) => {
                 const removed = state.campaign_trigger.splice(index, 1)[0];
@@ -708,6 +756,37 @@ export const createCampaignConfigEditStore = (
             set((state) => {
                 if (!state.campaign_trigger[triggerIndex]?.actions[actionIndex]) return;
                 state.campaign_trigger[triggerIndex].actions[actionIndex] = action;
+            });
+        },
+
+        addWebapp: (webapp: CampaignWebapp) => {
+            set((state) => {
+                state.webapps.push(webapp);
+            });
+        },
+
+        removeWebapp: (index: number) => {
+            set((state) => {
+                state.removedEntries.webapp.push(state.webapps[index].id ?? -1);
+                state.webapps.splice(index, 1);
+            });
+        },
+
+        updateWebappName: (index: number, name: string) => {
+            set((state) => {
+                state.webapps[index].name = name;
+            });
+        },
+
+        updateWebappUrl: (index: number, url: string) => {
+            set((state) => {
+                state.webapps[index].url = url;
+            });
+        },
+
+        updateWebappIcon: (index: number, iconPath: string) => {
+            set((state) => {
+                state.webapps[index].icon_path = iconPath;
             });
         },
 
@@ -787,9 +866,14 @@ export const createCampaignConfigEditStore = (
                     state.removedEntries.campaign_trigger.push(t.id ?? -1);
                 });
 
+                state.webapps.forEach((w) => {
+                    state.removedEntries.webapp.push(w.id ?? -1);
+                });
+
                 state.tables = config.tables;
                 state.surveys = config.surveys;
                 state.campaign_trigger = config.campaign_trigger ?? [];
+                state.webapps = config.webapps ?? [];
             });
         },
     })),

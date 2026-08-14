@@ -1,11 +1,15 @@
-import { CampaignParticipant, CampaignTable, CampaignTableField, FetchedCampaign } from '@/types/campaign';
+import { CampaignParticipant, CampaignTableField, FetchedCampaign, FetchedCampaignTable } from '@/types/campaign';
 import { DeepRequired } from '@/utils/type';
 import { create } from 'zustand';
 
 
 export type CampaignState = {
     campaign?: FetchedCampaign;
-    campaignTables: Map<number, DeepRequired<CampaignTable>>;
+    // `FetchedCampaignTable`, not `DeepRequired<CampaignTable>` — the latter would recurse
+    // infinitely into `config`'s raw `Json` type (see the comment on FetchedCampaignTable in
+    // src/types/campaign.ts). `campaignTable` entries below are already `FetchedCampaignTable`,
+    // sourced from `FetchedCampaign.campaign_table`.
+    campaignTables: Map<number, FetchedCampaignTable>;
     campaignTableFields: Map<number, DeepRequired<CampaignTableField>>;
     campaignTableFieldMapping: Map<number, Map<string, string>>;
     campaignParticipants: Map<string, DeepRequired<CampaignParticipant>>;
@@ -51,7 +55,7 @@ export const createCampaignStore = (
 ) => {
     const others = campaign ? generateCampaignStatesFromCampaign(campaign) : {
         campaign: undefined,
-        campaignTables: new Map<number, DeepRequired<CampaignTable>>(),
+        campaignTables: new Map<number, FetchedCampaignTable>(),
         campaignTableFields: new Map<number, DeepRequired<CampaignTableField>>(),
         campaignTableFieldMapping: new Map<number, Map<string, string>>(),
         campaignParticipants: new Map<string, DeepRequired<CampaignParticipant>>(),

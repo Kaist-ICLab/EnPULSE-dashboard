@@ -28,7 +28,19 @@ export default function RootLayout({
                 suppressHydrationWarning
             >
                 <ThemeConfig dark={false} />
-                <Toaster position="bottom-right" richColors closeButton />
+                <Toaster position="bottom-right" richColors closeButton
+                    toastOptions={{
+                        classNames: {
+                            title: "!text-base !font-bold ml-2",
+                            description: "!text-sm !font-light ml-2"
+                        },
+                    }}
+                    icons={{
+                        success: <span className="icon-[material-symbols--check-circle] w-6 h-6" />,
+                        error: <span className="icon-[uis--exclamation-circle] w-6 h-6" />
+
+                    }}
+                />
                 {children}
             </body>
         </html>

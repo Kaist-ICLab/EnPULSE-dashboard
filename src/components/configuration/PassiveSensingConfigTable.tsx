@@ -1,11 +1,11 @@
 'use client'
 
+import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { FieldRole, FieldRoleOption, FieldType, FieldTypeOption } from "@/types/campaign";
 import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import FieldMappingEditor from "./FieldMappingEditor";
-import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import IconButton from "../common/IconButton";
+import FieldMappingEditor from "./FieldMappingEditor";
 
 const PassiveSensingConfigTable: React.FC<{
     tableIdx: number;
@@ -27,7 +27,7 @@ const PassiveSensingConfigTable: React.FC<{
 
     return (
         <div>
-            <div className="w-fit border-gray-200 rounded-lg! border-1">
+            <div className="w-fit border-gray-200 rounded-lg! border">
                 <Table className="w-fit ">
                     <TableHead>
                         <TableRow>
@@ -73,7 +73,7 @@ const PassiveSensingConfigTable: React.FC<{
                                     <input
                                         ref={inputRef}
                                         value={fieldName}
-                                        className="w-[120px] bg-transparent focus:outline-none shadow-none border-b-2 border-gray-200"
+                                        className="w-30 bg-transparent focus:outline-none shadow-none border-b-2 border-gray-200"
                                         onChange={e => setFieldName(e.target.value)}
                                         onBlur={() => {
                                             if (fieldName) addField(tableIdx, { campaign_table_id: -1, name: fieldName, field_role: fieldRole, field_type: fieldType, campaign_table_field_mapping: [] })
@@ -92,7 +92,7 @@ const PassiveSensingConfigTable: React.FC<{
                     /** Add Field Button */
                     currentTable.is_custom &&
                     <div
-                        className="w-full px-6 py-2 flex justify-center items-center border-t-1 border-gray-200 cursor-pointer hover:bg-gray-50"
+                        className="w-full px-6 py-2 flex justify-center items-center border-t border-gray-200 cursor-pointer hover:bg-gray-50"
                         onClick={() => {
                             setFieldName("")
                             setFieldRole('data')
@@ -105,7 +105,7 @@ const PassiveSensingConfigTable: React.FC<{
                 }
             </div>
             <div className="w-fit flex flex-col mt-2">
-                <div className="flex rounded-lg border-1 border-gray-200 overflow-hidden">
+                <div className="flex rounded-lg border border-gray-200 overflow-hidden">
                     <div className="bg-gray-200 px-6 py-3 uppercase text-xs text-gray-700 font-bold">
                         Daily Count Threshold
                     </div>
@@ -114,7 +114,7 @@ const PassiveSensingConfigTable: React.FC<{
                             type="number"
                             value={currentTable.daily_count_max}
                             onChange={(e) => setDailyCountMax(tableIdx, Number(e.target.value))}
-                            className="w-[80px] outline-none focus:outline-none pl-3"
+                            className="w-20 outline-none focus:outline-none pl-3"
                         />
                     </div>
 
@@ -143,7 +143,7 @@ const FieldRoleCell: React.FC<{
     return (
         <TableCell>
             <select
-                className="w-[120px] bg-transparent focus:outline-none shadow-none"
+                className="w-30 bg-transparent focus:outline-none shadow-none"
                 value={fieldRole}
                 onChange={(e) => onChange(e.target.value as FieldRole)}
             >
@@ -164,7 +164,7 @@ const FieldTypeCell: React.FC<{
     return (
         <TableCell>
             <select
-                className="w-[120px] bg-transparent focus:outline-none shadow-none"
+                className="w-30 bg-transparent focus:outline-none shadow-none"
                 value={fieldType}
                 onChange={(e) => onChange(e.target.value as FieldType)}
             >

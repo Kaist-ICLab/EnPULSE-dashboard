@@ -17,3 +17,11 @@ export function timeStringToMilliseconds(timeString: string): number {
     const [hours, minutes] = timeString.split(':').map(Number);
     return (hours * 60 + minutes) * 60 * 1000;
 }
+
+export function millisecondsToMinutes(ms: number): number {
+    return Math.round(ms / (60 * 1000));
+}
+
+export function minutesToMilliseconds(minutes: number): number {
+    return minutes * 60 * 1000;
+}

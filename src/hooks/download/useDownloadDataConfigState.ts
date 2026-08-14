@@ -53,7 +53,7 @@ export default function useDownloadDataConfigState() {
             })));
             setDownloadListStatus("ok");
         } catch (error) {
-            notify.error(`Failed to load download list: ${error instanceof Error ? error.message : "Unknown error"}`);
+            notify.error("Failed to load download list", error instanceof Error ? error.message : "Unknown error");
             setDownloadListStatus("error");
         }
     }, [selectedParticipantIds, startDate, endDate, selectedTableIds, campaignTables, campaignParticipants, setDownloadListStatus, setDownloadList]);

@@ -3,8 +3,10 @@
 import AddQuestionHeader from "@/components/configuration/header/AddQuestionHeader";
 import AddSensorButtons from "@/components/configuration/header/AddSensorButtons";
 import AddSurveyButton from "@/components/configuration/header/AddSurveyButton";
+import AddWebappButton from "@/components/configuration/header/AddWebappButton";
 import UndoRedoButtons from "@/components/configuration/header/UndoRedoButtons";
 import { useUpdateCampaign } from "@/hooks/configuration/useUpdateCampaign";
+import { useValidConfigState } from "@/hooks/configuration/useValidConfigState";
 import { useTemporalStore } from "@/hooks/useTemporalStore";
 import { useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditStoreProvider";
 import { useCampaignListStore } from "@/providers/CampaignListStoreProvider";
@@ -73,6 +75,7 @@ export const SettingsHeaderMenuItems: React.FC = () => {
     const { setCampaign } = useCampaignStore((state) => state);
     const configEditStore = useCampaignConfigEditStoreApi();
     const { pastStates } = useTemporalStore(configEditStore, (state) => state);
+    const { isWebappValid } = useValidConfigState();
     const { isUpdating, updateCampaignConfig } = useUpdateCampaign(async (id) => {
         try {
             const campaignList = await getCampaignList();
@@ -88,14 +91,16 @@ export const SettingsHeaderMenuItems: React.FC = () => {
     const isPassiveSensingPage = pathname?.includes("/passive-sensing");
     const isActiveSensingPage = pathname?.includes("/active-sensing");
     const isQuestionPage = !!pathname?.match(/\/active-sensing\/\d+$/);
+    const isWebappPage = pathname?.includes("/webapp");
 
     return (<div className="flex items-center gap-4 ml-auto">
         {isPassiveSensingPage && <AddSensorButtons />}
         {isActiveSensingPage && !isQuestionPage && <AddSurveyButton />}
         {isQuestionPage && <AddQuestionHeader />}
+        {isWebappPage && <AddWebappButton />}
         <div className="pl-4 border-l border-gray-200 flex items-center gap-4">
             <UndoRedoButtons />
-            <Button color="blue" onClick={updateCampaignConfig} disabled={pastStates.length === 0 || isUpdating}>
+            <Button color="blue" onClick={updateCampaignConfig} disabled={pastStates.length === 0 || isUpdating || !isWebappValid}>
                 {isUpdating ? <><Spinner size="sm" className="mr-2" /> Saving...</> : <><span className="icon-[material-symbols--save] w-6 h-6 mr-2"></span>Save</>}
             </Button>
         </div>

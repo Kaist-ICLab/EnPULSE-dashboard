@@ -49,7 +49,6 @@ export type NumberScaleQuestionConfig = { min: number; max: number; minLabel: st
 export type QuestionConfig = Record<string, never> | OptionQuestionConfig | NumberScaleQuestionConfig;
 
 export type Survey = Database['public']['Tables']['survey']['Insert'] & {
-    schedule_method: ScheduleMethod;
     survey_question: SurveyQuestion[];
 }
 
@@ -74,18 +73,3 @@ export type FetchedSurveyQuestion = Required<Omit<SurveyQuestion, 'config' | 'su
 export type FetchedSurvey = Required<Omit<Survey, 'survey_question'>> & {
     survey_question: FetchedSurveyQuestion[];
 }
-
-// Survey Schedule Methods
-export type ESM = {
-    minInterval: number,
-    maxInterval: number,
-    startOfDay: number,
-    endOfDay: number,
-    numSurvey: number,
-}
-
-export type Fixed = {
-    timeOfDay: number[]
-}
-
-export type ScheduleMethod = ESM | Fixed | null;

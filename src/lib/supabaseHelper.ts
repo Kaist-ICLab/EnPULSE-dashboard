@@ -1,11 +1,12 @@
-import { PostgrestTransformBuilder } from "@supabase/postgrest-js";
-import { GenericSchema } from "@supabase/supabase-js/dist/module/lib/types";
+import { supabase } from "./supabase";
 import { Err, Ok } from "@/utils/type";
 
 export type BucketNumericalData = { bucket: string, avg: number, min: number, max: number }
 export type BucketCategoricalData = { bucket: string, category: string, count: number }
 
-export async function mapQuery<T, V extends Record<string, unknown>, S extends GenericSchema, R>(data: T[], query: (param: T) => PostgrestTransformBuilder<S, V, R>, isCount = false) {
+type SupabaseQuery = ReturnType<typeof supabase.rpc> | ReturnType<typeof supabase.from>
+
+export async function mapQuery<P>(data: P[], query: (param: P) => SupabaseQuery, isCount = false) {
     const promises = data.map(query)
 
     const results = (await Promise.allSettled(promises)).map(result => {

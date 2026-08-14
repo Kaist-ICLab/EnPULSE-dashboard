@@ -8,8 +8,6 @@ export type DeepRequired<T> = T extends object
     }
     : T;
 
-export type MakeOptional<T, K extends keyof T> = Partial<Pick<T, K>> & Omit<T, K>;
-
 /**
  * Rust-inspired Result type
  */
@@ -19,3 +17,14 @@ export type Result<T, E = string> = Ok<T> | Err<E>;
 
 export const Ok = <T>(data: T): Ok<T> => ({ ok: true, data });
 export const Err = <E = string>(error: E): Err<E> => ({ ok: false, error });
+
+export function omit<T extends object, K extends keyof T>(
+    obj: T,
+    ...keys: K[]
+): Omit<T, K> {
+    const result = { ...obj };
+    for (const key of keys) {
+        delete (result as Partial<T>)[key];
+    }
+    return result;
+}

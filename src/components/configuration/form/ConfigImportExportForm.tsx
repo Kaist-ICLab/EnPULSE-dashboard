@@ -13,10 +13,10 @@ const ConfigImportExportForm = () => {
             <h6 className="text-xl font-medium text-gray-900">
                 Import/Export Configuration
             </h6>
-            <Button color="white" className="max-w-64 border border-gray-300 focus:!ring-gray-300 focus:!border-gray-400" onClick={exportCampaignConfig}>
+            <Button color="white" className="max-w-64 border border-gray-300 focus:ring-gray-300! focus:border-gray-400!" onClick={exportCampaignConfig}>
                 <span className="icon-[clarity--export-solid] w-6 h-6 mr-2"></span> Export Configuration
             </Button>
-            <Button color="white" className="max-w-64 border border-gray-300 focus:!ring-gray-300 focus:!border-gray-400" onClick={() => fileInputRef.current?.click()}>
+            <Button color="white" className="max-w-64 border border-gray-300 focus:ring-gray-300! focus:border-gray-400!" onClick={() => fileInputRef.current?.click()}>
                 <span className="icon-[clarity--import-solid] w-6 h-6 mr-2"></span> Import Configuration
             </Button>
             <input

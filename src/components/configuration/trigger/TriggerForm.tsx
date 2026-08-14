@@ -18,7 +18,7 @@ const TriggerForm: React.FC = () => {
                     <TriggerCardConfig key={index} index={index} />
                 ))
             )}
-            <Button color="blue" onClick={() => addTrigger()}>
+            <Button color="blue" onClick={() => addTrigger()} className="w-full mt-1">
                 <span className="icon-[material-symbols--add] mr-2 w-5 h-5" />
                 Add Trigger
             </Button>
