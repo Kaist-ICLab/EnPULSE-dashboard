@@ -13,18 +13,18 @@ export const CategoricalTimelinePlot: React.FC<TimelinePlotProps<TimelineCategor
     getCategoryColor
 }) => {
     return (
-        valueScale && (
+        timeScale && valueScale && (
             <>
-                {data.map((d, i) => {
+                {data.map((d) => {
                     const x = timeScale(d.timestamp);
                     return (
-                        <g key={`stack-${i}`}>
-                            {d.value.map((cat, catIdx) => {
-                                const barHeight = height - valueScale(cat.count);
+                        <g key={`stack-${d.timestamp}`}>
+                            {d.value.map((cat) => {
+                                const barHeight = Math.abs(valueScale(0) - valueScale(cat.count));
                                 const y = valueScale(cat.aggregated)
                                 return (
                                     <Bar
-                                        key={`cat-${i}-${catIdx}`}
+                                        key={`cat-${d.timestamp}-${cat.category}`}
                                         x={x + barWidth * 0.05}
                                         y={y}
                                         width={barWidth * 0.9}
