@@ -1,0 +1,42 @@
+name: Deploy Next.js to Self-Hosted Runner
+
+on: [push]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm use 26 || nvm install 26
+          npm ci
+
+      - name: Build EnPULSE Dashboard
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm use 26
+          npm run build
+
+      - name: Copy Build Files
+        run: |
+          mkdir -p /mnt/EnPULSE/EnPULSE-dashboard
+          # Synchronize build files to the deployment directory (excluding git files)
+          rsync -ar --delete --exclude='.git/' --exclude='.github/' ./ /mnt/EnPULSE/EnPULSE-dashboard/
+
+      - name: Restart PM2 process
+        # Run PM2 pointing to the deployment directory using the NVM node binary
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm use 26
+          cd /mnt/EnPULSE/EnPULSE-dashboard
+          pm2 describe enpulse-dashboard > /dev/null && pm2 restart enpulse-dashboard || PORT=3000 pm2 start npm --name "enpulse-dashboard" -- run start
+
+
