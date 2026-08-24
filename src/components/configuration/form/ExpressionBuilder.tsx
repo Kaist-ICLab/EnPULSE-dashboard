@@ -73,7 +73,7 @@ const ValueSelector: React.FC<{
     if (answerType === 'text' && op !== 'Empty') {
         return (
             <TextInput
-                value={value as string}
+                value={(value ?? "") as string}
                 onChange={(e) => onChange(e.target.value)}
             />
         )
@@ -81,7 +81,7 @@ const ValueSelector: React.FC<{
     else if (answerType === 'number') {
         return (
             <TextInput
-                value={value as number}
+                value={(value ?? "") as number}
                 onChange={(e) => onChange(e.target.value)}
             />
         )

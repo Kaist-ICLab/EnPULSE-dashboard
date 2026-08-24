@@ -2,13 +2,13 @@ import { useMemo, useState } from "react";
 import { TextInput } from "flowbite-react";
 
 const SwitchingTextInput: React.FC<{
-    value: string;
+    value: string | null | undefined;
     onChange: (value: string) => void;
     id?: string;
     className?: string;
     sizing?: "sm" | "md" | "lg";
 }> = ({ value, onChange, id, className = "", sizing = "md" }) => {
-    const [text, setText] = useState(value);
+    const [text, setText] = useState(value ?? "");
     const [isEditing, setIsEditing] = useState(false);
 
     const textClassName = useMemo(() => {
@@ -28,7 +28,7 @@ const SwitchingTextInput: React.FC<{
                 <div className="flex w-full gap-2">
                     <TextInput id={id} sizing={sizing} value={text} onChange={(e) => setText(e.target.value)} onBlur={() => { setIsEditing(false); onChange(text); }} onKeyDown={(e) => {
                         if (e.key === 'Enter') { setIsEditing(false); onChange(text); };
-                        if (e.key === 'Escape') { setIsEditing(false); setText(value); };
+                        if (e.key === 'Escape') { setIsEditing(false); setText(value ?? ""); };
                     }} className="grow" autoFocus />
                 </div>
             ) : (

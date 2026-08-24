@@ -35,7 +35,7 @@ const CampaignInfoForm = () => {
                 <TextInput
                     id="campaignName"
                     type="text"
-                    value={campaignName}
+                    value={campaignName ?? ""}
                     onChange={(e) => setCampaignName(e.target.value)}
                     className="grow"
                 />
@@ -59,7 +59,7 @@ const CampaignInfoForm = () => {
                 <TextInput
                     id="campaignDescription"
                     type="text"
-                    value={campaignDescription}
+                    value={campaignDescription ?? ""}
                     onChange={(e) => { setCampaignDescription(e.target.value); }}
                     className="grow"
                 />

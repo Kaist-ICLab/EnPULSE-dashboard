@@ -168,7 +168,7 @@ const DailyOverviewTable: React.FC = () => {
                                 {data.map((row, index) => (
                                     <DailyStatTableHeader key={`${row.uuid}-th`} className="text-center">
                                         <div className="flex items-center justify-center gap-1.5">
-                                            <Checkbox checked={checkedState[index]} onChange={() => toggleChecked(index)} />
+                                            <Checkbox checked={checkedState[index] ?? false} onChange={() => toggleChecked(index)} />
                                             <span>P{campaignParticipants.get(row.uuid)?.pid ?? 0}</span>
                                         </div>
                                     </DailyStatTableHeader>

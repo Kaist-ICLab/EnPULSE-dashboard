@@ -181,7 +181,7 @@ const QuestionCard: React.FC<{
             <div className="flex flex-row items-center gap-2">
                 <Checkbox
                     id={`mandatory-${pathKey}`}
-                    checked={question.is_mandatory}
+                    checked={question.is_mandatory ?? false}
                     onChange={(e) => updateSurveyQuestion(surveyIndex, questionPath, { is_mandatory: e.target.checked })}
                 />
                 <label htmlFor={`mandatory-${pathKey}`} className="text-sm font-medium text-gray-900">
@@ -191,7 +191,7 @@ const QuestionCard: React.FC<{
                     <>
                         <Checkbox
                             id={`allow-free-response-${pathKey}`}
-                            checked={(config as OptionQuestionConfig).allowFreeResponse}
+                            checked={(config as OptionQuestionConfig).allowFreeResponse ?? false}
                             className="ml-2"
                             onChange={(e) => setFreeResponseConfig(surveyIndex, questionPath, e.target.checked, (config as OptionQuestionConfig).freeResponsePrefix ?? '')}
                         />

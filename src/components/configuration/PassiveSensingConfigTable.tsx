@@ -112,7 +112,7 @@ const PassiveSensingConfigTable: React.FC<{
                     <div className="flex">
                         <input
                             type="number"
-                            value={currentTable.daily_count_max}
+                            value={currentTable.daily_count_max ?? ""}
                             onChange={(e) => setDailyCountMax(tableIdx, Number(e.target.value))}
                             className="w-20 outline-none focus:outline-none pl-3"
                         />

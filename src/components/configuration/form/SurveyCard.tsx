@@ -70,7 +70,7 @@ const SurveyCard: React.FC<{
                         <TextInput
                             id={`expiration-time-${surveyIndex}`}
                             type="number"
-                            value={survey.expire_after_ms}
+                            value={survey.expire_after_ms ?? ""}
                             onChange={(e) => setSurveyExpireAfterMs(surveyIndex, Number(e.target.value))}
                             className="w-full max-w-xs"
                         />
