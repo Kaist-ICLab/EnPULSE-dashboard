@@ -43,6 +43,6 @@ jobs:
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
           nvm use 26
           cd /mnt/EnPULSE/EnPULSE-dashboard
-          pm2 describe enpulse-dashboard > /dev/null && pm2 restart enpulse-dashboard || PORT=3000 pm2 start npm --name "enpulse-dashboard" -- run start
+          pm2 describe enpulse-dashboard > /dev/null && pm2 restart enpulse-dashboard || PORT=1112 pm2 start npm --name "enpulse-dashboard" -- run start
 
 
