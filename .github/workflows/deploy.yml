@@ -1,6 +1,9 @@
 name: EnPULSE Dashboard Server Deployment
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:
