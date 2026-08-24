@@ -1,3 +1,3 @@
 export default function CampaignPage() {
-    return null;
+  return null;
 }

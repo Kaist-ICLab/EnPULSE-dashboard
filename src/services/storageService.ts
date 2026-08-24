@@ -1,7 +1,7 @@
-import { supabase } from '@/lib/supabase';
-import { Err, Ok, Result } from '@/utils/type';
+import { supabase } from "@/lib/supabase";
+import { Err, Ok, Result } from "@/utils/type";
 
-export const WEBAPP_ICON_BUCKET = 'campaign-webapp-icons';
+export const WEBAPP_ICON_BUCKET = "campaign-webapp-icons";
 
 /**
  * Uploads a web app icon to the public `campaign-webapp-icons` bucket and
@@ -15,19 +15,17 @@ export const WEBAPP_ICON_BUCKET = 'campaign-webapp-icons';
  * client instead of parsing a URL string.
  */
 export async function uploadWebappIcon(file: File): Promise<Result<string>> {
-    const path = `${crypto.randomUUID()}-${file.name}`;
+  const path = `${crypto.randomUUID()}-${file.name}`;
 
-    const { error } = await supabase.storage
-        .from(WEBAPP_ICON_BUCKET)
-        .upload(path, file, { upsert: true });
+  const { error } = await supabase.storage.from(WEBAPP_ICON_BUCKET).upload(path, file, { upsert: true });
 
-    if (error) return Err(error.message);
-    return Ok(path);
+  if (error) return Err(error.message);
+  return Ok(path);
 }
 
 /** Builds the public URL for a previously uploaded web app icon path. */
 export function getWebappIconUrl(iconPath: string): string {
-    return supabase.storage.from(WEBAPP_ICON_BUCKET).getPublicUrl(iconPath).data.publicUrl;
+  return supabase.storage.from(WEBAPP_ICON_BUCKET).getPublicUrl(iconPath).data.publicUrl;
 }
 
 /**
@@ -36,11 +34,11 @@ export function getWebappIconUrl(iconPath: string): string {
  * and shouldn't block whatever the caller is doing.
  */
 export async function deleteWebappIcon(iconPath: string): Promise<void> {
-    if (!iconPath) return;
+  if (!iconPath) return;
 
-    try {
-        await supabase.storage.from(WEBAPP_ICON_BUCKET).remove([iconPath]);
-    } catch {
-        // best-effort - ignore
-    }
+  try {
+    await supabase.storage.from(WEBAPP_ICON_BUCKET).remove([iconPath]);
+  } catch {
+    // best-effort - ignore
+  }
 }

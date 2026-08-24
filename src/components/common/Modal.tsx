@@ -1,25 +1,22 @@
 import IconButton from "./IconButton";
 
 export const Modal: React.FC<{
-    onClose: () => void;
-    title: string;
-    className?: string;
-    children: React.ReactNode;
+  onClose: () => void;
+  title: string;
+  className?: string;
+  children: React.ReactNode;
 }> = ({ onClose, title, className, children }) => {
-    return (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-8">
-            <div className={`bg-white rounded-lg shadow-lg flex flex-col ${className}`}>
-                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between gap-2 bg-gray-100 rounded-t-lg">
-                    <h6 className="text-lg font-semibold text-gray-900 text-ellipsis overflow-hidden whitespace-nowrap">{title}</h6>
-                    <IconButton
-                        onClick={onClose}
-                        size="lg"
-                        hoverColor="red"
-                        className="icon-[humbleicons--times]"
-                    />
-                </div>
-                {children}
-            </div>
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-8">
+      <div className={`flex flex-col rounded-lg bg-white shadow-lg ${className}`}>
+        <div className="flex items-center justify-between gap-2 rounded-t-lg border-b border-gray-100 bg-gray-100 px-4 py-3">
+          <h6 className="overflow-hidden text-lg font-semibold text-ellipsis whitespace-nowrap text-gray-900">
+            {title}
+          </h6>
+          <IconButton onClick={onClose} size="lg" hoverColor="red" className="icon-[humbleicons--times]" />
         </div>
-    )
-}
+        {children}
+      </div>
+    </div>
+  );
+};

@@ -1,1 +1,1 @@
-export type ResponseStatus = null | 'loading' | 'ok' | 'error';
+export type ResponseStatus = null | "loading" | "ok" | "error";
