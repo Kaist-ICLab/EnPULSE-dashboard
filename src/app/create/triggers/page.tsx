@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -9,24 +9,21 @@ import { useTemporalStore } from "@/hooks/useTemporalStore";
 import { useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditStoreProvider";
 
 const Page: React.FC = () => {
-    const router = useRouter();
-    const { isTriggerValid } = useValidConfigState();
-    const configEditStore = useCampaignConfigEditStoreApi();
-    const { clear } = useTemporalStore(configEditStore, (state) => state);
+  const router = useRouter();
+  const { isTriggerValid } = useValidConfigState();
+  const configEditStore = useCampaignConfigEditStoreApi();
+  const { clear } = useTemporalStore(configEditStore, (state) => state);
 
-    useEffect(() => {
-        clear();
-    }, [clear]);
+  useEffect(() => {
+    clear();
+  }, [clear]);
 
-    return (
-        <>
-            <TriggerForm />
-            <PrevNextNavigation
-                onNextClick={() => router.push("/create/confirm")}
-                disabled={!isTriggerValid}
-            />
-        </>
-    );
-}
+  return (
+    <>
+      <TriggerForm />
+      <PrevNextNavigation onNextClick={() => router.push("/create/confirm")} disabled={!isTriggerValid} />
+    </>
+  );
+};
 
 export default Page;

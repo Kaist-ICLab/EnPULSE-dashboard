@@ -1,47 +1,47 @@
 import type { Metadata } from "next";
-import { Roboto } from 'next/font/google';
+import { Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeConfig } from "flowbite-react";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-    title: "EnPULSE Dashboard",
-    description: "Dashboard for EnPULSE Ecosystem",
+  title: "EnPULSE Dashboard",
+  description: "Dashboard for EnPULSE Ecosystem",
 };
 
 const roboto = Roboto({
-    subsets: ['latin'],
-    weight: ['100', '300', '400', '500', '600', '700', '800', '900'],
-    style: ['normal', 'italic'],
-    display: 'swap',
+  subsets: ["latin"],
+  weight: ["100", "300", "400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
 export default function RootLayout({
-    children,
+  children,
 }: Readonly<{
-    children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-    return (
-        <html lang="en" suppressHydrationWarning>
-            <body
-                className={`${roboto.className} antialiased relative min-h-screen w-full m-auto `}
-            >
-                <ThemeConfig dark={false} />
-                <Toaster position="bottom-right" richColors closeButton
-                    toastOptions={{
-                        classNames: {
-                            title: "!text-base !font-bold ml-2",
-                            description: "!text-sm !font-light ml-2"
-                        },
-                    }}
-                    icons={{
-                        success: <span className="icon-[material-symbols--check-circle] w-6 h-6" />,
-                        error: <span className="icon-[uis--exclamation-circle] w-6 h-6" />
-
-                    }}
-                />
-                {children}
-            </body>
-        </html>
-    );
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${roboto.className} relative m-auto min-h-screen w-full antialiased`}>
+        <ThemeConfig dark={false} />
+        <Toaster
+          position="bottom-right"
+          richColors
+          closeButton
+          toastOptions={{
+            classNames: {
+              title: "!text-base !font-bold ml-2",
+              description: "!text-sm !font-light ml-2",
+            },
+          }}
+          icons={{
+            success: <span className="icon-[material-symbols--check-circle] h-6 w-6" />,
+            error: <span className="icon-[uis--exclamation-circle] h-6 w-6" />,
+          }}
+        />
+        {children}
+      </body>
+    </html>
+  );
 }

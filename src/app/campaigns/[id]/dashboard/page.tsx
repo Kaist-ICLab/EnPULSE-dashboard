@@ -4,23 +4,23 @@ import DailyOverviewTable from "@/components/dashboard/stat/DailyStatTable";
 // import { CampaignParticipant } from "@/types/campaign";
 
 const Page = () => {
-    // const [sendTo, setSendTo] = useState<CampaignParticipant[]>([]);
-    // const [messageModalVisible, setMessageModalVisible] = useState<boolean>(false);
+  // const [sendTo, setSendTo] = useState<CampaignParticipant[]>([]);
+  // const [messageModalVisible, setMessageModalVisible] = useState<boolean>(false);
 
-    return (
-        <>
-            <DailyOverviewTable />
+  return (
+    <>
+      <DailyOverviewTable />
 
-            <ComparisonChart />
+      <ComparisonChart />
 
-            {
-                // messageModalVisible && <SendMessageFloatingModal
-                //     initialSendTo={sendTo}
-                //     onClose={() => setMessageModalVisible(false)}
-                // />
-            }
-        </>
-    );
-}
+      {
+        // messageModalVisible && <SendMessageFloatingModal
+        //     initialSendTo={sendTo}
+        //     onClose={() => setMessageModalVisible(false)}
+        // />
+      }
+    </>
+  );
+};
 
 export default Page;
