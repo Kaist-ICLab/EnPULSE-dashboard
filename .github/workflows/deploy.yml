@@ -17,6 +17,12 @@ jobs:
           nvm use 26 || nvm install 26
           npm ci
 
+      - name: Copy Server .env to Workspace
+        run: |
+          if [ -f /mnt/EnPULSE/EnPULSE-dashboard/.env ]; then
+            cp /mnt/EnPULSE/EnPULSE-dashboard/.env ./
+          fi
+
       - name: Build EnPULSE Dashboard
         run: |
           export NVM_DIR="$HOME/.nvm"
