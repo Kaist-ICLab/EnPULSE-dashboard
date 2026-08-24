@@ -35,7 +35,8 @@ const DashboardSidebar: React.FC = () => {
                     </SidebarItem>
                 </SidebarItemGroup>
                 <SidebarItemGroup>
-                    <MySidebarItem isActive={isActive("dashboard")} href={`${baseUrl}/dashboard`} icon="icon-[fluent-mdl2--b-i-dashboard]" name="Campaigns" />
+                    <MySidebarItem isActive={false} href="/campaigns" icon="icon-[material-symbols--home]" name="All Campaigns" />
+                    <MySidebarItem isActive={isActive("dashboard")} href={`${baseUrl}/dashboard`} icon="icon-[fluent-mdl2--b-i-dashboard]" name="Dashboard" />
                     <MySidebarItem isActive={isActive("download-data")} href={`${baseUrl}/download-data`} icon="icon-[material-symbols--download]" name="Download Data" />
                     {/* <MySidebarItem isActive={isActive("messaging")} href={`${baseUrl}/messaging`} icon="icon-[mi--message-alt]" name="Messaging" /> */}
                     {collapsed ? (
