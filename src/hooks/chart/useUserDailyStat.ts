@@ -73,12 +73,12 @@ export const useUserDailyStat = (rowsPerPage: number) => {
     for (const row of data) {
       for (const table of row.tables) {
         const key = `sensor-${table.table_id}`;
-        const rowMax = table.counts.reduce((acc, count) => Math.max(acc, count), 0);
+        const rowMax = table.counts.reduce((acc, count) => acc + count, 0);
         res.set(key, Math.max(res.get(key) ?? 0, rowMax));
       }
       for (const survey of row.surveys) {
         const key = `survey-${survey.survey_id}`;
-        const rowMax = survey.counts.reduce((acc, count) => Math.max(acc, count), 0);
+        const rowMax = survey.counts.reduce((acc, count) => acc + count, 0);
         res.set(key, Math.max(res.get(key) ?? 0, rowMax));
       }
     }
