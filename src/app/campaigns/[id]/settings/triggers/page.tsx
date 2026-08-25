@@ -1,7 +1,7 @@
 import TriggerForm from "@/components/configuration/trigger/TriggerForm";
 
 const Page: React.FC = () => {
-    return <TriggerForm />
-}
+  return <TriggerForm />;
+};
 
 export default Page;

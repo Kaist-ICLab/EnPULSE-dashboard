@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useDailyStatTableCheckedState } from "@/hooks/chart/useDailyStatTableCheckedState";
 import useUserDailyStat, { DailyStatColumn } from "@/hooks/chart/useUserDailyStat";
 import { useCampaignStore } from "@/providers/CampaignStoreProvider";
@@ -19,43 +19,48 @@ const ChartTooltipContent: React.FC = () => {
             <p className="mb-1">Timeline: # of data collected in a 3 hour window.</p>
             <p>Hover over the components to see the details!</p>
         </>
-    )
-}
+    );
+};
 
-type DisplayMode = 'count' | 'timeline';
+type DisplayMode = "count" | "timeline";
 
 const DisplayModeToggle: React.FC<{
     mode: DisplayMode;
     setMode: (mode: DisplayMode) => void;
 }> = ({ mode, setMode }) => {
     return (
-        <div className="flex items-center rounded-lg border border-gray-300 p-1 text-sm font-medium mr-auto">
+        <div className="mr-auto flex items-center rounded-lg border border-gray-300 p-1 text-sm font-medium">
             <button
-                className={`px-3 py-1.5 rounded-md cursor-pointer ${mode === 'count' ? 'bg-blue-700 text-white' : 'text-gray-500 hover:text-gray-700'}`}
-                onClick={() => setMode('count')}
+                className={`cursor-pointer rounded-md px-3 py-1.5 ${mode === "count" ? "bg-blue-700 text-white" : "text-gray-500 hover:text-gray-700"}`}
+                onClick={() => setMode("count")}
             >
                 Daily Count
             </button>
             <button
-                className={`px-3 py-1.5 rounded-md cursor-pointer ${mode === 'timeline' ? 'bg-blue-700 text-white' : 'text-gray-500 hover:text-gray-700'}`}
-                onClick={() => setMode('timeline')}
+                className={`cursor-pointer rounded-md px-3 py-1.5 ${mode === "timeline" ? "bg-blue-700 text-white" : "text-gray-500 hover:text-gray-700"}`}
+                onClick={() => setMode("timeline")}
             >
                 Timeline
             </button>
         </div>
-    )
-}
+    );
+};
 
 const DailyOverviewTable: React.FC = () => {
     const { campaign, campaignParticipants, campaignTables } = useCampaignStore((state) => state);
     const { updateComparisonParams, updateSelectedSection } = useSectionParamStore((state) => state);
 
-    const { data, loading, maxDailyCount, columns, page, rowsPerPage, totalPage, setPage, setRowsPerPage } = useUserDailyStat(5);
-    const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } = useDailyStatTableCheckedState(data);
-    const [displayMode, setDisplayMode] = useState<DisplayMode>('count');
+    const { data, loading, maxDailyCount, columns, page, rowsPerPage, totalPage, setPage, setRowsPerPage } =
+        useUserDailyStat(5);
+    const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } =
+        useDailyStatTableCheckedState(data);
+    const [displayMode, setDisplayMode] = useState<DisplayMode>("count");
 
     const flatQuestions = useMemo(() => flattenSurveyQuestions(campaign?.survey ?? []), [campaign?.survey]);
-    const allFieldIds = useMemo(() => Array.from(campaignTables.values()).flatMap(t => t.campaign_table_field.map(f => f.id)), [campaignTables]);
+    const allFieldIds = useMemo(
+        () => Array.from(campaignTables.values()).flatMap((t) => t.campaign_table_field.map((f) => f.id)),
+        [campaignTables],
+    );
     const allQuestionIds = useMemo(() => Array.from(flatQuestions.keys()), [flatQuestions]);
 
     const [selectedFieldIds, setSelectedFieldIds] = useState<number[]>(allFieldIds);
@@ -65,34 +70,43 @@ const DailyOverviewTable: React.FC = () => {
 
     useEffect(() => {
         const availableSet = new Set(allFieldIds);
-        const newlyAvailable = allFieldIds.filter(id => !knownFieldIds.current.has(id));
-        const stillKnown = knownFieldIds.current.size === availableSet.size && newlyAvailable.length === 0
-            && Array.from(knownFieldIds.current).every(id => availableSet.has(id));
+        const newlyAvailable = allFieldIds.filter((id) => !knownFieldIds.current.has(id));
+        const stillKnown =
+            knownFieldIds.current.size === availableSet.size &&
+            newlyAvailable.length === 0 &&
+            Array.from(knownFieldIds.current).every((id) => availableSet.has(id));
         if (stillKnown) return;
 
         knownFieldIds.current = availableSet;
-        setSelectedFieldIds((prev) => [...prev.filter(id => availableSet.has(id)), ...newlyAvailable]);
+        setSelectedFieldIds((prev) => [...prev.filter((id) => availableSet.has(id)), ...newlyAvailable]);
     }, [allFieldIds]);
 
     useEffect(() => {
         const availableSet = new Set(allQuestionIds);
-        const newlyAvailable = allQuestionIds.filter(id => !knownQuestionIds.current.has(id));
-        const stillKnown = knownQuestionIds.current.size === availableSet.size && newlyAvailable.length === 0
-            && Array.from(knownQuestionIds.current).every(id => availableSet.has(id));
+        const newlyAvailable = allQuestionIds.filter((id) => !knownQuestionIds.current.has(id));
+        const stillKnown =
+            knownQuestionIds.current.size === availableSet.size &&
+            newlyAvailable.length === 0 &&
+            Array.from(knownQuestionIds.current).every((id) => availableSet.has(id));
         if (stillKnown) return;
 
         knownQuestionIds.current = availableSet;
-        setSelectedQuestionIds((prev) => [...prev.filter(id => availableSet.has(id)), ...newlyAvailable]);
+        setSelectedQuestionIds((prev) => [...prev.filter((id) => availableSet.has(id)), ...newlyAvailable]);
     }, [allQuestionIds]);
 
-    const isRowVisible = useCallback((row: DailyStatColumn) => {
-        if (row.kind === 'sensor') {
-            const fieldIds = campaignTables.get(row.id)?.campaign_table_field.map(f => f.id) ?? [];
-            return fieldIds.some(id => selectedFieldIds.includes(id));
-        } else {
-            return Array.from(flatQuestions.values()).some(q => q.survey_id === row.id && selectedQuestionIds.includes(q.id));
-        }
-    }, [selectedFieldIds, selectedQuestionIds, campaignTables, flatQuestions]);
+    const isRowVisible = useCallback(
+        (row: DailyStatColumn) => {
+            if (row.kind === "sensor") {
+                const fieldIds = campaignTables.get(row.id)?.campaign_table_field.map((f) => f.id) ?? [];
+                return fieldIds.some((id) => selectedFieldIds.includes(id));
+            } else {
+                return Array.from(flatQuestions.values()).some(
+                    (q) => q.survey_id === row.id && selectedQuestionIds.includes(q.id),
+                );
+            }
+        },
+        [selectedFieldIds, selectedQuestionIds, campaignTables, flatQuestions],
+    );
 
     const visibleRows = useMemo(() => columns.filter(isRowVisible), [columns, isRowVisible]);
 
@@ -216,4 +230,4 @@ const DailyOverviewTable: React.FC = () => {
     );
 }
 
-export default DailyOverviewTable
+export default DailyOverviewTable;

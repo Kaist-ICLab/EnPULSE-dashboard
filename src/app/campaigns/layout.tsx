@@ -2,15 +2,11 @@ import CampaignListStoreProvider from "@/providers/CampaignListStoreProvider";
 import { getCampaignList } from "@/services/campaignService";
 
 export default async function CampaignLayout({
-    children,
+  children,
 }: Readonly<{
-    children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-    const campaignList = await getCampaignList();
+  const campaignList = await getCampaignList();
 
-    return (
-        <CampaignListStoreProvider campaignList={campaignList}>
-            {children}
-        </CampaignListStoreProvider >
-    );
+  return <CampaignListStoreProvider campaignList={campaignList}>{children}</CampaignListStoreProvider>;
 }

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import PassiveSensingForm from "@/components/configuration/form/PassiveSensingForm";
 import { useRouter } from "next/navigation";
 import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
@@ -8,25 +8,22 @@ import { useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditSto
 import { useEffect } from "react";
 
 const Page: React.FC = () => {
-    const router = useRouter();
-    const { isPassiveSensingValid } = useValidConfigState();
+  const router = useRouter();
+  const { isPassiveSensingValid } = useValidConfigState();
 
-    const configEditStore = useCampaignConfigEditStoreApi();
-    const { clear } = useTemporalStore(configEditStore, (state) => state);
+  const configEditStore = useCampaignConfigEditStoreApi();
+  const { clear } = useTemporalStore(configEditStore, (state) => state);
 
-    useEffect(() => {
-        clear();
-    }, [clear]);
+  useEffect(() => {
+    clear();
+  }, [clear]);
 
-    return (
-        <>
-            <PassiveSensingForm />
-            <PrevNextNavigation
-                onNextClick={() => router.push("/create/active-sensing")}
-                disabled={!isPassiveSensingValid}
-            />
-        </>
-    );
-}
+  return (
+    <>
+      <PassiveSensingForm />
+      <PrevNextNavigation onNextClick={() => router.push("/create/active-sensing")} disabled={!isPassiveSensingValid} />
+    </>
+  );
+};
 
 export default Page;

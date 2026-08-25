@@ -1,8 +1,8 @@
-import { redirect } from 'next/navigation';
-import React from 'react';
+import { redirect } from "next/navigation";
+import React from "react";
 
 const Page: React.FC = async () => {
-  redirect("/campaigns")
-}
+  redirect("/campaigns");
+};
 
 export default Page;

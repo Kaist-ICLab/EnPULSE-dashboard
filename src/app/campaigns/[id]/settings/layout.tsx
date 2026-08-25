@@ -4,28 +4,26 @@ import { SettingsHeaderMenuItems } from "@/components/common/CampaignHeaderMenuI
 import { getCampaignInfo } from "@/services/campaignService";
 
 export default async function SettingsLayout({
-    params,
-    children,
+  params,
+  children,
 }: Readonly<{
-    params: Promise<{ id: string }>;
-    children: React.ReactNode;
+  params: Promise<{ id: string }>;
+  children: React.ReactNode;
 }>) {
-    const { id } = await params;
-    const campaignId = parseInt(id);
-    const campaign = await getCampaignInfo(campaignId);
+  const { id } = await params;
+  const campaignId = parseInt(id);
+  const campaign = await getCampaignInfo(campaignId);
 
-    return (
-        <CampaignConfigEditStoreProvider campaign={campaign}>
-            <CampaignHeader>
-                <SettingsHeaderMenuItems />
-            </CampaignHeader>
-            <div className="flex flex-row grow w-full overflow-hidden">
-                <main className="flex flex-col w-full items-stretch gap-4 grow overflow-auto p-4">
-                    <div className="max-w-3xl">
-                        {children}
-                    </div>
-                </main>
-            </div>
-        </CampaignConfigEditStoreProvider>
-    );
+  return (
+    <CampaignConfigEditStoreProvider campaign={campaign}>
+      <CampaignHeader>
+        <SettingsHeaderMenuItems />
+      </CampaignHeader>
+      <div className="flex w-full grow flex-row overflow-hidden">
+        <main className="flex w-full grow flex-col items-stretch gap-4 overflow-auto p-4">
+          <div className="max-w-3xl">{children}</div>
+        </main>
+      </div>
+    </CampaignConfigEditStoreProvider>
+  );
 }

@@ -1,29 +1,27 @@
-'use client'
+"use client";
 
 import { Button } from "flowbite-react";
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import TriggerCardConfig from "./TriggerCardConfig";
 
 const TriggerForm: React.FC = () => {
-    const { campaign_trigger, addTrigger } = useCampaignConfigEdit((state) => state);
+  const { campaign_trigger, addTrigger } = useCampaignConfigEdit((state) => state);
 
-    return (
-        <div className="w-full flex flex-col gap-4">
-            {campaign_trigger.length === 0 ? (
-                <div className="w-full flex items-center justify-center py-12 bg-gray-100">
-                    <p className="text-gray-500 text-lg">No triggers configured</p>
-                </div>
-            ) : (
-                campaign_trigger.map((_, index) => (
-                    <TriggerCardConfig key={index} index={index} />
-                ))
-            )}
-            <Button color="blue" onClick={() => addTrigger()} className="w-full mt-1">
-                <span className="icon-[material-symbols--add] mr-2 w-5 h-5" />
-                Add Trigger
-            </Button>
+  return (
+    <div className="flex w-full flex-col gap-4">
+      {campaign_trigger.length === 0 ? (
+        <div className="flex w-full items-center justify-center bg-gray-100 py-12">
+          <p className="text-lg text-gray-500">No triggers configured</p>
         </div>
-    );
+      ) : (
+        campaign_trigger.map((_, index) => <TriggerCardConfig key={index} index={index} />)
+      )}
+      <Button color="blue" onClick={() => addTrigger()} className="mt-1 w-full">
+        <span className="icon-[material-symbols--add] mr-2 h-5 w-5" />
+        Add Trigger
+      </Button>
+    </div>
+  );
 };
 
 export default TriggerForm;
