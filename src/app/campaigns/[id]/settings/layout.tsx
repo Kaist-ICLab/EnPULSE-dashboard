@@ -3,6 +3,8 @@ import { CampaignHeader } from "@/components/common/CampaignHeader";
 import { SettingsHeaderMenuItems } from "@/components/common/CampaignHeaderMenuItems";
 import { getCampaignInfo } from "@/services/campaignService";
 
+import { ValidationBanner } from "@/components/configuration/ValidationBanner";
+
 export default async function SettingsLayout({
   params,
   children,
@@ -19,6 +21,7 @@ export default async function SettingsLayout({
       <CampaignHeader>
         <SettingsHeaderMenuItems />
       </CampaignHeader>
+      <ValidationBanner />
       <div className="flex w-full grow flex-row overflow-hidden">
         <main className="flex w-full grow flex-col items-stretch gap-4 overflow-auto p-4">
           <div className="max-w-3xl">{children}</div>
