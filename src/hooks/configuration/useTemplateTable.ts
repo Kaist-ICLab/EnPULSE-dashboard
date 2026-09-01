@@ -424,6 +424,17 @@ const ecgSensor: TemplateCampaignTable = {
   ],
 };
 
+const vadSensor: TemplateCampaignTable = {
+  name: "vad_sensor",
+  display_name: "Voice Activity Detection (VAD)",
+  description: "Voice Activity Detection (VAD) sensor",
+  campaign_table_field: [
+    { name: "is_speech", field_role: "data", field_type: "categorical" },
+    { name: "speech_probability", field_role: "data", field_type: "numerical" },
+    { name: "inference_time_ms", field_role: "data", field_type: "numerical" },
+  ],
+};
+
 // Not a sensor that logs rows — this row exists purely to carry named timing schedules in its
 // `config` column, read by the client's TimingSensor. See src/types/timingSchedule.ts.
 const timingSensor: TemplateCampaignTable = {
@@ -468,6 +479,7 @@ export function useTemplateTable(selectedTables: CampaignTable[]) {
       sleepSensor,
       exerciseSensor,
       ecgSensor,
+      vadSensor,
       timingSensor,
     ];
 
