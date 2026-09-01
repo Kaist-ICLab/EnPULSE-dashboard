@@ -174,7 +174,7 @@ const DailyOverviewTable: React.FC = () => {
         ) : (
           <table className="w-full max-w-fit table-fixed">
             <colgroup>
-              <col className="w-40" />
+              <col className="w-56" />
               {data.map((row) => (
                 <col key={`${row.uuid}-col`} className="w-32" />
               ))}
