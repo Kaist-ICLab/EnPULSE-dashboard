@@ -1,5 +1,6 @@
 "use client";
 
+import { revalidateCampaigns } from "@/actions/revalidate";
 import { Modal } from "@/components/common/Modal";
 import { useCampaignListStore } from "@/providers/CampaignListStoreProvider";
 import { useCampaignStore } from "@/providers/CampaignStoreProvider";
@@ -34,6 +35,7 @@ const DangerZoneForm = () => {
 
     try {
       await deleteCampaign(campaign.id);
+      await revalidateCampaigns();
       setCampaignList(await getCampaignList());
       notify.success(`Campaign "${campaignName}" removed`);
       router.replace("/campaigns");
