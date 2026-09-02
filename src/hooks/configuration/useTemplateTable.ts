@@ -446,6 +446,7 @@ const timingSensor: TemplateCampaignTable = {
 };
 
 export function useTemplateTable(selectedTables: CampaignTable[]) {
+
   const selectedTemplateTables = useMemo(() => selectedTables.filter((t) => !t.is_custom), [selectedTables]);
 
   const availableTemplateTables = useMemo<CampaignTable[]>(() => {
@@ -476,6 +477,7 @@ export function useTemplateTable(selectedTables: CampaignTable[]) {
       stressSensor,
       userInteractionSensor,
       wifiScanSensor,
+      vadSensor,
       sleepSensor,
       exerciseSensor,
       ecgSensor,
