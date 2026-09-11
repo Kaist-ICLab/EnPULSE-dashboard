@@ -39,6 +39,3 @@ To run the dashboard locally, make sure you have Node.js installed, then follow 
 - [Iconify](https://iconify.design/docs/usage/css/tailwind/tailwind4/) - Icon library, we use Iconify for TailwindCSS
 - [Flowbite-React](https://flowbite-react.com/) - Our basic components were implemented by adapting components from Flowbite-React
 - [Supabase-js](https://github.com/supabase/supabase-js?tab=readme-ov-file) - For communication between the dashboard and Supabase backend
-
-## Related Repositories
-- [EnPULSE](https://github.com/Kaist-ICLab/EnPULSE/tree/main): Android library, mobile and smartwatch app for data collection.
