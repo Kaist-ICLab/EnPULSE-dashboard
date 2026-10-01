@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useUpdateCampaign } from "@/hooks/configuration/useUpdateCampaign";
+import { useValidConfigState } from "@/hooks/configuration/useValidConfigState";
 
 import { Card } from "flowbite-react";
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
@@ -9,10 +11,36 @@ import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
 
 const ConfirmPage: React.FC = () => {
   const { campaignName, tables, surveys, campaign_trigger, webapps } = useCampaignConfigEdit((state) => state);
-  const { updateCampaignConfig } = useUpdateCampaign((id) => {
+  const { isInfoValid, isPassiveSensingValid, isActiveSensingValid, isWebappValid, isTriggerValid } =
+    useValidConfigState();
+  const router = useRouter();
+  // Stays true after a successful save so the button cannot be pressed again
+  // while the browser is navigating to the new campaign.
+  const [isSaved, setIsSaved] = useState(false);
+  const { isUpdating, updateCampaignConfig } = useUpdateCampaign((id) => {
+    setIsSaved(true);
     router.push(`/campaigns/${id}`);
   });
-  const router = useRouter();
+
+  // An empty wizard here means the page was reached by browser Back after saving,
+  // a refresh, or a typed URL. Send the user to step 1 instead of offering to
+  // create an unnamed campaign with no password (which phones cannot join).
+  const isPristine = campaignName.trim().length === 0;
+  useEffect(() => {
+    if (isPristine && !isSaved) router.replace("/create/general");
+  }, [isPristine, isSaved, router]);
+
+  const invalidSteps = [
+    !isInfoValid && "General",
+    !isPassiveSensingValid && "Passive Sensing",
+    !isActiveSensingValid && "Active Sensing",
+    !isWebappValid && "Web App",
+    !isTriggerValid && "Triggers",
+  ].filter(Boolean);
+  const disabledReason =
+    invalidSteps.length > 0 ? `Fix these steps before creating the campaign: ${invalidSteps.join(", ")}.` : null;
+
+  if (isPristine && !isSaved) return null;
 
   return (
     <>
@@ -95,7 +123,12 @@ const ConfirmPage: React.FC = () => {
           </div>
         </Card>
       </div>
-      <PrevNextNavigation onNextClick={updateCampaignConfig} nextLabel="Create Campaign!" />
+      <PrevNextNavigation
+        onNextClick={updateCampaignConfig}
+        nextLabel={isUpdating ? "Creating campaign..." : "Create Campaign!"}
+        disabled={isUpdating || isSaved || invalidSteps.length > 0}
+        disabledReason={disabledReason}
+      />
     </>
   );
 };
