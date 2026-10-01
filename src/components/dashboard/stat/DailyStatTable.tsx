@@ -247,7 +247,7 @@ const DailyOverviewTable: React.FC = () => {
           </span>
           <button
             className="flex items-center text-gray-700 enabled:cursor-pointer disabled:text-gray-400"
-            disabled={page == totalPage}
+            disabled={page >= totalPage}
             onClick={() => setPage(page + 1)}
           >
             <span className="icon-[material-symbols-light--chevron-right-rounded] h-6 w-6"></span>

@@ -47,7 +47,9 @@ export const useUserDailyStat = (initialRowsPerPage: number) => {
   }, [campaignTables, campaign?.survey]);
 
   const totalPage = useMemo(() => {
-    return Math.ceil(Array.from(campaignParticipants.values()).length / rowsPerPage);
+    // At least one page, so a campaign with no participants shows "Page 1 of 1"
+    // instead of "Page 1 of 0" and paging can't reach page 0.
+    return Math.max(1, Math.ceil(Array.from(campaignParticipants.values()).length / rowsPerPage));
   }, [campaignParticipants, rowsPerPage]);
 
   const setPage = (page: number) => {
