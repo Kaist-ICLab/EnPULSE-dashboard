@@ -16,10 +16,12 @@ const CampaignPeriodForm = () => {
           <label htmlFor="campaignStartTime" className="block w-16 text-sm font-medium text-gray-900">
             Start time
           </label>
+          {/* Minute precision: seconds made the inputs fiddly and caused a server/client
+              hydration mismatch on a hard refresh of the wizard. */}
           <TextInput
             id="campaignStartTime"
             type="datetime-local"
-            value={dayjs(campaignStartTime).format("YYYY-MM-DDTHH:mm:ss")}
+            value={dayjs(campaignStartTime).format("YYYY-MM-DDTHH:mm")}
             onChange={(e) => setCampaignStartTime(e.target.value)}
           />
         </div>
@@ -30,7 +32,7 @@ const CampaignPeriodForm = () => {
           <TextInput
             id="campaignEndTime"
             type="datetime-local"
-            value={dayjs(campaignEndTime).format("YYYY-MM-DDTHH:mm:ss")}
+            value={dayjs(campaignEndTime).format("YYYY-MM-DDTHH:mm")}
             onChange={(e) => setCampaignEndTime(e.target.value)}
             color={isEndBeforeStart ? "failure" : undefined}
           />

@@ -328,12 +328,13 @@ function getDefaultState(): CampaignConfigEditState {
     campaignName: "",
     campaignDescription: "",
     campaignPassword: "",
-    campaignStartTime: dayjs().format(DATE_FORMAT),
+    // Rounded to the minute so the server- and client-rendered wizard agree (hydration).
+    campaignStartTime: dayjs().startOf("minute").format(DATE_FORMAT),
     // 30 days rather than 1: a campaign is often created ahead of when participants
     // actually join (e.g. prepared the day before a booth/demo), and join-campaign
     // rejects joining a campaign whose end_time has already passed. Researchers can
     // still shorten it.
-    campaignEndTime: dayjs().add(30, "day").format(DATE_FORMAT),
+    campaignEndTime: dayjs().startOf("minute").add(30, "day").format(DATE_FORMAT),
     tables: [],
     surveys: [],
     campaign_trigger: [],
