@@ -7,7 +7,7 @@ import bcryptjs from "bcryptjs";
 import { useTemporalStore } from "../useTemporalStore";
 import { notify } from "@/utils/notify";
 
-export function useUpdateCampaign(onSuccess: (id: number) => void) {
+export function useUpdateCampaign(onSuccess: (id: number) => void | Promise<void>) {
   const {
     campaignId,
     campaignName,
@@ -68,7 +68,9 @@ export function useUpdateCampaign(onSuccess: (id: number) => void) {
       }
 
       notify.success("Campaign saved");
-      onSuccess(upsertedCampaignId);
+      // Awaited so the save stays "in flight" (Save disabled) until the caller has
+      // finished refreshing its state from the database.
+      await onSuccess(upsertedCampaignId);
     };
 
     inFlightRef.current = true;

@@ -166,6 +166,13 @@ export type CampaignConfigEditActions = {
   updateWebappIcon: (index: number, iconPath: string) => void;
 
   setCampaignUsingImportedConfig: (config: ExportedCampaignConfig) => void;
+
+  /**
+   * Replace the edit state with a freshly fetched campaign, e.g. after a save, so
+   * newly inserted rows carry their database ids and are not inserted again on the
+   * next save. Keeps the typed password and the question clipboard.
+   */
+  resetFromCampaign: (campaign: FetchedCampaign) => void;
 };
 
 export type CampaignConfigEditStore = CampaignConfigEditState & CampaignConfigEditActions;
@@ -940,6 +947,16 @@ export const createCampaignConfigEditStore = (campaign?: FetchedCampaign) => {
               survey_question_trigger: [],
             };
           });
+        },
+
+        resetFromCampaign: (campaign: FetchedCampaign) => {
+          set((state) => ({
+            // Cloned so freezing by Immer cannot affect the caller's copy, which is
+            // also handed to the campaign store.
+            ...getStateFromCampaign(structuredClone(campaign)),
+            campaignPassword: state.campaignPassword,
+            questionClipboard: state.questionClipboard,
+          }));
         },
 
         setCampaignUsingImportedConfig: (config: ExportedCampaignConfig) => {

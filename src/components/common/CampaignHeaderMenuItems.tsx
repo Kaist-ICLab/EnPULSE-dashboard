@@ -17,7 +17,7 @@ import { notify } from "@/utils/notify";
 import dayjs from "dayjs";
 import { Button, Spinner } from "flowbite-react";
 import { usePathname } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 import { VALIDATION_MESSAGES } from "@/constants/validationMessages";
 
 export const DashboardHeaderMenuItems: React.FC = () => {
@@ -82,14 +82,23 @@ export const SettingsHeaderMenuItems: React.FC = () => {
   const configEditStore = useCampaignConfigEditStoreApi();
   const { pastStates } = useTemporalStore(configEditStore, (state) => state);
   const { isInfoValid, isPassiveSensingValid, isActiveSensingValid, isWebappValid, isTriggerValid } = useValidConfigState();
+  // Set when the post-save reload fails: the edit store then still holds the
+  // pre-save rows (new rows without ids), so another save would insert them twice.
+  const [needsReload, setNeedsReload] = useState(false);
   const { isUpdating, updateCampaignConfig } = useUpdateCampaign(async (id) => {
     try {
       const campaignList = await getCampaignList();
       const currentCampaign = await getCampaignInfo(id);
       setCampaignList(campaignList);
       setCampaign(currentCampaign);
+      configEditStore.getState().resetFromCampaign(currentCampaign);
+      configEditStore.temporal.getState().clear();
     } catch {
-      notify.error("Failed to refresh campaign data after save.");
+      setNeedsReload(true);
+      notify.error(
+        "Saved, but failed to reload the campaign",
+        "Reload the page before making more changes, otherwise new items may be saved twice.",
+      );
     }
   });
 
@@ -100,7 +109,9 @@ export const SettingsHeaderMenuItems: React.FC = () => {
   const isWebappPage = pathname?.includes("/webapp");
 
   let disabledReason = "";
-  if (!isInfoValid || !isPassiveSensingValid || !isActiveSensingValid || !isWebappValid || !isTriggerValid) {
+  if (needsReload) {
+    disabledReason = "Reload the page before saving again.";
+  } else if (!isInfoValid || !isPassiveSensingValid || !isActiveSensingValid || !isWebappValid || !isTriggerValid) {
     disabledReason = VALIDATION_MESSAGES.FIX_ISSUES_TOOLTIP;
   } else if (pastStates.length === 0) {
     disabledReason = VALIDATION_MESSAGES.NO_CHANGES;
