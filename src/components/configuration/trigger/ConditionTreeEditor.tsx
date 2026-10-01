@@ -136,7 +136,9 @@ const ConditionTreeEditor: React.FC<{
       }
       headerControls={
         <>
-          {condition.children.length <= 1 && (
+          {/* Only offer Unwrap with exactly one child: unwrapping an empty group
+              would replace the condition with `undefined` and crash the editor. */}
+          {condition.children.length === 1 && (
             <BlockHeaderButton onClick={() => onChange(condition.children[0])}>Unwrap</BlockHeaderButton>
           )}
           <BlockHeaderButton danger onClick={onRemove}>
