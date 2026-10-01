@@ -4,7 +4,11 @@ import useDownloadState from "@/stores/downloadStore";
 import { DownloadFileRow } from "@/types/download";
 import dayjs from "dayjs";
 import { Card, Checkbox, Spinner } from "flowbite-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useCampaignStore } from "@/providers/CampaignStoreProvider";
+import { DATABASE_TIMEZONE } from "@/utils/databaseTimezone";
+
+const DOWNLOAD_LIST_CHUNK = 200;
 import IconButton from "../common/IconButton";
 
 export const DownloadTable = () => {
@@ -24,7 +28,7 @@ export const DownloadTable = () => {
 
   return (
     <>
-      <Card className="max-w-3xl">
+      <Card className="max-w-3xl 2xl:max-w-5xl">
         <h6 className="text-xl font-semibold text-gray-900">Download Data</h6>
         <div className="relative">
           {downloadListStatus === "loading" && (
@@ -65,6 +69,15 @@ const DownloadTableContent: React.FC<{
 }> = ({ selectedDataCount, generatePreviewData, downloadData, downloadAllData, isSomethingDownloading }) => {
   const { downloadList, downloadListStatus, toggleDownloadListItemChecked, setAllDownloadListItemsChecked } =
     useDownloadState();
+  const campaignTables = useCampaignStore((state) => state.campaignTables);
+  // Show the sensor's display name (e.g. "Accelerometer") instead of the table name.
+  const displayNames = useMemo(
+    () => new Map(Array.from(campaignTables.values()).map((t) => [t.name, t.display_name])),
+    [campaignTables],
+  );
+  // Participants x days x sensors can reach thousands of rows; render them in chunks
+  // instead of all at once so toggling a checkbox stays responsive.
+  const [visibleCount, setVisibleCount] = useState(DOWNLOAD_LIST_CHUNK);
 
   if (downloadListStatus === null) {
     return (
@@ -120,7 +133,7 @@ const DownloadTableContent: React.FC<{
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {downloadList.map((row, idx) => (
+              {downloadList.slice(0, visibleCount).map((row, idx) => (
                 <tr key={idx} onClick={() => toggleDownloadListItemChecked(idx)}>
                   <td className="flex items-center justify-center px-2 py-2.5">
                     <Checkbox
@@ -133,7 +146,7 @@ const DownloadTableContent: React.FC<{
                     />
                   </td>
                   <td className="px-3 py-2 font-mono text-xs text-gray-900">P{row.pid}</td>
-                  <td className="px-3 py-2 text-gray-900">{row.table}</td>
+                  <td className="px-3 py-2 text-gray-900">{displayNames.get(row.table) ?? row.table}</td>
                   <td className="px-3 py-2 text-gray-900">{dayjs(row.date).format("YYYY-MM-DD")}</td>
                   <td className="px-3 py-2 text-gray-900">{row.count}</td>
                   <td className="px-3 py-2">
@@ -168,6 +181,20 @@ const DownloadTableContent: React.FC<{
             </tbody>
           </table>
         </div>
+        {downloadList.length > visibleCount && (
+          <button
+            type="button"
+            className="mt-2 w-full rounded-lg bg-gray-100 py-2 text-sm text-gray-700 hover:bg-gray-200"
+            onClick={() => setVisibleCount((n) => n + DOWNLOAD_LIST_CHUNK)}
+          >
+            Show {Math.min(DOWNLOAD_LIST_CHUNK, downloadList.length - visibleCount)} more (
+            {downloadList.length - visibleCount} not shown)
+          </button>
+        )}
+        <p className="mt-2 text-xs text-gray-500">
+          Dates are calendar days in the database time zone ({DATABASE_TIMEZONE}). CSV timestamps include their UTC
+          offset.
+        </p>
       </div>
     );
   }
