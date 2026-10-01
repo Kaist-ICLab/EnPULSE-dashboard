@@ -5,7 +5,8 @@ import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 import { TimelineData, TimelineSurveyEventPoint } from "@/types/chart";
 import { ComparisonType } from "@/types/dashboard";
 import { ParentSize } from "@visx/responsive";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
+import * as htmlToImage from "html-to-image";
 import { SurveyDistributionModal } from "./SurveyDistributionModal";
 
 export const ChartItem: React.FC<{
@@ -18,6 +19,23 @@ export const ChartItem: React.FC<{
 }> = ({ timeline, pinned, isSelected, setSelectedChart, bucketSize, sectionType }) => {
   const { updatePinQuery, updateComparisonParams, comparisonParams, date } = useSectionParamStore((state) => state);
   const [distributionOpen, setDistributionOpen] = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  const downloadChart = useCallback(async (format: "png" | "svg") => {
+    if (chartRef.current === null) return;
+    try {
+      const dataUrl = await (format === "png" 
+        ? htmlToImage.toPng(chartRef.current, { backgroundColor: '#ffffff' })
+        : htmlToImage.toSvg(chartRef.current, { backgroundColor: '#ffffff' }));
+      const link = document.createElement("a");
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      link.download = `${timeline.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${timestamp}.${format}`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("Failed to download chart", err);
+    }
+  }, [timeline.title]);
 
   if (!timeline) return;
 
@@ -41,6 +59,7 @@ export const ChartItem: React.FC<{
         </DragHandle>
       </div>
       <div
+        ref={chartRef}
         className="flex min-w-0 grow flex-col"
         onClick={() => {
           setSelectedChart(isSelected ? null : timeline.id);
@@ -76,6 +95,26 @@ export const ChartItem: React.FC<{
               }}
             />
           )}
+          <IconButton
+            size="md"
+            hoverColor="gray"
+            className="icon-[mdi--image-outline] mr-0.5"
+            onClick={(e) => {
+              e.stopPropagation();
+              downloadChart("png");
+            }}
+            title="Download PNG"
+          />
+          <IconButton
+            size="md"
+            hoverColor="gray"
+            className="icon-[mdi--svg] mr-0.5"
+            onClick={(e) => {
+              e.stopPropagation();
+              downloadChart("svg");
+            }}
+            title="Download SVG"
+          />
           {!isSurvey && (sectionType === ComparisonType.Sensors || sectionType === ComparisonType.Participants) ? (
             <IconButton
               size="md"

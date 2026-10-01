@@ -9,7 +9,6 @@ export const CategoricalTimelinePlot: React.FC<TimelinePlotProps<TimelineCategor
   valueScale,
   barWidth,
   data,
-  height,
   getCategoryColor,
 }) => {
   return (

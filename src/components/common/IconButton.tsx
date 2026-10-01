@@ -4,7 +4,8 @@ const IconButton: React.FC<{
   size?: "sm" | "md" | "lg";
   hoverColor?: "gray" | "red";
   className?: string;
-}> = ({ disabled = false, onClick, size = "md", hoverColor = "gray", className = "" }) => {
+  title?: string;
+}> = ({ disabled = false, onClick, size = "md", hoverColor = "gray", className = "", title }) => {
   const sizeClass = size === "sm" ? "w-2 h-2" : size === "md" ? "w-4 h-4" : "w-6 h-6";
   const hoverColorClass = hoverColor === "gray" ? "hover:text-gray-700" : "hover:text-red-500";
   return (
@@ -13,6 +14,7 @@ const IconButton: React.FC<{
       onClick={(e) => {
         if (!disabled) onClick(e);
       }}
+      title={title}
     ></span>
   );
 };

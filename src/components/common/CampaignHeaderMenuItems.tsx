@@ -18,6 +18,7 @@ import dayjs from "dayjs";
 import { Button, Spinner } from "flowbite-react";
 import { usePathname } from "next/navigation";
 import React from "react";
+import { VALIDATION_MESSAGES } from "@/constants/validationMessages";
 
 export const DashboardHeaderMenuItems: React.FC = () => {
   const { date, updateDate, addDaysToDate, initTimeRange, setLastManualSyncTime } = useSectionParamStore(
@@ -80,7 +81,7 @@ export const SettingsHeaderMenuItems: React.FC = () => {
   const { setCampaign } = useCampaignStore((state) => state);
   const configEditStore = useCampaignConfigEditStoreApi();
   const { pastStates } = useTemporalStore(configEditStore, (state) => state);
-  const { isWebappValid } = useValidConfigState();
+  const { isInfoValid, isPassiveSensingValid, isActiveSensingValid, isWebappValid, isTriggerValid } = useValidConfigState();
   const { isUpdating, updateCampaignConfig } = useUpdateCampaign(async (id) => {
     try {
       const campaignList = await getCampaignList();
@@ -98,6 +99,15 @@ export const SettingsHeaderMenuItems: React.FC = () => {
   const isQuestionPage = !!pathname?.match(/\/active-sensing\/\d+$/);
   const isWebappPage = pathname?.includes("/webapp");
 
+  let disabledReason = "";
+  if (!isInfoValid || !isPassiveSensingValid || !isActiveSensingValid || !isWebappValid || !isTriggerValid) {
+    disabledReason = VALIDATION_MESSAGES.FIX_ISSUES_TOOLTIP;
+  } else if (pastStates.length === 0) {
+    disabledReason = VALIDATION_MESSAGES.NO_CHANGES;
+  }
+
+  const isSaveDisabled = disabledReason !== "" || isUpdating;
+
   return (
     <div className="ml-auto flex items-center gap-4">
       {isPassiveSensingPage && <AddSensorButtons />}
@@ -106,21 +116,23 @@ export const SettingsHeaderMenuItems: React.FC = () => {
       {isWebappPage && <AddWebappButton />}
       <div className="flex items-center gap-4 border-l border-gray-200 pl-4">
         <UndoRedoButtons />
-        <Button
-          color="blue"
-          onClick={updateCampaignConfig}
-          disabled={pastStates.length === 0 || isUpdating || !isWebappValid}
-        >
-          {isUpdating ? (
-            <>
-              <Spinner size="sm" className="mr-2" /> Saving...
-            </>
-          ) : (
-            <>
-              <span className="icon-[material-symbols--save] mr-2 h-6 w-6"></span>Save
-            </>
-          )}
-        </Button>
+        <div className="inline-block" title={disabledReason}>
+          <Button
+            color="blue"
+            onClick={updateCampaignConfig}
+            disabled={isSaveDisabled}
+          >
+            {isUpdating ? (
+              <>
+                <Spinner size="sm" className="mr-2" /> Saving...
+              </>
+            ) : (
+              <>
+                <span className="icon-[material-symbols--save] mr-2 h-6 w-6"></span>Save
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );

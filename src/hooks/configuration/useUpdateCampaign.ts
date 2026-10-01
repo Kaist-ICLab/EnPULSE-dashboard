@@ -1,3 +1,4 @@
+import { revalidateCampaigns } from "@/actions/revalidate";
 import { useCampaignConfigEdit, useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditStoreProvider";
 import { deleteEntries, upsertCampaign } from "@/services/campaignService";
 import { useCallback, useState } from "react";
@@ -44,6 +45,7 @@ export function useUpdateCampaign(onSuccess: (id: number) => void) {
 
         upsertedCampaignId = await upsertCampaign(campaign, hash);
         await deleteEntries(removedEntries);
+        await revalidateCampaigns();
       } catch (error) {
         notify.error("Failed to save campaign", error instanceof Error ? error.message : "Unknown error");
         return;

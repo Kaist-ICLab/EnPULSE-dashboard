@@ -21,14 +21,6 @@ export const DnDProvider: React.FC<{
     onItemsChange(newOrder);
   };
 
-  // const wrappedChildren = React.Children.map(children, (child: any) => {
-  //     const id = child.key as string;
-  //     return (
-  //         <SortableItem key={id} id={id}>
-  //             {child}
-  //         </SortableItem>
-  //     );
-  // });
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

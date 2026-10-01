@@ -1803,6 +1803,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      vad_sensor: {
+        Row: {
+          created_at: string | null;
+          device_type: number;
+          event_id: string;
+          inference_time_ms: number;
+          is_speech: boolean;
+          received: string;
+          speech_probability: number;
+          timestamp: string;
+          uuid: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          device_type: number;
+          event_id: string;
+          inference_time_ms: number;
+          is_speech: boolean;
+          received: string;
+          speech_probability: number;
+          timestamp: string;
+          uuid: string;
+        };
+        Update: {
+          created_at?: string | null;
+          device_type?: number;
+          event_id?: string;
+          inference_time_ms?: number;
+          is_speech?: boolean;
+          received?: string;
+          speech_probability?: number;
+          timestamp?: string;
+          uuid?: string;
+        };
+        Relationships: [];
+      };
       web_app_log: {
         Row: {
           created_at: string | null;
