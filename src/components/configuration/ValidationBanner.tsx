@@ -5,11 +5,19 @@ import { Alert } from "flowbite-react";
 import { VALIDATION_MESSAGES } from "@/constants/validationMessages";
 
 export const ValidationBanner: React.FC = () => {
-  const { isInfoValid, isPassiveSensingValid, isActiveSensingValid, isWebappValid, isTriggerValid } = useValidConfigState();
+  const {
+    isInfoValid,
+    infoIssue,
+    isPassiveSensingValid,
+    passiveSensingIssue,
+    isActiveSensingValid,
+    isWebappValid,
+    isTriggerValid,
+  } = useValidConfigState();
 
   const issues: string[] = [];
-  if (!isInfoValid) issues.push(VALIDATION_MESSAGES.INFO_INVALID);
-  if (!isPassiveSensingValid) issues.push(VALIDATION_MESSAGES.PASSIVE_SENSING_INVALID);
+  if (!isInfoValid) issues.push(infoIssue ?? VALIDATION_MESSAGES.INFO_INVALID);
+  if (!isPassiveSensingValid) issues.push(passiveSensingIssue ?? VALIDATION_MESSAGES.PASSIVE_SENSING_INVALID);
   if (!isActiveSensingValid) issues.push(VALIDATION_MESSAGES.ACTIVE_SENSING_INVALID);
   if (!isWebappValid) issues.push(VALIDATION_MESSAGES.WEBAPP_INVALID);
   if (!isTriggerValid) issues.push(VALIDATION_MESSAGES.TRIGGER_INVALID);

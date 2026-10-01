@@ -4,15 +4,14 @@ import CampaignPeriodForm from "@/components/configuration/form/CampaignPeriodFo
 import PrevNextNavigation from "@/components/configuration/PrevNextNavigation";
 import { useValidConfigState } from "@/hooks/configuration/useValidConfigState";
 import { CampaignNameStatus } from "@/hooks/configuration/useCampaignNameState";
-import { useCampaignConfigEdit, useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditStoreProvider";
+import { useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditStoreProvider";
 import { useTemporalStore } from "@/hooks/useTemporalStore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const Page: React.FC = () => {
   const router = useRouter();
-  const { isInfoValid } = useValidConfigState();
-  const { campaignName, campaignPassword } = useCampaignConfigEdit((state) => state);
+  const { isInfoValid, infoIssue } = useValidConfigState();
   const [nameStatus, setNameStatus] = useState<CampaignNameStatus>("empty");
 
   const configEditStore = useCampaignConfigEditStoreApi();
@@ -24,13 +23,7 @@ const Page: React.FC = () => {
 
   const isNameTaken = nameStatus === "taken";
   const disabledReason =
-    campaignName.trim().length === 0
-      ? "Enter a campaign name to continue."
-      : isNameTaken
-        ? "Another campaign already uses this name. Choose a different one."
-        : campaignPassword.length === 0
-          ? "Set a password to continue. Participants enter it to join the campaign."
-          : null;
+    isNameTaken && infoIssue === null ? "Another campaign already uses this name. Choose a different one." : infoIssue;
 
   return (
     <>

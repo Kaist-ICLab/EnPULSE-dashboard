@@ -390,13 +390,17 @@ export const createCampaignConfigEditStore = (campaign?: FetchedCampaign) => {
           });
         },
 
+        // Clearing a datetime input sends "", which dayjs formats as "Invalid Date".
+        // Ignore such values so the previous valid time is kept.
         setCampaignStartTime: (startTime: string) => {
+          if (!startTime || !dayjs(startTime).isValid()) return;
           set((state) => {
             state.campaignStartTime = dayjs(startTime).format(DATE_FORMAT);
           });
         },
 
         setCampaignEndTime: (endTime: string) => {
+          if (!endTime || !dayjs(endTime).isValid()) return;
           set((state) => {
             state.campaignEndTime = dayjs(endTime).format(DATE_FORMAT);
           });

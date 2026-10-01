@@ -6,6 +6,7 @@ const CampaignPeriodForm = () => {
   const { campaignStartTime, campaignEndTime, setCampaignStartTime, setCampaignEndTime } = useCampaignConfigEdit(
     (state) => state,
   );
+  const isEndBeforeStart = !dayjs(campaignEndTime).isAfter(dayjs(campaignStartTime));
 
   return (
     <Card>
@@ -16,6 +17,7 @@ const CampaignPeriodForm = () => {
             Start time
           </label>
           <TextInput
+            id="campaignStartTime"
             type="datetime-local"
             value={dayjs(campaignStartTime).format("YYYY-MM-DDTHH:mm:ss")}
             onChange={(e) => setCampaignStartTime(e.target.value)}
@@ -26,11 +28,14 @@ const CampaignPeriodForm = () => {
             End time
           </label>
           <TextInput
+            id="campaignEndTime"
             type="datetime-local"
             value={dayjs(campaignEndTime).format("YYYY-MM-DDTHH:mm:ss")}
             onChange={(e) => setCampaignEndTime(e.target.value)}
+            color={isEndBeforeStart ? "failure" : undefined}
           />
         </div>
+        {isEndBeforeStart && <p className="text-sm text-red-600">The end time must be after the start time.</p>}
       </div>
     </Card>
   );

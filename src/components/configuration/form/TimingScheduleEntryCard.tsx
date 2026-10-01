@@ -110,7 +110,10 @@ const TimingScheduleEntryCard: React.FC<TimingScheduleEntryCardProps> = ({
               type="time"
               sizing="sm"
               value={millisecondsToTimeString(entry.startOfDay)}
-              onChange={(e) => onUpdate({ startOfDay: timeStringToMilliseconds(e.target.value) })}
+              onChange={(e) => {
+                const ms = timeStringToMilliseconds(e.target.value);
+                if (ms !== null) onUpdate({ startOfDay: ms });
+              }}
               className="w-full max-w-32"
             />
           </div>
@@ -123,7 +126,10 @@ const TimingScheduleEntryCard: React.FC<TimingScheduleEntryCardProps> = ({
               type="time"
               sizing="sm"
               value={millisecondsToTimeString(entry.endOfDay)}
-              onChange={(e) => onUpdate({ endOfDay: timeStringToMilliseconds(e.target.value) })}
+              onChange={(e) => {
+                const ms = timeStringToMilliseconds(e.target.value);
+                if (ms !== null) onUpdate({ endOfDay: ms });
+              }}
               className="w-full max-w-32"
             />
             {entry.endOfDay >= 86400 * 1000 && <span className="text-sm text-blue-500">Next Day</span>}
@@ -170,7 +176,12 @@ const FixedTimesEditor: React.FC<{
             type="time"
             sizing="sm"
             value={millisecondsToTimeString(time)}
-            onChange={(e) => updateTime(i, timeStringToMilliseconds(e.target.value))}
+            onChange={(e) => {
+              const ms = timeStringToMilliseconds(e.target.value);
+              if (ms === null) return;
+              // The input only shows the time of day; keep the "Next Day" offset.
+              updateTime(i, ms + (time >= 86400 * 1000 ? 86400 * 1000 : 0));
+            }}
             className="mr-2 ml-1 w-42"
           />
           <span
