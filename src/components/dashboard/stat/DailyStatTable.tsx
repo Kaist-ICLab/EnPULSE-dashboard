@@ -5,11 +5,12 @@ import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 import { flattenSurveyQuestions } from "@/services/chartService";
 import { ComparisonType } from "@/types/dashboard";
-import { Button, Checkbox, Select, Spinner, Tooltip } from "flowbite-react";
+import { Button, Checkbox, Spinner, Tooltip } from "flowbite-react";
 import { COMPARISON_CHART_ID } from "@/components/dashboard/chart/ComparisonChart";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DailyStatTableHeader from "./DailyStatTableHeader";
 import DailyStatTableRow from "./DailyStatTableRow";
+import useResponsiveParticipantCount from "@/hooks/chart/useResponsiveParticipantCount";
 import SensorDropdown from "../SensorDropdown";
 
 const ChartTooltipContent: React.FC = () => {
@@ -52,7 +53,19 @@ const DailyOverviewTable: React.FC = () => {
 
   const { data, loading, maxDailyCount, maxSlotCount, columns, page, rowsPerPage, totalPage, setPage, setRowsPerPage } =
     useUserDailyStat(5);
-  const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } =
+
+  // Show as many participants as fit the table's width (a fixed 5 left most of a large
+  // monitor empty). setRowsPerPage also returns to page 1.
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const fittingParticipantCount = useResponsiveParticipantCount(tableContainerRef);
+  useEffect(() => {
+    if (fittingParticipantCount !== rowsPerPage) setRowsPerPage(fittingParticipantCount);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to width changes
+  }, [fittingParticipantCount]);
+  const totalParticipants = campaignParticipants.size;
+  const firstParticipantIndex = (page - 1) * rowsPerPage + 1;
+  const lastParticipantIndex = Math.min(page * rowsPerPage, totalParticipants);
+  const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked, selectedUuids } =
     useDailyStatTableCheckedState(data);
   const [displayMode, setDisplayMode] = useState<DisplayMode>("count");
 
@@ -149,7 +162,7 @@ const DailyOverviewTable: React.FC = () => {
                   return field?.id !== undefined ? [field.id] : [];
                 });
                 updateComparisonParams(ComparisonType.Sensors, {
-                  uuid: [data[checkedState.findIndex((state) => state)].uuid],
+                  uuid: [selectedUuids[0]],
                   fieldId,
                   questionId: [],
                 });
@@ -164,7 +177,7 @@ const DailyOverviewTable: React.FC = () => {
           <span>No participant selected</span>
         )}
       </div>
-      <div className="relative w-full overflow-auto">
+      <div ref={tableContainerRef} className="relative w-full overflow-auto">
         {loading && (
           <div className="absolute flex h-full w-full items-center justify-center rounded-lg bg-white/50 backdrop-blur-sm">
             <Spinner size="xl" />
@@ -221,18 +234,11 @@ const DailyOverviewTable: React.FC = () => {
       </div>
       <div className="flex w-full items-center justify-between py-3">
         <div className="flex items-center gap-4">
-          <span>Participants per page:</span>
-          <Select
-            value={rowsPerPage.toString()}
-            className="w-20"
-            onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
-          >
-            {[5, 10, 15].map((v, i) => (
-              <option key={`rows-per-page-${i}`} value={v}>
-                {v}
-              </option>
-            ))}
-          </Select>
+          <span className="text-gray-900">
+            {totalParticipants === 0
+              ? "No participants"
+              : `Showing ${firstParticipantIndex}-${lastParticipantIndex} of ${totalParticipants} participants`}
+          </span>
         </div>
         <div className="flex items-center gap-3">
           <button
