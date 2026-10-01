@@ -55,6 +55,12 @@ const DashboardSidebar: React.FC = () => {
         </SidebarItemGroup>
         <SidebarItemGroup>
           <MySidebarItem
+            isActive={false}
+            href="/campaigns"
+            icon="icon-[material-symbols--home]"
+            name="All Campaigns"
+          />
+          <MySidebarItem
             isActive={isActive("dashboard")}
             href={`${baseUrl}/dashboard`}
             icon="icon-[fluent-mdl2--b-i-dashboard]"
