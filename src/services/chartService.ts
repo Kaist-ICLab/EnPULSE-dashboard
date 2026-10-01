@@ -10,19 +10,33 @@ import { CampaignParticipant, FetchedCampaignTable } from "@/types/campaign";
 import { ChartType, TimelineData, TimelineSurveyEventPoint } from "@/types/chart";
 import dayjs from "dayjs";
 import { DATE_FORMAT } from "@/utils/date";
+import { databaseDayStart, databaseDaysBetween } from "@/utils/databaseTimezone";
 import { UserDailyStatData } from "@/types/dashboard";
 import { Ok, Err } from "@/utils/type";
 import { FetchedSurvey, FetchedSurveyQuestion, OptionQuestionConfig } from "@/types/survey";
 
+const DAILY_SLOT_COUNT = 12; // 24h / 2h
+const DAILY_SLOT_HOURS = 2;
+
 export async function getCampaignDailySummary(uuids: string[], tableIds: number[], date: Date) {
+  // campaign_table_row_count stores each row's day and 2-hour slot in the database's
+  // time zone, while the charts use the browser's. Fetch the database days that overlap
+  // the local day and move every stored slot into the local 2-hour slot it starts in.
+  // When the two zones differ by an odd number of hours a stored slot straddles two
+  // local slots; it is counted in the one where it starts (up to 1 hour off).
+  const localStart = dayjs(date).startOf("day");
+  const localEnd = localStart.add(1, "day");
+  const databaseDays = databaseDaysBetween(localStart, localEnd);
+
   const { data, error } = await supabase
     .from(`campaign_table_row_count`)
     .select("*")
     .in("uuid", uuids)
     .in("table_id", tableIds)
-    .eq("day", dayjs(date).format("YYYY-MM-DD"))
+    .in("day", databaseDays)
     .order("uuid", { ascending: true })
     .order("table_id", { ascending: true })
+    .order("day", { ascending: true })
     .order("time_slot", { ascending: true });
 
   if (error) throw new Error(error.message);
@@ -37,28 +51,27 @@ export async function getCampaignDailySummary(uuids: string[], tableIds: number[
   }));
 
   for (const v of data) {
-    // Table aggregation
-    const tables = result.find((r) => r.uuid === v.uuid)!.tables;
-    if (!tables.find((t) => t.table_id === v.table_id)) {
-      tables.push({
-        table_id: v.table_id,
-        totalCount: 0,
-        counts: [],
-      });
-    }
+    const slotStart = databaseDayStart(v.day, v.time_slot * DAILY_SLOT_HOURS);
+    if (slotStart.isBefore(localStart) || !slotStart.isBefore(localEnd)) continue;
+    const localSlot = Math.floor(slotStart.diff(localStart, "hour") / DAILY_SLOT_HOURS);
 
-    const table = tables.find((t) => t.table_id === v.table_id)!;
-    // Time slot aggregation
+    const tables = result.find((r) => r.uuid === v.uuid)?.tables;
+    if (!tables) continue;
+    let table = tables.find((t) => t.table_id === v.table_id);
+    if (!table) {
+      table = { table_id: v.table_id, totalCount: 0, counts: Array(DAILY_SLOT_COUNT).fill(0) };
+      tables.push(table);
+    }
     table.totalCount += v.count;
-    table.counts.push(v.count);
+    table.counts[localSlot] += v.count;
   }
 
   return result;
 }
 
 // Survey response daily summary — counts distinct (uuid, survey_id, survey_start_time)
-// per uuid per survey per 3-hour time slot for the given date.
-const SURVEY_TIME_SLOT_COUNT = 12; // 24h / 3h
+// per uuid per survey per 2-hour time slot for the given date.
+const SURVEY_TIME_SLOT_COUNT = 12; // 24h / 2h
 const SURVEY_TIME_SLOT_MS = (24 * 60 * 60 * 1000) / SURVEY_TIME_SLOT_COUNT;
 
 export async function getCampaignSurveyDailySummary(

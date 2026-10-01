@@ -16,7 +16,7 @@ const ChartTooltipContent: React.FC = () => {
   return (
     <>
       <p>Daily count: # of data collected in a day. </p>
-      <p className="mb-1">Timeline: # of data collected in a 3 hour window.</p>
+      <p className="mb-1">Timeline: # of data collected in each 2-hour window (in this browser&apos;s time zone).</p>
       <p>Hover over the components to see the details!</p>
     </>
   );
