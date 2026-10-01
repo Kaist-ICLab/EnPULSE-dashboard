@@ -3,7 +3,8 @@
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { DeviceType } from "@/types/survey";
 import { TriggerAction } from "@/types/trigger";
-import { Select, TextInput } from "flowbite-react";
+import { Select } from "flowbite-react";
+import MinIntervalInput from "./MinIntervalInput";
 
 const SurveyAction: React.FC<{
   action: Extract<TriggerAction, { kind: "ema" | "watch_ema" }>;
@@ -36,18 +37,13 @@ const SurveyAction: React.FC<{
       {eligibleSurveys.length === 0 && (
         <p className="text-xs text-red-600">No {action.kind === "watch_ema" ? "Watch" : "Phone"} surveys configured.</p>
       )}
-      <div className="flex flex-row items-center">
-        <span className="mr-4 block text-sm text-gray-900">Minimum Interval Between Surveys:</span>
-        <TextInput
-          type="number"
-          sizing="sm"
-          value={action.minIntervalMillis}
-          onChange={(e) =>
-            onChange({ kind: action.kind, surveyIndex: action.surveyIndex, minIntervalMillis: Number(e.target.value) })
-          }
-        />
-        <span className="ml-1 text-sm text-gray-900">ms</span>
-      </div>
+      <MinIntervalInput
+        label="Minimum Interval Between Surveys:"
+        value={action.minIntervalMillis}
+        onChange={(minIntervalMillis) =>
+          onChange({ kind: action.kind, surveyIndex: action.surveyIndex, minIntervalMillis })
+        }
+      />
     </div>
   );
 };

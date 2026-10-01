@@ -10,64 +10,76 @@ import { CampaignParticipant, FetchedCampaignTable } from "@/types/campaign";
 import { ChartType, TimelineData, TimelineSurveyEventPoint } from "@/types/chart";
 import dayjs from "dayjs";
 import { DATE_FORMAT } from "@/utils/date";
+import { databaseDayStart, databaseDaysBetween } from "@/utils/databaseTimezone";
 import { UserDailyStatData } from "@/types/dashboard";
 import { Ok, Err } from "@/utils/type";
 import { FetchedSurvey, FetchedSurveyQuestion, OptionQuestionConfig } from "@/types/survey";
 
-export async function getCampaignDailySummary(uuids: string[], tableIds: number[], date: Date) {
-  const { data: contactData, error: contactError } = await supabase
-    .from("profiles")
-    .select("messages(count)")
-    .in("uuid", uuids)
-    .order("uuid", { ascending: true });
+const DAILY_SLOT_COUNT = 12; // 24h / 2h
+const DAILY_SLOT_HOURS = 2;
 
-  if (contactError) throw new Error(contactError.message);
+export async function getCampaignDailySummary(uuids: string[], tableIds: number[], date: Date) {
+  // campaign_table_row_count stores each row's day and 2-hour slot in the database's
+  // time zone, while the charts use the browser's. Fetch the database days that overlap
+  // the local day and move every stored slot into the local 2-hour slot it starts in.
+  // When the two zones differ by an odd number of hours a stored slot straddles two
+  // local slots; it is counted in the one where it starts (up to 1 hour off).
+  const localStart = dayjs(date).startOf("day");
+  const localEnd = localStart.add(1, "day");
+  const databaseDays = databaseDaysBetween(localStart, localEnd);
 
   const { data, error } = await supabase
     .from(`campaign_table_row_count`)
     .select("*")
     .in("uuid", uuids)
     .in("table_id", tableIds)
-    .eq("day", dayjs(date).format("YYYY-MM-DD"))
+    .in("day", databaseDays)
     .order("uuid", { ascending: true })
     .order("table_id", { ascending: true })
+    .order("day", { ascending: true })
     .order("time_slot", { ascending: true });
 
   if (error) throw new Error(error.message);
 
   if (data.length == 0) return [];
 
-  // Aggregate data per profile, with contacts, tables, and time_slots
-  const result: UserDailyStatData[] = uuids.map((uuid, idx) => ({
+  // Aggregate data per profile, with tables and time_slots
+  const result: UserDailyStatData[] = uuids.map((uuid) => ({
     uuid: uuid,
-    contacts: contactData[idx].messages[0].count,
     tables: [],
     surveys: [],
   }));
 
-  for (const v of data) {
-    // Table aggregation
-    const tables = result.find((r) => r.uuid === v.uuid)!.tables;
-    if (!tables.find((t) => t.table_id === v.table_id)) {
-      tables.push({
-        table_id: v.table_id,
-        totalCount: 0,
-        counts: [],
-      });
-    }
+  // dayjs.tz is slow (it formats through Intl on every call): calling it per row cost about
+  // 0.7s for a typical page. Resolve each database day's start once, then use arithmetic.
+  const localStartMs = localStart.valueOf();
+  const localEndMs = localEnd.valueOf();
+  const dayStartMs = new Map(databaseDays.map((day) => [day, databaseDayStart(day).valueOf()]));
+  const slotMs = DAILY_SLOT_HOURS * 60 * 60 * 1000;
 
-    const table = tables.find((t) => t.table_id === v.table_id)!;
-    // Time slot aggregation
+  for (const v of data) {
+    const dayStart = dayStartMs.get(v.day) ?? databaseDayStart(v.day).valueOf();
+    const slotStartMs = dayStart + v.time_slot * slotMs;
+    if (slotStartMs < localStartMs || slotStartMs >= localEndMs) continue;
+    const localSlot = Math.floor((slotStartMs - localStartMs) / slotMs);
+
+    const tables = result.find((r) => r.uuid === v.uuid)?.tables;
+    if (!tables) continue;
+    let table = tables.find((t) => t.table_id === v.table_id);
+    if (!table) {
+      table = { table_id: v.table_id, totalCount: 0, counts: Array(DAILY_SLOT_COUNT).fill(0) };
+      tables.push(table);
+    }
     table.totalCount += v.count;
-    table.counts.push(v.count);
+    table.counts[localSlot] += v.count;
   }
 
   return result;
 }
 
 // Survey response daily summary — counts distinct (uuid, survey_id, response_submission_time)
-// per uuid per survey per 3-hour time slot for the given date.
-const SURVEY_TIME_SLOT_COUNT = 12; // 24h / 3h
+// per uuid per survey per 2-hour time slot for the given date.
+const SURVEY_TIME_SLOT_COUNT = 12; // 24h / 2h
 const SURVEY_TIME_SLOT_MS = (24 * 60 * 60 * 1000) / SURVEY_TIME_SLOT_COUNT;
 
 export async function getCampaignSurveyDailySummary(

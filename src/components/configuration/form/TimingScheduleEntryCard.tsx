@@ -1,5 +1,6 @@
 "use client";
 
+import NumberInput from "@/components/common/NumberInput";
 import { Button, Checkbox, Label, Select, TextInput } from "flowbite-react";
 import IconButton from "@/components/common/IconButton";
 import SwitchingTextInput from "@/components/common/SwitchingTextInput";
@@ -66,12 +67,11 @@ const TimingScheduleEntryCard: React.FC<TimingScheduleEntryCardProps> = ({
             <Label htmlFor={`min-interval-${index}`} className="block w-42 text-sm font-medium text-gray-900">
               Min Interval (minutes)
             </Label>
-            <TextInput
+            <NumberInput
               id={`min-interval-${index}`}
-              type="number"
               sizing="sm"
               value={millisecondsToMinutes(entry.minInterval)}
-              onChange={(e) => onUpdate({ minInterval: minutesToMilliseconds(Number(e.target.value)) })}
+              onValueChange={(minutes) => onUpdate({ minInterval: minutesToMilliseconds(minutes) })}
               className="w-full max-w-20"
             />
           </div>
@@ -79,12 +79,11 @@ const TimingScheduleEntryCard: React.FC<TimingScheduleEntryCardProps> = ({
             <Label htmlFor={`max-interval-${index}`} className="block w-42 text-sm font-medium text-gray-900">
               Max Interval (minutes)
             </Label>
-            <TextInput
+            <NumberInput
               id={`max-interval-${index}`}
-              type="number"
               sizing="sm"
               value={millisecondsToMinutes(entry.maxInterval)}
-              onChange={(e) => onUpdate({ maxInterval: minutesToMilliseconds(Number(e.target.value)) })}
+              onValueChange={(minutes) => onUpdate({ maxInterval: minutesToMilliseconds(minutes) })}
               className="w-full max-w-20"
             />
           </div>
@@ -92,12 +91,12 @@ const TimingScheduleEntryCard: React.FC<TimingScheduleEntryCardProps> = ({
             <Label htmlFor={`num-survey-${index}`} className="block w-42 text-sm font-medium text-gray-900">
               Number of Surveys
             </Label>
-            <TextInput
+            <NumberInput
               id={`num-survey-${index}`}
-              type="number"
               sizing="sm"
+              integer
               value={entry.numSurvey}
-              onChange={(e) => onUpdate({ numSurvey: Number(e.target.value) })}
+              onValueChange={(numSurvey) => onUpdate({ numSurvey })}
               className="w-full max-w-20"
             />
           </div>
@@ -110,7 +109,10 @@ const TimingScheduleEntryCard: React.FC<TimingScheduleEntryCardProps> = ({
               type="time"
               sizing="sm"
               value={millisecondsToTimeString(entry.startOfDay)}
-              onChange={(e) => onUpdate({ startOfDay: timeStringToMilliseconds(e.target.value) })}
+              onChange={(e) => {
+                const ms = timeStringToMilliseconds(e.target.value);
+                if (ms !== null) onUpdate({ startOfDay: ms });
+              }}
               className="w-full max-w-32"
             />
           </div>
@@ -123,7 +125,10 @@ const TimingScheduleEntryCard: React.FC<TimingScheduleEntryCardProps> = ({
               type="time"
               sizing="sm"
               value={millisecondsToTimeString(entry.endOfDay)}
-              onChange={(e) => onUpdate({ endOfDay: timeStringToMilliseconds(e.target.value) })}
+              onChange={(e) => {
+                const ms = timeStringToMilliseconds(e.target.value);
+                if (ms !== null) onUpdate({ endOfDay: ms });
+              }}
               className="w-full max-w-32"
             />
             {entry.endOfDay >= 86400 * 1000 && <span className="text-sm text-blue-500">Next Day</span>}
@@ -170,7 +175,12 @@ const FixedTimesEditor: React.FC<{
             type="time"
             sizing="sm"
             value={millisecondsToTimeString(time)}
-            onChange={(e) => updateTime(i, timeStringToMilliseconds(e.target.value))}
+            onChange={(e) => {
+              const ms = timeStringToMilliseconds(e.target.value);
+              if (ms === null) return;
+              // The input only shows the time of day; keep the "Next Day" offset.
+              updateTime(i, ms + (time >= 86400 * 1000 ? 86400 * 1000 : 0));
+            }}
             className="mr-2 ml-1 w-42"
           />
           <span

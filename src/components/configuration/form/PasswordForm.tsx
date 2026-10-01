@@ -3,7 +3,8 @@ import { useState } from "react";
 const PasswordForm: React.FC<{
   password: string;
   setPassword: (password: string) => void;
-}> = ({ password, setPassword }) => {
+  placeholder?: string;
+}> = ({ password, setPassword, placeholder }) => {
   const [showPassword, setShowPassword] = useState(false);
   return (
     <div className="relative w-full rounded-lg border border-gray-300 bg-gray-50">
@@ -11,6 +12,7 @@ const PasswordForm: React.FC<{
         id="campaignPassword"
         type={showPassword ? "text" : "password"}
         value={password}
+        placeholder={placeholder}
         onChange={(e) => setPassword(e.target.value)}
         className="focus:border-primary-500 focus:ring-primary-500 block w-full rounded-lg p-2.5 text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:outline-none"
       />

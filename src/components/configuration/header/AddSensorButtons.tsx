@@ -15,7 +15,7 @@ export default function AddSensorButtons() {
     queryResultTables,
     addCustomSensorAsIs,
     addSensor,
-    isCustomSensorNameReserved,
+    customSensorNameError,
   } = useAddSensorButtonState();
 
   return (
@@ -85,15 +85,14 @@ export default function AddSensorButtons() {
               onChange={(e) => setSensorDescription(e.target.value)}
             />
           </div>
-          {isCustomSensorNameReserved && (
-            <p className="mb-2 text-sm text-red-600">
-              &quot;timing_sensor&quot; is a reserved name (used by the Timing Schedules feature) — choose another.
-            </p>
+          {/* An empty name just disables Confirm; other problems are explained. */}
+          {customSensorNameError && sensorName.trim().length > 0 && (
+            <p className="mb-2 text-sm text-red-600">{customSensorNameError}</p>
           )}
           <div className="flex items-center gap-4">
             <Button
               className="flex-2/3"
-              disabled={isCustomSensorNameReserved}
+              disabled={customSensorNameError !== null}
               onClick={() => {
                 addCustomSensorAsIs();
                 setCustomSensorInputVisibility(false);

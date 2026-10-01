@@ -127,10 +127,17 @@ const PassiveSensingConfigTable: React.FC<{
         <div className="flex overflow-hidden rounded-lg border border-gray-200">
           <div className="bg-gray-200 px-6 py-3 text-xs font-bold text-gray-700 uppercase">Daily Count Threshold</div>
           <div className="flex">
+            {/* 0 means "no threshold", so show it as empty; that also lets the field be
+                cleared, which used to snap straight back to 0. */}
             <input
               type="number"
-              value={currentTable.daily_count_max ?? ""}
-              onChange={(e) => setDailyCountMax(tableIdx, Number(e.target.value))}
+              min={0}
+              placeholder="none"
+              value={currentTable.daily_count_max ? currentTable.daily_count_max : ""}
+              onChange={(e) => {
+                const parsed = Math.trunc(Number(e.target.value));
+                setDailyCountMax(tableIdx, Number.isFinite(parsed) && parsed > 0 ? parsed : 0);
+              }}
               className="w-20 pl-3 outline-none focus:outline-none"
             />
           </div>

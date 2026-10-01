@@ -1,5 +1,14 @@
 "use client";
-import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, DragEndEvent } from "@dnd-kit/core";
+import {
+  DndContext,
+  closestCenter,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  DragEndEvent,
+  type DraggableAttributes,
+  type DraggableSyntheticListeners,
+} from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import React, { createContext, useContext } from "react";
@@ -31,7 +40,10 @@ export const DnDProvider: React.FC<{
   );
 };
 
-const DnDItemContext = createContext<{ listeners: any; attributes: any } | null>(null);
+const DnDItemContext = createContext<{
+  listeners: DraggableSyntheticListeners;
+  attributes: DraggableAttributes;
+} | null>(null);
 const useDnDItemContext = () => {
   const ctx = useContext(DnDItemContext);
   if (!ctx) throw new Error("DragHandle must be used within a DnDItem");

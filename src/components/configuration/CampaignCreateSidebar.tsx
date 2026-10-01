@@ -1,11 +1,15 @@
 "use client";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
+import { Button } from "flowbite-react";
+import { Modal } from "@/components/common/Modal";
 import { useValidConfigState } from "@/hooks/configuration/useValidConfigState";
 
 const DashboardSidebar: React.FC = () => {
   const pathname = usePathname();
   const { isAccessible } = useValidConfigState();
+  const [isStartOverOpen, setIsStartOverOpen] = useState(false);
 
   const steps = [
     { name: "Campaign Information", href: `/create/general` },
@@ -40,24 +44,19 @@ const DashboardSidebar: React.FC = () => {
 
         {steps.map((step, index) => {
           const isActive = index === currentStepIndex;
-          const isCompleted = index < currentStepIndex;
+          // A checkmark means the step is passed AND valid (isAccessible[i + 1] is true only
+          // when every step up to i is valid), not merely that it comes before the current one.
+          const isCompleted = index < currentStepIndex && isAccessible[index + 1];
+          const isLocked = !isAccessible[index] && !isActive;
 
-          return (
-            <Link
-              key={index}
-              href={isAccessible[index] ? step.href : ""}
-              className={`group relative mb-8 flex items-center gap-4 ${
-                isActive ? "cursor-default" : "cursor-pointer"
-              }`}
-            >
+          const content = (
+            <>
               {/* Step number circle */}
               <div
                 className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-200 ${
-                  isActive
+                  isActive || isCompleted
                     ? "border-blue-600 bg-blue-600 text-white"
-                    : isCompleted
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "border-gray-300 bg-white text-gray-400"
+                    : "border-gray-300 bg-white text-gray-400"
                 }`}
               >
                 {isCompleted ? (
@@ -81,16 +80,64 @@ const DashboardSidebar: React.FC = () => {
                       ? "text-blue-600"
                       : isCompleted
                         ? "text-gray-700"
-                        : "text-gray-400 group-hover:text-gray-600"
+                        : isLocked
+                          ? "text-gray-300"
+                          : "text-gray-400 group-hover:text-gray-600"
                   }`}
                 >
                   {step.name}
                 </div>
               </div>
+            </>
+          );
+
+          // Locked steps used to be a Link with href="", which looked clickable but did nothing.
+          if (isLocked) {
+            return (
+              <div
+                key={index}
+                className="relative mb-8 flex cursor-not-allowed items-center gap-4"
+                title="Complete the previous steps first"
+                aria-disabled="true"
+              >
+                {content}
+              </div>
+            );
+          }
+
+          return (
+            <Link
+              key={index}
+              href={step.href}
+              className={`group relative mb-8 flex items-center gap-4 ${isActive ? "cursor-default" : "cursor-pointer"}`}
+            >
+              {content}
             </Link>
           );
         })}
       </div>
+
+      {/* Lets the next person at a shared screen begin from an empty wizard. */}
+      <Button color="light" size="sm" className="mt-auto" onClick={() => setIsStartOverOpen(true)}>
+        <span className="icon-[tabler--refresh] mr-2 h-4 w-4"></span> Start over
+      </Button>
+
+      {isStartOverOpen && (
+        <Modal onClose={() => setIsStartOverOpen(false)} title="Start over?" className="w-full max-w-md">
+          <div className="flex flex-col gap-4 p-5">
+            <p className="text-sm text-gray-700">This clears everything entered so far and starts a new campaign.</p>
+            <div className="flex justify-end gap-2">
+              <Button color="gray" onClick={() => setIsStartOverOpen(false)}>
+                Cancel
+              </Button>
+              {/* A full reload creates a fresh wizard store (it lives in create/layout.tsx). */}
+              <Button color="red" onClick={() => window.location.assign("/create/general")}>
+                Start over
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

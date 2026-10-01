@@ -10,6 +10,7 @@ import {
   isExtraValueValid,
 } from "@/types/trigger";
 import IconButton from "@/components/common/IconButton";
+import MinIntervalInput from "./MinIntervalInput";
 
 const BroadcastAction: React.FC<{
   action: Extract<TriggerAction, { kind: "broadcast" }>;
@@ -83,6 +84,14 @@ const BroadcastAction: React.FC<{
           <span className="icon-[tabler--plus] mr-2"></span> Add extra
         </button>
       </div>
+
+      {/* Without an interval the broadcast is re-sent on every evaluation while the
+          condition holds, since the trigger engine re-checks on every sensor update. */}
+      <MinIntervalInput
+        label="Minimum Interval Between Broadcasts:"
+        value={action.minIntervalMillis}
+        onChange={(minIntervalMillis) => onChange({ ...action, minIntervalMillis })}
+      />
     </div>
   );
 };

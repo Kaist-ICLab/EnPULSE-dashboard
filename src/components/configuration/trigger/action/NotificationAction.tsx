@@ -3,6 +3,7 @@
 import { TriggerAction } from "@/types/trigger";
 import { DeviceType } from "@/types/survey";
 import { Label, Select, TextInput } from "flowbite-react";
+import MinIntervalInput from "./MinIntervalInput";
 
 const NotificationAction: React.FC<{
   action: Extract<TriggerAction, { kind: "notification" }>;
@@ -59,16 +60,11 @@ const NotificationAction: React.FC<{
         </Select>
       </div>
 
-      <div className="flex flex-row items-center">
-        <span className="mr-4 block text-sm text-gray-900">Minimum Interval Between Notifications:</span>
-        <TextInput
-          type="number"
-          sizing="sm"
-          value={action.minIntervalMillis}
-          onChange={(e) => onChange({ ...action, minIntervalMillis: Number(e.target.value) })}
-        />
-        <span className="ml-1 text-sm text-gray-900">ms</span>
-      </div>
+      <MinIntervalInput
+        label="Minimum Interval Between Notifications:"
+        value={action.minIntervalMillis}
+        onChange={(minIntervalMillis) => onChange({ ...action, minIntervalMillis })}
+      />
     </div>
   );
 };

@@ -1,26 +1,30 @@
 "use client";
-import { Button, Card, TextInput, Tooltip } from "flowbite-react";
+import { Card, TextInput } from "flowbite-react";
+import { useEffect } from "react";
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
-import useCampaignNameState from "@/hooks/configuration/useCampaignNameState";
+import useCampaignNameState, { CampaignNameStatus } from "@/hooks/configuration/useCampaignNameState";
 import PasswordForm from "./PasswordForm";
 
-const stateMessageMap = {
-  loading: "Validating...",
-  ok: "Valid",
-  error: "Invalid",
+const nameStatusDisplay: Record<CampaignNameStatus, { text: string; className: string } | null> = {
+  empty: null,
+  checking: { text: "Checking...", className: "text-gray-500" },
+  available: { text: "Available", className: "text-green-600" },
+  taken: { text: "Already used by another campaign", className: "text-red-600" },
+  unknown: { text: "Could not check this name", className: "text-amber-600" },
 };
 
-const classMap = {
-  loading: "bg-gray-100",
-  ok: "bg-green-500 hover:bg-green-600",
-  error: "bg-red-500 hover:bg-red-600",
-};
+const CampaignInfoForm: React.FC<{
+  onNameStatusChange?: (status: CampaignNameStatus) => void;
+}> = ({ onNameStatusChange }) => {
+  const { campaignId, campaignDescription, setCampaignDescription, campaignPassword, setCampaignPassword } =
+    useCampaignConfigEdit((state) => state);
+  const isExistingCampaign = campaignId !== -1;
+  const { campaignName, setCampaignName, status } = useCampaignNameState();
+  const statusDisplay = nameStatusDisplay[status];
 
-const CampaignInfoForm = () => {
-  const { campaignDescription, setCampaignDescription, campaignPassword, setCampaignPassword } = useCampaignConfigEdit(
-    (state) => state,
-  );
-  const { campaignName, setCampaignName, status, isChanged, checkIsValidName } = useCampaignNameState();
+  useEffect(() => {
+    onNameStatusChange?.(status);
+  }, [status, onNameStatusChange]);
 
   return (
     <Card>
@@ -35,18 +39,12 @@ const CampaignInfoForm = () => {
           value={campaignName ?? ""}
           onChange={(e) => setCampaignName(e.target.value)}
           className="grow"
+          color={status === "taken" ? "failure" : undefined}
         />
-        {status && !isChanged ? (
-          <Button className={`${classMap[status]} cursor-default text-white`}>{stateMessageMap[status]}</Button>
-        ) : (
-          <Button
-            color="gray"
-            disabled={!isChanged}
-            onClick={() => checkIsValidName()}
-            className="border border-gray-300 bg-gray-50 font-medium text-gray-900 hover:bg-gray-100"
-          >
-            Validate
-          </Button>
+        {statusDisplay && (
+          <span className={`shrink-0 text-sm font-medium ${statusDisplay.className}`} aria-live="polite">
+            {statusDisplay.text}
+          </span>
         )}
       </div>
       <div className="flex items-center gap-2">
@@ -64,24 +62,20 @@ const CampaignInfoForm = () => {
         />
       </div>
       <div className="flex items-center gap-2">
-        <label htmlFor="camapginPassword" className="block text-sm font-medium text-gray-900">
+        <label htmlFor="campaignPassword" className="block text-sm font-medium text-gray-900">
           Password
         </label>
-        <Tooltip
-          content={
-            <div>
-              <p>The password is used to authenticate the user when they access the campaign.</p>
-            </div>
-          }
-          trigger="hover"
-          placement="bottom"
-        >
-          <button className="text-gray-500">
-            <span className="icon-[mingcute--question-fill] mt-1 h-6 w-6"></span>
-          </button>
-        </Tooltip>
-        <PasswordForm password={campaignPassword} setPassword={setCampaignPassword} />
+        <PasswordForm
+          password={campaignPassword}
+          setPassword={setCampaignPassword}
+          placeholder={isExistingCampaign ? "Leave empty to keep the current password" : undefined}
+        />
       </div>
+      {/* Shown inline rather than in a hover-only tooltip, so it is visible on touch screens. */}
+      <p className="-mt-2 text-xs text-gray-500">
+        Participants enter this password to join the campaign.
+        {isExistingCampaign && " Leave it empty to keep the current one; a new password applies to new joins."}
+      </p>
     </Card>
   );
 };

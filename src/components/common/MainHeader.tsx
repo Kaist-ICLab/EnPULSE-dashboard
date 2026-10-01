@@ -8,6 +8,8 @@ import Link from "next/link";
 import AddQuestionHeader from "../configuration/header/AddQuestionHeader";
 import { Button, Dropdown, DropdownItem } from "flowbite-react";
 import UndoRedoButtons from "../configuration/header/UndoRedoButtons";
+import { parseExportedCampaignConfig } from "@/utils/importedConfig";
+import { notify } from "@/utils/notify";
 
 const CampaignCreateHeader: React.FC = () => {
   const pathname = usePathname();
@@ -55,10 +57,12 @@ const CampaignCreateHeader: React.FC = () => {
                 if (!file) return;
                 try {
                   const raw = await file.text();
+                  // Validate before navigating so a bad file is reported here, not in the wizard.
+                  parseExportedCampaignConfig(raw);
                   sessionStorage.setItem(process.env.NEXT_PUBLIC_PENDING_IMPORTED_CONFIG_KEY ?? "", raw);
                   router.push("/create/general");
-                } catch {
-                  window.alert("Failed to read configuration file.");
+                } catch (error) {
+                  notify.error("Failed to import configuration file.", error instanceof Error ? error.message : "");
                 }
                 e.target.value = "";
               }}

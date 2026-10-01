@@ -6,18 +6,18 @@ import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 import { flattenSurveyQuestions } from "@/services/chartService";
 import { ComparisonType } from "@/types/dashboard";
 import { Button, Checkbox, Spinner, Tooltip } from "flowbite-react";
-import Link from "next/link";
+import { COMPARISON_CHART_ID } from "@/components/dashboard/chart/ComparisonChart";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DailyStatTableHeader from "./DailyStatTableHeader";
 import DailyStatTableRow from "./DailyStatTableRow";
-import SensorDropdown from "../SensorDropdown";
 import useResponsiveParticipantCount from "@/hooks/chart/useResponsiveParticipantCount";
+import SensorDropdown from "../SensorDropdown";
 
 const ChartTooltipContent: React.FC = () => {
   return (
     <>
       <p>Daily count: # of data collected in a day. </p>
-      <p className="mb-1">Timeline: # of data collected in a 3 hour window.</p>
+      <p className="mb-1">Timeline: # of data collected in each 2-hour window (in this browser&apos;s time zone).</p>
       <p>Hover over the components to see the details!</p>
     </>
   );
@@ -51,12 +51,14 @@ const DailyOverviewTable: React.FC = () => {
   const { campaign, campaignParticipants, campaignTables } = useCampaignStore((state) => state);
   const { updateComparisonParams, updateSelectedSection } = useSectionParamStore((state) => state);
 
-  // The table shows as many participants as fit into its current width.
+  // Show as many participants as fit the table's width (a fixed 5 left most of a large
+  // monitor empty). Nothing is fetched until the width is measured, so the overview loads
+  // once with the right page size instead of once with 5 and again after measuring.
   const tableContainerRef = useRef<HTMLDivElement>(null);
-  const rowsPerPage = useResponsiveParticipantCount(tableContainerRef);
-
-  const { data, loading, maxDailyCount, columns, page, totalPage, setPage } = useUserDailyStat(rowsPerPage);
-  const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } =
+  const fittingParticipantCount = useResponsiveParticipantCount(tableContainerRef);
+  const { data, loading, maxDailyCount, maxSlotCount, columns, page, rowsPerPage, totalPage, setPage } =
+    useUserDailyStat(fittingParticipantCount);
+  const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked, selectedUuids } =
     useDailyStatTableCheckedState(data);
   const [displayMode, setDisplayMode] = useState<DisplayMode>("count");
 
@@ -145,21 +147,28 @@ const DailyOverviewTable: React.FC = () => {
         {checkCount > 0 ? (
           <>
             {checkCount == 1 ? "Participant" : `${checkCount} Participants`} selected
-            <Link href={`./dashboard/#timeline-overview-comparison-chart`}>
-              <Button
-                color="blue"
-                size="2xs"
-                className="flex flex-row gap-1 px-2.5 py-1 text-base"
-                onClick={() => {
-                  updateComparisonParams(ComparisonType.Sensors, {
-                    uuid: [data[checkedState.findIndex((state) => state)].uuid],
-                  });
-                  updateSelectedSection(ComparisonType.Sensors);
-                }}
-              >
-                <span className="text-sm">Timeline Overview</span>
-              </Button>
-            </Link>
+            <Button
+              color="blue"
+              size="2xs"
+              className="flex flex-row gap-1 px-2.5 py-1 text-base"
+              onClick={() => {
+                // Preselect the first data field of each sensor; with no field selected the
+                // chart only said "Select at least one sensor", so the button looked broken.
+                const fieldId = Array.from(campaignTables.values()).flatMap((t) => {
+                  const field = t.campaign_table_field.find((f) => f.field_role === "data");
+                  return field?.id !== undefined ? [field.id] : [];
+                });
+                updateComparisonParams(ComparisonType.Sensors, {
+                  uuid: [selectedUuids[0]],
+                  fieldId,
+                  questionId: [],
+                });
+                updateSelectedSection(ComparisonType.Sensors);
+                document.getElementById(COMPARISON_CHART_ID)?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              <span className="text-sm">Timeline Overview</span>
+            </Button>
           </>
         ) : (
           <span>No participant selected</span>
@@ -211,7 +220,8 @@ const DailyOverviewTable: React.FC = () => {
                   key={`row-${row.kind}-${row.id}`}
                   row={row}
                   data={data}
-                  maxValue={maxDailyCount}
+                  maxDailyCount={maxDailyCount}
+                  maxSlotCount={maxSlotCount}
                   displayMode={displayMode}
                 />
               ))}
@@ -240,7 +250,7 @@ const DailyOverviewTable: React.FC = () => {
           </span>
           <button
             className="flex items-center text-gray-700 enabled:cursor-pointer disabled:text-gray-400"
-            disabled={page == totalPage}
+            disabled={page >= totalPage}
             onClick={() => setPage(page + 1)}
           >
             <span className="icon-[material-symbols-light--chevron-right-rounded] h-6 w-6"></span>

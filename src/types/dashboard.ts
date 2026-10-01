@@ -18,7 +18,6 @@ export type ChartPinQueryOption =
 
 export type UserDailyStatData = {
   uuid: string;
-  contacts: number;
   tables: { table_id: number; totalCount: number; counts: number[] }[];
   surveys: { survey_id: number; totalCount: number; counts: number[] }[];
 };

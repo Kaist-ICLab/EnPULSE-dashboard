@@ -25,6 +25,7 @@ import {
   defaultAction,
   defaultDetection,
 } from "@/types/trigger";
+import { DEFAULT_WATCH_SURVEY_EXPIRE_MS } from "@/constants/survey";
 import { Json } from "@/lib/schema";
 import { DATE_FORMAT } from "@/utils/date";
 import dayjs from "dayjs";
@@ -40,6 +41,11 @@ export interface ExportedCampaignConfig {
   campaign_trigger: CampaignTrigger[];
   webapps: CampaignWebapp[];
 }
+
+/** A config read from a file: exports made before triggers were included have none. */
+export type ImportedCampaignConfig = Omit<ExportedCampaignConfig, "campaign_trigger"> & {
+  campaign_trigger?: CampaignTrigger[];
+};
 
 export type CampaignConfigEditState = ExportedCampaignConfig & {
   campaignId: number;
@@ -165,7 +171,15 @@ export type CampaignConfigEditActions = {
   updateWebappUrl: (index: number, url: string) => void;
   updateWebappIcon: (index: number, iconPath: string) => void;
 
-  setCampaignUsingImportedConfig: (config: ExportedCampaignConfig) => void;
+  setCampaignUsingImportedConfig: (config: ImportedCampaignConfig) => void;
+
+  /**
+   * Replace the edit state with a freshly fetched campaign, e.g. after a save, so
+   * newly inserted rows carry their database ids and are not inserted again on the
+   * next save. Keeps the question clipboard. The password field is cleared: it has
+   * been saved, and an empty field means "keep the current password".
+   */
+  resetFromCampaign: (campaign: FetchedCampaign) => void;
 };
 
 export type CampaignConfigEditStore = CampaignConfigEditState & CampaignConfigEditActions;
@@ -314,8 +328,13 @@ function getDefaultState(): CampaignConfigEditState {
     campaignName: "",
     campaignDescription: "",
     campaignPassword: "",
-    campaignStartTime: dayjs().format(DATE_FORMAT),
-    campaignEndTime: dayjs().add(1, "day").format(DATE_FORMAT),
+    // Rounded to the minute so the server- and client-rendered wizard agree (hydration).
+    campaignStartTime: dayjs().startOf("minute").format(DATE_FORMAT),
+    // 30 days rather than 1: a campaign is often created ahead of when participants
+    // actually join (e.g. prepared the day before a booth/demo), and join-campaign
+    // rejects joining a campaign whose end_time has already passed. Researchers can
+    // still shorten it.
+    campaignEndTime: dayjs().startOf("minute").add(30, "day").format(DATE_FORMAT),
     tables: [],
     surveys: [],
     campaign_trigger: [],
@@ -325,7 +344,7 @@ function getDefaultState(): CampaignConfigEditState {
   };
 }
 
-function getStateFromCampaign(campaign: FetchedCampaign): CampaignConfigEditState {
+export function getStateFromCampaign(campaign: FetchedCampaign): CampaignConfigEditState {
   return {
     campaignId: campaign.id,
     campaignName: campaign.name,
@@ -377,13 +396,17 @@ export const createCampaignConfigEditStore = (campaign?: FetchedCampaign) => {
           });
         },
 
+        // Clearing a datetime input sends "", which dayjs formats as "Invalid Date".
+        // Ignore such values so the previous valid time is kept.
         setCampaignStartTime: (startTime: string) => {
+          if (!startTime || !dayjs(startTime).isValid()) return;
           set((state) => {
             state.campaignStartTime = dayjs(startTime).format(DATE_FORMAT);
           });
         },
 
         setCampaignEndTime: (endTime: string) => {
+          if (!endTime || !dayjs(endTime).isValid()) return;
           set((state) => {
             state.campaignEndTime = dayjs(endTime).format(DATE_FORMAT);
           });
@@ -501,6 +524,9 @@ export const createCampaignConfigEditStore = (campaign?: FetchedCampaign) => {
               title: `Survey ${state.surveys.length + 1}`,
               description: "",
               device_type: DeviceType.Phone,
+              // Only watch surveys read this, but the default phone -> watch switch
+              // below should not find a 0 already there.
+              expire_after_ms: DEFAULT_WATCH_SURVEY_EXPIRE_MS,
               survey_question: [],
             });
           });
@@ -541,6 +567,12 @@ export const createCampaignConfigEditStore = (campaign?: FetchedCampaign) => {
             if (survey.device_type === deviceType) return;
 
             if (deviceType === DeviceType.Watch) {
+              // expire_after_ms defaults to 0 in the database; a survey created as Phone
+              // and switched to Watch would otherwise expire the instant it opens.
+              if (!survey.expire_after_ms || survey.expire_after_ms <= 0) {
+                survey.expire_after_ms = DEFAULT_WATCH_SURVEY_EXPIRE_MS;
+              }
+
               const flattened: SurveyQuestion[] = [];
               const walk = (questions: SurveyQuestion[]) => {
                 for (const q of questions) {
@@ -755,6 +787,11 @@ export const createCampaignConfigEditStore = (campaign?: FetchedCampaign) => {
               case "text":
                 newTrigger.expression = { op: "Equal", value: "" };
                 break;
+              case "numberscale":
+                // Number-scale rules compare the actual scale value (not an option
+                // index), so start at the scale's minimum rather than 0.
+                newTrigger.expression = { op: "Equal", value: (question.config as { min?: number } | null)?.min ?? 0 };
+                break;
               default:
                 newTrigger.expression = { op: "Equal", value: 0 };
                 break;
@@ -942,7 +979,16 @@ export const createCampaignConfigEditStore = (campaign?: FetchedCampaign) => {
           });
         },
 
-        setCampaignUsingImportedConfig: (config: ExportedCampaignConfig) => {
+        resetFromCampaign: (campaign: FetchedCampaign) => {
+          set((state) => ({
+            // Cloned so freezing by Immer cannot affect the caller's copy, which is
+            // also handed to the campaign store.
+            ...getStateFromCampaign(structuredClone(campaign)),
+            questionClipboard: state.questionClipboard,
+          }));
+        },
+
+        setCampaignUsingImportedConfig: (config: ImportedCampaignConfig) => {
           set((state) => {
             const walkQuestions = (questions: SurveyQuestion[]) => {
               questions.forEach((q) => {
@@ -969,17 +1015,28 @@ export const createCampaignConfigEditStore = (campaign?: FetchedCampaign) => {
               });
             });
 
-            state.campaign_trigger.forEach((t) => {
-              state.removedEntries.campaign_trigger.push(t.id ?? -1);
-            });
-
             state.webapps.forEach((w) => {
               state.removedEntries.webapp.push(w.id ?? -1);
             });
 
+            if (config.campaign_trigger) {
+              state.campaign_trigger.forEach((t) => {
+                state.removedEntries.campaign_trigger.push(t.id ?? -1);
+              });
+              state.campaign_trigger = config.campaign_trigger;
+            } else {
+              // Older exports carry no triggers. Keep the existing ones instead of
+              // deleting them, but clear their survey selections: the indexes pointed
+              // into the survey list that has just been replaced.
+              state.campaign_trigger.forEach((t) => {
+                t.actions.forEach((a) => {
+                  if (a.kind === "ema" || a.kind === "watch_ema") a.surveyIndex = -1;
+                });
+              });
+            }
+
             state.tables = config.tables;
             state.surveys = config.surveys;
-            state.campaign_trigger = config.campaign_trigger ?? [];
             state.webapps = config.webapps ?? [];
           });
         },

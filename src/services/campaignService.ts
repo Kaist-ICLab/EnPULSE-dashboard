@@ -26,9 +26,34 @@ type SingleLevelSurveyQuestion = Omit<FetchedSurveyQuestion, "survey_question_tr
   })[];
 };
 
+// survey_question has no order column, so the question's position among its siblings
+// is stored in its `config` JSON (the app ignores unknown config keys). Questions saved
+// before this have no position and fall back to id order.
+const QUESTION_POSITION_KEY = "position";
+
+function getQuestionPosition(q: { config: unknown }): number {
+  const position = (q.config as Record<string, unknown> | null)?.[QUESTION_POSITION_KEY];
+  return typeof position === "number" ? position : Number.MAX_SAFE_INTEGER;
+}
+
+function sortByQuestionPosition<T extends { id?: number; config: unknown }>(questions: T[]): T[] {
+  return questions.sort((a, b) => getQuestionPosition(a) - getQuestionPosition(b) || (a.id ?? 0) - (b.id ?? 0));
+}
+
+/** Write each question's index among its siblings into its config, at every nesting level. */
+function assignQuestionPositions(questions: SurveyQuestion[]) {
+  questions.forEach((q, index) => {
+    q.config = {
+      ...((q.config as object | null) ?? {}),
+      [QUESTION_POSITION_KEY]: index,
+    } as unknown as SurveyQuestion["config"];
+    q.survey_question_trigger.forEach((t) => assignQuestionPositions(t.survey_question));
+  });
+}
+
 function restoreSurveyHierarchy(surveyQuestion: SingleLevelSurveyQuestion, questionList: SingleLevelSurveyQuestion[]) {
   for (const trigger of surveyQuestion.survey_question_trigger) {
-    const childQuestion = questionList.filter((q) => q.triggered_by === trigger.id);
+    const childQuestion = sortByQuestionPosition(questionList.filter((q) => q.triggered_by === trigger.id));
     trigger.survey_question = childQuestion;
 
     childQuestion.forEach((q) => restoreSurveyHierarchy(q, questionList));
@@ -55,6 +80,9 @@ export const getCampaignList = async (): Promise<Map<number, CampaignListItem>> 
   return new Map(data.map((campaign) => [campaign.id, campaign]));
 };
 
+/** Thrown by getCampaignInfo when no campaign has the given id, as opposed to a backend failure. */
+export class CampaignNotFoundError extends Error {}
+
 export const getCampaignInfo = async (campaignId: number): Promise<FetchedCampaign> => {
   const { data, error } = await supabase
     .from("campaigns")
@@ -64,10 +92,12 @@ export const getCampaignInfo = async (campaignId: number): Promise<FetchedCampai
     .eq("id", campaignId)
     .single();
 
+  // PGRST116: `.single()` matched zero rows.
+  if (error?.code === "PGRST116") throw new CampaignNotFoundError(error.message);
   if (error) throw new Error(error.message);
 
   data.survey.forEach((s) => {
-    const topLevelSurveyQuestion = s.survey_question.filter((sq) => sq.triggered_by === null);
+    const topLevelSurveyQuestion = sortByQuestionPosition(s.survey_question.filter((sq) => sq.triggered_by === null));
     topLevelSurveyQuestion.forEach((sq) => restoreSurveyHierarchy(sq, s.survey_question));
     s.survey_question = topLevelSurveyQuestion;
   });
@@ -153,6 +183,51 @@ export const upsertCampaign = async (
   return data[0].id;
 };
 
+const NEW_ROW_INSERT_CONCURRENCY = 8;
+
+/**
+ * Upsert rows and return their database ids in the same order as `rows`.
+ *
+ * Children are linked to parents by these ids, which used to be read positionally from a
+ * single bulk upsert's RETURNING list; Postgres does not guarantee that order. Existing
+ * rows (with an id) are upserted in bulk and matched by id; new rows are inserted one per
+ * request (a few at a time) so each returned id is known to belong to its row.
+ */
+async function upsertReturningIds<Row extends { id?: number }>(table: string, rows: Row[]): Promise<number[]> {
+  const ids: number[] = new Array(rows.length);
+
+  const existing = rows.map((row, index) => ({ row, index })).filter(({ row }) => typeof row.id === "number");
+  if (existing.length > 0) {
+    const { data, error } = await supabase
+      .from(table as never)
+      .upsert(existing.map(({ row }) => row) as never, { defaultToNull: false })
+      .select("id");
+    if (error) throw new Error(error.message);
+    const returned = new Set((data as { id: number }[]).map((d) => d.id));
+    for (const { row, index } of existing) {
+      if (!returned.has(row.id as number)) throw new Error(`Row ${row.id} in ${table} was not saved.`);
+      ids[index] = row.id as number;
+    }
+  }
+
+  const created = rows.map((row, index) => ({ row, index })).filter(({ row }) => typeof row.id !== "number");
+  for (let start = 0; start < created.length; start += NEW_ROW_INSERT_CONCURRENCY) {
+    await Promise.all(
+      created.slice(start, start + NEW_ROW_INSERT_CONCURRENCY).map(async ({ row, index }) => {
+        const { data, error } = await supabase
+          .from(table as never)
+          .insert(row as never)
+          .select("id")
+          .single();
+        if (error) throw new Error(error.message);
+        ids[index] = (data as { id: number }).id;
+      }),
+    );
+  }
+
+  return ids;
+}
+
 export const upsertCampaignTrigger = async (
   triggers: CampaignTrigger[],
   campaignId: number,
@@ -193,13 +268,7 @@ export const upsertCampaignTable = async (
   const propagatedCampaignTable = structuredClone(campaignTable);
   const insertedCampaignTable = structuredClone(campaignTable).map((v) => omit(v, "campaign_table_field"));
 
-  const { data, error } = await supabase
-    .from("campaign_table")
-    .upsert(insertedCampaignTable, { defaultToNull: false })
-    .select();
-
-  if (error) throw new Error(error.message);
-  const insertedId = data.map((d) => d.id);
+  const insertedId = await upsertReturningIds("campaign_table", insertedCampaignTable);
 
   if (insertChildTables) {
     propagatedCampaignTable.forEach((ct, idx) => {
@@ -222,22 +291,22 @@ export const upsertCampaignTableField = async (
     omit(v, "campaign_table_field_mapping"),
   );
 
-  const { data, error } = await supabase
-    .from("campaign_table_field")
-    .upsert(insertedCampaignTableField, { defaultToNull: false })
-    .select();
-  if (error) throw new Error(error.message);
-  const insertedId = data.map((d) => d.id);
+  const insertedId = await upsertReturningIds("campaign_table_field", insertedCampaignTableField);
 
   if (insertChildTables) {
     propagatedCampaignTableField.forEach((ctf, idx) => {
       ctf.campaign_table_field_mapping.forEach((ctfm) => (ctfm.field_id = insertedId[idx]));
     });
     const campaignTableFieldMappings = propagatedCampaignTableField.flatMap((ctf) => ctf.campaign_table_field_mapping);
-    await supabase
+    if (campaignTableFieldMappings.length === 0) return;
+    // New mappings (e.g. Gesture and Activity Recognition labels from templates) carry
+    // id -1. Sending several rows with the same id makes Postgres reject the whole
+    // upsert, so strip it as is done for fields above.
+    campaignTableFieldMappings.filter((m) => m.id === -1).forEach((m) => delete m.id);
+    const { error: mappingError } = await supabase
       .from("campaign_table_field_mapping")
-      .upsert(campaignTableFieldMappings, { defaultToNull: false })
-      .select();
+      .upsert(campaignTableFieldMappings, { defaultToNull: false });
+    if (mappingError) throw new Error(mappingError.message);
   }
 };
 
@@ -248,12 +317,14 @@ export const upsertSurvey = async (survey: Survey[], insertChildTables: boolean 
   const propagatedSurvey = structuredClone(survey);
   const insertedSurvey = structuredClone(survey).map((v) => omit(v, "survey_question"));
 
-  const { data, error } = await supabase.from("survey").upsert(insertedSurvey, { defaultToNull: false }).select();
-  if (error) throw new Error(error.message);
-  const insertedId = data.map((d) => d.id);
+  const insertedId = await upsertReturningIds("survey", insertedSurvey);
 
   if (insertChildTables) {
-    propagatedSurvey.forEach((s, idx) => recursivelyFillSurveyId(s.survey_question, insertedId[idx]));
+    propagatedSurvey.forEach((s, idx) => {
+      recursivelyFillSurveyId(s.survey_question, insertedId[idx]);
+      // Questions are flattened level by level below, so record sibling order first.
+      assignQuestionPositions(s.survey_question);
+    });
     const surveyQuestions = propagatedSurvey.flatMap((s) => s.survey_question);
     await upsertSurveyQuestion(surveyQuestions, insertChildTables);
   }
@@ -279,12 +350,7 @@ export const upsertSurveyQuestion = async (
     ),
   );
 
-  const { data, error } = await supabase
-    .from("survey_question")
-    .upsert(insertedSurveyQuestion, { defaultToNull: false })
-    .select();
-  if (error) throw new Error(error.message);
-  const insertedId = data.map((d) => d.id);
+  const insertedId = await upsertReturningIds("survey_question", insertedSurveyQuestion);
 
   if (insertChildTables) {
     propagatedSurveyQuestion.forEach((sq, idx) => {
@@ -307,13 +373,7 @@ export const upsertSurveyTrigger = async (
   const insertedSurveyTrigger = structuredClone(surveyTrigger).map((v) => omit(v, "survey_question"));
   insertedSurveyTrigger.filter((st) => st.id === -1).forEach((st) => delete st.id);
 
-  const { data, error } = await supabase
-    .from("survey_question_trigger")
-    .upsert(insertedSurveyTrigger, { defaultToNull: false })
-    .select();
-  if (error) throw new Error(error.message);
-
-  const insertedId = data.map((d) => d.id);
+  const insertedId = await upsertReturningIds("survey_question_trigger", insertedSurveyTrigger);
   if (insertChildTables) {
     propagatedSurveyTrigger.forEach((st, idx) => {
       st.survey_question.forEach((sq) => (sq.triggered_by = insertedId[idx]));
@@ -334,10 +394,32 @@ export const upsertCampaignWebapp = async (webapps: CampaignWebapp[]): Promise<v
   if (error) throw new Error(error.message);
 };
 
+/**
+ * Delete removed sensor tables, fields and mappings. Must run BEFORE upserting the
+ * campaign: campaign_table is unique on (campaign_id, name), so re-adding a removed
+ * sensor (or importing a config with the same sensors) would otherwise collide
+ * with the row that is still waiting to be deleted.
+ */
+export const deleteRemovedTables = async (removedEntries: RemovedEntries): Promise<void> => {
+  const deletions = [
+    { table: "campaign_table_field_mapping", ids: removedEntries.mapping },
+    { table: "campaign_table_field", ids: removedEntries.field },
+    { table: "campaign_table", ids: removedEntries.table },
+  ] as const;
+
+  for (const { table, ids } of deletions) {
+    const existingIds = ids.filter((id) => id !== -1);
+    if (existingIds.length === 0) continue;
+    const { error } = await supabase.from(table).delete().in("id", existingIds);
+    if (error) throw new Error(error.message);
+  }
+};
+
+/**
+ * Delete the remaining removed rows. Runs AFTER the upsert, because questions can be
+ * re-parented to a new trigger before their old parent is deleted.
+ */
 export const deleteEntries = async (removedEntries: RemovedEntries): Promise<void> => {
-  await supabase.from("campaign_table").delete().in("id", removedEntries.table);
-  await supabase.from("campaign_table_field").delete().in("id", removedEntries.field);
-  await supabase.from("campaign_table_field_mapping").delete().in("id", removedEntries.mapping);
   await supabase.from("survey").delete().in("id", removedEntries.survey);
   await supabase.from("survey_question").delete().in("id", removedEntries.question);
   await supabase.from("survey_question_trigger").delete().in("id", removedEntries.trigger);

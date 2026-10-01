@@ -21,7 +21,11 @@ const WebappPage: React.FC = () => {
   return (
     <>
       <WebappForm />
-      <PrevNextNavigation onNextClick={() => router.push("/create/triggers")} disabled={!isWebappValid} />
+      <PrevNextNavigation
+        prevHref="/create/active-sensing"
+        onNextClick={() => router.push("/create/triggers")}
+        disabled={!isWebappValid}
+      />
     </>
   );
 };

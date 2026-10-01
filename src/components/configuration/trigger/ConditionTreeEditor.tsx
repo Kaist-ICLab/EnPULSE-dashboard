@@ -47,7 +47,7 @@ const ConditionTreeEditor: React.FC<{
         }
         headerControls={
           <BlockHeaderButton danger onClick={onRemove}>
-            <span className="icon-[humbleicons--times] h-3 w-3" />
+            <span className="icon-[humbleicons--times] h-4 w-4" />
           </BlockHeaderButton>
         }
         switchOptions={(Object.keys(TRIGGER_SENSOR_KIND_LABEL) as TriggerSensorKind[]).map((s) => ({
@@ -70,7 +70,15 @@ const ConditionTreeEditor: React.FC<{
               sizing="sm"
               value={condition.value}
               onChange={(e) => onChange({ ...condition, value: e.target.value })}
+              color={values.includes(condition.value) ? undefined : "failure"}
             >
+              {/* Without this, a value that no longer exists (e.g. a renamed timing schedule)
+                  would display as the first option while still failing validation. */}
+              {!values.includes(condition.value) && (
+                <option value={condition.value} disabled>
+                  {condition.value ? `"${condition.value}" no longer exists` : "Select a value"}
+                </option>
+              )}
               {values.map((v) => (
                 <option key={v} value={v}>
                   {v}
@@ -102,7 +110,7 @@ const ConditionTreeEditor: React.FC<{
           <>
             <BlockHeaderButton onClick={() => onChange(condition.child)}>Unwrap</BlockHeaderButton>
             <BlockHeaderButton danger onClick={onRemove}>
-              <span className="icon-[humbleicons--times] h-3 w-3" />
+              <span className="icon-[humbleicons--times] h-4 w-4" />
             </BlockHeaderButton>
           </>
         }
@@ -136,11 +144,13 @@ const ConditionTreeEditor: React.FC<{
       }
       headerControls={
         <>
-          {condition.children.length <= 1 && (
+          {/* Only offer Unwrap with exactly one child: unwrapping an empty group
+              would replace the condition with `undefined` and crash the editor. */}
+          {condition.children.length === 1 && (
             <BlockHeaderButton onClick={() => onChange(condition.children[0])}>Unwrap</BlockHeaderButton>
           )}
           <BlockHeaderButton danger onClick={onRemove}>
-            <span className="icon-[humbleicons--times] h-3 w-3" />
+            <span className="icon-[humbleicons--times] h-4 w-4" />
           </BlockHeaderButton>
         </>
       }
@@ -201,7 +211,7 @@ const ChildAddBar: React.FC<{
     <button
       type="button"
       onClick={onAddDetection}
-      className="rounded-md bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800 hover:bg-blue-200"
+      className="rounded-md bg-blue-100 px-2.5 py-1 text-sm font-semibold text-blue-800 hover:bg-blue-200"
     >
       + Detection
     </button>
@@ -209,7 +219,7 @@ const ChildAddBar: React.FC<{
       <button
         type="button"
         onClick={onAddAnd}
-        className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 hover:bg-amber-200"
+        className="rounded-md bg-amber-100 px-2.5 py-1 text-sm font-semibold text-amber-800 hover:bg-amber-200"
       >
         + AND group
       </button>
@@ -218,7 +228,7 @@ const ChildAddBar: React.FC<{
       <button
         type="button"
         onClick={onAddOr}
-        className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 hover:bg-amber-200"
+        className="rounded-md bg-amber-100 px-2.5 py-1 text-sm font-semibold text-amber-800 hover:bg-amber-200"
       >
         + OR group
       </button>
@@ -227,7 +237,7 @@ const ChildAddBar: React.FC<{
       <button
         type="button"
         onClick={onAddNot}
-        className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 hover:bg-amber-200"
+        className="rounded-md bg-amber-100 px-2.5 py-1 text-sm font-semibold text-amber-800 hover:bg-amber-200"
       >
         + NOT group
       </button>

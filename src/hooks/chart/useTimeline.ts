@@ -94,6 +94,10 @@ export default function useTimeline(secitonType: ComparisonType, chartWidth: num
     setLoading(true);
     setError(null);
 
+    // Set by the cleanup when the selection changes before this request finishes,
+    // so a slow, older response cannot overwrite a newer one.
+    let ignore = false;
+
     async function fetchData() {
       let sensorPromise: Promise<TimelineData[]> = Promise.resolve([]);
       let surveyPromise: Promise<TimelineData[]> = Promise.resolve([]);
@@ -120,13 +124,23 @@ export default function useTimeline(secitonType: ComparisonType, chartWidth: num
         }
       }
 
-      const [sensorData, surveyData] = await Promise.all([sensorPromise, surveyPromise]);
-      setTimeline([...sensorData, ...surveyData]);
-      setBucketSize(bucketSize * 1000);
-      setLoading(false);
+      try {
+        const [sensorData, surveyData] = await Promise.all([sensorPromise, surveyPromise]);
+        if (ignore) return;
+        setTimeline([...sensorData, ...surveyData]);
+        setBucketSize(bucketSize * 1000);
+      } catch (e) {
+        if (ignore) return;
+        setError(e instanceof Error ? e : new Error(String(e)));
+      } finally {
+        if (!ignore) setLoading(false);
+      }
     }
 
     fetchData();
+    return () => {
+      ignore = true;
+    };
   }, [
     selectedCampaignId,
     currentComparisonParams,

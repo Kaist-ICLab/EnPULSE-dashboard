@@ -1,6 +1,6 @@
 export const VALIDATION_MESSAGES = {
-  INFO_INVALID: "General settings are missing a name or password.",
-  PASSIVE_SENSING_INVALID: "Passive sensing configuration has empty or duplicate schedules.",
+  INFO_INVALID: "General settings are missing a campaign name, or a password for a new campaign.",
+  PASSIVE_SENSING_INVALID: "A timing schedule under Passive Sensing is incomplete.",
   ACTIVE_SENSING_INVALID: "Active sensing configuration is invalid.",
   WEBAPP_INVALID: "A web app is missing an icon.",
   TRIGGER_INVALID: "One or more triggers are incomplete.",

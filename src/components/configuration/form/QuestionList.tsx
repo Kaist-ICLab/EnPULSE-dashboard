@@ -12,7 +12,10 @@ import {
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import SwitchingTextInput from "../../common/SwitchingTextInput";
 import TriggerCard from "./TriggerCard";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import ConfirmModal from "../../common/ConfirmModal";
+import NumberInput from "../../common/NumberInput";
+import { getNumberScaleIssue } from "@/constants/survey";
 
 const QuestionList: React.FC<{
   surveyIndex: number;
@@ -104,6 +107,8 @@ const QuestionCard: React.FC<{
     questionClipboard,
   } = useCampaignConfigEdit((state) => state);
   const canPasteHere = questionClipboard !== null;
+  const [isPasteOpen, setIsPasteOpen] = useState(false);
+  const childQuestionCount = question.survey_question_trigger.reduce((n, t) => n + t.survey_question.length, 0);
 
   const answerTypeOptions: { value: AnswerType; label: string }[] = [
     { value: "text", label: "Text" },
@@ -155,11 +160,13 @@ const QuestionCard: React.FC<{
             title="Copy question"
           ></span>
           {canPasteHere && (
-            <span
+            <button
+              type="button"
+              aria-label="Paste over this question"
               className="icon-[material-symbols--content-paste] h-5 w-5 cursor-pointer text-gray-500 hover:text-blue-500"
-              onClick={() => pasteSurveyQuestion(surveyIndex, questionPath)}
+              onClick={() => setIsPasteOpen(true)}
               title={`Paste over with: ${questionClipboard?.question || "copied question"}`}
-            ></span>
+            ></button>
           )}
           {questionPath[questionPath.length - 1] > 0 && (
             <span
@@ -229,23 +236,26 @@ const QuestionCard: React.FC<{
 
       {question.answer_type === "numberscale" && (
         <div className="mt-4 flex flex-col gap-4 border-t border-gray-200 pt-4">
+          {getNumberScaleIssue(scaleMin, scaleMax) && (
+            <p className="text-sm text-red-600">{getNumberScaleIssue(scaleMin, scaleMax)}</p>
+          )}
           <div className="flex flex-row items-center gap-2">
             <Label htmlFor={`scale-min-${pathKey}`} className="w-7 text-sm text-gray-700">
               Min
             </Label>
-            <TextInput
+            <NumberInput
               id={`scale-min-${pathKey}`}
-              type="number"
               sizing="sm"
+              integer
               value={scaleMin}
-              onChange={(e) => setNumberScaleRange(surveyIndex, questionPath, Number(e.target.value), scaleMax)}
+              onValueChange={(min) => setNumberScaleRange(surveyIndex, questionPath, min, scaleMax)}
               className="w-24"
             />
-            <Label htmlFor={`scale-min-${pathKey}`} className="ml-2 w-28 text-sm text-gray-700">
+            <Label htmlFor={`scale-min-label-${pathKey}`} className="ml-2 w-28 text-sm text-gray-700">
               Min number label
             </Label>
             <TextInput
-              id={`scale-min-${pathKey}`}
+              id={`scale-min-label-${pathKey}`}
               type="text"
               sizing="sm"
               value={scaleMinLabel}
@@ -257,19 +267,19 @@ const QuestionCard: React.FC<{
             <Label htmlFor={`scale-max-${pathKey}`} className="w-7 text-sm text-gray-700">
               Max
             </Label>
-            <TextInput
+            <NumberInput
               id={`scale-max-${pathKey}`}
-              type="number"
               sizing="sm"
+              integer
               value={scaleMax}
-              onChange={(e) => setNumberScaleRange(surveyIndex, questionPath, scaleMin, Number(e.target.value))}
+              onValueChange={(max) => setNumberScaleRange(surveyIndex, questionPath, scaleMin, max)}
               className="w-24"
             />
-            <Label htmlFor={`scale-max-${pathKey}`} className="ml-2 w-28 text-sm text-gray-700">
+            <Label htmlFor={`scale-max-label-${pathKey}`} className="ml-2 w-28 text-sm text-gray-700">
               Max number label
             </Label>
             <TextInput
-              id={`scale-max-${pathKey}`}
+              id={`scale-max-label-${pathKey}`}
               type="text"
               sizing="sm"
               value={scaleMaxLabel}
@@ -382,6 +392,32 @@ const QuestionCard: React.FC<{
             </div>
           )}
         </div>
+      )}
+      {isPasteOpen && (
+        <ConfirmModal
+          title="Paste over this question?"
+          message={
+            <>
+              <p>
+                This replaces &quot;{question.question || "this question"}&quot; with &quot;
+                {questionClipboard?.question || "the copied question"}&quot;.
+              </p>
+              {childQuestionCount > 0 && (
+                <p className="mt-2">
+                  Its branching rules and{" "}
+                  {childQuestionCount === 1 ? "1 follow-up question" : `${childQuestionCount} follow-up questions`} will
+                  be removed.
+                </p>
+              )}
+            </>
+          }
+          confirmLabel="Paste over"
+          onConfirm={() => {
+            setIsPasteOpen(false);
+            pasteSurveyQuestion(surveyIndex, questionPath);
+          }}
+          onCancel={() => setIsPasteOpen(false)}
+        />
       )}
     </Card>
   );

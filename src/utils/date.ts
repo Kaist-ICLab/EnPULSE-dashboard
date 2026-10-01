@@ -13,9 +13,15 @@ export function millisecondsToTimeString(ms: number): string {
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
 }
 
-export function timeStringToMilliseconds(timeString: string): number {
-  const [hours, minutes] = timeString.split(":").map(Number);
-  return (hours * 60 + minutes) * 60 * 1000;
+/**
+ * Parse an "HH:mm" time input value into milliseconds after midnight. Returns null
+ * for an empty or partial value (e.g. after deleting the hour), which previously
+ * produced NaN and showed "NaN:NaN".
+ */
+export function timeStringToMilliseconds(timeString: string): number | null {
+  const match = /^(\d{1,2}):(\d{2})/.exec(timeString);
+  if (!match) return null;
+  return (Number(match[1]) * 60 + Number(match[2])) * 60 * 1000;
 }
 
 export function millisecondsToMinutes(ms: number): number {

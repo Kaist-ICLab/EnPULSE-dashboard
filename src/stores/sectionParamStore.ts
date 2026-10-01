@@ -45,20 +45,28 @@ export type SectionParamStore = SectionParamState & SectionParamActions;
 function getInitialDate(campaign?: FetchedCampaign): Date {
   if (!campaign) return getLocalDay();
 
+  // Charts show the 24 hours from this date, so it must be midnight. Using the raw
+  // start/end time (e.g. 22:59) made a finished campaign open on a nearly empty window.
   if (dayjs(campaign.start_time).toDate() >= new Date()) {
-    return dayjs(campaign.start_time).toDate();
+    return dayjs(campaign.start_time).startOf("day").toDate();
   }
   if (dayjs(campaign.end_time).toDate() <= new Date()) {
-    return dayjs(campaign.end_time).toDate();
+    return dayjs(campaign.end_time).startOf("day").toDate();
   }
   return getLocalDay();
 }
 
 function getInitialComparisonParams(campaign?: FetchedCampaign): { [key in ComparisonType]: ComparisonParams } {
   const firstUuid = campaign?.profiles.slice(0, 1).map((p) => p.uuid) ?? [];
+  // Preselect the first data field so the comparison chart opens with something to show
+  // instead of "Select at least one sensor".
+  const firstDataField = campaign?.campaign_table
+    .flatMap((t) => t.campaign_table_field)
+    .find((f) => f.field_role === "data");
+  const fieldId = firstDataField ? [firstDataField.id] : [];
   return comparisonTypes.reduce(
     (acc, type) => {
-      acc[type] = { uuid: firstUuid, fieldId: [], questionId: [] };
+      acc[type] = { uuid: firstUuid, fieldId: [...fieldId], questionId: [] };
       return acc;
     },
     {} as { [key in ComparisonType]: ComparisonParams },

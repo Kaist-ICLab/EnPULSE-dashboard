@@ -102,21 +102,37 @@ export function serializeTimingScheduleConfig(entries: TimingScheduleEntry[]): J
   return entries as unknown as Json;
 }
 
-export function isTimingScheduleEntryComplete(entry: TimingScheduleEntry): boolean {
-  if (entry.value.trim().length === 0) return false;
+/** Why an entry is incomplete, as a user-facing sentence, or null when it is complete. */
+export function getTimingScheduleEntryIssue(entry: TimingScheduleEntry): string | null {
+  const name = entry.value.trim();
+  if (name.length === 0) return "A timing schedule has no name.";
   switch (entry.kind) {
     case "esm":
-      return (
-        entry.minInterval > 0 &&
-        entry.maxInterval >= entry.minInterval &&
-        entry.numSurvey > 0 &&
-        entry.endOfDay > entry.startOfDay
-      );
+      if (
+        ![entry.minInterval, entry.maxInterval, entry.startOfDay, entry.endOfDay, entry.numSurvey].every(
+          Number.isFinite,
+        )
+      ) {
+        return `Timing schedule "${name}" has an empty time or number.`;
+      }
+      if (entry.minInterval <= 0) return `Timing schedule "${name}" needs a minimum interval above 0.`;
+      if (entry.maxInterval < entry.minInterval) {
+        return `Timing schedule "${name}" has a maximum interval shorter than its minimum.`;
+      }
+      if (entry.numSurvey <= 0) return `Timing schedule "${name}" needs at least one survey per day.`;
+      if (entry.endOfDay <= entry.startOfDay) return `Timing schedule "${name}" must end after it starts each day.`;
+      return null;
     case "fixed":
-      return entry.timeOfDay.length > 0;
+      if (entry.timeOfDay.length === 0) return `Timing schedule "${name}" has no times of day.`;
+      if (!entry.timeOfDay.every(Number.isFinite)) return `Timing schedule "${name}" has an empty time of day.`;
+      return null;
     case "manual":
-      return true;
+      return null;
   }
+}
+
+export function isTimingScheduleEntryComplete(entry: TimingScheduleEntry): boolean {
+  return getTimingScheduleEntryIssue(entry) === null;
 }
 
 export function findTimingSensorTable(tables: CampaignTable[]): CampaignTable | undefined {

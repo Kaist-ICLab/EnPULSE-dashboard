@@ -45,9 +45,9 @@ export const Block: React.FC<{
 
         {wrapControl && (
           <>
-            <span className="ml-auto text-xs">wrap with:</span>
+            <span className="ml-auto text-sm">wrap with:</span>
             <div className="flex flex-wrap items-center gap-1">{wrapControl}</div>
-            {headerControls && <div className="ml-1 h-5 w-1 border-l border-white"></div>}
+            {headerControls && <div className="ml-1 h-7 w-1 border-l border-white"></div>}
           </>
         )}
         {headerControls && <div className="flex flex-wrap items-center gap-1">{headerControls}</div>}
@@ -65,8 +65,9 @@ export const BlockSlot: React.FC<{
   return <div className={`ml-2 border-l-4 pl-3 ${p.accent} flex flex-col gap-2`}>{children}</div>;
 };
 
-// A small chip-style button rendered inside a block's header strip. Uses a soft
-// translucent background so it stays legible on every palette.
+// A chip-style button rendered inside a block's header strip. Uses a soft translucent
+// background so it stays legible on every palette. Sized h-7/text-sm (was h-5/text-xs)
+// so it is easy to hit on a booth trackpad or touchscreen.
 export const BlockHeaderButton: React.FC<{
   onClick: () => void;
   children: React.ReactNode;
@@ -75,7 +76,7 @@ export const BlockHeaderButton: React.FC<{
   <button
     type="button"
     onClick={onClick}
-    className={`flex h-5 cursor-pointer items-center justify-center rounded-md px-2 text-xs font-semibold transition-colors ${
+    className={`flex h-7 cursor-pointer items-center justify-center rounded-md px-2.5 text-sm font-semibold transition-colors ${
       danger ? "bg-white/20 text-white hover:bg-red-600" : "bg-white/20 text-white hover:bg-white/40"
     }`}
   >

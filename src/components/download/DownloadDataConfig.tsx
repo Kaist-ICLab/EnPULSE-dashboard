@@ -15,7 +15,7 @@ const DownloadDataConfig = () => {
   const canDownload = selectedParticipantIds.length > 0 && selectedFieldIds.length > 0 && startDate <= endDate;
 
   return (
-    <Card className="max-w-3xl">
+    <Card className="max-w-3xl 2xl:max-w-5xl">
       <div className="space-y-4">
         <h6 className="text-xl font-semibold text-gray-900">Data Configuration</h6>
         <div className="flex w-full flex-row gap-4">

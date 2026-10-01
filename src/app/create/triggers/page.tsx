@@ -21,7 +21,11 @@ const Page: React.FC = () => {
   return (
     <>
       <TriggerForm />
-      <PrevNextNavigation onNextClick={() => router.push("/create/confirm")} disabled={!isTriggerValid} />
+      <PrevNextNavigation
+        prevHref="/create/webapp"
+        onNextClick={() => router.push("/create/confirm")}
+        disabled={!isTriggerValid}
+      />
     </>
   );
 };

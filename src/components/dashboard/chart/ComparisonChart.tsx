@@ -10,6 +10,9 @@ import ParticipantDropdown from "../ParticipantDropdown";
 import SectionTypeSelect from "../SectionTypeSelect";
 import SensorFieldDropdown from "../SensorFieldDropdown";
 
+/** Scroll target for the Daily Overview "Timeline Overview" button. */
+export const COMPARISON_CHART_ID = "comparison-chart";
+
 const ComparisonChart: React.FC = () => {
   const chartRef = useRef<HTMLDivElement>(null);
   const {
@@ -34,7 +37,7 @@ const ComparisonChart: React.FC = () => {
   };
 
   return (
-    <Card>
+    <Card id={COMPARISON_CHART_ID}>
       <div className="flex w-full flex-row items-center">
         <div className="flex flex-row items-center gap-2">
           <h2 className="text-2xl font-semibold">Comparison between</h2>

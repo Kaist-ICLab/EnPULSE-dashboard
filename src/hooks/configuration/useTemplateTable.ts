@@ -54,7 +54,7 @@ const appUsageLogSensor: TemplateCampaignTable = {
   campaign_table_field: [
     { name: "package_name", field_role: "data", field_type: "categorical" },
     { name: "installed_by", field_role: "data", field_type: "categorical" },
-    { name: "event_type", field_role: "data", field_type: "numerical" },
+    { name: "event_type", field_role: "data", field_type: "categorical" },
   ],
 };
 
@@ -105,8 +105,8 @@ const bluetoothScanSensor: TemplateCampaignTable = {
     { name: "name", field_role: "data", field_type: "categorical" },
     { name: "alias", field_role: "data", field_type: "categorical" },
     { name: "bond_state", field_role: "data", field_type: "numerical" },
-    { name: "class_type", field_role: "data", field_type: "numerical" },
-    { name: "connection_type", field_role: "data", field_type: "numerical" },
+    { name: "class_type", field_role: "data", field_type: "categorical" },
+    { name: "connection_type", field_role: "data", field_type: "categorical" },
     { name: "is_le", field_role: "data", field_type: "categorical" },
     { name: "rssi", field_role: "data", field_type: "numerical" },
   ],
@@ -118,7 +118,7 @@ const callLogSensor: TemplateCampaignTable = {
   description: "Call log sensor",
   campaign_table_field: [
     { name: "number", field_role: "data", field_type: "categorical" },
-    { name: "call_type", field_role: "data", field_type: "numerical" },
+    { name: "type", field_role: "data", field_type: "numerical" },
     { name: "duration", field_role: "data", field_type: "numerical" },
   ],
 };
@@ -163,7 +163,7 @@ const edaSensor: TemplateCampaignTable = {
   description: "Electrodermal activity sensor",
   campaign_table_field: [
     { name: "skin_conductance", field_role: "data", field_type: "numerical" },
-    { name: "status", field_role: "data", field_type: "numerical" },
+    { name: "status", field_role: "data", field_type: "categorical" },
   ],
 };
 
@@ -217,8 +217,8 @@ const heartRateSensor: TemplateCampaignTable = {
   description: "Heart rate sensor",
   campaign_table_field: [
     { name: "hr", field_role: "data", field_type: "numerical" },
-    { name: "hr_status", field_role: "data", field_type: "numerical" },
-    { name: "ibi", field_role: "ignore", field_type: "categorical" },
+    { name: "hr_status", field_role: "data", field_type: "categorical" },
+    { name: "ibi", field_role: "ignore", field_type: "numerical" },
     { name: "ibi_status", field_role: "ignore", field_type: "categorical" },
   ],
 };
@@ -259,7 +259,7 @@ const mediaSensor: TemplateCampaignTable = {
     { name: "media_type", field_role: "data", field_type: "categorical" },
     { name: "operation", field_role: "data", field_type: "categorical" },
     { name: "storage_type", field_role: "data", field_type: "categorical" },
-    { name: "file_name", field_role: "data", field_type: "categorical" },
+    { name: "file_name", field_role: "data", field_type: "text" },
     { name: "mime_type", field_role: "data", field_type: "categorical" },
     { name: "date_added", field_role: "data", field_type: "datetime" },
     { name: "date_modified", field_role: "data", field_type: "datetime" },
@@ -274,7 +274,7 @@ const messageLogSensor: TemplateCampaignTable = {
   campaign_table_field: [
     { name: "number", field_role: "data", field_type: "categorical" },
     { name: "message_type", field_role: "data", field_type: "categorical" },
-    { name: "contact_type", field_role: "data", field_type: "numerical" },
+    { name: "contact_type", field_role: "data", field_type: "categorical" },
   ],
 };
 
@@ -283,12 +283,12 @@ const notificationSensor: TemplateCampaignTable = {
   display_name: "Notification",
   description: "Notification sensor",
   campaign_table_field: [
-    { name: "title", field_role: "data", field_type: "categorical" },
-    { name: "text", field_role: "data", field_type: "categorical" },
+    { name: "title", field_role: "data", field_type: "text" },
+    { name: "text", field_role: "data", field_type: "text" },
     { name: "category", field_role: "data", field_type: "categorical" },
     { name: "event_type", field_role: "data", field_type: "categorical" },
-    { name: "package_name", field_role: "data", field_type: "categorical" },
-    { name: "visibility", field_role: "data", field_type: "numerical" },
+    { name: "package_name", field_role: "data", field_type: "text" },
+    { name: "visibility", field_role: "data", field_type: "categorical" },
   ],
 };
 
@@ -320,7 +320,7 @@ const skinTemperatureSensor: TemplateCampaignTable = {
   campaign_table_field: [
     { name: "ambient_temperature", field_role: "data", field_type: "numerical" },
     { name: "object_temperature", field_role: "data", field_type: "numerical" },
-    { name: "status", field_role: "data", field_type: "numerical" },
+    { name: "status", field_role: "data", field_type: "categorical" },
   ],
 };
 
@@ -353,10 +353,10 @@ const userInteractionSensor: TemplateCampaignTable = {
   display_name: "User Interaction",
   description: "User interaction sensor",
   campaign_table_field: [
-    { name: "class_name", field_role: "data", field_type: "categorical" },
-    { name: "package_name", field_role: "data", field_type: "categorical" },
-    { name: "text", field_role: "data", field_type: "categorical" },
-    { name: "event_type", field_role: "data", field_type: "numerical" },
+    { name: "class_name", field_role: "data", field_type: "text" },
+    { name: "package_name", field_role: "data", field_type: "text" },
+    { name: "text", field_role: "data", field_type: "text" },
+    { name: "event_type", field_role: "data", field_type: "categorical" },
   ],
 };
 
@@ -365,8 +365,8 @@ const wifiScanSensor: TemplateCampaignTable = {
   display_name: "WiFi Scan",
   description: "WiFi scan sensor",
   campaign_table_field: [
-    { name: "bssid", field_role: "data", field_type: "categorical" },
-    { name: "ssid", field_role: "data", field_type: "categorical" },
+    { name: "bssid", field_role: "data", field_type: "text" },
+    { name: "ssid", field_role: "data", field_type: "text" },
     { name: "frequency", field_role: "data", field_type: "numerical" },
     { name: "level", field_role: "data", field_type: "numerical" },
   ],
