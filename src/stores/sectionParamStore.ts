@@ -58,9 +58,15 @@ function getInitialDate(campaign?: FetchedCampaign): Date {
 
 function getInitialComparisonParams(campaign?: FetchedCampaign): { [key in ComparisonType]: ComparisonParams } {
   const firstUuid = campaign?.profiles.slice(0, 1).map((p) => p.uuid) ?? [];
+  // Preselect the first data field so the comparison chart opens with something to show
+  // instead of "Select at least one sensor".
+  const firstDataField = campaign?.campaign_table
+    .flatMap((t) => t.campaign_table_field)
+    .find((f) => f.field_role === "data");
+  const fieldId = firstDataField ? [firstDataField.id] : [];
   return comparisonTypes.reduce(
     (acc, type) => {
-      acc[type] = { uuid: firstUuid, fieldId: [], questionId: [] };
+      acc[type] = { uuid: firstUuid, fieldId: [...fieldId], questionId: [] };
       return acc;
     },
     {} as { [key in ComparisonType]: ComparisonParams },
