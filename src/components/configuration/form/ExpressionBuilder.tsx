@@ -10,8 +10,34 @@ interface ExpressionBuilderProps {
   setExpression: (expression: Expression) => void;
 }
 
+// Checkbox operators take different value shapes: "Contains" one option index,
+// "Equal"/"NotEqual" a set of indexes. Other answer types keep one shape.
+const getValueShape = (answerType: AnswerType, op: OperatorType) =>
+  answerType === "checkbox" ? (op === "Contains" ? "index" : "set") : "single";
+
 const ExpressionBuilder: React.FC<ExpressionBuilderProps> = ({ expression, question, setExpression }) => {
   const { expressionState, availableOperators, usesIndex } = useExpressionState(question.answer_type, expression);
+
+  const changeOperator = (op: OperatorType) => {
+    if (op === "Empty") {
+      setExpression({ op: "Empty" });
+      return;
+    }
+    const previousValue = expressionState.op === "Empty" ? undefined : (expressionState as UnaryExpression).value;
+    const previousShape = getValueShape(question.answer_type, expressionState.op);
+    const nextShape = getValueShape(question.answer_type, op);
+    // Keeping a value of the wrong shape (e.g. an index string after "Contains")
+    // crashed the multi-select when switching back to "=".
+    const value =
+      previousShape !== nextShape || previousValue === undefined
+        ? nextShape === "set"
+          ? []
+          : question.answer_type === "text"
+            ? ""
+            : 0
+        : previousValue;
+    setExpression({ op, value } as Expression);
+  };
 
   return (
     <div className="flex flex-row items-center gap-2">
@@ -19,13 +45,7 @@ const ExpressionBuilder: React.FC<ExpressionBuilderProps> = ({ expression, quest
       <Select
         value={expressionState.op}
         className="w-32"
-        onChange={(e) => {
-          setExpression(
-            e.target.value === "Empty"
-              ? { op: "Empty" }
-              : ({ op: e.target.value, value: (expressionState as UnaryExpression).value ?? "" } as Expression),
-          );
-        }}
+        onChange={(e) => changeOperator(e.target.value as OperatorType)}
       >
         {availableOperators.map((operator) => (
           <option key={operator.value} value={operator.value}>
@@ -97,7 +117,7 @@ const ValueSelector: React.FC<{
   if (answerType === "radio" || answerType === "binary" || (answerType === "checkbox" && op === "Contains")) {
     // Radio, binary and checkbox "Contains" compare the selected option's index.
     return (
-      <Select value={value as number} onChange={(e) => onChange(e.target.value)} className="grow">
+      <Select value={value as number} onChange={(e) => onChange(Number(e.target.value))} className="grow">
         {options.map((option, idx) => (
           <option key={idx} value={idx}>
             {option}
@@ -106,7 +126,7 @@ const ValueSelector: React.FC<{
       </Select>
     );
   } else {
-    const valueArray = value as number[];
+    const valueArray = Array.isArray(value) ? value : [];
     return (
       <Dropdown
         dismissOnClick={false}
