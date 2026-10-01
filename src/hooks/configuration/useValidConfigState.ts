@@ -2,8 +2,8 @@ import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvid
 import dayjs from "dayjs";
 import { useMemo } from "react";
 import { isTriggerComplete } from "@/types/trigger";
-import { DeviceType } from "@/types/survey";
-import { MIN_WATCH_SURVEY_EXPIRE_MS } from "@/constants/survey";
+import { DeviceType, SurveyQuestion } from "@/types/survey";
+import { MIN_WATCH_SURVEY_EXPIRE_MS, getNumberScaleIssue } from "@/constants/survey";
 import {
   findTimingSensorTable,
   getTimingScheduleEntries,
@@ -69,6 +69,26 @@ export function useValidConfigState() {
     );
     if (tooShort) {
       return `Watch survey "${tooShort.title || "Untitled"}" needs an expiration time of at least ${MIN_WATCH_SURVEY_EXPIRE_MS} ms.`;
+    }
+
+    // Number-scale ranges, at every nesting level (follow-up questions included).
+    const findScaleIssue = (questions: SurveyQuestion[]): string | null => {
+      for (const q of questions) {
+        if (q.answer_type === "numberscale") {
+          const config = (q.config ?? {}) as { min?: number; max?: number };
+          const issue = getNumberScaleIssue(config.min ?? 0, config.max ?? 10);
+          if (issue) return `Question "${q.question || "Untitled"}": ${issue}`;
+        }
+        for (const t of q.survey_question_trigger) {
+          const nested = findScaleIssue(t.survey_question);
+          if (nested) return nested;
+        }
+      }
+      return null;
+    };
+    for (const s of surveys) {
+      const issue = findScaleIssue(s.survey_question);
+      if (issue) return issue;
     }
     return null;
   }, [surveys]);

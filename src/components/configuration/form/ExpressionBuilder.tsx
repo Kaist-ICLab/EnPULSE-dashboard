@@ -3,6 +3,7 @@
 import { Select, TextInput, Dropdown, DropdownItem, Checkbox } from "flowbite-react";
 import { SurveyQuestion, Expression, OperatorType, AnswerType, UnaryExpression } from "@/types/survey";
 import useExpressionState from "@/hooks/configuration/useExpressionState";
+import { MAX_NUMBER_SCALE_STEPS } from "@/constants/survey";
 
 interface ExpressionBuilderProps {
   expression: Expression | null | undefined;
@@ -76,7 +77,9 @@ function getOptionsForType(question: SurveyQuestion): string[] {
     const hi = cfg?.max ?? 10;
     const step = cfg?.step ?? 1;
     const out: string[] = [];
-    for (let v = lo; v <= hi; v += step) {
+    // Guard against an oversized scale (validation flags it, but the editor must not
+    // build millions of options and freeze the tab meanwhile).
+    for (let v = lo; v <= hi && out.length <= MAX_NUMBER_SCALE_STEPS; v += step) {
       out.push(String(v));
     }
     return out;
