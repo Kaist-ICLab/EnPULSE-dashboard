@@ -44,24 +44,19 @@ const DashboardSidebar: React.FC = () => {
 
         {steps.map((step, index) => {
           const isActive = index === currentStepIndex;
-          const isCompleted = index < currentStepIndex;
+          // A checkmark means the step is passed AND valid (isAccessible[i + 1] is true only
+          // when every step up to i is valid), not merely that it comes before the current one.
+          const isCompleted = index < currentStepIndex && isAccessible[index + 1];
+          const isLocked = !isAccessible[index] && !isActive;
 
-          return (
-            <Link
-              key={index}
-              href={isAccessible[index] ? step.href : ""}
-              className={`group relative mb-8 flex items-center gap-4 ${
-                isActive ? "cursor-default" : "cursor-pointer"
-              }`}
-            >
+          const content = (
+            <>
               {/* Step number circle */}
               <div
                 className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-200 ${
-                  isActive
+                  isActive || isCompleted
                     ? "border-blue-600 bg-blue-600 text-white"
-                    : isCompleted
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "border-gray-300 bg-white text-gray-400"
+                    : "border-gray-300 bg-white text-gray-400"
                 }`}
               >
                 {isCompleted ? (
@@ -85,12 +80,38 @@ const DashboardSidebar: React.FC = () => {
                       ? "text-blue-600"
                       : isCompleted
                         ? "text-gray-700"
-                        : "text-gray-400 group-hover:text-gray-600"
+                        : isLocked
+                          ? "text-gray-300"
+                          : "text-gray-400 group-hover:text-gray-600"
                   }`}
                 >
                   {step.name}
                 </div>
               </div>
+            </>
+          );
+
+          // Locked steps used to be a Link with href="", which looked clickable but did nothing.
+          if (isLocked) {
+            return (
+              <div
+                key={index}
+                className="relative mb-8 flex cursor-not-allowed items-center gap-4"
+                title="Complete the previous steps first"
+                aria-disabled="true"
+              >
+                {content}
+              </div>
+            );
+          }
+
+          return (
+            <Link
+              key={index}
+              href={step.href}
+              className={`group relative mb-8 flex items-center gap-4 ${isActive ? "cursor-default" : "cursor-pointer"}`}
+            >
+              {content}
             </Link>
           );
         })}
