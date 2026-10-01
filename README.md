@@ -7,6 +7,7 @@ The dashboard utilizes `SUPABASE_SERVICE_ROLE_KEY`, which means that it has admi
 ### Supabase Key Configuration
 1. Copy the `.example.env` file and rename it to `.env`. Supabase key values will be read there.
 2. Set the value of `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` according to the `.env` file in your self-hosted supabase folder.
+3. (Optional) Set `NEXT_PUBLIC_DEMO_MODE=true` when the dashboard is used in a public demo. This hides destructive actions such as removing a campaign. The value is read at build time, so rebuild after changing it.
 
 ### Running the Project
 To run the dashboard locally, make sure you have Node.js installed, then follow these steps:
