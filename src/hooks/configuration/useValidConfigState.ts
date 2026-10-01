@@ -2,6 +2,8 @@ import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvid
 import dayjs from "dayjs";
 import { useMemo } from "react";
 import { isTriggerComplete } from "@/types/trigger";
+import { DeviceType } from "@/types/survey";
+import { MIN_WATCH_SURVEY_EXPIRE_MS } from "@/constants/survey";
 import {
   findTimingSensorTable,
   getTimingScheduleEntries,
@@ -17,6 +19,7 @@ export function useValidConfigState() {
     campaignStartTime,
     campaignEndTime,
     tables,
+    surveys,
     campaign_trigger,
     webapps,
   } = useCampaignConfigEdit((state) => state);
@@ -57,7 +60,19 @@ export function useValidConfigState() {
 
   // A survey with no linked timing trigger is a legal end state (equivalent to "manual"/no
   // automatic gate) — the guided "Schedule a Survey" flow nudges authors, but doesn't block.
-  const isActiveSensingValid = true;
+  // Watch surveys do need a usable expiration: the DB defaults expire_after_ms to 0, which
+  // makes the watch's countdown skip entirely, so the microEMA closes before it is shown.
+  const activeSensingIssue = useMemo(() => {
+    const tooShort = surveys.find(
+      (s) =>
+        s.device_type === DeviceType.Watch && (!s.expire_after_ms || s.expire_after_ms < MIN_WATCH_SURVEY_EXPIRE_MS),
+    );
+    if (tooShort) {
+      return `Watch survey "${tooShort.title || "Untitled"}" needs an expiration time of at least ${MIN_WATCH_SURVEY_EXPIRE_MS} ms.`;
+    }
+    return null;
+  }, [surveys]);
+  const isActiveSensingValid = activeSensingIssue === null;
 
   const isWebappValid = useMemo(() => {
     return webapps.every((webapp) => !!webapp.icon_path);
@@ -83,6 +98,7 @@ export function useValidConfigState() {
     isPassiveSensingValid,
     passiveSensingIssue,
     isActiveSensingValid,
+    activeSensingIssue,
     isWebappValid,
     isTriggerValid,
     isAccessible,

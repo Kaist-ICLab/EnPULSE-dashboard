@@ -11,6 +11,7 @@ export const ValidationBanner: React.FC = () => {
     isPassiveSensingValid,
     passiveSensingIssue,
     isActiveSensingValid,
+    activeSensingIssue,
     isWebappValid,
     isTriggerValid,
   } = useValidConfigState();
@@ -18,7 +19,7 @@ export const ValidationBanner: React.FC = () => {
   const issues: string[] = [];
   if (!isInfoValid) issues.push(infoIssue ?? VALIDATION_MESSAGES.INFO_INVALID);
   if (!isPassiveSensingValid) issues.push(passiveSensingIssue ?? VALIDATION_MESSAGES.PASSIVE_SENSING_INVALID);
-  if (!isActiveSensingValid) issues.push(VALIDATION_MESSAGES.ACTIVE_SENSING_INVALID);
+  if (!isActiveSensingValid) issues.push(activeSensingIssue ?? VALIDATION_MESSAGES.ACTIVE_SENSING_INVALID);
   if (!isWebappValid) issues.push(VALIDATION_MESSAGES.WEBAPP_INVALID);
   if (!isTriggerValid) issues.push(VALIDATION_MESSAGES.TRIGGER_INVALID);
 

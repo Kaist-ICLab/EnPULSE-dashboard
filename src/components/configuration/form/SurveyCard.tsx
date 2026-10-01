@@ -1,6 +1,7 @@
 "use client";
 
 import { DeviceType, Survey } from "@/types/survey";
+import { MIN_WATCH_SURVEY_EXPIRE_MS } from "@/constants/survey";
 import { Button, Card, Label, Select, TextInput } from "flowbite-react";
 import { useRouter } from "next/navigation";
 
@@ -71,16 +72,31 @@ const SurveyCard: React.FC<{
       </div>
       {survey.device_type === DeviceType.Watch && (
         <div className="flex flex-row items-center gap-4">
-          <Label htmlFor={`device-type-${surveyIndex}`} className="block text-sm font-medium text-gray-900">
+          <Label htmlFor={`expiration-time-${surveyIndex}`} className="block text-sm font-medium text-gray-900">
             Expiration Time (ms)
           </Label>
           <TextInput
             id={`expiration-time-${surveyIndex}`}
             type="number"
+            min={MIN_WATCH_SURVEY_EXPIRE_MS}
+            step={1000}
             value={survey.expire_after_ms ?? ""}
-            onChange={(e) => setSurveyExpireAfterMs(surveyIndex, Number(e.target.value))}
+            onChange={(e) => {
+              const parsed = Math.trunc(Number(e.target.value));
+              // 0 (or missing, on an older row) makes the watch's countdown loop skip
+              // entirely, so the microEMA closes as "expired" the instant it opens.
+              setSurveyExpireAfterMs(surveyIndex, Number.isFinite(parsed) ? parsed : 0);
+            }}
+            color={
+              !survey.expire_after_ms || survey.expire_after_ms < MIN_WATCH_SURVEY_EXPIRE_MS ? "failure" : undefined
+            }
             className="w-full max-w-xs"
           />
+          {(!survey.expire_after_ms || survey.expire_after_ms < MIN_WATCH_SURVEY_EXPIRE_MS) && (
+            <span className="text-sm text-red-600">
+              At least {MIN_WATCH_SURVEY_EXPIRE_MS} ms, or the prompt closes before it can be answered.
+            </span>
+          )}
         </div>
       )}
 

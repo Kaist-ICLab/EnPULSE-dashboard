@@ -25,6 +25,7 @@ import {
   defaultAction,
   defaultDetection,
 } from "@/types/trigger";
+import { DEFAULT_WATCH_SURVEY_EXPIRE_MS } from "@/constants/survey";
 import { Json } from "@/lib/schema";
 import { DATE_FORMAT } from "@/utils/date";
 import dayjs from "dayjs";
@@ -518,6 +519,9 @@ export const createCampaignConfigEditStore = (campaign?: FetchedCampaign) => {
               title: `Survey ${state.surveys.length + 1}`,
               description: "",
               device_type: DeviceType.Phone,
+              // Only watch surveys read this, but the default phone -> watch switch
+              // below should not find a 0 already there.
+              expire_after_ms: DEFAULT_WATCH_SURVEY_EXPIRE_MS,
               survey_question: [],
             });
           });
@@ -558,6 +562,12 @@ export const createCampaignConfigEditStore = (campaign?: FetchedCampaign) => {
             if (survey.device_type === deviceType) return;
 
             if (deviceType === DeviceType.Watch) {
+              // expire_after_ms defaults to 0 in the database; a survey created as Phone
+              // and switched to Watch would otherwise expire the instant it opens.
+              if (!survey.expire_after_ms || survey.expire_after_ms <= 0) {
+                survey.expire_after_ms = DEFAULT_WATCH_SURVEY_EXPIRE_MS;
+              }
+
               const flattened: SurveyQuestion[] = [];
               const walk = (questions: SurveyQuestion[]) => {
                 for (const q of questions) {
