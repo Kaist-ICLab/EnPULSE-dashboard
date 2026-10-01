@@ -54,7 +54,6 @@ const DashboardSidebar: React.FC = () => {
           </SidebarItem>
         </SidebarItemGroup>
         <SidebarItemGroup>
-          <MySidebarItem isActive={false} href="/campaigns" icon="icon-[material-symbols--home]" name="All Campaigns" />
           <MySidebarItem
             isActive={isActive("dashboard")}
             href={`${baseUrl}/dashboard`}

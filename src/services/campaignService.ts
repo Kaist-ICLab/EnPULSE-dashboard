@@ -112,6 +112,8 @@ export const getCampaignInfo = async (campaignId: number): Promise<FetchedCampai
     actions: loadActions(row.action, data.survey),
   }));
 
+  data.profiles = data.profiles.sort((a, b) => a.pid - b.pid);
+
   return data as unknown as FetchedCampaign;
 };
 

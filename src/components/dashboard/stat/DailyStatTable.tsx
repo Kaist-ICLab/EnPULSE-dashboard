@@ -58,9 +58,6 @@ const DailyOverviewTable: React.FC = () => {
   const fittingParticipantCount = useResponsiveParticipantCount(tableContainerRef);
   const { data, loading, maxDailyCount, maxSlotCount, columns, page, rowsPerPage, totalPage, setPage } =
     useUserDailyStat(fittingParticipantCount);
-  const totalParticipants = campaignParticipants.size;
-  const firstParticipantIndex = (page - 1) * rowsPerPage + 1;
-  const lastParticipantIndex = Math.min(page * rowsPerPage, totalParticipants);
   const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked, selectedUuids } =
     useDailyStatTableCheckedState(data);
   const [displayMode, setDisplayMode] = useState<DisplayMode>("count");
@@ -118,6 +115,10 @@ const DailyOverviewTable: React.FC = () => {
   );
 
   const visibleRows = useMemo(() => columns.filter(isRowVisible), [columns, isRowVisible]);
+
+  const totalParticipants = campaignParticipants.size;
+  const firstParticipantIndex = (page - 1) * rowsPerPage + 1;
+  const lastParticipantIndex = Math.min(page * rowsPerPage, totalParticipants);
 
   return (
     <div className="w-full rounded-xl bg-white p-6 shadow-md">
@@ -228,7 +229,7 @@ const DailyOverviewTable: React.FC = () => {
           </table>
         )}
       </div>
-      <div className="flex w-full items-center justify-between py-3">
+      <div className="mt-3 flex w-full items-center justify-between py-3">
         <div className="flex items-center gap-4">
           <span className="text-gray-900">
             {totalParticipants === 0
