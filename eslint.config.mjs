@@ -10,7 +10,15 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  // `eslint .` would otherwise lint generated build output.
+  { ignores: [".next/**", ".flowbite-react/**", "next-env.d.ts"] },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
+    // Allow intentionally unused parameters marked with a leading underscore.
+    rules: {
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+    },
+  },
 ];
 
 export default eslintConfig;
