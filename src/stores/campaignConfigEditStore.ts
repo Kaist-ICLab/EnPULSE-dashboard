@@ -767,6 +767,11 @@ export const createCampaignConfigEditStore = (campaign?: FetchedCampaign) => {
               case "text":
                 newTrigger.expression = { op: "Equal", value: "" };
                 break;
+              case "numberscale":
+                // Number-scale rules compare the actual scale value (not an option
+                // index), so start at the scale's minimum rather than 0.
+                newTrigger.expression = { op: "Equal", value: (question.config as { min?: number } | null)?.min ?? 0 };
+                break;
               default:
                 newTrigger.expression = { op: "Equal", value: 0 };
                 break;

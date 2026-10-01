@@ -80,12 +80,22 @@ const ValueSelector: React.FC<{
 
   const options = getOptionsForType(question);
 
-  if (
-    answerType === "radio" ||
-    answerType === "binary" ||
-    answerType === "numberscale" ||
-    (answerType === "checkbox" && op === "Contains")
-  ) {
+  if (answerType === "numberscale") {
+    // The app compares number-scale answers by their value (e.g. 1-5), not by the
+    // option's position, so store the value itself.
+    return (
+      <Select value={String(value)} onChange={(e) => onChange(Number(e.target.value))} className="grow">
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </Select>
+    );
+  }
+
+  if (answerType === "radio" || answerType === "binary" || (answerType === "checkbox" && op === "Contains")) {
+    // Radio, binary and checkbox "Contains" compare the selected option's index.
     return (
       <Select value={value as number} onChange={(e) => onChange(e.target.value)} className="grow">
         {options.map((option, idx) => (

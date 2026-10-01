@@ -36,7 +36,14 @@ export default function useExpressionState(answerType: AnswerType, expression: E
   }, [answerType]);
 
   const usesIndex = useMemo(() => {
-    if (answerType === "text" || answerType === "number" || answerType === "checkbox" || answerType === "binary")
+    // Number-scale rules store the scale value itself, so only radio compares an index.
+    if (
+      answerType === "text" ||
+      answerType === "number" ||
+      answerType === "checkbox" ||
+      answerType === "binary" ||
+      answerType === "numberscale"
+    )
       return false;
     return ["GreaterThan", "GreaterThanOrEqual", "LessThan", "LessThanOrEqual"].includes(expressionState.op);
   }, [answerType, expressionState]);
