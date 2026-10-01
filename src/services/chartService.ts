@@ -15,14 +15,6 @@ import { Ok, Err } from "@/utils/type";
 import { FetchedSurvey, FetchedSurveyQuestion, OptionQuestionConfig } from "@/types/survey";
 
 export async function getCampaignDailySummary(uuids: string[], tableIds: number[], date: Date) {
-  const { data: contactData, error: contactError } = await supabase
-    .from("profiles")
-    .select("messages(count)")
-    .in("uuid", uuids)
-    .order("uuid", { ascending: true });
-
-  if (contactError) throw new Error(contactError.message);
-
   const { data, error } = await supabase
     .from(`campaign_table_row_count`)
     .select("*")
@@ -37,10 +29,9 @@ export async function getCampaignDailySummary(uuids: string[], tableIds: number[
 
   if (data.length == 0) return [];
 
-  // Aggregate data per profile, with contacts, tables, and time_slots
-  const result: UserDailyStatData[] = uuids.map((uuid, idx) => ({
+  // Aggregate data per profile, with tables and time_slots
+  const result: UserDailyStatData[] = uuids.map((uuid) => ({
     uuid: uuid,
-    contacts: contactData[idx].messages[0].count,
     tables: [],
     surveys: [],
   }));

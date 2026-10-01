@@ -129,7 +129,7 @@ export const useUserDailyStat = (initialRowsPerPage: number) => {
         if (existing) {
           existing.surveys = surveys;
         } else if (surveys.some((s) => s.totalCount > 0)) {
-          byUuid.set(uuid, { uuid, contacts: 0, tables: [], surveys });
+          byUuid.set(uuid, { uuid, tables: [], surveys });
         }
       }
 
