@@ -47,12 +47,15 @@ const getSuggestedFileName = (campaignName: string) => {
 };
 
 const useExportCampaignConfig = () => {
-  const { campaignName, tables, surveys, webapps } = useCampaignConfigEdit((state) => state);
+  const { campaignName, tables, surveys, campaign_trigger, webapps } = useCampaignConfigEdit((state) => state);
 
   const exportCampaignConfig = useCallback(async () => {
+    // Triggers reference surveys by `surveyIndex` (position in `surveys`), which
+    // survives the id reset below because surveys are exported in the same order.
     const configToExport = {
       tables,
       surveys,
+      campaign_trigger,
       webapps,
     };
     const normalizedConfigToExport = setAllIdFieldsToMinusOne(configToExport);
@@ -98,7 +101,7 @@ const useExportCampaignConfig = () => {
     }
 
     triggerBrowserDownload();
-  }, [campaignName, tables, surveys, webapps]);
+  }, [campaignName, tables, surveys, campaign_trigger, webapps]);
 
   return { exportCampaignConfig };
 };

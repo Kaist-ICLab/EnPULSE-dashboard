@@ -41,6 +41,11 @@ export interface ExportedCampaignConfig {
   webapps: CampaignWebapp[];
 }
 
+/** A config read from a file: exports made before triggers were included have none. */
+export type ImportedCampaignConfig = Omit<ExportedCampaignConfig, "campaign_trigger"> & {
+  campaign_trigger?: CampaignTrigger[];
+};
+
 export type CampaignConfigEditState = ExportedCampaignConfig & {
   campaignId: number;
   campaignPassword: string;
@@ -165,7 +170,7 @@ export type CampaignConfigEditActions = {
   updateWebappUrl: (index: number, url: string) => void;
   updateWebappIcon: (index: number, iconPath: string) => void;
 
-  setCampaignUsingImportedConfig: (config: ExportedCampaignConfig) => void;
+  setCampaignUsingImportedConfig: (config: ImportedCampaignConfig) => void;
 
   /**
    * Replace the edit state with a freshly fetched campaign, e.g. after a save, so
@@ -959,7 +964,7 @@ export const createCampaignConfigEditStore = (campaign?: FetchedCampaign) => {
           }));
         },
 
-        setCampaignUsingImportedConfig: (config: ExportedCampaignConfig) => {
+        setCampaignUsingImportedConfig: (config: ImportedCampaignConfig) => {
           set((state) => {
             const walkQuestions = (questions: SurveyQuestion[]) => {
               questions.forEach((q) => {
@@ -986,17 +991,28 @@ export const createCampaignConfigEditStore = (campaign?: FetchedCampaign) => {
               });
             });
 
-            state.campaign_trigger.forEach((t) => {
-              state.removedEntries.campaign_trigger.push(t.id ?? -1);
-            });
-
             state.webapps.forEach((w) => {
               state.removedEntries.webapp.push(w.id ?? -1);
             });
 
+            if (config.campaign_trigger) {
+              state.campaign_trigger.forEach((t) => {
+                state.removedEntries.campaign_trigger.push(t.id ?? -1);
+              });
+              state.campaign_trigger = config.campaign_trigger;
+            } else {
+              // Older exports carry no triggers. Keep the existing ones instead of
+              // deleting them, but clear their survey selections: the indexes pointed
+              // into the survey list that has just been replaced.
+              state.campaign_trigger.forEach((t) => {
+                t.actions.forEach((a) => {
+                  if (a.kind === "ema" || a.kind === "watch_ema") a.surveyIndex = -1;
+                });
+              });
+            }
+
             state.tables = config.tables;
             state.surveys = config.surveys;
-            state.campaign_trigger = config.campaign_trigger ?? [];
             state.webapps = config.webapps ?? [];
           });
         },

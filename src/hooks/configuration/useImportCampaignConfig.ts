@@ -1,5 +1,5 @@
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
-import { ExportedCampaignConfig } from "@/stores/campaignConfigEditStore";
+import { parseExportedCampaignConfig } from "@/utils/importedConfig";
 import { notify } from "@/utils/notify";
 import { useCallback } from "react";
 
@@ -20,12 +20,16 @@ const useImportCampaignConfig = () => {
 
       try {
         const raw = await readFileAsText(file);
-        const parsed = JSON.parse(raw) as ExportedCampaignConfig;
+        const parsed = parseExportedCampaignConfig(raw);
 
         setCampaignUsingImportedConfig(parsed);
-        notify.success("Configuration imported");
-      } catch {
-        notify.error("Failed to import configuration file.");
+        notify.success(
+          parsed.campaign_trigger
+            ? "Configuration imported"
+            : "Configuration imported. It has no triggers, so existing triggers were kept but need their survey selected again.",
+        );
+      } catch (e) {
+        notify.error("Failed to import configuration file.", e instanceof Error ? e.message : "");
       }
     },
     [setCampaignUsingImportedConfig],

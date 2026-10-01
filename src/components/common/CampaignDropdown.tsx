@@ -6,6 +6,8 @@ import { Dropdown, DropdownDivider, DropdownHeader, DropdownItem } from "flowbit
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
+import { parseExportedCampaignConfig } from "@/utils/importedConfig";
+import { notify } from "@/utils/notify";
 
 const CampaignDropdown: React.FC = () => {
   const router = useRouter();
@@ -137,10 +139,12 @@ const CampaignDropdown: React.FC = () => {
           if (!file) return;
           try {
             const raw = await file.text();
+            // Validate before navigating so a bad file is reported here, not in the wizard.
+            parseExportedCampaignConfig(raw);
             sessionStorage.setItem(process.env.NEXT_PUBLIC_PENDING_IMPORTED_CONFIG_KEY ?? "", raw);
             router.push("/create/general");
-          } catch {
-            window.alert("Failed to read configuration file.");
+          } catch (error) {
+            notify.error("Failed to import configuration file.", error instanceof Error ? error.message : "");
           }
           e.target.value = "";
         }}
