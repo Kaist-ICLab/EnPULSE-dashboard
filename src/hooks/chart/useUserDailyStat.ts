@@ -66,29 +66,32 @@ export const useUserDailyStat = (initialRowsPerPage: number) => {
     setPage(1);
   };
 
-  // Per-column maximum daily count, used to scale the bar/timeline cells.
-  // Keyed by `${kind}-${id}` so sensor and survey ids don't collide.
-  const maxDailyCount = useMemo(() => {
-    const res = new Map<string, number>();
+  // Per-column scales for the two display modes, keyed by `${kind}-${id}` so sensor
+  // and survey ids don't collide. They must stay separate: Count mode draws the
+  // day's total, Timeline mode draws single 2-hour slots, and a day total is
+  // almost always larger than any one slot.
+  // - maxDailyCount: largest day total in the column (Count mode). The table's
+  //   "Daily Count Threshold" (daily_count_max) overrides it when set.
+  // - maxSlotCount: largest single 2-hour slot in the column (Timeline mode).
+  const { maxDailyCount, maxSlotCount } = useMemo(() => {
+    const daily = new Map<string, number>();
+    const slot = new Map<string, number>();
+
+    const addEntry = (key: string, totalCount: number, counts: number[]) => {
+      daily.set(key, Math.max(daily.get(key) ?? 0, totalCount));
+      slot.set(key, Math.max(slot.get(key) ?? 0, ...counts));
+    };
 
     for (const row of data) {
-      for (const table of row.tables) {
-        const key = `sensor-${table.table_id}`;
-        const rowMax = table.counts.reduce((acc, count) => Math.max(acc, count), 0);
-        res.set(key, Math.max(res.get(key) ?? 0, rowMax));
-      }
-      for (const survey of row.surveys) {
-        const key = `survey-${survey.survey_id}`;
-        const rowMax = survey.counts.reduce((acc, count) => Math.max(acc, count), 0);
-        res.set(key, Math.max(res.get(key) ?? 0, rowMax));
-      }
+      for (const table of row.tables) addEntry(`sensor-${table.table_id}`, table.totalCount, table.counts);
+      for (const survey of row.surveys) addEntry(`survey-${survey.survey_id}`, survey.totalCount, survey.counts);
     }
 
     campaignTables.entries().forEach(([tableId, table]) => {
-      if (table.daily_count_max > 0) res.set(`sensor-${tableId}`, table.daily_count_max);
+      if (table.daily_count_max > 0) daily.set(`sensor-${tableId}`, table.daily_count_max);
     });
 
-    return res;
+    return { maxDailyCount: daily, maxSlotCount: slot };
   }, [data, campaignTables]);
 
   useEffect(() => {
@@ -139,7 +142,7 @@ export const useUserDailyStat = (initialRowsPerPage: number) => {
     };
   }, [date, page, rowsPerPage, totalPage, uuids, lastManualSyncTime, tableIds, surveyIds]);
 
-  return { data, maxDailyCount, columns, loading, page, rowsPerPage, totalPage, setPage, setRowsPerPage };
+  return { data, maxDailyCount, maxSlotCount, columns, loading, page, rowsPerPage, totalPage, setPage, setRowsPerPage };
 };
 
 export default useUserDailyStat;

@@ -50,7 +50,7 @@ const DailyOverviewTable: React.FC = () => {
   const { campaign, campaignParticipants, campaignTables } = useCampaignStore((state) => state);
   const { updateComparisonParams, updateSelectedSection } = useSectionParamStore((state) => state);
 
-  const { data, loading, maxDailyCount, columns, page, rowsPerPage, totalPage, setPage, setRowsPerPage } =
+  const { data, loading, maxDailyCount, maxSlotCount, columns, page, rowsPerPage, totalPage, setPage, setRowsPerPage } =
     useUserDailyStat(5);
   const { checkCount, isAllChecked, toggleChecked, checkedState, toggleAllChecked } =
     useDailyStatTableCheckedState(data);
@@ -203,7 +203,8 @@ const DailyOverviewTable: React.FC = () => {
                   key={`row-${row.kind}-${row.id}`}
                   row={row}
                   data={data}
-                  maxValue={maxDailyCount}
+                  maxDailyCount={maxDailyCount}
+                  maxSlotCount={maxSlotCount}
                   displayMode={displayMode}
                 />
               ))}

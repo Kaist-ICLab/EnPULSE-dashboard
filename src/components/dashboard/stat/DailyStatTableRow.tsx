@@ -30,7 +30,9 @@ const DailyCount: React.FC<{
   value: number;
   max: number;
 }> = ({ value, max }) => {
-  const percentage = Math.min(100, (value / max) * 100);
+  // max is 0 when the whole column has no data. 0 / 0 would give a "NaN%" width,
+  // which the browser ignores, leaving the bar from the previous view on screen.
+  const percentage = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   const displayValue =
     value >= 1_000_000
       ? `${(value / 1_000_000).toFixed(1)}M`
@@ -51,11 +53,12 @@ const DailyCount: React.FC<{
 const DailyStatTableRow: React.FC<{
   row: DailyStatColumn;
   data: UserDailyStatData[];
-  maxValue: Map<string, number>;
+  maxDailyCount: Map<string, number>;
+  maxSlotCount: Map<string, number>;
   displayMode: "count" | "timeline";
-}> = ({ row, data, maxValue, displayMode }) => {
+}> = ({ row, data, maxDailyCount, maxSlotCount, displayMode }) => {
   const key = `${row.kind}-${row.id}`;
-  const max = maxValue.get(key) ?? 0;
+  const max = (displayMode === "count" ? maxDailyCount : maxSlotCount).get(key) ?? 0;
 
   return (
     <tr className="border-b border-l border-gray-200 text-sm hover:bg-gray-50">
