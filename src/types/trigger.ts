@@ -185,8 +185,19 @@ export type FetchedCampaignTrigger = Omit<
 };
 
 export function defaultDetection(): TriggerCondition {
-  return { type: "detection", sensor: "stress", value: STATIC_TRIGGER_SENSOR_VALUES.stress[0] };
+  // "gesture" rather than "stress": stress is low ~80% of the time (it is defined as
+  // the bottom 20th percentile of RMSSD), and physical_activity's "Still" is true most
+  // of the time too. A trigger left on an always-true-ish default fires on nearly every
+  // sensor update once DEFAULT_TRIGGER_MIN_INTERVAL_MILLIS has passed. Gestures are
+  // discrete, rare events, so an unconfigured trigger stays obviously inert instead.
+  return { type: "detection", sensor: "gesture", value: STATIC_TRIGGER_SENSOR_VALUES.gesture[0] };
 }
+
+// The trigger engine re-evaluates every trigger on every sensor update (it has no
+// edge-detection), so a 0ms interval combined with an often-true condition resends an
+// action repeatedly. 60s is enough to stop runaway re-firing while still feeling
+// responsive; researchers can shorten or disable (0) it deliberately.
+export const DEFAULT_TRIGGER_MIN_INTERVAL_MILLIS = 60_000;
 
 // Collects every `value` from `detection` leaves gated on the "timing" sensor, anywhere in the
 // tree. Used to detect which schedules a trigger references (e.g. to warn before a rename, or
@@ -204,10 +215,19 @@ export function findTimingConditionValues(condition: TriggerCondition): string[]
 }
 
 export function defaultAction(kind: TriggerActionKind): TriggerAction {
-  if (kind === "broadcast") return { kind: "broadcast", action: "", extras: [], minIntervalMillis: 0 };
-  if (kind === "notification")
-    return { kind: "notification", title: "", description: "", deviceType: DeviceType.Phone, minIntervalMillis: 0 };
-  return { kind, surveyIndex: -1, minIntervalMillis: 0 };
+  if (kind === "broadcast") {
+    return { kind: "broadcast", action: "", extras: [], minIntervalMillis: DEFAULT_TRIGGER_MIN_INTERVAL_MILLIS };
+  }
+  if (kind === "notification") {
+    return {
+      kind: "notification",
+      title: "",
+      description: "",
+      deviceType: DeviceType.Phone,
+      minIntervalMillis: DEFAULT_TRIGGER_MIN_INTERVAL_MILLIS,
+    };
+  }
+  return { kind, surveyIndex: -1, minIntervalMillis: DEFAULT_TRIGGER_MIN_INTERVAL_MILLIS };
 }
 
 export function defaultBroadcastExtra(): BroadcastExtra {
