@@ -181,6 +181,51 @@ export const upsertCampaign = async (
   return data[0].id;
 };
 
+const NEW_ROW_INSERT_CONCURRENCY = 8;
+
+/**
+ * Upsert rows and return their database ids in the same order as `rows`.
+ *
+ * Children are linked to parents by these ids, which used to be read positionally from a
+ * single bulk upsert's RETURNING list; Postgres does not guarantee that order. Existing
+ * rows (with an id) are upserted in bulk and matched by id; new rows are inserted one per
+ * request (a few at a time) so each returned id is known to belong to its row.
+ */
+async function upsertReturningIds<Row extends { id?: number }>(table: string, rows: Row[]): Promise<number[]> {
+  const ids: number[] = new Array(rows.length);
+
+  const existing = rows.map((row, index) => ({ row, index })).filter(({ row }) => typeof row.id === "number");
+  if (existing.length > 0) {
+    const { data, error } = await supabase
+      .from(table as never)
+      .upsert(existing.map(({ row }) => row) as never, { defaultToNull: false })
+      .select("id");
+    if (error) throw new Error(error.message);
+    const returned = new Set((data as { id: number }[]).map((d) => d.id));
+    for (const { row, index } of existing) {
+      if (!returned.has(row.id as number)) throw new Error(`Row ${row.id} in ${table} was not saved.`);
+      ids[index] = row.id as number;
+    }
+  }
+
+  const created = rows.map((row, index) => ({ row, index })).filter(({ row }) => typeof row.id !== "number");
+  for (let start = 0; start < created.length; start += NEW_ROW_INSERT_CONCURRENCY) {
+    await Promise.all(
+      created.slice(start, start + NEW_ROW_INSERT_CONCURRENCY).map(async ({ row, index }) => {
+        const { data, error } = await supabase
+          .from(table as never)
+          .insert(row as never)
+          .select("id")
+          .single();
+        if (error) throw new Error(error.message);
+        ids[index] = (data as { id: number }).id;
+      }),
+    );
+  }
+
+  return ids;
+}
+
 export const upsertCampaignTrigger = async (
   triggers: CampaignTrigger[],
   campaignId: number,
@@ -221,13 +266,7 @@ export const upsertCampaignTable = async (
   const propagatedCampaignTable = structuredClone(campaignTable);
   const insertedCampaignTable = structuredClone(campaignTable).map((v) => omit(v, "campaign_table_field"));
 
-  const { data, error } = await supabase
-    .from("campaign_table")
-    .upsert(insertedCampaignTable, { defaultToNull: false })
-    .select();
-
-  if (error) throw new Error(error.message);
-  const insertedId = data.map((d) => d.id);
+  const insertedId = await upsertReturningIds("campaign_table", insertedCampaignTable);
 
   if (insertChildTables) {
     propagatedCampaignTable.forEach((ct, idx) => {
@@ -250,12 +289,7 @@ export const upsertCampaignTableField = async (
     omit(v, "campaign_table_field_mapping"),
   );
 
-  const { data, error } = await supabase
-    .from("campaign_table_field")
-    .upsert(insertedCampaignTableField, { defaultToNull: false })
-    .select();
-  if (error) throw new Error(error.message);
-  const insertedId = data.map((d) => d.id);
+  const insertedId = await upsertReturningIds("campaign_table_field", insertedCampaignTableField);
 
   if (insertChildTables) {
     propagatedCampaignTableField.forEach((ctf, idx) => {
@@ -281,9 +315,7 @@ export const upsertSurvey = async (survey: Survey[], insertChildTables: boolean 
   const propagatedSurvey = structuredClone(survey);
   const insertedSurvey = structuredClone(survey).map((v) => omit(v, "survey_question"));
 
-  const { data, error } = await supabase.from("survey").upsert(insertedSurvey, { defaultToNull: false }).select();
-  if (error) throw new Error(error.message);
-  const insertedId = data.map((d) => d.id);
+  const insertedId = await upsertReturningIds("survey", insertedSurvey);
 
   if (insertChildTables) {
     propagatedSurvey.forEach((s, idx) => {
@@ -316,12 +348,7 @@ export const upsertSurveyQuestion = async (
     ),
   );
 
-  const { data, error } = await supabase
-    .from("survey_question")
-    .upsert(insertedSurveyQuestion, { defaultToNull: false })
-    .select();
-  if (error) throw new Error(error.message);
-  const insertedId = data.map((d) => d.id);
+  const insertedId = await upsertReturningIds("survey_question", insertedSurveyQuestion);
 
   if (insertChildTables) {
     propagatedSurveyQuestion.forEach((sq, idx) => {
@@ -344,13 +371,7 @@ export const upsertSurveyTrigger = async (
   const insertedSurveyTrigger = structuredClone(surveyTrigger).map((v) => omit(v, "survey_question"));
   insertedSurveyTrigger.filter((st) => st.id === -1).forEach((st) => delete st.id);
 
-  const { data, error } = await supabase
-    .from("survey_question_trigger")
-    .upsert(insertedSurveyTrigger, { defaultToNull: false })
-    .select();
-  if (error) throw new Error(error.message);
-
-  const insertedId = data.map((d) => d.id);
+  const insertedId = await upsertReturningIds("survey_question_trigger", insertedSurveyTrigger);
   if (insertChildTables) {
     propagatedSurveyTrigger.forEach((st, idx) => {
       st.survey_question.forEach((sq) => (sq.triggered_by = insertedId[idx]));
