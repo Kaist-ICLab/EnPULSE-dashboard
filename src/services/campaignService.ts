@@ -55,6 +55,9 @@ export const getCampaignList = async (): Promise<Map<number, CampaignListItem>> 
   return new Map(data.map((campaign) => [campaign.id, campaign]));
 };
 
+/** Thrown by getCampaignInfo when no campaign has the given id, as opposed to a backend failure. */
+export class CampaignNotFoundError extends Error {}
+
 export const getCampaignInfo = async (campaignId: number): Promise<FetchedCampaign> => {
   const { data, error } = await supabase
     .from("campaigns")
@@ -64,6 +67,8 @@ export const getCampaignInfo = async (campaignId: number): Promise<FetchedCampai
     .eq("id", campaignId)
     .single();
 
+  // PGRST116: `.single()` matched zero rows.
+  if (error?.code === "PGRST116") throw new CampaignNotFoundError(error.message);
   if (error) throw new Error(error.message);
 
   data.survey.forEach((s) => {

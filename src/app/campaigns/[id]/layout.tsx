@@ -1,7 +1,7 @@
 import Sidebar from "@/components/common/Sidebar";
 import TimeHeadline from "@/components/common/TimeHeadline";
 import CampaignStoreProvider from "@/providers/CampaignStoreProvider";
-import { getCampaignInfo } from "@/services/campaignService";
+import { CampaignNotFoundError, getCampaignInfo } from "@/services/campaignService";
 import { FetchedCampaign } from "@/types/campaign";
 import { notFound } from "next/navigation";
 
@@ -14,12 +14,17 @@ export default async function CampaignLayout({
 }>) {
   const { id } = await params;
   const campaignId = parseInt(id);
+  if (Number.isNaN(campaignId)) notFound();
+
   let campaign: FetchedCampaign | null = null;
 
   try {
     campaign = await getCampaignInfo(campaignId);
-  } catch {
-    notFound();
+  } catch (e) {
+    // Only a missing campaign is a 404. Anything else (e.g. backend unreachable)
+    // goes to app/error.tsx so it is not misreported as "Campaign Not Found".
+    if (e instanceof CampaignNotFoundError) notFound();
+    throw e;
   }
 
   return (

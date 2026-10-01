@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import { UserDailyStatData } from "@/types/dashboard";
 import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
+import { notify } from "@/utils/notify";
 
 export type DailyStatColumn =
   { kind: "sensor"; id: number; name: string } | { kind: "survey"; id: number; name: string };
@@ -93,11 +94,25 @@ export const useUserDailyStat = (initialRowsPerPage: number) => {
   useEffect(() => {
     if (uuids.length == 0) return;
 
+    // Set by the cleanup when inputs change before this request finishes,
+    // so a slow, older response cannot overwrite a newer one.
+    let ignore = false;
+
     const load = async () => {
-      const [sensorData, surveyData] = await Promise.all([
-        getCampaignDailySummary(uuids, tableIds, date),
-        getCampaignSurveyDailySummary(uuids, surveyIds, date),
-      ]);
+      let sensorData: Awaited<ReturnType<typeof getCampaignDailySummary>>;
+      let surveyData: Awaited<ReturnType<typeof getCampaignSurveyDailySummary>>;
+      try {
+        [sensorData, surveyData] = await Promise.all([
+          getCampaignDailySummary(uuids, tableIds, date),
+          getCampaignSurveyDailySummary(uuids, surveyIds, date),
+        ]);
+      } catch (e) {
+        if (ignore) return;
+        setLoading(false);
+        notify.error("Failed to load the daily overview", e instanceof Error ? e.message : String(e));
+        return;
+      }
+      if (ignore) return;
 
       // Merge survey daily summary into the sensor result, keyed by uuid.
       // If a uuid has only survey data (no sensor rows), it won't appear in
@@ -119,6 +134,9 @@ export const useUserDailyStat = (initialRowsPerPage: number) => {
 
     setLoading(true);
     load();
+    return () => {
+      ignore = true;
+    };
   }, [date, page, rowsPerPage, totalPage, uuids, lastManualSyncTime, tableIds, surveyIds]);
 
   return { data, maxDailyCount, columns, loading, page, rowsPerPage, totalPage, setPage, setRowsPerPage };
