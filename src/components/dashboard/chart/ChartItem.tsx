@@ -21,6 +21,9 @@ export const ChartItem: React.FC<{
   const [distributionOpen, setDistributionOpen] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
 
+  // Hooks run before the `!timeline` guard below, so they must not
+  // dereference `timeline` unconditionally.
+  const title = timeline?.title ?? "chart";
   const downloadChart = useCallback(async (format: "png" | "svg") => {
     if (chartRef.current === null) return;
     try {
@@ -29,13 +32,13 @@ export const ChartItem: React.FC<{
         : htmlToImage.toSvg(chartRef.current, { backgroundColor: '#ffffff' }));
       const link = document.createElement("a");
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      link.download = `${timeline.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${timestamp}.${format}`;
+      link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${timestamp}.${format}`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
       console.error("Failed to download chart", err);
     }
-  }, [timeline.title]);
+  }, [title]);
 
   if (!timeline) return;
 

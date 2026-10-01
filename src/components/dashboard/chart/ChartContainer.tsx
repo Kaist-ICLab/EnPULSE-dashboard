@@ -4,7 +4,7 @@ import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 import { TimelineData } from "@/types/chart";
 import { ComparisonType } from "@/types/dashboard";
 import { ParentSize } from "@visx/responsive";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ChartItem } from "./ChartItem";
 
 const ChartContainer: React.FC<{
@@ -14,22 +14,20 @@ const ChartContainer: React.FC<{
   setSelectedChart: (chartId: string | null) => void;
 }> = ({ timelines, bucketSize, selectedChart, setSelectedChart }) => {
   const { chartPinQuery, selectedSection } = useSectionParamStore((state) => state);
+  // User-chosen drag order. It can hold ids that are no longer in `timelines`,
+  // so it is reconciled with the incoming timelines during render below.
   const [chartOrder, setChartOrder] = useState<string[]>(timelines.map((d) => d.id));
 
-  useEffect(() => {
-    const incomingIds = timelines.map((d) => d.id);
-    setChartOrder((prev) => {
-      const incomingSet = new Set(incomingIds);
-      const prevSet = new Set(prev);
-      const preserved = prev.filter((id) => incomingSet.has(id));
-      const added = incomingIds.filter((id) => !prevSet.has(id));
-      const merged = [...preserved, ...added];
-      if (merged.length === prev.length && merged.every((id, i) => id === prev[i])) {
-        return prev;
-      }
-      return merged;
-    });
-  }, [timelines]);
+  // Reconcile during render (not in an effect) so a chart that was just removed
+  // is never rendered with an undefined timeline: keep the user's order for ids
+  // that still exist, then append new ids.
+  const orderedTimelines = useMemo(() => {
+    const byId = new Map(timelines.map((d) => [d.id, d]));
+    const orderSet = new Set(chartOrder);
+    const preserved = chartOrder.flatMap((id) => byId.get(id) ?? []);
+    const added = timelines.filter((d) => !orderSet.has(d.id));
+    return [...preserved, ...added];
+  }, [chartOrder, timelines]);
 
   const pinnedChart = useMemo(() => {
     switch (selectedSection) {
@@ -62,15 +60,18 @@ const ChartContainer: React.FC<{
             sectionType={selectedSection}
           />
         ))}
-      <DnDProvider items={chartOrder.filter((id) => id !== pinnedChart)} onItemsChange={setChartOrder}>
-        {chartOrder
-          .filter((id) => id !== pinnedChart)
-          .map((id) => (
+      <DnDProvider
+        items={orderedTimelines.filter((d) => d.id !== pinnedChart).map((d) => d.id)}
+        onItemsChange={setChartOrder}
+      >
+        {orderedTimelines
+          .filter((d) => d.id !== pinnedChart)
+          .map((timeline) => (
             <ChartItem
-              key={id}
-              timeline={timelines.find((d) => d.id === id)!}
-              pinned={pinnedChart === id}
-              isSelected={selectedChart === id}
+              key={timeline.id}
+              timeline={timeline}
+              pinned={false}
+              isSelected={selectedChart === timeline.id}
               setSelectedChart={(p) => setSelectedChart(p)}
               bucketSize={bucketSize}
               sectionType={selectedSection}
