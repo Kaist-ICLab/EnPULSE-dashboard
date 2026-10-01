@@ -7,7 +7,7 @@ export function useValidConfigState() {
   const { campaignName, campaignPassword, tables, campaign_trigger, webapps } = useCampaignConfigEdit((state) => state);
 
   const isInfoValid = useMemo(() => {
-    return campaignName.length > 0 && campaignPassword.length > 0;
+    return campaignName.trim().length > 0 && campaignPassword.length > 0;
   }, [campaignName, campaignPassword]);
 
   // A campaign with no timing_sensor row is fine (no schedules configured yet). If one

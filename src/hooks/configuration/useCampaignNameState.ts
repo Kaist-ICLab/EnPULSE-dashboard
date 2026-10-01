@@ -1,45 +1,42 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import { checkCampaignNameValidity } from "@/services/campaignService";
-import { notify } from "@/utils/notify";
 
+export type CampaignNameStatus = "empty" | "checking" | "available" | "taken" | "unknown";
+
+const NAME_CHECK_DELAY_MS = 500;
+
+/**
+ * The name is written to the store on every keystroke, so step validation never
+ * depends on a manual "Validate" click. Availability is checked automatically
+ * once typing pauses; the save path re-checks it before writing.
+ */
 export default function useCampaignNameState() {
-  const {
-    campaignName: campaignNameInHook,
-    setCampaignName: setCampaignNameInHook,
-    campaignId,
-  } = useCampaignConfigEdit((state) => state);
-  const [campaignName, setCampaignName] = useState(campaignNameInHook);
-  const [status, setStatus] = useState<"loading" | "ok" | "error" | null>(null);
-  const [isChanged, setIsChanged] = useState(false);
+  const { campaignName, setCampaignName, campaignId } = useCampaignConfigEdit((state) => state);
+  const [status, setStatus] = useState<CampaignNameStatus>("empty");
 
   useEffect(() => {
-    setCampaignName(campaignNameInHook);
-  }, [campaignNameInHook, setCampaignName]);
-
-  useEffect(() => {
-    setIsChanged(true);
-  }, [campaignName]);
-
-  // const setCampaignName = useCallback((name: string) => {
-  //     _setCampaignName(name);
-  //     setIsChanged(true);
-  // }, []);
-
-  const checkIsValidName = useCallback(async () => {
-    setStatus("loading");
-    try {
-      const isValid = await checkCampaignNameValidity(campaignName, campaignId);
-      setStatus(isValid ? "ok" : "error");
-      setIsChanged(false);
-
-      if (isValid) setCampaignNameInHook(campaignName);
-    } catch {
-      notify.error("Failed to validate campaign name.");
-      setStatus(null);
-      setIsChanged(false);
+    if (campaignName.trim().length === 0) {
+      setStatus("empty");
+      return;
     }
-  }, [campaignName, setCampaignNameInHook, campaignId]);
 
-  return { campaignName, setCampaignName, status, isChanged, checkIsValidName };
+    setStatus("checking");
+    let ignore = false;
+    const timer = setTimeout(async () => {
+      try {
+        const isAvailable = await checkCampaignNameValidity(campaignName, campaignId);
+        if (!ignore) setStatus(isAvailable ? "available" : "taken");
+      } catch {
+        if (!ignore) setStatus("unknown");
+      }
+    }, NAME_CHECK_DELAY_MS);
+
+    return () => {
+      ignore = true;
+      clearTimeout(timer);
+    };
+  }, [campaignName, campaignId]);
+
+  return { campaignName, setCampaignName, status };
 }
