@@ -343,7 +343,7 @@ function getDefaultState(): CampaignConfigEditState {
   };
 }
 
-function getStateFromCampaign(campaign: FetchedCampaign): CampaignConfigEditState {
+export function getStateFromCampaign(campaign: FetchedCampaign): CampaignConfigEditState {
   return {
     campaignId: campaign.id,
     campaignName: campaign.name,
