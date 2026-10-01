@@ -237,10 +237,15 @@ export const upsertCampaignTableField = async (
       ctf.campaign_table_field_mapping.forEach((ctfm) => (ctfm.field_id = insertedId[idx]));
     });
     const campaignTableFieldMappings = propagatedCampaignTableField.flatMap((ctf) => ctf.campaign_table_field_mapping);
-    await supabase
+    if (campaignTableFieldMappings.length === 0) return;
+    // New mappings (e.g. Gesture and Activity Recognition labels from templates) carry
+    // id -1. Sending several rows with the same id makes Postgres reject the whole
+    // upsert, so strip it as is done for fields above.
+    campaignTableFieldMappings.filter((m) => m.id === -1).forEach((m) => delete m.id);
+    const { error: mappingError } = await supabase
       .from("campaign_table_field_mapping")
-      .upsert(campaignTableFieldMappings, { defaultToNull: false })
-      .select();
+      .upsert(campaignTableFieldMappings, { defaultToNull: false });
+    if (mappingError) throw new Error(mappingError.message);
   }
 };
 
