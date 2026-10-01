@@ -1,6 +1,6 @@
 "use client";
 
-import { TextInput } from "flowbite-react";
+import NumberInput from "@/components/common/NumberInput";
 
 /**
  * Minimum time between two firings of a trigger action, in milliseconds.
@@ -14,16 +14,13 @@ const MinIntervalInput: React.FC<{
 }> = ({ label, value, onChange }) => (
   <div className="flex flex-row items-center">
     <span className="mr-4 block text-sm text-gray-900">{label}</span>
-    <TextInput
-      type="number"
+    <NumberInput
       sizing="sm"
       min={0}
       step={1}
+      integer
       value={value ?? 0}
-      onChange={(e) => {
-        const parsed = Math.trunc(Number(e.target.value));
-        onChange(Number.isFinite(parsed) && parsed > 0 ? parsed : 0);
-      }}
+      onValueChange={(parsed) => onChange(parsed > 0 ? parsed : 0)}
     />
     <span className="ml-1 text-sm text-gray-900">ms</span>
   </div>

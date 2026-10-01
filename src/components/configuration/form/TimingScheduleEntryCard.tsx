@@ -1,5 +1,6 @@
 "use client";
 
+import NumberInput from "@/components/common/NumberInput";
 import { Button, Checkbox, Label, Select, TextInput } from "flowbite-react";
 import IconButton from "@/components/common/IconButton";
 import SwitchingTextInput from "@/components/common/SwitchingTextInput";
@@ -66,12 +67,11 @@ const TimingScheduleEntryCard: React.FC<TimingScheduleEntryCardProps> = ({
             <Label htmlFor={`min-interval-${index}`} className="block w-42 text-sm font-medium text-gray-900">
               Min Interval (minutes)
             </Label>
-            <TextInput
+            <NumberInput
               id={`min-interval-${index}`}
-              type="number"
               sizing="sm"
               value={millisecondsToMinutes(entry.minInterval)}
-              onChange={(e) => onUpdate({ minInterval: minutesToMilliseconds(Number(e.target.value)) })}
+              onValueChange={(minutes) => onUpdate({ minInterval: minutesToMilliseconds(minutes) })}
               className="w-full max-w-20"
             />
           </div>
@@ -79,12 +79,11 @@ const TimingScheduleEntryCard: React.FC<TimingScheduleEntryCardProps> = ({
             <Label htmlFor={`max-interval-${index}`} className="block w-42 text-sm font-medium text-gray-900">
               Max Interval (minutes)
             </Label>
-            <TextInput
+            <NumberInput
               id={`max-interval-${index}`}
-              type="number"
               sizing="sm"
               value={millisecondsToMinutes(entry.maxInterval)}
-              onChange={(e) => onUpdate({ maxInterval: minutesToMilliseconds(Number(e.target.value)) })}
+              onValueChange={(minutes) => onUpdate({ maxInterval: minutesToMilliseconds(minutes) })}
               className="w-full max-w-20"
             />
           </div>
@@ -92,12 +91,12 @@ const TimingScheduleEntryCard: React.FC<TimingScheduleEntryCardProps> = ({
             <Label htmlFor={`num-survey-${index}`} className="block w-42 text-sm font-medium text-gray-900">
               Number of Surveys
             </Label>
-            <TextInput
+            <NumberInput
               id={`num-survey-${index}`}
-              type="number"
               sizing="sm"
+              integer
               value={entry.numSurvey}
-              onChange={(e) => onUpdate({ numSurvey: Number(e.target.value) })}
+              onValueChange={(numSurvey) => onUpdate({ numSurvey })}
               className="w-full max-w-20"
             />
           </div>
