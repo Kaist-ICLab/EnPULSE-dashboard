@@ -6,7 +6,7 @@ import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 import { flattenSurveyQuestions } from "@/services/chartService";
 import { ComparisonType } from "@/types/dashboard";
 import { Button, Checkbox, Select, Spinner, Tooltip } from "flowbite-react";
-import Link from "next/link";
+import { COMPARISON_CHART_ID } from "@/components/dashboard/chart/ComparisonChart";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DailyStatTableHeader from "./DailyStatTableHeader";
 import DailyStatTableRow from "./DailyStatTableRow";
@@ -137,21 +137,28 @@ const DailyOverviewTable: React.FC = () => {
         {checkCount > 0 ? (
           <>
             {checkCount == 1 ? "Participant" : `${checkCount} Participants`} selected
-            <Link href={`./dashboard/#timeline-overview-comparison-chart`}>
-              <Button
-                color="blue"
-                size="2xs"
-                className="flex flex-row gap-1 px-2.5 py-1 text-base"
-                onClick={() => {
-                  updateComparisonParams(ComparisonType.Sensors, {
-                    uuid: [data[checkedState.findIndex((state) => state)].uuid],
-                  });
-                  updateSelectedSection(ComparisonType.Sensors);
-                }}
-              >
-                <span className="text-sm">Timeline Overview</span>
-              </Button>
-            </Link>
+            <Button
+              color="blue"
+              size="2xs"
+              className="flex flex-row gap-1 px-2.5 py-1 text-base"
+              onClick={() => {
+                // Preselect the first data field of each sensor; with no field selected the
+                // chart only said "Select at least one sensor", so the button looked broken.
+                const fieldId = Array.from(campaignTables.values()).flatMap((t) => {
+                  const field = t.campaign_table_field.find((f) => f.field_role === "data");
+                  return field?.id !== undefined ? [field.id] : [];
+                });
+                updateComparisonParams(ComparisonType.Sensors, {
+                  uuid: [data[checkedState.findIndex((state) => state)].uuid],
+                  fieldId,
+                  questionId: [],
+                });
+                updateSelectedSection(ComparisonType.Sensors);
+                document.getElementById(COMPARISON_CHART_ID)?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              <span className="text-sm">Timeline Overview</span>
+            </Button>
           </>
         ) : (
           <span>No participant selected</span>
