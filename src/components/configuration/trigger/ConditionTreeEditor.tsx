@@ -70,7 +70,15 @@ const ConditionTreeEditor: React.FC<{
               sizing="sm"
               value={condition.value}
               onChange={(e) => onChange({ ...condition, value: e.target.value })}
+              color={values.includes(condition.value) ? undefined : "failure"}
             >
+              {/* Without this, a value that no longer exists (e.g. a renamed timing schedule)
+                  would display as the first option while still failing validation. */}
+              {!values.includes(condition.value) && (
+                <option value={condition.value} disabled>
+                  {condition.value ? `"${condition.value}" no longer exists` : "Select a value"}
+                </option>
+              )}
               {values.map((v) => (
                 <option key={v} value={v}>
                   {v}

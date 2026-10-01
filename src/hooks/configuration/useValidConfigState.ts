@@ -2,7 +2,12 @@ import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvid
 import dayjs from "dayjs";
 import { useMemo } from "react";
 import { isTriggerComplete } from "@/types/trigger";
-import { findTimingSensorTable, getTimingScheduleEntries, getTimingScheduleEntryIssue } from "@/types/timingSchedule";
+import {
+  findTimingSensorTable,
+  getTimingScheduleEntries,
+  getTimingScheduleEntryIssue,
+  getTimingScheduleValues,
+} from "@/types/timingSchedule";
 
 export function useValidConfigState() {
   const {
@@ -59,8 +64,9 @@ export function useValidConfigState() {
   }, [webapps]);
 
   const isTriggerValid = useMemo(() => {
-    return campaign_trigger.every(isTriggerComplete);
-  }, [campaign_trigger]);
+    const timingScheduleValues = getTimingScheduleValues(tables);
+    return campaign_trigger.every((t) => isTriggerComplete(t, timingScheduleValues));
+  }, [campaign_trigger, tables]);
 
   const isAccessible = useMemo(() => {
     const isAccessible = [true];

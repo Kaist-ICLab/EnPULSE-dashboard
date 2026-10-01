@@ -105,6 +105,9 @@ export type TriggerAction =
       // Optional explicit-broadcast target package; recommended on Android 8+.
       targetPackage?: string;
       extras: BroadcastExtra[];
+      // Optional because rows saved before this field existed lack it (the app treats
+      // a missing value as 0).
+      minIntervalMillis?: number;
     }
   | {
       kind: "notification";
@@ -126,6 +129,7 @@ export type PersistedTriggerAction =
       action: string;
       targetPackage?: string;
       extras: BroadcastExtra[];
+      minIntervalMillis?: number;
     }
   | {
       kind: "notification";
@@ -200,7 +204,7 @@ export function findTimingConditionValues(condition: TriggerCondition): string[]
 }
 
 export function defaultAction(kind: TriggerActionKind): TriggerAction {
-  if (kind === "broadcast") return { kind: "broadcast", action: "", extras: [] };
+  if (kind === "broadcast") return { kind: "broadcast", action: "", extras: [], minIntervalMillis: 0 };
   if (kind === "notification")
     return { kind: "notification", title: "", description: "", deviceType: DeviceType.Phone, minIntervalMillis: 0 };
   return { kind, surveyIndex: -1, minIntervalMillis: 0 };
@@ -210,17 +214,24 @@ export function defaultBroadcastExtra(): BroadcastExtra {
   return { key: "", valueType: "string", value: "" };
 }
 
-export function isConditionComplete(c: TriggerCondition): boolean {
+// A detection is complete only if its value is one the sensor can emit. For "timing" that is
+// the campaign's current schedule names, so renaming or removing a schedule flags the
+// triggers that still reference the old name (they would otherwise never fire).
+export function isConditionComplete(c: TriggerCondition, timingScheduleValues: string[]): boolean {
   switch (c.type) {
     case "detection":
-      return c.value.length > 0;
+      return (getTriggerSensorValues(c.sensor, timingScheduleValues) ?? []).includes(c.value);
     case "and":
     case "or":
-      return c.children.length > 0 && c.children.every(isConditionComplete);
+      return c.children.length > 0 && c.children.every((child) => isConditionComplete(child, timingScheduleValues));
     case "not":
-      return isConditionComplete(c.child);
+      return isConditionComplete(c.child, timingScheduleValues);
   }
 }
+
+// The app parses minIntervalMillis as a whole number (Kotlin `long`) and drops the whole
+// trigger otherwise, e.g. for 1.5.
+const isValidInterval = (ms: number | undefined) => ms === undefined || (Number.isInteger(ms) && ms >= 0);
 
 export function isExtraValueValid(e: BroadcastExtra): boolean {
   if (e.key.trim().length === 0) return false;
@@ -239,6 +250,7 @@ export function isExtraValueValid(e: BroadcastExtra): boolean {
 }
 
 export function isActionComplete(a: TriggerAction): boolean {
+  if (!isValidInterval(a.minIntervalMillis)) return false;
   switch (a.kind) {
     case "ema":
     case "watch_ema":
@@ -250,6 +262,11 @@ export function isActionComplete(a: TriggerAction): boolean {
   }
 }
 
-export function isTriggerComplete(t: { condition: TriggerCondition; actions: TriggerAction[] }): boolean {
-  return isConditionComplete(t.condition) && t.actions.length > 0 && t.actions.every(isActionComplete);
+export function isTriggerComplete(
+  t: { condition: TriggerCondition; actions: TriggerAction[] },
+  timingScheduleValues: string[],
+): boolean {
+  return (
+    isConditionComplete(t.condition, timingScheduleValues) && t.actions.length > 0 && t.actions.every(isActionComplete)
+  );
 }
