@@ -24,7 +24,22 @@ export const DashboardHeaderMenuItems: React.FC = () => {
   const { date, updateDate, addDaysToDate, initTimeRange, setLastManualSyncTime } = useSectionParamStore(
     (state) => state,
   );
-  const { campaign } = useCampaignStore((state) => state);
+  const { campaign, setCampaign } = useCampaignStore((state) => state);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // The campaign (participants, sensors) is loaded once with the page. Reload it too,
+  // otherwise a phone that joined after the page opened only appears after a hard reload.
+  const syncNow = async () => {
+    setIsSyncing(true);
+    try {
+      if (campaign?.id !== undefined) setCampaign(await getCampaignInfo(campaign.id));
+    } catch {
+      notify.error("Failed to reload the campaign.");
+    } finally {
+      setLastManualSyncTime(Date.now());
+      setIsSyncing(false);
+    }
+  };
 
   return (
     <>
@@ -69,8 +84,8 @@ export const DashboardHeaderMenuItems: React.FC = () => {
           <span className="icon-[eva--chevron-right-fill] h-6 w-6"></span>
         </Button>
       </div>
-      <Button onClick={() => setLastManualSyncTime(Date.now())}>
-        <span className="icon-[eva--sync-fill] mr-2 h-4 w-4"></span> Sync now
+      <Button onClick={syncNow} disabled={isSyncing}>
+        <span className="icon-[eva--sync-fill] mr-2 h-4 w-4"></span> {isSyncing ? "Syncing..." : "Sync now"}
       </Button>
     </>
   );
