@@ -175,7 +175,8 @@ export type CampaignConfigEditActions = {
   /**
    * Replace the edit state with a freshly fetched campaign, e.g. after a save, so
    * newly inserted rows carry their database ids and are not inserted again on the
-   * next save. Keeps the typed password and the question clipboard.
+   * next save. Keeps the question clipboard. The password field is cleared: it has
+   * been saved, and an empty field means "keep the current password".
    */
   resetFromCampaign: (campaign: FetchedCampaign) => void;
 };
@@ -964,7 +965,6 @@ export const createCampaignConfigEditStore = (campaign?: FetchedCampaign) => {
             // Cloned so freezing by Immer cannot affect the caller's copy, which is
             // also handed to the campaign store.
             ...getStateFromCampaign(structuredClone(campaign)),
-            campaignPassword: state.campaignPassword,
             questionClipboard: state.questionClipboard,
           }));
         },

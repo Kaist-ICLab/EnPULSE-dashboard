@@ -4,11 +4,17 @@ import { isTriggerComplete } from "@/types/trigger";
 import { findTimingSensorTable, getTimingScheduleEntries, isTimingScheduleEntryComplete } from "@/types/timingSchedule";
 
 export function useValidConfigState() {
-  const { campaignName, campaignPassword, tables, campaign_trigger, webapps } = useCampaignConfigEdit((state) => state);
+  const { campaignId, campaignName, campaignPassword, tables, campaign_trigger, webapps } = useCampaignConfigEdit(
+    (state) => state,
+  );
 
+  // A new campaign needs a password so participants can join. For an existing one,
+  // an empty field means "keep the current password" (the save only writes
+  // credentials when a password is entered).
   const isInfoValid = useMemo(() => {
-    return campaignName.trim().length > 0 && campaignPassword.length > 0;
-  }, [campaignName, campaignPassword]);
+    const isNewCampaign = campaignId === -1;
+    return campaignName.trim().length > 0 && (!isNewCampaign || campaignPassword.length > 0);
+  }, [campaignId, campaignName, campaignPassword]);
 
   // A campaign with no timing_sensor row is fine (no schedules configured yet). If one
   // exists, every entry's name must be non-empty/unique and complete for its kind — otherwise

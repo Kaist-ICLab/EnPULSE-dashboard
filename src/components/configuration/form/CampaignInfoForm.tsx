@@ -16,9 +16,9 @@ const nameStatusDisplay: Record<CampaignNameStatus, { text: string; className: s
 const CampaignInfoForm: React.FC<{
   onNameStatusChange?: (status: CampaignNameStatus) => void;
 }> = ({ onNameStatusChange }) => {
-  const { campaignDescription, setCampaignDescription, campaignPassword, setCampaignPassword } = useCampaignConfigEdit(
-    (state) => state,
-  );
+  const { campaignId, campaignDescription, setCampaignDescription, campaignPassword, setCampaignPassword } =
+    useCampaignConfigEdit((state) => state);
+  const isExistingCampaign = campaignId !== -1;
   const { campaignName, setCampaignName, status } = useCampaignNameState();
   const statusDisplay = nameStatusDisplay[status];
 
@@ -62,13 +62,16 @@ const CampaignInfoForm: React.FC<{
         />
       </div>
       <div className="flex items-center gap-2">
-        <label htmlFor="camapginPassword" className="block text-sm font-medium text-gray-900">
+        <label htmlFor="campaignPassword" className="block text-sm font-medium text-gray-900">
           Password
         </label>
         <Tooltip
           content={
             <div>
               <p>The password is used to authenticate the user when they access the campaign.</p>
+              {isExistingCampaign && (
+                <p>Leave it empty to keep the current password. Entering a new one changes it for new joins.</p>
+              )}
             </div>
           }
           trigger="hover"
@@ -78,7 +81,11 @@ const CampaignInfoForm: React.FC<{
             <span className="icon-[mingcute--question-fill] mt-1 h-6 w-6"></span>
           </button>
         </Tooltip>
-        <PasswordForm password={campaignPassword} setPassword={setCampaignPassword} />
+        <PasswordForm
+          password={campaignPassword}
+          setPassword={setCampaignPassword}
+          placeholder={isExistingCampaign ? "Leave empty to keep the current password" : undefined}
+        />
       </div>
     </Card>
   );
