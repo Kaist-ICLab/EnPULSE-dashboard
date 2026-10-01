@@ -6,7 +6,7 @@ export const WEBAPP_ICON_BUCKET = "campaign-webapp-icons";
 /**
  * Uploads a web app icon to the public `campaign-webapp-icons` bucket and
  * returns its storage path (the bucket-relative object key, e.g.
- * `<uuid>-<filename>`) - not a full URL. The filename is UUID-prefixed and
+ * `<id>.<ext>`) - not a full URL. The filename is UUID-prefixed and
  * independent of any campaign/webapp id, since those may still be
  * unassigned sentinel ids (-1) at upload time (e.g. while filling out the
  * `/create` wizard). Storing the path rather than a full URL lets any
@@ -14,8 +14,18 @@ export const WEBAPP_ICON_BUCKET = "campaign-webapp-icons";
  * derive the public URL directly from `bucket + path` via the Storage
  * client instead of parsing a URL string.
  */
+// crypto.randomUUID only exists in secure contexts (HTTPS or localhost), so it is
+// undefined when the dashboard is opened over plain HTTP on a LAN IP.
+function createUploadId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export async function uploadWebappIcon(file: File): Promise<Result<string>> {
-  const path = `${crypto.randomUUID()}-${file.name}`;
+  // Build the key from the id and extension only: storage keys reject many
+  // non-ASCII characters, so names like "图标.png" would fail to upload.
+  const extension = /\.[a-z0-9]+$/i.exec(file.name)?.[0].toLowerCase() ?? "";
+  const path = `${createUploadId()}${extension}`;
 
   const { error } = await supabase.storage.from(WEBAPP_ICON_BUCKET).upload(path, file, { upsert: true });
 

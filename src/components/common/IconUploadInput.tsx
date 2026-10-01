@@ -33,14 +33,19 @@ const IconUploadInput: React.FC<{
     }
 
     setIsUploading(true);
-    const result = await uploadWebappIcon(file);
-    setIsUploading(false);
-
-    if (!result.ok) {
-      notify.error("Failed to upload icon", result.error);
-      return;
+    try {
+      const result = await uploadWebappIcon(file);
+      if (!result.ok) {
+        notify.error("Failed to upload icon", result.error);
+        return;
+      }
+      onChange(result.data);
+    } catch (error) {
+      // A thrown error used to leave the spinner on forever.
+      notify.error("Failed to upload icon", error instanceof Error ? error.message : "");
+    } finally {
+      setIsUploading(false);
     }
-    onChange(result.data);
   };
 
   return (
