@@ -33,26 +33,38 @@ export default function useAddSensorButtonState() {
     [addTable],
   );
 
-  // The client looks up the timing_sensor row by exact `name` — a custom sensor typed with
-  // that same name would collide with (or silently shadow) it, so block the add rather than
-  // let it through.
-  const isCustomSensorNameReserved = useMemo(
-    () => sensorName.trim().toLowerCase() === TIMING_SENSOR_TABLE_NAME,
-    [sensorName],
-  );
+  // campaign_table is unique on (campaign_id, name), so an empty or repeated name fails
+  // only at save time with a cryptic "duplicate key" error. Template names are blocked
+  // too: adding that template later would collide. The client also looks up the
+  // timing_sensor row by exact `name`, so that name is reserved.
+  const customSensorNameError = useMemo(() => {
+    const name = sensorName.trim().toLowerCase();
+    if (name.length === 0) return "Enter a sensor name.";
+    if (name === TIMING_SENSOR_TABLE_NAME) {
+      return `"${TIMING_SENSOR_TABLE_NAME}" is a reserved name (used by the Timing Schedules feature). Choose another.`;
+    }
+    if (tables.some((t) => t.name.trim().toLowerCase() === name)) {
+      return "This campaign already has a sensor with this name.";
+    }
+    if (availableTemplateTables.some((t) => t.name.toLowerCase() === name)) {
+      return "This name is used by a template sensor. Add it from the template list or choose another name.";
+    }
+    return null;
+  }, [sensorName, tables, availableTemplateTables]);
 
   const addCustomSensorAsIs = useCallback(() => {
-    if (isCustomSensorNameReserved) return;
+    if (customSensorNameError) return;
+    const name = sensorName.trim();
     addTable({
       campaign_id: -1,
-      name: sensorName,
-      display_name: sensorName,
+      name,
+      display_name: name,
       description: sensorDescription,
       daily_count_max: 0,
       campaign_table_field: [],
       is_custom: true,
     });
-  }, [addTable, sensorName, sensorDescription, isCustomSensorNameReserved]);
+  }, [addTable, sensorName, sensorDescription, customSensorNameError]);
 
   return {
     queryResultTables,
@@ -66,6 +78,6 @@ export default function useAddSensorButtonState() {
     setCustomSensorInputVisibility,
     addCustomSensorAsIs,
     addSensor,
-    isCustomSensorNameReserved,
+    customSensorNameError,
   };
 }

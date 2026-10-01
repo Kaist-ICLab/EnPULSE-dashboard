@@ -337,10 +337,32 @@ export const upsertCampaignWebapp = async (webapps: CampaignWebapp[]): Promise<v
   if (error) throw new Error(error.message);
 };
 
+/**
+ * Delete removed sensor tables, fields and mappings. Must run BEFORE upserting the
+ * campaign: campaign_table is unique on (campaign_id, name), so re-adding a removed
+ * sensor (or importing a config with the same sensors) would otherwise collide
+ * with the row that is still waiting to be deleted.
+ */
+export const deleteRemovedTables = async (removedEntries: RemovedEntries): Promise<void> => {
+  const deletions = [
+    { table: "campaign_table_field_mapping", ids: removedEntries.mapping },
+    { table: "campaign_table_field", ids: removedEntries.field },
+    { table: "campaign_table", ids: removedEntries.table },
+  ] as const;
+
+  for (const { table, ids } of deletions) {
+    const existingIds = ids.filter((id) => id !== -1);
+    if (existingIds.length === 0) continue;
+    const { error } = await supabase.from(table).delete().in("id", existingIds);
+    if (error) throw new Error(error.message);
+  }
+};
+
+/**
+ * Delete the remaining removed rows. Runs AFTER the upsert, because questions can be
+ * re-parented to a new trigger before their old parent is deleted.
+ */
 export const deleteEntries = async (removedEntries: RemovedEntries): Promise<void> => {
-  await supabase.from("campaign_table").delete().in("id", removedEntries.table);
-  await supabase.from("campaign_table_field").delete().in("id", removedEntries.field);
-  await supabase.from("campaign_table_field_mapping").delete().in("id", removedEntries.mapping);
   await supabase.from("survey").delete().in("id", removedEntries.survey);
   await supabase.from("survey_question").delete().in("id", removedEntries.question);
   await supabase.from("survey_question_trigger").delete().in("id", removedEntries.trigger);

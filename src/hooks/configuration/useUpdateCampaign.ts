@@ -1,6 +1,11 @@
 import { revalidateCampaigns } from "@/actions/revalidate";
 import { useCampaignConfigEdit, useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditStoreProvider";
-import { checkCampaignNameValidity, deleteEntries, upsertCampaign } from "@/services/campaignService";
+import {
+  checkCampaignNameValidity,
+  deleteEntries,
+  deleteRemovedTables,
+  upsertCampaign,
+} from "@/services/campaignService";
 import { useCallback, useRef, useState } from "react";
 import { Campaign } from "@/types/campaign";
 import bcryptjs from "bcryptjs";
@@ -59,6 +64,7 @@ export function useUpdateCampaign(onSuccess: (id: number) => void | Promise<void
 
         const hash = campaignPassword.length > 0 ? await bcryptjs.hash(campaignPassword, 10) : null;
 
+        await deleteRemovedTables(removedEntries);
         upsertedCampaignId = await upsertCampaign(campaign, hash);
         await deleteEntries(removedEntries);
         await revalidateCampaigns();
