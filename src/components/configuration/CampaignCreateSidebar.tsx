@@ -1,11 +1,15 @@
 "use client";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
+import { Button } from "flowbite-react";
+import { Modal } from "@/components/common/Modal";
 import { useValidConfigState } from "@/hooks/configuration/useValidConfigState";
 
 const DashboardSidebar: React.FC = () => {
   const pathname = usePathname();
   const { isAccessible } = useValidConfigState();
+  const [isStartOverOpen, setIsStartOverOpen] = useState(false);
 
   const steps = [
     { name: "Campaign Information", href: `/create/general` },
@@ -91,6 +95,28 @@ const DashboardSidebar: React.FC = () => {
           );
         })}
       </div>
+
+      {/* Lets the next person at a shared screen begin from an empty wizard. */}
+      <Button color="light" size="sm" className="mt-auto" onClick={() => setIsStartOverOpen(true)}>
+        <span className="icon-[tabler--refresh] mr-2 h-4 w-4"></span> Start over
+      </Button>
+
+      {isStartOverOpen && (
+        <Modal onClose={() => setIsStartOverOpen(false)} title="Start over?" className="w-full max-w-md">
+          <div className="flex flex-col gap-4 p-5">
+            <p className="text-sm text-gray-700">This clears everything entered so far and starts a new campaign.</p>
+            <div className="flex justify-end gap-2">
+              <Button color="gray" onClick={() => setIsStartOverOpen(false)}>
+                Cancel
+              </Button>
+              {/* A full reload creates a fresh wizard store (it lives in create/layout.tsx). */}
+              <Button color="red" onClick={() => window.location.assign("/create/general")}>
+                Start over
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

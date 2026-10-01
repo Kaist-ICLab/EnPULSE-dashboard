@@ -21,7 +21,11 @@ const Page: React.FC = () => {
   return (
     <>
       <PassiveSensingForm />
-      <PrevNextNavigation onNextClick={() => router.push("/create/active-sensing")} disabled={!isPassiveSensingValid} />
+      <PrevNextNavigation
+        prevHref="/create/general"
+        onNextClick={() => router.push("/create/active-sensing")}
+        disabled={!isPassiveSensingValid}
+      />
     </>
   );
 };

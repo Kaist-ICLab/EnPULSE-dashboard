@@ -124,6 +124,7 @@ const ConfirmPage: React.FC = () => {
         </Card>
       </div>
       <PrevNextNavigation
+        prevHref="/create/triggers"
         onNextClick={updateCampaignConfig}
         nextLabel={isUpdating ? "Creating campaign..." : "Create Campaign!"}
         disabled={isUpdating || isSaved || invalidSteps.length > 0}
