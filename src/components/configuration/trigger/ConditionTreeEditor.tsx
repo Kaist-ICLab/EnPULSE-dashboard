@@ -47,7 +47,7 @@ const ConditionTreeEditor: React.FC<{
         }
         headerControls={
           <BlockHeaderButton danger onClick={onRemove}>
-            <span className="icon-[humbleicons--times] h-3 w-3" />
+            <span className="icon-[humbleicons--times] h-4 w-4" />
           </BlockHeaderButton>
         }
         switchOptions={(Object.keys(TRIGGER_SENSOR_KIND_LABEL) as TriggerSensorKind[]).map((s) => ({
@@ -110,7 +110,7 @@ const ConditionTreeEditor: React.FC<{
           <>
             <BlockHeaderButton onClick={() => onChange(condition.child)}>Unwrap</BlockHeaderButton>
             <BlockHeaderButton danger onClick={onRemove}>
-              <span className="icon-[humbleicons--times] h-3 w-3" />
+              <span className="icon-[humbleicons--times] h-4 w-4" />
             </BlockHeaderButton>
           </>
         }
@@ -150,7 +150,7 @@ const ConditionTreeEditor: React.FC<{
             <BlockHeaderButton onClick={() => onChange(condition.children[0])}>Unwrap</BlockHeaderButton>
           )}
           <BlockHeaderButton danger onClick={onRemove}>
-            <span className="icon-[humbleicons--times] h-3 w-3" />
+            <span className="icon-[humbleicons--times] h-4 w-4" />
           </BlockHeaderButton>
         </>
       }
@@ -211,7 +211,7 @@ const ChildAddBar: React.FC<{
     <button
       type="button"
       onClick={onAddDetection}
-      className="rounded-md bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800 hover:bg-blue-200"
+      className="rounded-md bg-blue-100 px-2.5 py-1 text-sm font-semibold text-blue-800 hover:bg-blue-200"
     >
       + Detection
     </button>
@@ -219,7 +219,7 @@ const ChildAddBar: React.FC<{
       <button
         type="button"
         onClick={onAddAnd}
-        className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 hover:bg-amber-200"
+        className="rounded-md bg-amber-100 px-2.5 py-1 text-sm font-semibold text-amber-800 hover:bg-amber-200"
       >
         + AND group
       </button>
@@ -228,7 +228,7 @@ const ChildAddBar: React.FC<{
       <button
         type="button"
         onClick={onAddOr}
-        className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 hover:bg-amber-200"
+        className="rounded-md bg-amber-100 px-2.5 py-1 text-sm font-semibold text-amber-800 hover:bg-amber-200"
       >
         + OR group
       </button>
@@ -237,7 +237,7 @@ const ChildAddBar: React.FC<{
       <button
         type="button"
         onClick={onAddNot}
-        className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 hover:bg-amber-200"
+        className="rounded-md bg-amber-100 px-2.5 py-1 text-sm font-semibold text-amber-800 hover:bg-amber-200"
       >
         + NOT group
       </button>

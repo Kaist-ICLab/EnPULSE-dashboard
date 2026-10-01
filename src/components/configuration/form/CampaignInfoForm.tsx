@@ -1,5 +1,5 @@
 "use client";
-import { Card, TextInput, Tooltip } from "flowbite-react";
+import { Card, TextInput } from "flowbite-react";
 import { useEffect } from "react";
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import useCampaignNameState, { CampaignNameStatus } from "@/hooks/configuration/useCampaignNameState";
@@ -65,28 +65,17 @@ const CampaignInfoForm: React.FC<{
         <label htmlFor="campaignPassword" className="block text-sm font-medium text-gray-900">
           Password
         </label>
-        <Tooltip
-          content={
-            <div>
-              <p>The password is used to authenticate the user when they access the campaign.</p>
-              {isExistingCampaign && (
-                <p>Leave it empty to keep the current password. Entering a new one changes it for new joins.</p>
-              )}
-            </div>
-          }
-          trigger="hover"
-          placement="bottom"
-        >
-          <button className="text-gray-500">
-            <span className="icon-[mingcute--question-fill] mt-1 h-6 w-6"></span>
-          </button>
-        </Tooltip>
         <PasswordForm
           password={campaignPassword}
           setPassword={setCampaignPassword}
           placeholder={isExistingCampaign ? "Leave empty to keep the current password" : undefined}
         />
       </div>
+      {/* Shown inline rather than in a hover-only tooltip, so it is visible on touch screens. */}
+      <p className="-mt-2 text-xs text-gray-500">
+        Participants enter this password to join the campaign.
+        {isExistingCampaign && " Leave it empty to keep the current one; a new password applies to new joins."}
+      </p>
     </Card>
   );
 };

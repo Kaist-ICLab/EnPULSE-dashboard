@@ -146,8 +146,10 @@ export default function PassiveSensingForm() {
                 className="absolute right-0 flex -translate-y-1/2 cursor-pointer items-center gap-2"
                 style={{ top: `${top * 100}%` }}
               >
+                {/* The current sensor's label is always shown so the indicator is
+                    discoverable without hovering; the others appear on hover. */}
                 <span
-                  className={`-translate-x-2 rounded-md border border-gray-200 bg-white px-2 py-1 text-sm whitespace-nowrap opacity-0 shadow-sm transition-all duration-150 group-hover:translate-x-0 group-hover:opacity-100 ${isActive ? "font-medium text-blue-700" : "text-gray-700"}`}
+                  className={`rounded-md border border-gray-200 bg-white px-2 py-1 text-sm whitespace-nowrap shadow-sm transition-all duration-150 group-hover:translate-x-0 group-hover:opacity-100 ${isActive ? "translate-x-0 font-medium text-blue-700 opacity-100" : "-translate-x-2 text-gray-700 opacity-0"}`}
                 >
                   {table.display_name}
                 </span>
