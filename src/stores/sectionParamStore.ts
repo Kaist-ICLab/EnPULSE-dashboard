@@ -45,11 +45,13 @@ export type SectionParamStore = SectionParamState & SectionParamActions;
 function getInitialDate(campaign?: FetchedCampaign): Date {
   if (!campaign) return getLocalDay();
 
+  // Charts show the 24 hours from this date, so it must be midnight. Using the raw
+  // start/end time (e.g. 22:59) made a finished campaign open on a nearly empty window.
   if (dayjs(campaign.start_time).toDate() >= new Date()) {
-    return dayjs(campaign.start_time).toDate();
+    return dayjs(campaign.start_time).startOf("day").toDate();
   }
   if (dayjs(campaign.end_time).toDate() <= new Date()) {
-    return dayjs(campaign.end_time).toDate();
+    return dayjs(campaign.end_time).startOf("day").toDate();
   }
   return getLocalDay();
 }
