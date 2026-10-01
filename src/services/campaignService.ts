@@ -26,9 +26,34 @@ type SingleLevelSurveyQuestion = Omit<FetchedSurveyQuestion, "survey_question_tr
   })[];
 };
 
+// survey_question has no order column, so the question's position among its siblings
+// is stored in its `config` JSON (the app ignores unknown config keys). Questions saved
+// before this have no position and fall back to id order.
+const QUESTION_POSITION_KEY = "position";
+
+function getQuestionPosition(q: { config: unknown }): number {
+  const position = (q.config as Record<string, unknown> | null)?.[QUESTION_POSITION_KEY];
+  return typeof position === "number" ? position : Number.MAX_SAFE_INTEGER;
+}
+
+function sortByQuestionPosition<T extends { id?: number; config: unknown }>(questions: T[]): T[] {
+  return questions.sort((a, b) => getQuestionPosition(a) - getQuestionPosition(b) || (a.id ?? 0) - (b.id ?? 0));
+}
+
+/** Write each question's index among its siblings into its config, at every nesting level. */
+function assignQuestionPositions(questions: SurveyQuestion[]) {
+  questions.forEach((q, index) => {
+    q.config = {
+      ...((q.config as object | null) ?? {}),
+      [QUESTION_POSITION_KEY]: index,
+    } as unknown as SurveyQuestion["config"];
+    q.survey_question_trigger.forEach((t) => assignQuestionPositions(t.survey_question));
+  });
+}
+
 function restoreSurveyHierarchy(surveyQuestion: SingleLevelSurveyQuestion, questionList: SingleLevelSurveyQuestion[]) {
   for (const trigger of surveyQuestion.survey_question_trigger) {
-    const childQuestion = questionList.filter((q) => q.triggered_by === trigger.id);
+    const childQuestion = sortByQuestionPosition(questionList.filter((q) => q.triggered_by === trigger.id));
     trigger.survey_question = childQuestion;
 
     childQuestion.forEach((q) => restoreSurveyHierarchy(q, questionList));
@@ -72,7 +97,7 @@ export const getCampaignInfo = async (campaignId: number): Promise<FetchedCampai
   if (error) throw new Error(error.message);
 
   data.survey.forEach((s) => {
-    const topLevelSurveyQuestion = s.survey_question.filter((sq) => sq.triggered_by === null);
+    const topLevelSurveyQuestion = sortByQuestionPosition(s.survey_question.filter((sq) => sq.triggered_by === null));
     topLevelSurveyQuestion.forEach((sq) => restoreSurveyHierarchy(sq, s.survey_question));
     s.survey_question = topLevelSurveyQuestion;
   });
@@ -261,7 +286,11 @@ export const upsertSurvey = async (survey: Survey[], insertChildTables: boolean 
   const insertedId = data.map((d) => d.id);
 
   if (insertChildTables) {
-    propagatedSurvey.forEach((s, idx) => recursivelyFillSurveyId(s.survey_question, insertedId[idx]));
+    propagatedSurvey.forEach((s, idx) => {
+      recursivelyFillSurveyId(s.survey_question, insertedId[idx]);
+      // Questions are flattened level by level below, so record sibling order first.
+      assignQuestionPositions(s.survey_question);
+    });
     const surveyQuestions = propagatedSurvey.flatMap((s) => s.survey_question);
     await upsertSurveyQuestion(surveyQuestions, insertChildTables);
   }
