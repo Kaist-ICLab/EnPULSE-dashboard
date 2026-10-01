@@ -357,6 +357,48 @@ export type Database = {
           },
         ];
       };
+      campaign_join_log: {
+        Row: {
+          campaign_id: number;
+          id: number;
+          joined_at: string;
+          left_at: string | null;
+          pid: number;
+          uuid: string;
+        };
+        Insert: {
+          campaign_id: number;
+          id?: number;
+          joined_at?: string;
+          left_at?: string | null;
+          pid: number;
+          uuid: string;
+        };
+        Update: {
+          campaign_id?: number;
+          id?: number;
+          joined_at?: string;
+          left_at?: string | null;
+          pid?: number;
+          uuid?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "campain_join_log_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "campain_join_log_uuid_fkey";
+            columns: ["uuid"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["uuid"];
+          },
+        ];
+      };
       campaign_table: {
         Row: {
           campaign_id: number;
@@ -501,6 +543,53 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["uuid"];
+          },
+        ];
+      };
+      campaign_timing_schedule: {
+        Row: {
+          campaign_id: number;
+          end_of_day: number | null;
+          id: number;
+          kind: string;
+          max_interval: number | null;
+          min_interval: number | null;
+          num_survey: number | null;
+          start_of_day: number | null;
+          time_of_day: Json | null;
+          value: string;
+        };
+        Insert: {
+          campaign_id: number;
+          end_of_day?: number | null;
+          id?: never;
+          kind: string;
+          max_interval?: number | null;
+          min_interval?: number | null;
+          num_survey?: number | null;
+          start_of_day?: number | null;
+          time_of_day?: Json | null;
+          value: string;
+        };
+        Update: {
+          campaign_id?: number;
+          end_of_day?: number | null;
+          id?: never;
+          kind?: string;
+          max_interval?: number | null;
+          min_interval?: number | null;
+          num_survey?: number | null;
+          start_of_day?: number | null;
+          time_of_day?: Json | null;
+          value?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "campaign_timing_schedule_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["id"];
           },
         ];
       };
@@ -1475,34 +1564,43 @@ export type Database = {
           created_at: string | null;
           device_type: number;
           event_id: string;
-          is_high_stress: boolean;
-          probability: number;
+          ibi_count_1m: number;
+          ibi_count_5m: number;
+          is_stressed: boolean;
           received: string;
+          rmssd_1m: number;
+          rmssd_5m: number;
+          threshold: number;
           timestamp: string;
           uuid: string;
-          window_start_ms: string;
         };
         Insert: {
           created_at?: string | null;
           device_type: number;
           event_id: string;
-          is_high_stress: boolean;
-          probability: number;
+          ibi_count_1m: number;
+          ibi_count_5m: number;
+          is_stressed: boolean;
           received: string;
+          rmssd_1m: number;
+          rmssd_5m: number;
+          threshold: number;
           timestamp: string;
           uuid: string;
-          window_start_ms: string;
         };
         Update: {
           created_at?: string | null;
           device_type?: number;
           event_id?: string;
-          is_high_stress?: boolean;
-          probability?: number;
+          ibi_count_1m?: number;
+          ibi_count_5m?: number;
+          is_stressed?: boolean;
           received?: string;
+          rmssd_1m?: number;
+          rmssd_5m?: number;
+          threshold?: number;
           timestamp?: string;
           uuid?: string;
-          window_start_ms?: string;
         };
         Relationships: [];
       };
@@ -1740,6 +1838,44 @@ export type Database = {
           uuid?: string;
         };
         Relationships: [];
+      };
+      web_app_log: {
+        Row: {
+          created_at: string | null;
+          event_type: string;
+          id: number;
+          properties: Json | null;
+          timestamp: string;
+          uuid: string;
+          web_app_id: number;
+        };
+        Insert: {
+          created_at?: string | null;
+          event_type: string;
+          id?: number;
+          properties?: Json | null;
+          timestamp: string;
+          uuid: string;
+          web_app_id: number;
+        };
+        Update: {
+          created_at?: string | null;
+          event_type?: string;
+          id?: number;
+          properties?: Json | null;
+          timestamp?: string;
+          uuid?: string;
+          web_app_id?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "web_app_log_web_app_id_fkey";
+            columns: ["web_app_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_webapp";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       wifi_scan_sensor: {
         Row: {
@@ -2183,6 +2319,10 @@ export type Database = {
             };
             Returns: number;
           };
+      join_campaign_with_pid: {
+        Args: { p_campaign_id: number; p_uuid: string };
+        Returns: number;
+      };
       locf: {
         Args: {
           prev?: unknown;

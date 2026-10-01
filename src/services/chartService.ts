@@ -65,7 +65,7 @@ export async function getCampaignDailySummary(uuids: string[], tableIds: number[
   return result;
 }
 
-// Survey response daily summary — counts distinct (uuid, survey_id, survey_start_time)
+// Survey response daily summary — counts distinct (uuid, survey_id, response_submission_time)
 // per uuid per survey per 3-hour time slot for the given date.
 const SURVEY_TIME_SLOT_COUNT = 12; // 24h / 3h
 const SURVEY_TIME_SLOT_MS = (24 * 60 * 60 * 1000) / SURVEY_TIME_SLOT_COUNT;
@@ -83,11 +83,11 @@ export async function getCampaignSurveyDailySummary(
 
   const { data, error } = await supabase
     .from("survey_question_response")
-    .select("uuid, survey_start_time, survey_question!inner(survey_id)")
+    .select("uuid, response_submission_time, survey_question!inner(survey_id)")
     .in("uuid", uuids)
     .in("survey_question.survey_id", surveyIds)
-    .gte("survey_start_time", dayStart.format(DATE_FORMAT))
-    .lte("survey_start_time", dayEnd.format(DATE_FORMAT));
+    .gte("response_submission_time", dayStart.format(DATE_FORMAT))
+    .lte("response_submission_time", dayEnd.format(DATE_FORMAT));
 
   if (error) throw new Error(error.message);
 
@@ -102,12 +102,12 @@ export async function getCampaignSurveyDailySummary(
     );
   }
 
-  // De-duplicate by (uuid, survey_id, survey_start_time) since one survey
-  // submission writes one row per question.
+  // De-duplicate by (uuid, survey_id, response_submission_time) since one survey
+  // submission writes one row per question, all sharing a submission timestamp.
   const seen = new Set<string>();
   for (const row of data ?? []) {
     const surveyId = row.survey_question.survey_id;
-    const key = `${row.uuid}|${surveyId}|${row.survey_start_time}`;
+    const key = `${row.uuid}|${surveyId}|${row.response_submission_time}`;
     if (seen.has(key)) continue;
     seen.add(key);
 
@@ -116,7 +116,7 @@ export async function getCampaignSurveyDailySummary(
     const entry = userSurveys.find((s) => s.survey_id === surveyId);
     if (!entry) continue;
 
-    const t = new Date(row.survey_start_time).getTime();
+    const t = new Date(row.response_submission_time).getTime();
     const slot = Math.min(
       SURVEY_TIME_SLOT_COUNT - 1,
       Math.max(0, Math.floor((t - dayStart.valueOf()) / SURVEY_TIME_SLOT_MS)),
@@ -243,15 +243,16 @@ async function fetchSurveyResponses(
   endTime: string,
 ): Promise<SurveyResponseRow[]> {
   if (uuids.length === 0 || questionIds.length === 0) return [];
-  // Filter on trigger_time (always set) instead of response_submission_time
-  // so rows with null/expired responses are still returned.
+  // Filter on response_submission_time: it is non-nullable and is the only
+  // timestamp the Android library still populates correctly — trigger_time and
+  // actual_trigger_time arrive as epoch 0, which would drop every row here.
   const { data, error } = await supabase
     .from("survey_question_response")
     .select("uuid, question_id, response, response_submission_time, actual_trigger_time, trigger_time")
     .in("uuid", uuids)
     .in("question_id", questionIds)
-    .gte("trigger_time", startTime)
-    .lte("trigger_time", endTime);
+    .gte("response_submission_time", startTime)
+    .lte("response_submission_time", endTime);
 
   if (error) throw new Error(error.message);
   return (data ?? []) as SurveyResponseRow[];

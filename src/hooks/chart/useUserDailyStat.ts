@@ -7,7 +7,7 @@ import { useSectionParamStore } from "@/providers/SectionParamStoreProvider";
 export type DailyStatColumn =
   { kind: "sensor"; id: number; name: string } | { kind: "survey"; id: number; name: string };
 
-export const useUserDailyStat = (initialRowsPerPage: number) => {
+export const useUserDailyStat = (rowsPerPage: number) => {
   const { date, lastManualSyncTime } = useSectionParamStore((state) => state);
   const { campaign, campaignParticipants, campaignTables } = useCampaignStore((state) => state);
 
@@ -15,7 +15,6 @@ export const useUserDailyStat = (initialRowsPerPage: number) => {
   const [loading, setLoading] = useState(false);
 
   const [page, _setPage] = useState(1);
-  const [rowsPerPage, _setRowsPerPage] = useState(initialRowsPerPage);
 
   const uuids = useMemo(() => {
     return Array.from(campaignParticipants.values())
@@ -60,10 +59,11 @@ export const useUserDailyStat = (initialRowsPerPage: number) => {
     _setPage(page);
   };
 
-  const setRowsPerPage = (newRowsPerPage: number) => {
-    _setRowsPerPage(newRowsPerPage);
-    setPage(1);
-  };
+  // `rowsPerPage` follows the window width, so the current page can fall out
+  // of range when the table grows; clamp it back into range when it does.
+  useEffect(() => {
+    if (page > totalPage) _setPage(Math.max(1, totalPage));
+  }, [page, totalPage]);
 
   // Per-column maximum daily count, used to scale the bar/timeline cells.
   // Keyed by `${kind}-${id}` so sensor and survey ids don't collide.
@@ -73,12 +73,12 @@ export const useUserDailyStat = (initialRowsPerPage: number) => {
     for (const row of data) {
       for (const table of row.tables) {
         const key = `sensor-${table.table_id}`;
-        const rowMax = table.counts.reduce((acc, count) => Math.max(acc, count), 0);
+        const rowMax = table.counts.reduce((acc, count) => acc + count, 0);
         res.set(key, Math.max(res.get(key) ?? 0, rowMax));
       }
       for (const survey of row.surveys) {
         const key = `survey-${survey.survey_id}`;
-        const rowMax = survey.counts.reduce((acc, count) => Math.max(acc, count), 0);
+        const rowMax = survey.counts.reduce((acc, count) => acc + count, 0);
         res.set(key, Math.max(res.get(key) ?? 0, rowMax));
       }
     }
@@ -121,7 +121,7 @@ export const useUserDailyStat = (initialRowsPerPage: number) => {
     load();
   }, [date, page, rowsPerPage, totalPage, uuids, lastManualSyncTime, tableIds, surveyIds]);
 
-  return { data, maxDailyCount, columns, loading, page, rowsPerPage, totalPage, setPage, setRowsPerPage };
+  return { data, maxDailyCount, columns, loading, page, totalPage, setPage };
 };
 
 export default useUserDailyStat;
