@@ -329,7 +329,11 @@ function getDefaultState(): CampaignConfigEditState {
     campaignDescription: "",
     campaignPassword: "",
     campaignStartTime: dayjs().format(DATE_FORMAT),
-    campaignEndTime: dayjs().add(1, "day").format(DATE_FORMAT),
+    // 30 days rather than 1: a campaign is often created ahead of when participants
+    // actually join (e.g. prepared the day before a booth/demo), and join-campaign
+    // rejects joining a campaign whose end_time has already passed. Researchers can
+    // still shorten it.
+    campaignEndTime: dayjs().add(30, "day").format(DATE_FORMAT),
     tables: [],
     surveys: [],
     campaign_trigger: [],
