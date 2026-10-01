@@ -50,10 +50,18 @@ export async function getCampaignDailySummary(uuids: string[], tableIds: number[
     surveys: [],
   }));
 
+  // dayjs.tz is slow (it formats through Intl on every call): calling it per row cost about
+  // 0.7s for a typical page. Resolve each database day's start once, then use arithmetic.
+  const localStartMs = localStart.valueOf();
+  const localEndMs = localEnd.valueOf();
+  const dayStartMs = new Map(databaseDays.map((day) => [day, databaseDayStart(day).valueOf()]));
+  const slotMs = DAILY_SLOT_HOURS * 60 * 60 * 1000;
+
   for (const v of data) {
-    const slotStart = databaseDayStart(v.day, v.time_slot * DAILY_SLOT_HOURS);
-    if (slotStart.isBefore(localStart) || !slotStart.isBefore(localEnd)) continue;
-    const localSlot = Math.floor(slotStart.diff(localStart, "hour") / DAILY_SLOT_HOURS);
+    const dayStart = dayStartMs.get(v.day) ?? databaseDayStart(v.day).valueOf();
+    const slotStartMs = dayStart + v.time_slot * slotMs;
+    if (slotStartMs < localStartMs || slotStartMs >= localEndMs) continue;
+    const localSlot = Math.floor((slotStartMs - localStartMs) / slotMs);
 
     const tables = result.find((r) => r.uuid === v.uuid)?.tables;
     if (!tables) continue;

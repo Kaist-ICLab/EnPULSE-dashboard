@@ -51,17 +51,13 @@ const DailyOverviewTable: React.FC = () => {
   const { campaign, campaignParticipants, campaignTables } = useCampaignStore((state) => state);
   const { updateComparisonParams, updateSelectedSection } = useSectionParamStore((state) => state);
 
-  const { data, loading, maxDailyCount, maxSlotCount, columns, page, rowsPerPage, totalPage, setPage, setRowsPerPage } =
-    useUserDailyStat(5);
-
   // Show as many participants as fit the table's width (a fixed 5 left most of a large
-  // monitor empty). setRowsPerPage also returns to page 1.
+  // monitor empty). Nothing is fetched until the width is measured, so the overview loads
+  // once with the right page size instead of once with 5 and again after measuring.
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const fittingParticipantCount = useResponsiveParticipantCount(tableContainerRef);
-  useEffect(() => {
-    if (fittingParticipantCount !== rowsPerPage) setRowsPerPage(fittingParticipantCount);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to width changes
-  }, [fittingParticipantCount]);
+  const { data, loading, maxDailyCount, maxSlotCount, columns, page, rowsPerPage, totalPage, setPage } =
+    useUserDailyStat(fittingParticipantCount);
   const totalParticipants = campaignParticipants.size;
   const firstParticipantIndex = (page - 1) * rowsPerPage + 1;
   const lastParticipantIndex = Math.min(page * rowsPerPage, totalParticipants);

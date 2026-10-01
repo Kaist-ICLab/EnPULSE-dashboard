@@ -7,11 +7,13 @@ export const PARTICIPANT_COLUMN_WIDTH = 128;
 
 /**
  * Number of participant columns that fit into `ref`'s current width, recomputed on resize.
+ * Returns null until the first measurement, so callers can wait instead of fetching data
+ * for a placeholder count and then fetching again once the real width is known.
  * A fixed 5 participants used only about a third of a 27-inch booth monitor.
  * Ported from origin/junmo/configuration (8691dc5), adjusted to main's label column width.
  */
-export const useResponsiveParticipantCount = (ref: RefObject<HTMLElement | null>, fallback: number = 5) => {
-  const [count, setCount] = useState(fallback);
+export const useResponsiveParticipantCount = (ref: RefObject<HTMLElement | null>) => {
+  const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
     const element = ref.current;

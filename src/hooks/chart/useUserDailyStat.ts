@@ -8,17 +8,31 @@ import { notify } from "@/utils/notify";
 export type DailyStatColumn =
   { kind: "sensor"; id: number; name: string } | { kind: "survey"; id: number; name: string };
 
-export const useUserDailyStat = (initialRowsPerPage: number) => {
+/**
+ * @param rowsPerPage Participants per page, or null while it is not known yet (the table
+ *   width has not been measured). Nothing is fetched while it is null.
+ */
+export const useUserDailyStat = (rowsPerPage: number | null) => {
   const { date, lastManualSyncTime } = useSectionParamStore((state) => state);
   const { campaign, campaignParticipants, campaignTables } = useCampaignStore((state) => state);
 
   const [data, setData] = useState<UserDailyStatData[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const [page, _setPage] = useState(1);
-  const [rowsPerPage, _setRowsPerPage] = useState(initialRowsPerPage);
+  const [requestedPage, _setPage] = useState(1);
+  const perPage = rowsPerPage ?? 1;
+
+  const totalPage = useMemo(() => {
+    // At least one page, so a campaign with no participants shows "Page 1 of 1"
+    // instead of "Page 1 of 0" and paging can't reach page 0.
+    return Math.max(1, Math.ceil(campaignParticipants.size / perPage));
+  }, [campaignParticipants, perPage]);
+  // Clamp rather than reset when the page size changes (e.g. on resize), so a resize
+  // costs one fetch instead of a fetch for the old page followed by one for page 1.
+  const page = Math.min(requestedPage, totalPage);
 
   const uuids = useMemo(() => {
+    if (rowsPerPage === null) return [];
     return Array.from(campaignParticipants.values())
       .filter((_, idx) => idx >= (page - 1) * rowsPerPage && idx < page * rowsPerPage)
       .map((p) => p.uuid);
@@ -46,12 +60,6 @@ export const useUserDailyStat = (initialRowsPerPage: number) => {
     return [...sensorCols, ...surveyCols];
   }, [campaignTables, campaign?.survey]);
 
-  const totalPage = useMemo(() => {
-    // At least one page, so a campaign with no participants shows "Page 1 of 1"
-    // instead of "Page 1 of 0" and paging can't reach page 0.
-    return Math.max(1, Math.ceil(Array.from(campaignParticipants.values()).length / rowsPerPage));
-  }, [campaignParticipants, rowsPerPage]);
-
   const setPage = (page: number) => {
     if (page < 1) {
       page = 1;
@@ -61,11 +69,6 @@ export const useUserDailyStat = (initialRowsPerPage: number) => {
     }
 
     _setPage(page);
-  };
-
-  const setRowsPerPage = (newRowsPerPage: number) => {
-    _setRowsPerPage(newRowsPerPage);
-    setPage(1);
   };
 
   // Per-column scales for the two display modes, keyed by `${kind}-${id}` so sensor
@@ -144,7 +147,18 @@ export const useUserDailyStat = (initialRowsPerPage: number) => {
     };
   }, [date, page, rowsPerPage, totalPage, uuids, lastManualSyncTime, tableIds, surveyIds]);
 
-  return { data, maxDailyCount, maxSlotCount, columns, loading, page, rowsPerPage, totalPage, setPage, setRowsPerPage };
+  // Report loading until the page size is known, instead of briefly showing "No data".
+  return {
+    data,
+    maxDailyCount,
+    maxSlotCount,
+    columns,
+    loading: loading || rowsPerPage === null,
+    page,
+    rowsPerPage: perPage,
+    totalPage,
+    setPage,
+  };
 };
 
 export default useUserDailyStat;
