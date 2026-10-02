@@ -15,7 +15,7 @@ export const TRIGGER_SENSOR_KIND_LABEL: Record<TriggerSensorKind, string> = {
 // (campaign_table.config on the timing_sensor row), not a fixed enum — see getTriggerSensorValues.
 export const STATIC_TRIGGER_SENSOR_VALUES: Record<Exclude<TriggerSensorKind, "timing">, readonly string[]> = {
   stress: ["Low", "High"],
-  physical_activity: ["In Vehicle", "On Bicycle", "On Foot", "Running", "Still", "Tilting", "Unknown", "Walking"],
+  physical_activity: ["In Vehicle", "On Bicycle", "On Foot", "Running", "Still", "Walking"],
   gesture: [
     "Alarm Clock",
     "Blender In Use",
@@ -46,6 +46,19 @@ export const STATIC_TRIGGER_SENSOR_VALUES: Record<Exclude<TriggerSensorKind, "ti
     "Other",
   ],
 } as const;
+
+// The campaign sensor each detection needs. The watch and phone only run the campaign's own
+// sensors, so a trigger on a sensor the campaign doesn't include can never fire. "timing" is
+// covered separately: its values must be the campaign's schedule names (isConditionComplete).
+export const TRIGGER_SENSOR_TABLE_NAME: Record<Exclude<TriggerSensorKind, "timing">, string> = {
+  stress: "stress_sensor",
+  physical_activity: "activity_recognition_sensor",
+  gesture: "gesture_sensor",
+};
+
+// The only broadcast the phone acts on: it opens a web app. Any other broadcast is sent to the
+// EnPULSE app itself (no other app receives it), where nothing handles it.
+export const OPEN_WEBAPP_BROADCAST_ACTION = "kaist.iclab.mobiletracker.OPEN_WEBAPP";
 
 // `timingScheduleValues` comes from the campaign's `timing_sensor` campaign_table row's
 // `config` array (see `getTimingScheduleValues` in `src/types/timingSchedule.ts`) — kept as a
@@ -289,4 +302,62 @@ export function isTriggerComplete(
   return (
     isConditionComplete(t.condition, timingScheduleValues) && t.actions.length > 0 && t.actions.every(isActionComplete)
   );
+}
+
+function findDetectionSensors(condition: TriggerCondition): TriggerSensorKind[] {
+  switch (condition.type) {
+    case "detection":
+      return [condition.sensor];
+    case "and":
+    case "or":
+      return condition.children.flatMap(findDetectionSensors);
+    case "not":
+      return findDetectionSensors(condition.child);
+  }
+}
+
+export type TriggerCheckContext = {
+  timingScheduleValues: string[];
+  campaignTableNames: Set<string>;
+  surveys: { title?: string | null; device_type?: number | null }[];
+};
+
+/**
+ * Why a trigger cannot work as configured, or null if it can. Beyond completeness, catches
+ * choices the apps accept but silently never act on.
+ */
+export function getTriggerIssue(
+  t: { name?: string | null; condition: TriggerCondition; actions: TriggerAction[] },
+  index: number,
+  context: TriggerCheckContext,
+): string | null {
+  const label = `Trigger "${t.name?.trim() || `#${index + 1}`}"`;
+  if (!isTriggerComplete(t, context.timingScheduleValues)) {
+    return `${label} is incomplete. Check its condition values and actions.`;
+  }
+
+  for (const sensor of new Set(findDetectionSensors(t.condition))) {
+    if (sensor === "timing") continue;
+    if (!context.campaignTableNames.has(TRIGGER_SENSOR_TABLE_NAME[sensor])) {
+      return `${label} uses ${TRIGGER_SENSOR_KIND_LABEL[sensor]}, but the campaign doesn't collect it. Add the ${TRIGGER_SENSOR_KIND_LABEL[sensor]} sensor in Passive Sensing.`;
+    }
+  }
+
+  for (const action of t.actions) {
+    if (action.kind === "broadcast" && action.action.trim() !== OPEN_WEBAPP_BROADCAST_ACTION) {
+      return `${label} has a Broadcast action, which the EnPULSE app doesn't deliver to other apps. Use a Notification or EMA action instead.`;
+    }
+    if (action.kind === "ema" || action.kind === "watch_ema") {
+      const survey = context.surveys[action.surveyIndex];
+      const wantsWatch = action.kind === "watch_ema";
+      const isWatch = survey?.device_type === DeviceType.Watch;
+      if (survey && wantsWatch !== isWatch) {
+        const title = survey.title?.trim() || "Untitled";
+        return wantsWatch
+          ? `${label} shows "${title}" on the smartwatch, but it is a phone survey. Pick a watch survey, or use an EMA action.`
+          : `${label} shows "${title}" on the phone, but it is a watch survey. Pick a phone survey, or use a Smartwatch EMA action.`;
+      }
+    }
+  }
+  return null;
 }

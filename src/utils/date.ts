@@ -28,6 +28,8 @@ export function millisecondsToMinutes(ms: number): number {
   return Math.round(ms / (60 * 1000));
 }
 
+// Rounded: the app reads these as whole milliseconds (Kotlin Long), and a fractional minute
+// such as 1.1 gives 66000.00000000001, which made the app drop every timing schedule.
 export function minutesToMilliseconds(minutes: number): number {
-  return minutes * 60 * 1000;
+  return Math.round(minutes * 60 * 1000);
 }

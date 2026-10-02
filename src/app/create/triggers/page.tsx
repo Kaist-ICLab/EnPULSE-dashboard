@@ -10,7 +10,7 @@ import { useCampaignConfigEditStoreApi } from "@/providers/CampaignConfigEditSto
 
 const Page: React.FC = () => {
   const router = useRouter();
-  const { isTriggerValid } = useValidConfigState();
+  const { isTriggerValid, triggerIssue } = useValidConfigState();
   const configEditStore = useCampaignConfigEditStoreApi();
   const { clear } = useTemporalStore(configEditStore, (state) => state);
 
@@ -25,6 +25,7 @@ const Page: React.FC = () => {
         prevHref="/create/webapp"
         onNextClick={() => router.push("/create/confirm")}
         disabled={!isTriggerValid}
+        disabledReason={triggerIssue}
       />
     </>
   );
