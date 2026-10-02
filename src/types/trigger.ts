@@ -77,13 +77,14 @@ export type TriggerCondition =
   | { type: "or"; children: TriggerCondition[] }
   | { type: "not"; child: TriggerCondition };
 
-export type TriggerActionKind = "ema" | "watch_ema" | "broadcast" | "notification";
+export type TriggerActionKind = "ema" | "watch_ema" | "broadcast" | "notification" | "open_webapp";
 
 export const TRIGGER_ACTION_KIND_LABEL: Record<TriggerActionKind, string> = {
   ema: "EMA",
   watch_ema: "Smartwatch EMA",
   broadcast: "Broadcast",
   notification: "Notification",
+  open_webapp: "Open Web App",
 };
 
 // One key/value pair attached to the Android Intent's Bundle. `value` is always
@@ -111,6 +112,15 @@ export type BroadcastExtra = {
 export type TriggerAction =
   | { kind: "ema"; surveyIndex: number; minIntervalMillis: number }
   | { kind: "watch_ema"; surveyIndex: number; minIntervalMillis: number }
+  | {
+      // Persisted as a "broadcast" action with the well-known OPEN_WEBAPP action string and
+      // survey_id/webapp_id extras (see persistAction) — the app's trigger handler already
+      // understood that shape, so this only adds pickers in place of typing ids by hand.
+      kind: "open_webapp";
+      surveyIndex: number;
+      webappIndex: number;
+      minIntervalMillis: number;
+    }
   | {
       kind: "broadcast";
       // Intent action string the receiving app's <intent-filter android:name="..."/> matches on.
@@ -153,27 +163,67 @@ export type PersistedTriggerAction =
       minIntervalMillis: number;
     };
 
-export function persistAction(a: TriggerAction, surveyIds: number[]): PersistedTriggerAction {
-  if (a.kind === "broadcast") return a;
+export function persistAction(a: TriggerAction, surveyIds: number[], webappIds: number[]): PersistedTriggerAction {
   if (a.kind === "notification") return a;
+  if (a.kind === "open_webapp") {
+    return {
+      kind: "broadcast",
+      action: OPEN_WEBAPP_BROADCAST_ACTION,
+      extras: [
+        { key: "survey_id", valueType: "int", value: String(surveyIds[a.surveyIndex]) },
+        { key: "webapp_id", valueType: "int", value: String(webappIds[a.webappIndex]) },
+      ],
+      minIntervalMillis: a.minIntervalMillis,
+    };
+  }
+  if (a.kind === "broadcast") return a;
   return { kind: a.kind, survey_id: surveyIds[a.surveyIndex], minIntervalMillis: a.minIntervalMillis };
 }
 
-export function loadAction(persisted: PersistedTriggerAction, surveys: { id: number }[]): TriggerAction {
-  if (persisted.kind === "broadcast" || persisted.kind === "notification") return persisted;
+export function loadAction(
+  persisted: PersistedTriggerAction,
+  surveys: { id: number }[],
+  webapps: { id: number }[],
+): TriggerAction {
+  if (persisted.kind === "notification") return persisted;
+  if (persisted.kind === "broadcast") {
+    if (persisted.action === OPEN_WEBAPP_BROADCAST_ACTION) {
+      const surveyIdExtra = persisted.extras.find((e) => e.key === "survey_id")?.value;
+      const webappIdExtra = persisted.extras.find((e) => e.key === "webapp_id")?.value;
+      const surveyIndex = surveys.findIndex((s) => String(s.id) === surveyIdExtra);
+      const webappIndex = webapps.findIndex((w) => String(w.id) === webappIdExtra);
+      // Only rehydrate into the picker-backed shape when both ids still resolve to a real
+      // survey/webapp in this campaign — otherwise fall through to the raw Broadcast editor
+      // so a stale or hand-authored row stays visible (and flagged by getTriggerIssue) instead
+      // of silently losing its extras.
+      if (surveyIndex !== -1 && webappIndex !== -1) {
+        return {
+          kind: "open_webapp",
+          surveyIndex,
+          webappIndex,
+          minIntervalMillis: persisted.minIntervalMillis ?? 0,
+        };
+      }
+    }
+    return persisted;
+  }
   const index = surveys.findIndex((s) => s.id === persisted.survey_id);
   return { kind: persisted.kind, surveyIndex: index, minIntervalMillis: persisted.minIntervalMillis };
 }
 
-export function persistActions(actions: TriggerAction[], surveyIds: number[]): PersistedTriggerAction[] {
-  return actions.map((a) => persistAction(a, surveyIds));
+export function persistActions(
+  actions: TriggerAction[],
+  surveyIds: number[],
+  webappIds: number[],
+): PersistedTriggerAction[] {
+  return actions.map((a) => persistAction(a, surveyIds, webappIds));
 }
 
-export function loadActions(raw: unknown, surveys: { id: number }[]): TriggerAction[] {
+export function loadActions(raw: unknown, surveys: { id: number }[], webapps: { id: number }[]): TriggerAction[] {
   // Backwards-compatibility: accept either an array of actions (current) or a single
   // persisted-action object (pre-migration rows). Anything else collapses to [].
-  if (Array.isArray(raw)) return raw.map((p) => loadAction(p as PersistedTriggerAction, surveys));
-  if (raw && typeof raw === "object") return [loadAction(raw as PersistedTriggerAction, surveys)];
+  if (Array.isArray(raw)) return raw.map((p) => loadAction(p as PersistedTriggerAction, surveys, webapps));
+  if (raw && typeof raw === "object") return [loadAction(raw as PersistedTriggerAction, surveys, webapps)];
   return [];
 }
 
@@ -240,6 +290,14 @@ export function defaultAction(kind: TriggerActionKind): TriggerAction {
       minIntervalMillis: DEFAULT_TRIGGER_MIN_INTERVAL_MILLIS,
     };
   }
+  if (kind === "open_webapp") {
+    return {
+      kind: "open_webapp",
+      surveyIndex: -1,
+      webappIndex: -1,
+      minIntervalMillis: DEFAULT_TRIGGER_MIN_INTERVAL_MILLIS,
+    };
+  }
   return { kind, surveyIndex: -1, minIntervalMillis: DEFAULT_TRIGGER_MIN_INTERVAL_MILLIS };
 }
 
@@ -288,6 +346,8 @@ export function isActionComplete(a: TriggerAction): boolean {
     case "ema":
     case "watch_ema":
       return a.surveyIndex >= 0;
+    case "open_webapp":
+      return a.surveyIndex >= 0 && a.webappIndex >= 0;
     case "broadcast":
       return a.action.trim().length > 0 && a.extras.every(isExtraValueValid);
     case "notification":
@@ -346,6 +406,18 @@ export function getTriggerIssue(
   for (const action of t.actions) {
     if (action.kind === "broadcast" && action.action.trim() !== OPEN_WEBAPP_BROADCAST_ACTION) {
       return `${label} has a Broadcast action, which the EnPULSE app doesn't deliver to other apps. Use a Notification or EMA action instead.`;
+    }
+    if (action.kind === "broadcast" && action.action.trim() === OPEN_WEBAPP_BROADCAST_ACTION) {
+      // loadAction couldn't resolve this row's survey_id/webapp_id extras to a real survey or
+      // web app in this campaign (hand-authored, or one of them was since deleted) — the phone
+      // would otherwise log an error and silently do nothing.
+      return `${label} opens a web app, but its survey or web app no longer matches one in this campaign. Remove the action and re-add it as "Open Web App".`;
+    }
+    if (action.kind === "open_webapp") {
+      const survey = context.surveys[action.surveyIndex];
+      if (survey && survey.device_type === DeviceType.Watch) {
+        return `${label} opens a web app for a watch survey, but Open Web App only works with phone surveys. Pick a phone survey.`;
+      }
     }
     if (action.kind === "ema" || action.kind === "watch_ema") {
       const survey = context.surveys[action.surveyIndex];

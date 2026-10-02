@@ -109,7 +109,7 @@ export const getCampaignInfo = async (campaignId: number): Promise<FetchedCampai
   data.campaign_trigger = data.campaign_trigger.map((row: (typeof data.campaign_trigger)[number]) => ({
     ...row,
     condition: row.condition as unknown as TriggerCondition,
-    actions: loadActions(row.action, data.survey),
+    actions: loadActions(row.action, data.survey, data.campaign_webapp),
   }));
 
   data.profiles = data.profiles.sort((a, b) => a.pid - b.pid);
@@ -169,14 +169,14 @@ export const upsertCampaign = async (
       w.campaign_id = campaignId;
     });
 
-    const [, surveyIds] = await Promise.all([
+    const [, surveyIds, webappIds] = await Promise.all([
       upsertCampaignTable(campaignTable),
       upsertSurvey(survey),
       upsertCampaignWebapp(webapps),
     ]);
 
     if (triggers.length > 0) {
-      await upsertCampaignTrigger(triggers, campaignId, surveyIds);
+      await upsertCampaignTrigger(triggers, campaignId, surveyIds, webappIds);
     }
   }
 
@@ -232,6 +232,7 @@ export const upsertCampaignTrigger = async (
   triggers: CampaignTrigger[],
   campaignId: number,
   surveyIds: number[],
+  webappIds: number[],
 ): Promise<void> => {
   if (triggers.length === 0) return;
 
@@ -248,7 +249,7 @@ export const upsertCampaignTrigger = async (
       name: t.name ?? "",
       condition: t.condition as Json,
       // Column is named `action` (singular) but stores a JSON array of persisted actions.
-      action: persistActions(t.actions, surveyIds) as Json,
+      action: persistActions(t.actions, surveyIds, webappIds) as Json,
     };
     if (row.id === -1 || row.id === undefined) delete row.id;
     return row;
@@ -383,15 +384,16 @@ export const upsertSurveyTrigger = async (
   }
 };
 
-export const upsertCampaignWebapp = async (webapps: CampaignWebapp[]): Promise<void> => {
-  if (webapps.length === 0) return;
+// Returns ids in the same order as `webapps`, like `upsertSurvey` — trigger rows reference a
+// webapp by its position in this array (`webappIndex` in the editable TriggerAction) until this
+// resolves it to a real `campaign_webapp.id` (see `upsertCampaignTrigger`).
+export const upsertCampaignWebapp = async (webapps: CampaignWebapp[]): Promise<number[]> => {
+  if (webapps.length === 0) return [];
   webapps.filter((w) => w.id === -1).forEach((w) => delete w.id);
 
   const insertedWebapps: CampaignWebapp[] = structuredClone(webapps);
 
-  const { error } = await supabase.from("campaign_webapp").upsert(insertedWebapps, { defaultToNull: false });
-
-  if (error) throw new Error(error.message);
+  return upsertReturningIds("campaign_webapp", insertedWebapps);
 };
 
 /**

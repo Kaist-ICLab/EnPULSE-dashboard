@@ -5,6 +5,7 @@ import { Block, BlockHeaderButton } from "../blocks/Block";
 import BroadcastAction from "./BroadcastAction";
 import SurveyAction from "./SurveyAction";
 import NotificationAction from "./NotificationAction";
+import OpenWebappAction from "./OpenWebappAction";
 
 // One action rendered as a green block. The body content depends on the action kind.
 const ActionBlock: React.FC<{
@@ -26,6 +27,8 @@ const ActionBlock: React.FC<{
         <BroadcastAction action={action} onChange={onChange} />
       ) : action.kind === "notification" ? (
         <NotificationAction action={action} onChange={onChange} />
+      ) : action.kind === "open_webapp" ? (
+        <OpenWebappAction action={action} onChange={onChange} />
       ) : (
         <SurveyAction action={action} onChange={onChange} />
       )}
