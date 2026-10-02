@@ -110,9 +110,12 @@ const QuestionCard: React.FC<{
   const [isPasteOpen, setIsPasteOpen] = useState(false);
   const childQuestionCount = question.survey_question_trigger.reduce((n, t) => n + t.survey_question.length, 0);
 
+  // "number" (plain numeric text entry) is a valid value in the DB enum but is no longer
+  // offered here — Number Scale covers bounded numeric answers, and a free numeric answer is
+  // just a Text question in practice. Not removed from the DB enum/schema since no campaign
+  // used it, but removing it from there is a separate (and currently unnecessary) migration.
   const answerTypeOptions: { value: AnswerType; label: string }[] = [
     { value: "text", label: "Text" },
-    { value: "number", label: "Number" },
     { value: "radio", label: "Radio" },
     { value: "checkbox", label: "Checkbox" },
     { value: "binary", label: "Binary" },
