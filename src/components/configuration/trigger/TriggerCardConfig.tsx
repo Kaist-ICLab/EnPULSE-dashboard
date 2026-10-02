@@ -11,8 +11,15 @@ import { Dropdown, DropdownItem } from "flowbite-react";
 import { DeviceType } from "@/types/survey";
 
 const TriggerCardConfig: React.FC<{ index: number }> = ({ index }) => {
-  const { campaign_trigger, surveys, removeTrigger, updateTriggerName, setTriggerCondition, addTriggerAction } =
-    useCampaignConfigEdit((state) => state);
+  const {
+    campaign_trigger,
+    surveys,
+    webapps,
+    removeTrigger,
+    updateTriggerName,
+    setTriggerCondition,
+    addTriggerAction,
+  } = useCampaignConfigEdit((state) => state);
   const trigger = campaign_trigger[index];
   if (!trigger) return null;
 
@@ -48,7 +55,9 @@ const TriggerCardConfig: React.FC<{ index: number }> = ({ index }) => {
             {(Object.keys(TRIGGER_ACTION_KIND_LABEL) as TriggerActionKind[]).map((kind) => {
               const invalid =
                 (kind === "ema" && !surveys.some((survey) => survey.device_type === DeviceType.Phone)) ||
-                (kind === "watch_ema" && !surveys.some((survey) => survey.device_type === DeviceType.Watch));
+                (kind === "watch_ema" && !surveys.some((survey) => survey.device_type === DeviceType.Watch)) ||
+                (kind === "open_webapp" &&
+                  (!surveys.some((survey) => survey.device_type === DeviceType.Phone) || webapps.length === 0));
 
               return invalid ? null : (
                 <DropdownItem key={kind} onClick={() => addTriggerAction(index, kind)}>

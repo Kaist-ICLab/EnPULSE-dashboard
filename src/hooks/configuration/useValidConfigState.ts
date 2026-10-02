@@ -1,7 +1,7 @@
 import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvider";
 import dayjs from "dayjs";
 import { useMemo } from "react";
-import { isTriggerComplete } from "@/types/trigger";
+import { getTriggerIssue } from "@/types/trigger";
 import { DeviceType, SurveyQuestion } from "@/types/survey";
 import { MIN_WATCH_SURVEY_EXPIRE_MS, getNumberScaleIssue } from "@/constants/survey";
 import {
@@ -71,9 +71,20 @@ export function useValidConfigState() {
       return `Watch survey "${tooShort.title || "Untitled"}" needs an expiration time of at least ${MIN_WATCH_SURVEY_EXPIRE_MS} ms.`;
     }
 
-    // Number-scale ranges, at every nesting level (follow-up questions included).
+    // A survey with no questions opens and closes immediately on the watch, and shows only a
+    // Submit button on the phone.
+    const empty = surveys.find((s) => s.survey_question.length === 0);
+    if (empty) return `Survey "${empty.title || "Untitled"}" has no questions. Add at least one.`;
+
+    // Number-scale ranges and choice options, at every nesting level (follow-ups included).
     const findScaleIssue = (questions: SurveyQuestion[]): string | null => {
       for (const q of questions) {
+        if (q.answer_type === "radio" || q.answer_type === "checkbox") {
+          const options = ((q.config ?? {}) as { options?: string[] }).options ?? [];
+          if (options.filter((o) => o.trim().length > 0).length === 0) {
+            return `Question "${q.question || "Untitled"}" has no options to choose from. Add at least one.`;
+          }
+        }
         if (q.answer_type === "numberscale") {
           const config = (q.config ?? {}) as { min?: number; max?: number };
           const issue = getNumberScaleIssue(config.min ?? 0, config.max ?? 10);
@@ -98,10 +109,19 @@ export function useValidConfigState() {
     return webapps.every((webapp) => !!webapp.icon_path);
   }, [webapps]);
 
-  const isTriggerValid = useMemo(() => {
-    const timingScheduleValues = getTimingScheduleValues(tables);
-    return campaign_trigger.every((t) => isTriggerComplete(t, timingScheduleValues));
-  }, [campaign_trigger, tables]);
+  const triggerIssue = useMemo(() => {
+    const context = {
+      timingScheduleValues: getTimingScheduleValues(tables),
+      campaignTableNames: new Set(tables.map((t) => t.name)),
+      surveys,
+    };
+    for (const [i, t] of campaign_trigger.entries()) {
+      const issue = getTriggerIssue(t, i, context);
+      if (issue) return issue;
+    }
+    return null;
+  }, [campaign_trigger, tables, surveys]);
+  const isTriggerValid = triggerIssue === null;
 
   const isAccessible = useMemo(() => {
     const isAccessible = [true];
@@ -121,6 +141,7 @@ export function useValidConfigState() {
     activeSensingIssue,
     isWebappValid,
     isTriggerValid,
+    triggerIssue,
     isAccessible,
   };
 }
