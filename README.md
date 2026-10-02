@@ -28,7 +28,6 @@ To run the dashboard locally, make sure you have Node.js installed, then follow 
 3. Open `http://localhost:3000` in your browser.
 
 ## Important Information & Recent Changes
-- **Internationalization (i18n)**: The dashboard fully supports switching between English (EN) and Korean (KO) using the global language toggle located in the navigation header. This localization includes configuration menus, warnings, validation banners, tooltip elements, and dropdown selectors.
 - **State Management**: The dashboard leverages `Zustand` and `Zundo` to seamlessly preserve local configuration modifications, enabling rapid campaign prototyping without unintended data loss.
 - **Deployment Warning**: Remember that the dashboard uses a Service Role Key that has full admin access to the database. It is intended for localized network access only and should **NOT** be hosted publicly without robust network access controls.
 
