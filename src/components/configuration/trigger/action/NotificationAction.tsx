@@ -55,8 +55,9 @@ const NotificationAction: React.FC<{
           value={action.deviceType}
           onChange={(e) => onChange({ ...action, deviceType: Number(e.target.value) as DeviceType })}
         >
-          <option value={DeviceType.Phone}>Phone</option>
-          <option value={DeviceType.Watch}>Watch</option>
+          <option value={DeviceType.Phone}>Phone only</option>
+          <option value={DeviceType.Watch}>Watch only</option>
+          <option value={DeviceType.Both}>Both (Phone and Watch)</option>
         </Select>
       </div>
 
