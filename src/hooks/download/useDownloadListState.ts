@@ -6,6 +6,7 @@ import { useCampaignStore } from "@/providers/CampaignStoreProvider";
 import useDownloadState from "../../stores/downloadStore";
 import { notify } from "@/utils/notify";
 import dayjs from "dayjs";
+import { csvEscape } from "@/utils/csv";
 
 const MAX_GROUP_BYTES = 200 * 1024 * 1024; // 100MB
 const REQUEST_DELAY_MS = 500;
@@ -21,13 +22,6 @@ export default function useDownloadListState() {
   const [previewStatus, setPreviewStatus] = useState<ResponseStatus>(null);
   const [previewData, setPreviewData] = useState<Record<string, unknown>[]>([]);
   const [selectedPreviewRow, setSelectedPreviewRow] = useState<DownloadFileRow | null>(null);
-
-  const csvEscape = useCallback((value: string) => {
-    if (value.includes(",") || value.includes('"') || value.includes("\n")) {
-      return `"${value.replaceAll('"', '""')}"`;
-    }
-    return value;
-  }, []);
 
   const getFieldsForRow = useCallback(
     (row: DownloadFileRow) => {
@@ -63,10 +57,10 @@ export default function useDownloadListState() {
 
       return {
         fileName: `data-${row.table}-${row.uuid}-${dayjs(row.date).format("YYYY-MM-DD")}.csv`,
-        csv: [header.join(","), ...body].join("\n"),
+        csv: [header.map(csvEscape).join(","), ...body].join("\n"),
       };
     },
-    [csvEscape, getFieldsForRow, setDownloadListItemStatus],
+    [getFieldsForRow, setDownloadListItemStatus],
   );
 
   const triggerFileDownload = useCallback((blob: Blob, fileName: string) => {
