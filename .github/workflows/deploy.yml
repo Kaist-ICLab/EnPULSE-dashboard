@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+# The job only needs to read the repository, so limit what its token can do.
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: self-hosted
