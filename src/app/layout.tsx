@@ -3,6 +3,8 @@ import { Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeConfig } from "flowbite-react";
 import { Toaster } from "sonner";
+import SetupRequired from "@/components/common/SetupRequired";
+import { missingSupabaseConfig } from "@/lib/supabaseConfig";
 
 export const metadata: Metadata = {
   title: "EnPULSE Dashboard",
@@ -40,7 +42,7 @@ export default function RootLayout({
             error: <span className="icon-[uis--exclamation-circle] h-6 w-6" />,
           }}
         />
-        {children}
+        {missingSupabaseConfig.length > 0 ? <SetupRequired missing={missingSupabaseConfig} /> : children}
       </body>
     </html>
   );
