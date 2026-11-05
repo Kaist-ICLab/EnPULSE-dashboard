@@ -6,10 +6,10 @@ import ErrorFallback from "@/components/common/ErrorFallback";
 // Replaces the root layout when it fails, so it must render its own <html>/<body>.
 export default function GlobalError({
   error,
-  unstable_retry,
+  retry,
 }: {
   error: Error & { digest?: string };
-  unstable_retry: () => void;
+  retry: () => void;
 }) {
   return (
     <html lang="en">
@@ -18,7 +18,7 @@ export default function GlobalError({
         <ErrorFallback
           fullScreen
           error={error}
-          actions={[{ label: "Try again", onClick: () => unstable_retry(), primary: true }]}
+          actions={[{ label: "Try again", onClick: () => retry(), primary: true }]}
         />
       </body>
     </html>

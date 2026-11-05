@@ -6,16 +6,16 @@ import ErrorFallback from "@/components/common/ErrorFallback";
 // (campaign fetch), which have no closer boundary above them.
 export default function RootError({
   error,
-  unstable_retry,
+  retry,
 }: {
   error: Error & { digest?: string };
-  unstable_retry: () => void;
+  retry: () => void;
 }) {
   return (
     <ErrorFallback
       fullScreen
       error={error}
-      actions={[{ label: "Try again", onClick: () => unstable_retry(), primary: true }]}
+      actions={[{ label: "Try again", onClick: () => retry(), primary: true }]}
     />
   );
 }
