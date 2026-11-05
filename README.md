@@ -1,35 +1,72 @@
 # EnPULSE Dashboard
 **EnPULSE Dashboard** is a dashboard component that you can easily use to configure campaigns and monitor collected data for quality assurance.
 
-## How to Use
-The dashboard utilizes `SUPABASE_SERVICE_ROLE_KEY`, which means that it has admin privileges. **DO NOT HOST THE DASHBOARD ON PUBLIC SERVERS** or malicious attackers can read, update, and delete all data in the dashboard! The dashboard is suited for local use. But if you do need to host it, do it in a private network so that anonymous people can't access it. 
+## Security
+> [!WARNING]
+> **Do not host this dashboard on a public server.** Anyone who can open it can read, change, and delete everything in your database, including participant data.
 
-### Supabase Key Configuration
-1. Copy the `.example.env` file and rename it to `.env`. Supabase key values will be read there.
-2. Set the value of `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` according to the `.env` file in your self-hosted supabase folder.
-3. (Optional) Set `NEXT_PUBLIC_DATABASE_TIMEZONE` to the time zone of the database (the Postgres `TimeZone` setting, `UTC` by default on a fresh install), e.g. `Asia/Seoul`. The Daily Overview uses it to show counts in the browser's time zone. Rebuild after changing it.
-4. (Optional) Set `NEXT_PUBLIC_DEMO_MODE=true` when the dashboard is used in a public demo. This hides destructive actions such as removing a campaign. The value is read at build time, so rebuild after changing it.
+The dashboard connects to Supabase with the service role key, which has full admin access and bypasses row-level security. That key is included in the JavaScript sent to the browser, and the dashboard has no login, so anyone who can load the page can extract it.
 
-### Running the Project
-To run the dashboard locally, make sure you have Node.js installed, then follow these steps:
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Start the development server:
-   ```bash
-   npm run dev
-   ```
-   Alternatively, build and start for production:
-   ```bash
-   npm run build
-   npm start
-   ```
-3. Open `http://localhost:3000` in your browser.
+- **Local use is the default.** `npm run dev` and `npm start` only accept connections from your own machine.
+- **Sharing it with a team:** run it on a private network where everyone with access is trusted, and listen on that network's address with `npm start -- -H <private-ip>`.
+- **If the key may have been exposed:** generate new Supabase keys, update `.env`, and rebuild.
 
-## Important Information & Recent Changes
-- **State Management**: The dashboard leverages `Zustand` and `Zundo` to seamlessly preserve local configuration modifications, enabling rapid campaign prototyping without unintended data loss.
-- **Deployment Warning**: Remember that the dashboard uses a Service Role Key that has full admin access to the database. It is intended for localized network access only and should **NOT** be hosted publicly without robust network access controls.
+## Setup
+
+### Prerequisites
+- [Node.js](https://nodejs.org) 20.9 or newer
+- A running [EnPULSE Backend](https://github.com/Kaist-ICLab/EnPULSE-backend), which provides the database, API, and edge functions. Follow the Quick Start in that repository, which uses Docker.
+
+> [!NOTE]
+> The backend's `schema.sql` does not yet include everything this version of the dashboard uses, such as the `campaign_webapp` table and the `campaign-webapp-icons` storage bucket. Until it is updated, campaign pages won't load on a database created from that file.
+
+### 1. Install
+```bash
+git clone https://github.com/Kaist-ICLab/EnPULSE-dashboard.git
+cd EnPULSE-dashboard
+npm install
+```
+
+### 2. Configure
+Copy the example file, then edit `.env`:
+```bash
+cp .example.env .env
+```
+
+| Variable | Required | Value |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | The URL of your Supabase API, such as `http://localhost:8000`. It must be reachable from the browser. |
+| `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` | Yes | `SERVICE_ROLE_KEY` from the `.env` file in your Supabase folder. |
+| `NEXT_PUBLIC_PENDING_IMPORTED_CONFIG_KEY` | No | Leave as it is. |
+| `NEXT_PUBLIC_DATABASE_TIMEZONE` | No | The Postgres `TimeZone` setting, such as `Asia/Seoul`. The default is `UTC`. The Daily Overview uses it to show counts in the browser's time zone. |
+
+These values are fixed when the app is built, so rebuild after changing them.
+
+### 3. Run
+For development:
+```bash
+npm run dev
+```
+
+For a production build:
+```bash
+npm run build
+npm start
+```
+
+Then open `http://localhost:3000`.
+
+## Development
+These checks also run automatically on every pull request. The tests need Node.js 22.12 or newer.
+```bash
+npm run lint
+npx tsc --noEmit
+npm test
+```
+
+## Troubleshooting
+- **"Something went wrong" page:** the dashboard could not load data from Supabase. Check that the backend is running and that the values in `.env` are correct. The server terminal shows the actual error, because production builds hide it from the browser.
+- **`Package subpath './version.js' is not defined` when building:** run `npx flowbite-react patch`. `npm install` normally does this for you.
 
 ## Technical Stack
 - [Next.js](https://nextjs.org) - Framework supporting folder structure-based routing and starting template of our dashboard 
@@ -43,3 +80,7 @@ To run the dashboard locally, make sure you have Node.js installed, then follow 
 
 ## Related Repositories
 - [EnPULSE](https://github.com/Kaist-ICLab/EnPULSE/tree/main): Android library, mobile and smartwatch app for data collection.
+- [EnPULSE Backend](https://github.com/Kaist-ICLab/EnPULSE-backend): Supabase setup, database schema, and edge functions.
+
+## License
+[MIT](LICENSE)

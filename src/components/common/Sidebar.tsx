@@ -72,7 +72,6 @@ const DashboardSidebar: React.FC = () => {
             icon="icon-[material-symbols--download]"
             name="Download Data"
           />
-          {/* <MySidebarItem isActive={isActive("messaging")} href={`${baseUrl}/messaging`} icon="icon-[mi--message-alt]" name="Messaging" /> */}
           {collapsed ? (
             <SettingsDropdown isActive={isActive} settingsItems={settingsItems} />
           ) : (

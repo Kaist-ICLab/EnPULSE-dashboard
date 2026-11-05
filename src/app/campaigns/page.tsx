@@ -128,15 +128,13 @@ const CampaignsPage: React.FC = () => {
       <MainHeader />
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 p-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Campaigns Dashboard</h1>
-          <p className="mt-2 text-gray-500">Manage and monitor all your ongoing and past campaigns in one place.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Campaign Management Dashboard</h1>
+          <p className="mt-2 text-gray-500">Manage and track all your current and past campaigns in one place.</p>
         </div>
-
         <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {Array.from(campaignList.entries()).map(([id, campaign]) => (
             <CampaignCard key={`campaign-${id}`} id={id} campaign={campaign} isMounted={isMounted} />
           ))}
-
           {campaignList.size === 0 && <EmptyState />}
         </div>
       </div>

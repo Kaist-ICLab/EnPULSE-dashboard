@@ -6,12 +6,12 @@ import ErrorFallback from "@/components/common/ErrorFallback";
 // the campaign sidebar (rendered by the parent layout) on screen.
 export default function CampaignError({
   error,
-  unstable_retry,
+  retry,
 }: {
   error: Error & { digest?: string };
-  unstable_retry: () => void;
+  retry: () => void;
 }) {
   return (
-    <ErrorFallback error={error} actions={[{ label: "Try again", onClick: () => unstable_retry(), primary: true }]} />
+    <ErrorFallback error={error} actions={[{ label: "Try again", onClick: () => retry(), primary: true }]} />
   );
 }

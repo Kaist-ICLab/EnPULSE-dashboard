@@ -45,6 +45,7 @@ next-env.d.ts
 
 .vscode
 .claude
+CLAUDE.md
 
 # Probably dummy data file
 *.csv
