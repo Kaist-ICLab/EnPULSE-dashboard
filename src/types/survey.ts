@@ -5,6 +5,7 @@ export type AnswerType = Database["public"]["Enums"]["survey_question_type"];
 export enum DeviceType {
   Phone = 0,
   Watch = 1,
+  Both = 2,
 }
 
 // Survey question triggers
