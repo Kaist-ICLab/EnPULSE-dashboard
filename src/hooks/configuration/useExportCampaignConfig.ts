@@ -2,6 +2,7 @@ import { useCampaignConfigEdit } from "@/providers/CampaignConfigEditStoreProvid
 import { useCallback } from "react";
 import dayjs from "dayjs";
 import { DATE_FORMAT } from "@/utils/date";
+import { triggerFileDownload } from "@/utils/download";
 
 type FileWriter = {
   write: (data: Blob) => Promise<void>;
@@ -65,18 +66,6 @@ const useExportCampaignConfig = () => {
     });
 
     const suggestedName = getSuggestedFileName(campaignName);
-    const triggerBrowserDownload = () => {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = suggestedName;
-      link.style.display = "none";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      // Some browsers need the blob URL to remain valid briefly.
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    };
 
     const saveWindow = window as SaveFilePickerWindow;
     if (saveWindow.showSaveFilePicker && window.isSecureContext) {
@@ -100,7 +89,7 @@ const useExportCampaignConfig = () => {
       }
     }
 
-    triggerBrowserDownload();
+    triggerFileDownload(blob, suggestedName);
   }, [campaignName, tables, surveys, campaign_trigger, webapps]);
 
   return { exportCampaignConfig };

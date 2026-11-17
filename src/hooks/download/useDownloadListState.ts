@@ -7,6 +7,7 @@ import useDownloadState from "../../stores/downloadStore";
 import { notify } from "@/utils/notify";
 import dayjs from "dayjs";
 import { csvEscape } from "@/utils/csv";
+import { triggerFileDownload } from "@/utils/download";
 
 const MAX_GROUP_BYTES = 200 * 1024 * 1024; // 100MB
 const REQUEST_DELAY_MS = 500;
@@ -63,17 +64,6 @@ export default function useDownloadListState() {
     [getFieldsForRow, setDownloadListItemStatus],
   );
 
-  const triggerFileDownload = useCallback((blob: Blob, fileName: string) => {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, []);
-
   const downloadData = useCallback(
     async (idx: number, row: DownloadFileRow) => {
       try {
@@ -86,7 +76,7 @@ export default function useDownloadListState() {
         setDownloadListItemStatus(idx, null);
       }
     },
-    [downloadAndBuildFile, triggerFileDownload, setDownloadListItemStatus],
+    [downloadAndBuildFile, setDownloadListItemStatus],
   );
 
   const downloadAllData = useCallback(async () => {
@@ -149,14 +139,7 @@ export default function useDownloadListState() {
     } finally {
       setAllDownloadListItemsStatus(null);
     }
-  }, [
-    downloadAndBuildFile,
-    campaign?.id,
-    downloadList,
-    triggerFileDownload,
-    setDownloadListItemStatus,
-    setAllDownloadListItemsStatus,
-  ]);
+  }, [downloadAndBuildFile, campaign?.id, downloadList, setDownloadListItemStatus, setAllDownloadListItemsStatus]);
 
   const isSomethingDownloading = useMemo(() => {
     return downloadList.some((row) => row.downloadStatus === "loading");
