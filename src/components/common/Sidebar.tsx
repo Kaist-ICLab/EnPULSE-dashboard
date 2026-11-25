@@ -54,12 +54,7 @@ const DashboardSidebar: React.FC = () => {
           </SidebarItem>
         </SidebarItemGroup>
         <SidebarItemGroup>
-          <MySidebarItem
-            isActive={false}
-            href="/campaigns"
-            icon="icon-[material-symbols--home]"
-            name="All Campaigns"
-          />
+          <MySidebarItem isActive={false} href="/campaigns" icon="icon-[material-symbols--home]" name="All Campaigns" />
           <MySidebarItem
             isActive={isActive("dashboard")}
             href={`${baseUrl}/dashboard`}
@@ -71,6 +66,12 @@ const DashboardSidebar: React.FC = () => {
             href={`${baseUrl}/download-data`}
             icon="icon-[material-symbols--download]"
             name="Download Data"
+          />
+          <MySidebarItem
+            isActive={isActive("accounts")}
+            href={`${baseUrl}/accounts`}
+            icon="icon-[material-symbols--group]"
+            name="Accounts"
           />
           {collapsed ? (
             <SettingsDropdown isActive={isActive} settingsItems={settingsItems} />

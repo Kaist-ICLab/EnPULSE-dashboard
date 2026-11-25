@@ -4,12 +4,13 @@ const PasswordForm: React.FC<{
   password: string;
   setPassword: (password: string) => void;
   placeholder?: string;
-}> = ({ password, setPassword, placeholder }) => {
+  id?: string;
+}> = ({ password, setPassword, placeholder, id = "campaignPassword" }) => {
   const [showPassword, setShowPassword] = useState(false);
   return (
     <div className="relative w-full rounded-lg border border-gray-300 bg-gray-50">
       <input
-        id="campaignPassword"
+        id={id}
         type={showPassword ? "text" : "password"}
         value={password}
         placeholder={placeholder}
